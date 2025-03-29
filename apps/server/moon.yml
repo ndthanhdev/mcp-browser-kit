@@ -1,0 +1,13 @@
+$schema: "https://moonrepo.dev/schemas/project.json"
+language: typescript
+
+tags:
+  - tsup
+
+tasks:
+  build:
+    deps:
+      - tsup-build
+
+dependsOn:
+  - rpc

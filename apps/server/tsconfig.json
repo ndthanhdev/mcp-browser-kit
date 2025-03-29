@@ -1,0 +1,25 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@mcp-browser-kit/extension/*": ["../extension/src/*"],
+			"@mcp-browser-kit/rpc": ["../../packages/rpc/src/index.ts"],
+			"@mcp-browser-kit/rpc/*": ["../../packages/rpc/src/*"]
+		},
+		"outDir": "../../.moon/cache/types/apps/server"
+	},
+	"include": [
+		"src/**/*.ts",
+		"../../packages/rpc/src/**/*.ts",
+		"../extension/src/**/*.ts"
+	],
+	"references": [
+		{
+			"path": "../../packages/rpc"
+		},
+		{
+			"path": "../extension"
+		}
+	]
+}

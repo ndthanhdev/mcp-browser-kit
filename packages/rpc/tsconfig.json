@@ -1,0 +1,7 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"compilerOptions": {
+		"paths": {},
+		"outDir": "../../.moon/cache/types/packages/rpc"
+	}
+}

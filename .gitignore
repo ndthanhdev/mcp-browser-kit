@@ -1,0 +1,16 @@
+
+# moon
+.moon/cache
+.moon/docker
+
+node_modules/
+dist/
+
+# Yarn zero install
+.yarn/*
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

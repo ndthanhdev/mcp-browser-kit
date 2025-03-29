@@ -1,0 +1,15 @@
+{
+	"name": "@mcp-browser-kit/extension",
+	"type": "module",
+	"packageManager": "yarn@4.8.0",
+	"devDependencies": {
+		"@modelcontextprotocol/sdk": "^1.8.0",
+		"typescript": "^5.8.2"
+	},
+	"files": [
+		"dist"
+	],
+	"dependencies": {
+		"@mcp-browser-kit/rpc": "workspace:*"
+	}
+}

@@ -1,0 +1,14 @@
+{
+	"extends": "tsconfig-moon/tsconfig.projects.json",
+	"compilerOptions": {
+		"composite": true,
+		"verbatimModuleSyntax": false,
+		"moduleResolution": "node",
+		"emitDeclarationOnly": true,
+		"esModuleInterop": true,
+		"noEmit": true,
+		"module": "ESNext",
+		"target": "ES2024",
+		"lib": ["ESNext"]
+	}
+}

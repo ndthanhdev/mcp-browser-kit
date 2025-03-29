@@ -1,0 +1,15 @@
+{
+	"extends": "./tsconfig.options.json",
+	"files": [],
+	"references": [
+		{
+			"path": "apps/extension"
+		},
+		{
+			"path": "apps/server"
+		},
+		{
+			"path": "packages/rpc"
+		}
+	]
+}

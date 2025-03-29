@@ -1,0 +1,22 @@
+$schema: "https://moonrepo.dev/schemas/tasks.json"
+
+fileGroups:
+  assets:
+    - assets/**/*
+  sources:
+    - src/**/*
+  tsup:
+    - tsup.config.ts
+  dist-js:
+    - dist/**/*.{cjs,mjs,js}
+
+tasks:
+  tsup-build:
+    toolchain: node
+    command: tsup
+    inputs:
+      - "@group(assets)"
+      - "@group(sources)"
+      - "@group(tsup)"
+    outputs:
+      - "@group(dist-js)"

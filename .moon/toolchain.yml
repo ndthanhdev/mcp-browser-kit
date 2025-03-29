@@ -1,0 +1,10 @@
+$schema: "https://moonrepo.dev/schemas/toolchain.json"
+
+node:
+  packageManager: "yarn"
+  syncProjectWorkspaceDependencies: false
+typescript:
+  syncProjectReferences: true
+  syncProjectReferencesToPaths: true
+  createMissingConfig: true
+  routeOutDirToCache: true

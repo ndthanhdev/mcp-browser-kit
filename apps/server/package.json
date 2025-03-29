@@ -1,0 +1,22 @@
+{
+	"name": "@mcp-browser-kit/server",
+	"version": "1.0.5",
+	"packageManager": "yarn@4.8.0",
+	"homepage": "https://github.com/ndthanhdev/mcp-browser-kit",
+	"bin": {
+		"mcp-browser-kit": "dist/main.js",
+		"server": "dist/main.js"
+	},
+	"devDependencies": {
+		"@modelcontextprotocol/sdk": "^1.8.0",
+		"@types/ws": "^8",
+		"typescript": "^5.8.2"
+	},
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"dependencies": {
+		"ws": "^8.18.1"
+	}
+}
