@@ -17,7 +17,7 @@ An MCP Server for interacting with manifest v2 compatible browsers.
 }
 ```
 
-1. Download and extract [MCP Browser Kit Extension](https://github.com/ndthanhdev/mcp-browser-kit/releases/download/v1.0.0/extension.zip)
+1. Download and extract [MCP Browser Kit Extension](https://github.com/ndthanhdev/mcp-browser-kit/releases/download/v1.0.1/extension.zip)
 1. [Load extension](#load-extension) into a manifest v2 compatible browser:
     - Chrome ❌
     - Brave ✅
