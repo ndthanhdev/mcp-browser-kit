@@ -1,6 +1,6 @@
 # MCP Browser Kit
 
-A Model Control Protocol (MCP) Server for interacting with manifest v2 compatible browsers.
+An MCP Server for interacting with manifest v2 compatible browsers.
 
 ## Usage
 
