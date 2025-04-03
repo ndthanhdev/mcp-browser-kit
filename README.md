@@ -27,7 +27,7 @@ An MCP Server for interacting with manifest v2 compatible browsers.
 
    ```
    use mcp-browser-kit, Star the last opening github repo on my browser
-   ```Load
+   ```
 
 ## Load Extension
 
