@@ -64,6 +64,7 @@ server.tool(
 	"fillTextToIndex",
 	[
 		combinationDescription,
+		"- Use this tool to set value to the ReadableElement at the specified index.",
 		"- For tasks requiring user input (text, numbers, passwords, etc.), such as fill form before submit, fill text before search, fill username & password before login",
 	].join("\n"),
 	{
@@ -88,6 +89,7 @@ server.tool(
 	"clickOnIndex",
 	[
 		combinationDescription,
+		"- Use this tool to click on ReadableElement at the specified index.",
 		"- For tasks that involve clicking, like buttons, links, etc.",
 		"- Usually being called after `getReadableElements` to interact with the element.",
 		"- If the task potentially requires filling inputs, use `fillTextToIndex` first.",
