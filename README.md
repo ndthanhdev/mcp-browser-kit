@@ -17,14 +17,26 @@ An MCP Server for interacting with manifest v2 compatible browsers.
 }
 ```
 
-2. Download and load [MCP Browser Kit Extension](https://github.com/ndthanhdev/mcp-browser-kit/releases/download/v1.0.0/extension.zip) into a manifest v2 compatible browser:
+1. Download and extract [MCP Browser Kit Extension](https://github.com/ndthanhdev/mcp-browser-kit/releases/download/v1.0.0/extension.zip)
+1. [Load extension](#load-extension) into a manifest v2 compatible browser:
+    - Chrome ❌
+    - Brave ✅
+    - Firefox ✅
 
-- Chrome ❌
-- Brave ✅
-- Firefox ✅
-
-3. Enable extension and start messaging on your MCP Client:
+1. Enable extension and start messaging on your MCP Client:
 
    ```
    use mcp-browser-kit, Star the last opening github repo on my browser
-   ```
+   ```Load
+
+## Load Extension
+
+- Brave
+	1. Open `brave://extensions/`
+	2. Enable `Developer mode`
+	3. Click `Load unpacked`
+	4. Select the `extension` folder
+- Firefox
+	1. Open `about:debugging#/runtime/this-firefox`
+	2. Click `Load Temporary Add-on`
+	3. Select the `manifest.json` file in the `extension` folder
