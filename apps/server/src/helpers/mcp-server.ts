@@ -124,18 +124,13 @@ server.tool(
 		tabId: z.string().describe("Tab ID to evaluate the code in"),
 		fnBodyCode: z.string().describe("A JavaScript function body to evaluate"),
 	},
-	async ({ tabId, index, fnBodyCode }) => {
-		const result = await rpcClient.defer(
-			"invokeJsFn",
-			tabId,
-			index,
-			fnBodyCode
-		);
+	async ({ tabId, fnBodyCode }) => {
+		const result = await rpcClient.defer("invokeJsFn", tabId, fnBodyCode);
 		return {
 			content: [
 				{
 					type: "text",
-					text: JSON.stringify(result),
+					text: JSON.stringify(result) ?? "undefined",
 				},
 			],
 		};
