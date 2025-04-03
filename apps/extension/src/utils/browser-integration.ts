@@ -3,20 +3,19 @@ import type { Tab } from "@mcp-browser-kit/server/services/tab-service";
 import { addDevTool } from "./add-dev-tool";
 
 export const toIIFE = (fn: Function | string) => {
-
-	if(typeof fn === "function") {
+	if (typeof fn === "function") {
 		return `(${fn.toString()})()`;
 	}
 
 	return `(()=>{${fn}})()`;
 };
 
-export const getExecuteScriptResult = async (results: any[]) => {
+export const getExecuteScriptResult = async <T = any>(results: any[]) => {
 	if (!Array.isArray(results)) {
 		return undefined;
 	}
 
-	return results[0];
+	return results[0] as T;
 };
 
 export const getTabs = async () => {
@@ -70,7 +69,7 @@ function _elementsToTable(elements: HTMLElement[]) {
 			el.getAttribute("placeholder") ??
 			el.innerText ??
 			"";
-		return [tag, label] as [number, string, string];
+		return [index, tag, label] as [number, string, string];
 	});
 	return table;
 }
@@ -84,13 +83,10 @@ export const getReadableElements = async (tabId: string) => {
 	const results = await browser.tabs.executeScript(+tabId, {
 		code,
 	});
-	return getExecuteScriptResult(results);
+	return getExecuteScriptResult<[number, string, string][]>(results);
 };
 
-export const clickOnIndex = async (
-	tabId: string,
-	index: number
-) => {
+export const clickOnIndex = async (tabId: string, index: number) => {
 	const results = await browser.tabs.executeScript(+tabId, {
 		code: toIIFE(`
 			${_getReadableElements.toString()};

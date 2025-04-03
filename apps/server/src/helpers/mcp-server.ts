@@ -41,7 +41,7 @@ server.tool(
 	"getReadableElements",
 	[
 		combinationDescription,
-		"- Use this tool to get a list of [tag,accessible-text] pairs",
+		"- Use this tool to get a list of [index,tag,accessible-text] of all readable elements in the current tab.",
 		"- Usually being called after `getTabs` to read or identify element to interact with.",
 	].join("\n"),
 	{
