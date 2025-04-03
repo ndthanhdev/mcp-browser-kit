@@ -17,13 +17,13 @@ A Model Control Protocol (MCP) Server for interacting with manifest v2 compatibl
 }
 ```
 
-2. Load extension into manifest v2 compatible browser:
+2. Download and load [MCP Browser Kit Extension](https://github.com/ndthanhdev/mcp-browser-kit/releases/download/v1.0.0/extension.zip) into a manifest v2 compatible browser:
 
 - Chrome ❌
 - Brave ✅
 - Firefox ✅
 
-3. Enable extension and start messaging:
+3. Enable extension and start messaging on your MCP Client:
 
    ```
    use mcp-browser-kit, Star the last opening github repo on my browser
