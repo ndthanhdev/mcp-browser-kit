@@ -1,5 +1,7 @@
 import DOMPurify from "dompurify";
 import type { Tab } from "@mcp-browser-kit/server/services/tab-service";
+import parseDataURL from "data-urls";
+import { imageDimensionsFromData } from "image-dimensions";
 import { addDevTool } from "./add-dev-tool";
 
 export const toIIFE = (fn: Function | string) => {
@@ -84,17 +86,21 @@ export const getReadableElements = async (tabId: string) => {
 	return getExecuteScriptResult<[number, string, string][]>(results);
 };
 
-export const clickOnIndex = async (tabId: string, index: number) => {
+export const clickOnReadableElement = async (tabId: string, index: number) => {
 	const results = await browser.tabs.executeScript(+tabId, {
 		code: toIIFE(`
 			${_getReadableElements.toString()};
-			_getReadableElements()[${index}].click();`),
+			const elements = _getReadableElements();
+			const element = elements[${index}];
+			$mcpBrowserKit.playClickAnimationOnElement(element);
+			element.click();
+		`),
 	});
 
 	return getExecuteScriptResult(results);
 };
 
-export const fillTextToIndex = async (
+export const fillTextToReadableElement = async (
 	tabId: string,
 	index: number,
 	value: string
@@ -104,6 +110,7 @@ export const fillTextToIndex = async (
 			${_getReadableElements.toString()};
 			const elements = _getReadableElements();
 			const element = elements[${index}];
+			$mcpBrowserKit.playClickAnimationOnElement(element);
 			element.value = "${value}";
 		`),
 	});
@@ -120,6 +127,54 @@ export const getInnerText = async (tabId: string) => {
 	return getExecuteScriptResult<string>(results);
 };
 
+export const captureActiveTab = async () => {
+	const dataUrl = await browser.tabs.captureVisibleTab();
+	const parsed = parseDataURL(dataUrl);
+	const dimensions = await imageDimensionsFromData(parsed?.body);
+
+	return {
+		data: parsed?.body.toBase64() as string,
+		mimeType: parsed?.mimeType.toString() as string,
+		width: dimensions.width,
+		height: dimensions.height,
+	};
+};
+
+export const clickOnViewableElement = async (
+	tabId: string,
+	x: number,
+	y: number
+) => {
+	const results = await browser.tabs.executeScript(+tabId, {
+		code: toIIFE(`
+			$mcpBrowserKit.playClickAnimation(${x}, ${y});
+			const element = document.elementFromPoint(${x}, ${y});
+			if (element) {
+				element.click();
+			}
+		`),
+	});
+	return getExecuteScriptResult(results);
+};
+
+export const fillTextToViewableElement = async (
+	tabId: string,
+	x: number,
+	y: number,
+	value: string
+) => {
+	const results = await browser.tabs.executeScript(+tabId, {
+		code: toIIFE(`
+			$mcpBrowserKit.playClickAnimation(${x}, ${y});
+			const element = document.elementFromPoint(${x}, ${y});
+			if (element) {
+				element.value = "${value}";
+			}
+		`),
+	});
+	return getExecuteScriptResult(results);
+};
+
 export const invokeJsFn = async (tabId: string, fnCode: string) => {
 	const results = await browser.tabs.executeScript(+tabId, {
 		code: toIIFE(fnCode),
@@ -132,7 +187,10 @@ addDevTool({
 	getTabs,
 	getInnerText,
 	getReadableElements,
-	clickOnIndex,
-	fillTextToIndex,
+	clickOnReadableElement,
+	fillTextToReadableElement,
+	captureActiveTab,
+	clickOnViewableElement,
+	fillTextToViewableElement,
 	invokeJsFn,
 });

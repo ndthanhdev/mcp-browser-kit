@@ -4,8 +4,12 @@ import {
 	getTabs,
 	getInnerText,
 	getReadableElements,
-	clickOnIndex,
-	fillTextToIndex,
+	clickOnReadableElement,
+	fillTextToReadableElement,
+	captureActiveTab,
+	clickOnViewableElement,
+	fillTextToViewableElement,
+	getExecuteScriptResult,
 	invokeJsFn,
 } from "../utils/browser-integration";
 import { addDevTool } from "../utils/add-dev-tool";
@@ -15,8 +19,12 @@ export const rpcServer = new RpcServer({
 	getTabs,
 	getInnerText,
 	getReadableElements,
-	clickOnIndex,
-	fillTextToIndex,
+	clickOnReadableElement,
+	fillTextToReadableElement,
+	captureActiveTab,
+	clickOnViewableElement,
+	fillTextToViewableElement,
+	getExecuteScriptResult,
 });
 
 export type ExtensionProcedureMap = InferProcedureMap<typeof rpcServer>;

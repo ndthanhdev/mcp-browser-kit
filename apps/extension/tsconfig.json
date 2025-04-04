@@ -1,7 +1,7 @@
 {
 	"extends": "../../tsconfig.options.json",
 	"compilerOptions": {
-		"lib": ["DOM"],
+		"lib": ["DOM", "ESNext"],
 		"baseUrl": ".",
 		"paths": {
 			"@mcp-browser-kit/server/*": ["../server/src/*"],

@@ -1,3 +1,4 @@
+import "core-js/proposals"
 import {
 	createTRPCClient,
 	createWSClient,

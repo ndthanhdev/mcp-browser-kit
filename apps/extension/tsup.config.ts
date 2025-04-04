@@ -6,6 +6,6 @@ export default defineConfig({
 	sourcemap: true,
 	clean: true,
 	format: ["esm"],
-	noExternal: ["@mcp-browser-kit/rpc"],
-	target: "es6",
+	noExternal: [/.+/],
+	target: "chrome135",
 });
