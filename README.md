@@ -2,7 +2,8 @@
 
 An MCP Server for interacting with manifest v2 compatible browsers.
 
-<video src="https://youtu.be/DIqW4rz4P24"></video>
+https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
+
 
 ## Usage
 
