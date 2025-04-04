@@ -23,6 +23,5 @@
 	],
 	"engines": {
 		"node": "~22.14"
-	},
-	"packageManager": "yarn@4.8.0"
+	}
 }

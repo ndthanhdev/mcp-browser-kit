@@ -2,6 +2,7 @@ import { InferProcedureMap, RpcServer } from "@mcp-browser-kit/rpc";
 import {
 	toIIFE,
 	getTabs,
+	getInnerText,
 	getReadableElements,
 	clickOnIndex,
 	fillTextToIndex,
@@ -12,6 +13,7 @@ import { addDevTool } from "../utils/add-dev-tool";
 export const rpcServer = new RpcServer({
 	invokeJsFn,
 	getTabs,
+	getInnerText,
 	getReadableElements,
 	clickOnIndex,
 	fillTextToIndex,

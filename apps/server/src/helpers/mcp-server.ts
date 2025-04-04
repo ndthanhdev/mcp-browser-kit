@@ -38,6 +38,29 @@ server.tool(
 );
 
 server.tool(
+	"getInnerText",
+	[
+		combinationDescription,
+		"- Use this tool to get the innerText of the current tab.",
+		"- Usually being called after `getTabs` to read or identify element to interact with.",
+	].join("\n"),
+	{
+		tabId: z.string().describe("Tab ID to evaluate the code in"),
+	},
+	async ({ tabId }) => {
+		const innerText = await rpcClient.defer("getInnerText", tabId);
+		return {
+			content: [
+				{
+					type: "text",
+					text: `InnerText: ${JSON.stringify(innerText)}`,
+				},
+			],
+		};
+	}
+);
+
+server.tool(
 	"getReadableElements",
 	[
 		combinationDescription,

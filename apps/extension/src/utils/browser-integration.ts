@@ -56,8 +56,6 @@ function _getReadableElements() {
 		])
 	);
 
-	console.log("readableElements", readableElements);
-
 	return readableElements;
 }
 
@@ -112,6 +110,16 @@ export const fillTextToIndex = async (
 	return getExecuteScriptResult(results);
 };
 
+export const getInnerText = async (tabId: string) => {
+	const results = await browser.tabs.executeScript(+tabId, {
+		code: toIIFE(`
+			return document.body.innerText;
+		`),
+	});
+
+	return getExecuteScriptResult<string>(results);
+};
+
 export const invokeJsFn = async (tabId: string, fnCode: string) => {
 	const results = await browser.tabs.executeScript(+tabId, {
 		code: toIIFE(fnCode),
@@ -122,6 +130,7 @@ export const invokeJsFn = async (tabId: string, fnCode: string) => {
 
 addDevTool({
 	getTabs,
+	getInnerText,
 	getReadableElements,
 	clickOnIndex,
 	fillTextToIndex,
