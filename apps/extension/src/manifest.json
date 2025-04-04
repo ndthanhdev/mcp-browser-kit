@@ -2,7 +2,7 @@
 	"$schema": "https://json.schemastore.org/webextension.json",
 	"manifest_version": 2,
 	"name": "MCP Browser Kit",
-	"version": "2.0.0",
+	"version": "3.0.0",
 
 	"description": "Allow MCP Browser Kit to interact with the browser.",
 	"permissions": ["tabs", "activeTab", "scripting", "<all_urls>"],
