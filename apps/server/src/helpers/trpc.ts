@@ -1,5 +1,5 @@
 import { initTRPC } from "@trpc/server";
-import { Context } from "./create-context";
+import type { Context } from "./create-context";
 /**
  * Initialization of tRPC backend
  * Should be done only once per backend!

@@ -1,21 +1,51 @@
 {
 	"extends": "../../tsconfig.options.json",
 	"compilerOptions": {
-		"lib": ["DOM", "ESNext"],
+		"noEmit": true,
+		"lib": [
+			"DOM",
+			"ESNext"
+		],
 		"baseUrl": ".",
 		"paths": {
-			"@mcp-browser-kit/server/*": ["../server/src/*"],
-			"@mcp-browser-kit/rpc": ["../../packages/rpc/src/index.ts"],
-			"@mcp-browser-kit/rpc/*": ["../../packages/rpc/src/*"]
+			"@mcp-browser-kit/server/*": [
+				"../server/src/*"
+			],
+			"@mcp-browser-kit/rpc": [
+				"../../packages/rpc/src/index.ts"
+			],
+			"@mcp-browser-kit/rpc/*": [
+				"../../packages/rpc/src/*"
+			],
+			"@mcp-browser-kit/core-extension": [
+				"../../packages/core-extension/src/index.ts"
+			],
+			"@mcp-browser-kit/core-extension/*": [
+				"../../packages/core-extension/src/*"
+			],
+			"@mcp-browser-kit/driven-browser-driver": [
+				"../../packages/driven-browser-driver/src/index.ts"
+			],
+			"@mcp-browser-kit/driven-browser-driver/*": [
+				"../../packages/driven-browser-driver/src/*"
+			]
 		},
 		"outDir": "../../.moon/cache/types/apps/extension"
 	},
 	"include": [
-		"src/**/*.ts",
-		"../server/src/**/*.ts",
-		"../../packages/rpc/src/**/*.ts"
+		"src/**/*",
+		"../server/src/**/*",
+		"../../packages/rpc/src/**/*",
+		"../../../packages/core-extension/src/**/*",
+		"../../../packages/driven-browser-driver/src/**/*",
 	],
 	"references": [
+		{
+			"path": "../../packages/core-extension"
+		},
+		{
+			"path": "../../packages/driven-browser-driver"
+		},
 		{
 			"path": "../../packages/rpc"
 		},

@@ -1,22 +1,31 @@
-import { router, publicProcedure } from "../helpers/trpc";
-import { rpcClient } from "../helpers/rpc-client";
 import { z } from "zod";
+import { publicProcedure, router } from "../helpers/trpc";
+import { container } from "src/helpers/container";
+import { ExtensionDriverOutputPort } from "@mcp-browser-kit/core-server";
+import type { DrivenExtensionDriver } from "@mcp-browser-kit/driven-extension-driver/helpers/driven-extension-driver";
 
 export const defer = router({
 	onMessage: publicProcedure.subscription(async function* (opts) {
 		const { signal } = opts;
-		let messageTask = rpcClient.emitter.once("defer");
+
+		const drivenExtensionDriver = container.get<ExtensionDriverOutputPort>(
+			ExtensionDriverOutputPort,
+		) as DrivenExtensionDriver;
+		let messageTaskNew =
+			drivenExtensionDriver.extensionRpcClient.emitter.once("defer");
 
 		let stopped = false;
 		if (signal) {
 			signal.onabort = () => {
-				messageTask.off();
+				messageTaskNew.off();
 				stopped = true;
 			};
 		}
 		while (!stopped) {
-			yield await messageTask;
-			messageTask = rpcClient.emitter.once("defer");
+			// yield await messageTask;
+			yield await messageTaskNew;
+			messageTaskNew =
+				drivenExtensionDriver.extensionRpcClient.emitter.once("defer");
 		}
 	}),
 	resolve: publicProcedure
@@ -25,12 +34,16 @@ export const defer = router({
 				id: z.string(),
 				isOk: z.boolean(),
 				result: z.any(),
-			})
+			}),
 		)
 		.mutation(async (opts) => {
 			const { id, isOk, result } = opts.input;
 
-			rpcClient.emitter.emit("resolve", {
+			const drivenExtensionDriver = container.get<ExtensionDriverOutputPort>(
+				ExtensionDriverOutputPort,
+			) as DrivenExtensionDriver;
+
+			drivenExtensionDriver.extensionRpcClient.emitter.emit("resolve", {
 				id,
 				isOk,
 				result,

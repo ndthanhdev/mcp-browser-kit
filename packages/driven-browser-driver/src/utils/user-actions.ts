@@ -1,10 +1,10 @@
-import DOMPurify from "dompurify";
-import type { Tab } from "@mcp-browser-kit/server/services/tab-service";
+import type { Tab } from "@mcp-browser-kit/core-server";
+import type { Func } from "@mcp-browser-kit/types";
 import parseDataURL from "data-urls";
 import { imageDimensionsFromData } from "image-dimensions";
-import { addDevTool } from "./add-dev-tool";
+import { Base64 } from "js-base64";
 
-export const toIIFE = (fn: Function | string) => {
+export const toIIFE = (fn: Func | string) => {
 	if (typeof fn === "function") {
 		return `(${fn.toString()})()`;
 	}
@@ -12,9 +12,9 @@ export const toIIFE = (fn: Function | string) => {
 	return `(()=>{${fn}})()`;
 };
 
-export const getExecuteScriptResult = async <T = any>(results: any[]) => {
+export const getExecuteScriptResult = async <T = void>(results: unknown[]) => {
 	if (!Array.isArray(results)) {
-		return undefined;
+		throw new Error("Invalid results");
 	}
 
 	return results[0] as T;
@@ -34,16 +34,16 @@ export const getTabs = async () => {
 function _getReadableElements() {
 	const labeledElements = document.querySelectorAll("[aria-label]");
 	const placeholderElements = document.querySelectorAll(
-		":not([aria-label])[placeholder]"
+		":not([aria-label])[placeholder]",
 	);
 	const buttonsWithText = Array.from(
-		document.querySelectorAll(`button:not([aria-label])`)
+		document.querySelectorAll<HTMLElement>("button:not([aria-label])"),
 	).filter((el) => {
 		const text = el.innerText;
 		return text && text.trim() !== "";
 	});
 	const linksWithText = Array.from(
-		document.querySelectorAll(`a:not([aria-label])`)
+		document.querySelectorAll<HTMLElement>("a:not([aria-label])"),
 	).filter((el) => {
 		const text = el.innerText;
 		return text && text.trim() !== "";
@@ -55,7 +55,7 @@ function _getReadableElements() {
 			...Array.from(placeholderElements),
 			...buttonsWithText,
 			...linksWithText,
-		])
+		]),
 	);
 
 	return readableElements;
@@ -92,7 +92,7 @@ export const clickOnReadableElement = async (tabId: string, index: number) => {
 			${_getReadableElements.toString()};
 			const elements = _getReadableElements();
 			const element = elements[${index}];
-			$mcpBrowserKit.playClickAnimationOnElement(element);
+			$mcpBrowserKit.animation.playClickAnimationOnElement(element);
 			element.click();
 		`),
 	});
@@ -103,14 +103,14 @@ export const clickOnReadableElement = async (tabId: string, index: number) => {
 export const fillTextToReadableElement = async (
 	tabId: string,
 	index: number,
-	value: string
+	value: string,
 ) => {
 	const results = await browser.tabs.executeScript(+tabId, {
 		code: toIIFE(`
 			${_getReadableElements.toString()};
 			const elements = _getReadableElements();
 			const element = elements[${index}];
-			$mcpBrowserKit.playClickAnimationOnElement(element);
+			$mcpBrowserKit.animation.playClickAnimationOnElement(element);
 			element.value = "${value}";
 		`),
 	});
@@ -130,11 +130,20 @@ export const getInnerText = async (tabId: string) => {
 export const captureActiveTab = async () => {
 	const dataUrl = await browser.tabs.captureVisibleTab();
 	const parsed = parseDataURL(dataUrl);
-	const dimensions = await imageDimensionsFromData(parsed?.body);
+
+	if (!parsed?.body) {
+		throw new Error("Failed to parse data URL or body is undefined.");
+	}
+
+	const dimensions = await imageDimensionsFromData(parsed.body);
+
+	if (!dimensions) {
+		throw new Error("Failed to retrieve image dimensions.");
+	}
 
 	return {
-		data: parsed?.body.toBase64() as string,
-		mimeType: parsed?.mimeType.toString() as string,
+		data: Base64.fromUint8Array(parsed.body),
+		mimeType: parsed.mimeType.toString(),
 		width: dimensions.width,
 		height: dimensions.height,
 	};
@@ -143,11 +152,11 @@ export const captureActiveTab = async () => {
 export const clickOnViewableElement = async (
 	tabId: string,
 	x: number,
-	y: number
+	y: number,
 ) => {
 	const results = await browser.tabs.executeScript(+tabId, {
 		code: toIIFE(`
-			$mcpBrowserKit.playClickAnimation(${x}, ${y});
+			$mcpBrowserKit.animation.playClickAnimation(${x}, ${y});
 			const element = document.elementFromPoint(${x}, ${y});
 			if (element) {
 				element.click();
@@ -161,11 +170,11 @@ export const fillTextToViewableElement = async (
 	tabId: string,
 	x: number,
 	y: number,
-	value: string
+	value: string,
 ) => {
 	const results = await browser.tabs.executeScript(+tabId, {
 		code: toIIFE(`
-			$mcpBrowserKit.playClickAnimation(${x}, ${y});
+			$mcpBrowserKit.animation.playClickAnimation(${x}, ${y});
 			const element = document.elementFromPoint(${x}, ${y});
 			if (element) {
 				element.value = "${value}";
@@ -182,15 +191,3 @@ export const invokeJsFn = async (tabId: string, fnCode: string) => {
 
 	return getExecuteScriptResult(results);
 };
-
-addDevTool({
-	getTabs,
-	getInnerText,
-	getReadableElements,
-	clickOnReadableElement,
-	fillTextToReadableElement,
-	captureActiveTab,
-	clickOnViewableElement,
-	fillTextToViewableElement,
-	invokeJsFn,
-});

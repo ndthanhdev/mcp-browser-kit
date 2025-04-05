@@ -3,19 +3,19 @@ import type { ProcedureMap } from "./server";
 
 export interface DeferMessage {
 	procedure: string;
-	args: any[];
+	args: unknown[];
 	id: string;
 }
 
 export interface ResolveMessage {
 	id: string;
 	isOk: boolean;
-	result: any;
+	result: unknown;
 }
 
 export class RpcClient<T extends ProcedureMap> {
-	private id: number = 0;
-	private pending: Map<string, PromiseWithResolvers<any>> = new Map();
+	private id = 0;
+	private pending: Map<string, PromiseWithResolvers<unknown>> = new Map();
 	public readonly emitter: Emittery<{
 		defer: DeferMessage;
 		resolve: ResolveMessage;
@@ -36,22 +36,22 @@ export class RpcClient<T extends ProcedureMap> {
 		});
 	}
 
-	private createId(): string {
+	private createId = (): string => {
 		this.id += 1;
 		return String(this.id);
-	}
+	};
 
-	public defer<K extends keyof T>(
+	public defer = <K extends keyof T>(
 		method: K,
 		...args: Parameters<T[K]>
-	): Promise<ReturnType<T[K]>> {
+	): Promise<Awaited<ReturnType<T[K]>>> => {
 		const id = this.createId();
-		const defer = Promise.withResolvers<ReturnType<T[K]>>();
+		const defer = Promise.withResolvers<Awaited<ReturnType<T[K]>>>();
 
 		defer.promise.finally(() => {
 			this.pending.delete(id);
 		});
-		this.pending.set(id, defer);
+		this.pending.set(id, defer as PromiseWithResolvers<unknown>);
 
 		this.emitter.emit("defer", {
 			procedure: String(method),
@@ -60,9 +60,11 @@ export class RpcClient<T extends ProcedureMap> {
 		});
 
 		return defer.promise;
-	}
+	};
 
-	onDefer(callback: (message: DeferMessage) => void): () => void {
+	public onDefer = (
+		callback: (message: DeferMessage) => void,
+	): (() => void) => {
 		return this.emitter.on("defer", callback);
-	}
+	};
 }

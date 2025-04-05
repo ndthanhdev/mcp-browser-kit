@@ -9,7 +9,7 @@ interface ClickAnimationOptions {
 export function playClickAnimationAdvance(
 	x: number,
 	y: number,
-	options: ClickAnimationOptions = {}
+	options: ClickAnimationOptions = {},
 ): void {
 	const defaultOptions: Required<ClickAnimationOptions> = {
 		size: 20,
@@ -20,7 +20,7 @@ export function playClickAnimationAdvance(
 			borderRadius: "50%",
 			pointerEvents: "none",
 			position: "absolute",
-			zIndex: 9999,
+			zIndex: "9999",
 		},
 	};
 
@@ -46,11 +46,11 @@ export function playClickAnimationAdvance(
 
 	requestAnimationFrame(() => {
 		animationElement.style.transform = "scale(2)";
-		animationElement.style.opacity = 0;
+		animationElement.style.opacity = "0";
 	});
 
 	setTimeout(() => {
-		if (animationElement && animationElement.parentNode) {
+		if (animationElement.parentNode) {
 			animationElement.parentNode.removeChild(animationElement);
 		}
 	}, mergedOptions.duration);

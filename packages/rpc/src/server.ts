@@ -1,19 +1,20 @@
+import type { Func } from "@mcp-browser-kit/types";
 import type { DeferMessage, ResolveMessage } from "./client";
 
 export interface ProcedureMap {
-	[key: string]: (...args: any[]) => any;
+	[key: string]: Func;
 }
 
-export class RpcServer<T extends ProcedureMap = {}> {
+export class RpcServer<T extends ProcedureMap> {
 	private procedures: T;
 
 	constructor(procedures: T) {
 		this.procedures = procedures;
 	}
 
-	addProcedure<K extends string, V extends (...args: any[]) => any>(
+	addProcedure<K extends string, V extends Func>(
 		name: K,
-		procedure: V
+		procedure: V,
 	): RpcServer<T & { [key in K]: V }> {
 		return new RpcServer({
 			...this.procedures,
@@ -52,8 +53,4 @@ export class RpcServer<T extends ProcedureMap = {}> {
 	}
 }
 
-export type InferProcedureMap<T extends RpcServer> = T extends RpcServer<
-	infer U
->
-	? U
-	: never;
+export type InferProcedureMap<T> = T extends RpcServer<infer U> ? U : never;
