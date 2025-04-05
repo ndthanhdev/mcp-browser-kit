@@ -1,18 +1,17 @@
 import { inject, injectable } from "inversify";
 import type { Tab } from "../entities/tab";
 import { ExtensionDriverOutputPort } from "../output-ports";
-import type { RpcCallInputPort } from "../input-ports";
+import type { ToolsInputPort } from "../input-ports";
 import type { ReadableElement, Screenshot } from "../entities";
 
 @injectable()
-export class RpcCallUseCase implements RpcCallInputPort {
+export class RpcCallUseCase implements ToolsInputPort {
 	constructor(
 		@inject(ExtensionDriverOutputPort)
-		private readonly browserDriver: ExtensionDriverOutputPort,
+		private readonly extensionDriver: ExtensionDriverOutputPort,
 	) {}
 
-	// CaptureActiveTab methods
-	captureActiveTabInstruction(): string {
+	captureActiveTabInstruction = (): string => {
 		return [
 			"📷 Captures a screenshot of the active browser tab",
 			"* Use this tool after calling getTabs to obtain visual context of the current page",
@@ -21,14 +20,13 @@ export class RpcCallUseCase implements RpcCallInputPort {
 			"* Returns an image with width, height, and data in base64 format",
 			"* Workflow: 1) getTabs → 2) captureActiveTab → 3) interact with elements",
 		].join("\n");
-	}
+	};
 
-	captureActiveTab(): Promise<Screenshot> {
-		return this.browserDriver.captureActiveTab();
-	}
+	captureActiveTab = (): Promise<Screenshot> => {
+		return this.extensionDriver.captureActiveTab();
+	};
 
-	// ClickOnReadableElement methods
-	clickOnReadableElementInstruction(): string {
+	clickOnReadableElementInstruction = (): string => {
 		return [
 			"🔘 Clicks on an element identified by its index from getReadableElements",
 			"* Use this to click on elements after identifying them by their text",
@@ -37,14 +35,13 @@ export class RpcCallUseCase implements RpcCallInputPort {
 			"* First call getReadableElements to get the index, then use this tool",
 			"* Parameters: tabId, index",
 		].join("\n");
-	}
+	};
 
-	clickOnReadableElement(tabId: string, index: number): Promise<void> {
-		return this.browserDriver.clickOnReadableElement(tabId, index);
-	}
+	clickOnReadableElement = (tabId: string, index: number): Promise<void> => {
+		return this.extensionDriver.clickOnReadableElement(tabId, index);
+	};
 
-	// ClickOnViewableElement methods
-	clickOnViewableElementInstruction(): string {
+	clickOnViewableElementInstruction = (): string => {
 		return [
 			"👆 Clicks on an element at specific X,Y coordinates",
 			"* Use this to click on elements by their position on the screen",
@@ -53,14 +50,13 @@ export class RpcCallUseCase implements RpcCallInputPort {
 			"* Useful when you know the visual position of an element",
 			"* Parameters: tabId, x, y",
 		].join("\n");
-	}
+	};
 
-	clickOnViewableElement(tabId: string, x: number, y: number): Promise<void> {
-		return this.browserDriver.clickOnViewableElement(tabId, x, y);
-	}
+	clickOnViewableElement = (tabId: string, x: number, y: number): Promise<void> => {
+		return this.extensionDriver.clickOnViewableElement(tabId, x, y);
+	};
 
-	// FillTextToReadableElement methods
-	fillTextToReadableElementInstruction(): string {
+	fillTextToReadableElementInstruction = (): string => {
 		return [
 			"✏️ Types text into an input field identified by its index from getReadableElements",
 			"* Use this to enter text into form fields identified by their text",
@@ -69,18 +65,17 @@ export class RpcCallUseCase implements RpcCallInputPort {
 			"* First call getReadableElements to get the index, then use this tool",
 			"* Parameters: tabId, index, value (text to enter)",
 		].join("\n");
-	}
+	};
 
-	fillTextToReadableElement(
+	fillTextToReadableElement = (
 		tabId: string,
 		index: number,
 		value: string,
-	): Promise<void> {
-		return this.browserDriver.fillTextToReadableElement(tabId, index, value);
-	}
+	): Promise<void> => {
+		return this.extensionDriver.fillTextToReadableElement(tabId, index, value);
+	};
 
-	// FillTextToViewableElement methods
-	fillTextToViewableElementInstruction(): string {
+	fillTextToViewableElementInstruction = (): string => {
 		return [
 			"⌨️ Types text into an input field at specific X,Y coordinates",
 			"* Use this to enter text into form fields by their position",
@@ -89,19 +84,18 @@ export class RpcCallUseCase implements RpcCallInputPort {
 			"* First clicks at the specified position, then types the provided text",
 			"* Parameters: tabId, x, y, value (text to enter)",
 		].join("\n");
-	}
+	};
 
-	fillTextToViewableElement(
+	fillTextToViewableElement = (
 		tabId: string,
 		x: number,
 		y: number,
 		value: string,
-	): Promise<void> {
-		return this.browserDriver.fillTextToViewableElement(tabId, x, y, value);
-	}
+	): Promise<void> => {
+		return this.extensionDriver.fillTextToViewableElement(tabId, x, y, value);
+	};
 
-	// GetInnerText methods
-	getInnerTextInstruction(): string {
+	getInnerTextInstruction = (): string => {
 		return [
 			"📝 Extracts all text content from the current web page",
 			"* Retrieves all visible text from the active tab",
@@ -110,14 +104,13 @@ export class RpcCallUseCase implements RpcCallInputPort {
 			"* Returns a string containing all the text on the page",
 			"* Useful for getting a quick overview of page content",
 		].join("\n");
-	}
+	};
 
-	getInnerText(tabId: string): Promise<string> {
-		return this.browserDriver.getInnerText(tabId);
-	}
+	getInnerText = (tabId: string): Promise<string> => {
+		return this.extensionDriver.getInnerText(tabId);
+	};
 
-	// GetReadableElements methods
-	getReadableElementsInstruction(): string {
+	getReadableElementsInstruction = (): string => {
 		return [
 			"🔍 Lists all interactive elements on the page with their text",
 			"* Returns a list of elements with their index, HTML tag, and text content",
@@ -126,14 +119,13 @@ export class RpcCallUseCase implements RpcCallInputPort {
 			"* Use the index to interact with elements through click or fill operations",
 			"* Helps you identify which elements can be interacted with by their text",
 		].join("\n");
-	}
+	};
 
-	getReadableElements(tabId: string): Promise<ReadableElement[]> {
-		return this.browserDriver.getReadableElements(tabId);
-	}
+	getReadableElements = (tabId: string): Promise<ReadableElement[]> => {
+		return this.extensionDriver.getReadableElements(tabId);
+	};
 
-	// GetTabs methods
-	getTabsInstruction(): string {
+	getTabsInstruction = (): string => {
 		return [
 			"⚠️ CRITICAL FIRST STEP - ALWAYS START HERE BEFORE ANY OTHER TOOLS!",
 			"* This tool MUST be called first to obtain the list of open browser tabs.",
@@ -142,14 +134,13 @@ export class RpcCallUseCase implements RpcCallInputPort {
 			"* The tabId from this list is required for captureActiveTab and all other interactions.",
 			"* Workflow: 1) getTabs → 2) captureActiveTab → 3) interact with elements",
 		].join("\n");
-	}
+	};
 
-	getTabs(): Promise<Tab[]> {
-		return this.browserDriver.getTabs();
-	}
+	getTabs = (): Promise<Tab[]> => {
+		return this.extensionDriver.getTabs();
+	};
 
-	// InvokeJsFn methods
-	invokeJsFnInstruction(): string {
+	invokeJsFnInstruction = (): string => {
 		return [
 			"⚙️ Executes custom JavaScript code in the context of the web page",
 			"* Use this for advanced operations not covered by other tools",
@@ -159,9 +150,9 @@ export class RpcCallUseCase implements RpcCallInputPort {
 			"* Gives you full flexibility for custom browser automation",
 			"* Parameters: tabId, fnBodyCode (JavaScript code as string)",
 		].join("\n");
-	}
+	};
 
-	invokeJsFn(tabId: string, fnBodyCode: string): Promise<unknown> {
-		return this.browserDriver.invokeJsFn(tabId, fnBodyCode);
-	}
+	invokeJsFn = (tabId: string, fnBodyCode: string): Promise<unknown> => {
+		return this.extensionDriver.invokeJsFn(tabId, fnBodyCode);
+	};
 }

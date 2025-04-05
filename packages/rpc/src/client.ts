@@ -1,5 +1,6 @@
 import Emittery from "emittery";
 import type { ProcedureMap } from "./server";
+
 export interface DeferMessage {
 	procedure: string;
 	args: unknown[];
@@ -35,15 +36,15 @@ export class RpcClient<T extends ProcedureMap> {
 		});
 	}
 
-	private createId(): string {
+	private createId = (): string => {
 		this.id += 1;
 		return String(this.id);
-	}
+	};
 
-	public defer<K extends keyof T>(
+	public defer = <K extends keyof T>(
 		method: K,
 		...args: Parameters<T[K]>
-	): Promise<Awaited<ReturnType<T[K]>>> {
+	): Promise<Awaited<ReturnType<T[K]>>> => {
 		const id = this.createId();
 		const defer = Promise.withResolvers<Awaited<ReturnType<T[K]>>>();
 
@@ -59,9 +60,11 @@ export class RpcClient<T extends ProcedureMap> {
 		});
 
 		return defer.promise;
-	}
+	};
 
-	onDefer(callback: (message: DeferMessage) => void): () => void {
+	public onDefer = (
+		callback: (message: DeferMessage) => void,
+	): (() => void) => {
 		return this.emitter.on("defer", callback);
-	}
+	};
 }

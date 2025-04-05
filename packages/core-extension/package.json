@@ -1,4 +1,4 @@
 {
-	"name": "@mcp-browser-kit/browser-extension",
+	"name": "@mcp-browser-kit/core-extension",
 	"packageManager": "yarn@4.8.0"
 }

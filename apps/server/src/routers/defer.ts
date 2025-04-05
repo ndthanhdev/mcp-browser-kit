@@ -2,17 +2,17 @@ import { z } from "zod";
 import { publicProcedure, router } from "../helpers/trpc";
 import { container } from "src/helpers/container";
 import { ExtensionDriverOutputPort } from "@mcp-browser-kit/core-server";
-import type { DrivenBrowserDriver } from "@mcp-browser-kit/driven-extension-driver/helpers/driven-extension-driver";
+import type { DrivenExtensionDriver } from "@mcp-browser-kit/driven-extension-driver/helpers/driven-extension-driver";
 
 export const defer = router({
 	onMessage: publicProcedure.subscription(async function* (opts) {
 		const { signal } = opts;
 
-		const drivenBrowserDriver = container.get<ExtensionDriverOutputPort>(
-			BrowserDriverOutputPort,
-		) as DrivenBrowserDriver;
+		const drivenExtensionDriver = container.get<ExtensionDriverOutputPort>(
+			ExtensionDriverOutputPort,
+		) as DrivenExtensionDriver;
 		let messageTaskNew =
-			drivenBrowserDriver.browserRpcClient.emitter.once("defer");
+			drivenExtensionDriver.extensionRpcClient.emitter.once("defer");
 
 		let stopped = false;
 		if (signal) {
@@ -25,7 +25,7 @@ export const defer = router({
 			// yield await messageTask;
 			yield await messageTaskNew;
 			messageTaskNew =
-				drivenBrowserDriver.browserRpcClient.emitter.once("defer");
+				drivenExtensionDriver.extensionRpcClient.emitter.once("defer");
 		}
 	}),
 	resolve: publicProcedure
@@ -39,11 +39,11 @@ export const defer = router({
 		.mutation(async (opts) => {
 			const { id, isOk, result } = opts.input;
 
-			const drivenBrowserDriver = container.get<ExtensionDriverOutputPort>(
-				BrowserDriverOutputPort,
-			) as DrivenBrowserDriver;
+			const drivenExtensionDriver = container.get<ExtensionDriverOutputPort>(
+				ExtensionDriverOutputPort,
+			) as DrivenExtensionDriver;
 
-			drivenBrowserDriver.browserRpcClient.emitter.emit("resolve", {
+			drivenExtensionDriver.extensionRpcClient.emitter.emit("resolve", {
 				id,
 				isOk,
 				result,

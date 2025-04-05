@@ -5,10 +5,10 @@
 	],
 	"references": [
 		{
-			"path": "../core-server"
+			"path": "../core-extension"
 		},
 		{
-			"path": "../driven-browser-driver"
+			"path": "../core-server"
 		},
 		{
 			"path": "../rpc"
@@ -18,7 +18,7 @@
 		}
 	],
 	"compilerOptions": {
-		"outDir": "../../.moon/cache/types/packages/driven-extension-driver",
+		"outDir": "../../.moon/cache/types/packages/driven-browser-driver",
 		"lib": [
 			"dom",
 			"ESNext",
@@ -43,11 +43,17 @@
 			"@mcp-browser-kit/rpc/*": [
 				"../rpc/src/*"
 			],
-			"@mcp-browser-kit/driven-browser-driver": [
-				"../driven-browser-driver/src/index.ts"
+			"@mcp-browser-kit/browser-extension": [
+				"../core-extension/src/index.ts"
 			],
-			"@mcp-browser-kit/driven-browser-driver/*": [
-				"../driven-browser-driver/src/*"
+			"@mcp-browser-kit/browser-extension/*": [
+				"../core-extension/src/*"
+			],
+			"@mcp-browser-kit/core-extension": [
+				"../core-extension/src/index.ts"
+			],
+			"@mcp-browser-kit/core-extension/*": [
+				"../core-extension/src/*"
 			]
 		}
 	}

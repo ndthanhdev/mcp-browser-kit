@@ -1,3 +1,3 @@
-import { tools } from "./utils/content-tools";
+import { setupContentScriptTools } from "@mcp-browser-kit/driven-browser-driver";
 
-(globalThis as any).$mcpBrowserKit = tools;
+setupContentScriptTools();

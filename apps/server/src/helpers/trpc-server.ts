@@ -3,7 +3,7 @@ import { WebSocketServer } from "ws";
 import { rootRouter } from "../routers/root";
 import { createContext } from "./create-context";
 
-export const startTRpcServer = () => {
+export const startTrpcServer = () => {
 	const wss = new WebSocketServer({
 		port: 59089,
 	});

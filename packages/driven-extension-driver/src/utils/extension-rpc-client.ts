@@ -1,5 +1,5 @@
+import type { ExtensionRpcServerProcedure } from "@mcp-browser-kit/driven-browser-driver/helpers/extension-rpc-server";
 import { RpcClient } from "@mcp-browser-kit/rpc";
-import type { ExtensionRpcServerProcedure } from "./extension-rpc-server";
 
 export const createExtensionRpcClient = () => {
 	return new RpcClient<ExtensionRpcServerProcedure>();
