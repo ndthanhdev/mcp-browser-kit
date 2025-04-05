@@ -1,5 +1,6 @@
 {
 	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
 		"@trpc/client": "^11.0.1",
 		"@trpc/server": "^11.0.1",
 		"@types/data-urls": "^3.0.4",
@@ -11,21 +12,23 @@
 		"dompurify": "^3.2.4",
 		"emittery": "^1.1.0",
 		"image-dimensions": "^2.3.0",
+		"inversify": "7.0.0-alpha.5",
+		"js-base64": "^3.7.7",
+		"reflect-metadata": "^0.2.2",
 		"sanitize-html": "^2.15.0",
 		"superjson": "^2.2.2",
 		"tsconfig-moon": "^1.4.0",
 		"tsup": "^8.4.0",
 		"typescript": "^5.8.2",
+		"web-ext": "^8.5.0",
 		"webextension-polyfill": "^0.12.0",
 		"zod": "^3.24.2"
 	},
 	"name": "root",
 	"private": true,
-	"workspaces": [
-		"apps/*",
-		"packages/*"
-	],
+	"workspaces": ["apps/*", "packages/*"],
 	"engines": {
 		"node": "~22.14"
-	}
+	},
+	"packageManager": "yarn@4.8.0"
 }

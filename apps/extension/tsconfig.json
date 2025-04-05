@@ -1,6 +1,7 @@
 {
 	"extends": "../../tsconfig.options.json",
 	"compilerOptions": {
+		"emitDeclarationOnly": true,
 		"lib": ["DOM", "ESNext"],
 		"baseUrl": ".",
 		"paths": {
@@ -10,11 +11,7 @@
 		},
 		"outDir": "../../.moon/cache/types/apps/extension"
 	},
-	"include": [
-		"src/**/*.ts",
-		"../server/src/**/*.ts",
-		"../../packages/rpc/src/**/*.ts"
-	],
+	"include": ["src/**/*", "../server/src/**/*", "../../packages/rpc/src/**/*"],
 	"references": [
 		{
 			"path": "../../packages/rpc"

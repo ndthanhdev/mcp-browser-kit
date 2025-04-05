@@ -1,6 +1,8 @@
+import { GetTabsInputPort } from "@mcp-browser-kit/core-server";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { container } from "./container";
 import { rpcClient } from "./rpc-client";
 
 // Create server instance
@@ -28,7 +30,8 @@ server.tool(
 	].join("\n"),
 	{},
 	async () => {
-		const tabs = await rpcClient.defer("getTabs");
+		const getTabs = container.get<GetTabsInputPort>(GetTabsInputPort);
+		const tabs = await getTabs.getTabs();
 		return {
 			content: [
 				{
@@ -37,7 +40,7 @@ server.tool(
 				},
 			],
 		};
-	}
+	},
 );
 
 server.tool(
@@ -46,7 +49,7 @@ server.tool(
 		combinationDescription,
 		"⚠️ SECOND REQUIRED STEP - AFTER getTabs AND BEFORE ANY INTERACTION!",
 		"* SEQUENCE: First call getTabs to get tabId → Then use captureActiveTab with that tabId",
-		 "* IMPORTANT: This tool ONLY works for the ACTIVE tab (marked with 'active: true' in getTabs results).",
+		"* IMPORTANT: This tool ONLY works for the ACTIVE tab (marked with 'active: true' in getTabs results).",
 		"* If you need to work with an INACTIVE tab, use the Readable tools instead (getReadableElements + clickOnReadableElement).",
 		"* ALWAYS capture a screenshot before attempting interaction with the active tab.",
 		"* FOR ACTIVE TAB, VISIBLE ELEMENTS: Use coordinate-based Viewable tools (clickOnViewableElement, fillTextToViewableElement).",
@@ -71,7 +74,7 @@ server.tool(
 				},
 			],
 		};
-	}
+	},
 );
 
 server.tool(
@@ -101,14 +104,14 @@ server.tool(
 				},
 			],
 		};
-	}
+	},
 );
 
 server.tool(
 	"getReadableElements",
 	[
 		combinationDescription,
-		 "* Returns an indexed list of all interactive elements in the format: [index, HTML tag, accessible text].",
+		"* Returns an indexed list of all interactive elements in the format: [index, HTML tag, accessible text].",
 		"* This creates a map of elements you can interact with programmatically.",
 		"* The element indexes can be used with clickOnReadableElement and fillTextToReadableElement.",
 		"* Ideal for forms, navigation menus, and interactive page components.",
@@ -127,7 +130,7 @@ server.tool(
 				},
 			],
 		};
-	}
+	},
 );
 
 server.tool(
@@ -141,7 +144,7 @@ server.tool(
 		"* Use captureActiveTab → identify target element → determine its CENTER coordinates → use this tool.",
 		"* Calculate the center by finding the midpoint of the element's width and height.",
 		"* For buttons and links, always aim for the center to ensure proper click registration.",
-		 "* If this tool fails or element is outside viewport, THEN try clickOnReadableElement as a fallback.",
+		"* If this tool fails or element is outside viewport, THEN try clickOnReadableElement as a fallback.",
 		"* After clicking, capture another screenshot to verify the action succeeded.",
 	].join("\n"),
 	{
@@ -159,7 +162,7 @@ server.tool(
 				},
 			],
 		};
-	}
+	},
 );
 
 server.tool(
@@ -192,7 +195,7 @@ server.tool(
 				},
 			],
 		};
-	}
+	},
 );
 
 server.tool(
@@ -223,7 +226,7 @@ server.tool(
 				},
 			],
 		};
-	}
+	},
 );
 
 server.tool(
@@ -253,7 +256,7 @@ server.tool(
 				},
 			],
 		};
-	}
+	},
 );
 
 server.tool(
@@ -269,7 +272,9 @@ server.tool(
 	].join("\n"),
 	{
 		tabId: z.string().describe("Tab ID to run JavaScript in"),
-		fnBodyCode: z.string().describe("JavaScript function body to execute in page context"),
+		fnBodyCode: z
+			.string()
+			.describe("JavaScript function body to execute in page context"),
 	},
 	async ({ tabId, fnBodyCode }) => {
 		const result = await rpcClient.defer("invokeJsFn", tabId, fnBodyCode);
@@ -281,7 +286,7 @@ server.tool(
 				},
 			],
 		};
-	}
+	},
 );
 
 export const startMcpServer = async () => {

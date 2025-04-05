@@ -1,3 +1,8 @@
+# editors
+.vscode/
+
+# typescript
+*.tsbuildinfo
 
 # moon
 .moon/cache

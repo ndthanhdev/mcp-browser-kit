@@ -1,6 +1,24 @@
 {
 	"extends": "./tsconfig.options.json",
-	"files": [],
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@mcp-browser-kit/server/*": ["apps/server/src/*"],
+			"@mcp-browser-kit/extension/*": ["apps/extension/src/*"],
+			"@mcp-browser-kit/rpc": ["packages/rpc/src/index.ts"],
+			"@mcp-browser-kit/rpc/*": ["packages/rpc/src/*"],
+			"@mcp-browser-kit/core-browser-driver": [
+				"packages/core-browser-driver/src/index.ts"
+			],
+			"@mcp-browser-kit/core-browser-driver/*": [
+				"packages/core-browser-driver/src/*"
+			],
+			"@mcp-browser-kit/core-server": ["packages/core-server/src/index.ts"],
+			"@mcp-browser-kit/core-server/*": ["packages/core-server/src/*"]
+		}
+	},
+	"include": ["apps/**/*", "packages/**/*"],
+	"exclude": ["cache/**/*", "dist/**/*"],
 	"references": [
 		{
 			"path": "apps/extension"
@@ -9,7 +27,25 @@
 			"path": "apps/server"
 		},
 		{
+			"path": "packages/core-browser-driver"
+		},
+		{
+			"path": "packages/core-browser-extension"
+		},
+		{
+			"path": "packages/core-server"
+		},
+		{
+			"path": "packages/driven-browser-driver"
+		},
+		{
 			"path": "packages/rpc"
+		},
+		{
+			"path": "packages/types"
+		},
+		{
+			"path": "packages/utils"
 		}
 	]
 }

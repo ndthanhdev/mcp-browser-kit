@@ -1,5 +1,5 @@
-import { playClickAnimation, playClickAnimationOnElement } from "./animation";
+import * as animation from "./animation";
+
 export const tools = {
-	playClickAnimation,
-	playClickAnimationOnElement,
+	asd,
 };

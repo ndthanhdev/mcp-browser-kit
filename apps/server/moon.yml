@@ -11,3 +11,5 @@ tasks:
 
 dependsOn:
   - rpc
+  - core-server
+  - driven-browser-driver

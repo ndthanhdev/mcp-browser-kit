@@ -1,10 +1,9 @@
-import DOMPurify from "dompurify";
 import type { Tab } from "@mcp-browser-kit/server/services/tab-service";
 import parseDataURL from "data-urls";
 import { imageDimensionsFromData } from "image-dimensions";
 import { addDevTool } from "./add-dev-tool";
 
-export const toIIFE = (fn: Function | string) => {
+export const toIIFE = (fn: Func | string) => {
 	if (typeof fn === "function") {
 		return `(${fn.toString()})()`;
 	}
@@ -34,16 +33,16 @@ export const getTabs = async () => {
 function _getReadableElements() {
 	const labeledElements = document.querySelectorAll("[aria-label]");
 	const placeholderElements = document.querySelectorAll(
-		":not([aria-label])[placeholder]"
+		":not([aria-label])[placeholder]",
 	);
 	const buttonsWithText = Array.from(
-		document.querySelectorAll(`button:not([aria-label])`)
+		document.querySelectorAll(`button:not([aria-label])`),
 	).filter((el) => {
 		const text = el.innerText;
 		return text && text.trim() !== "";
 	});
 	const linksWithText = Array.from(
-		document.querySelectorAll(`a:not([aria-label])`)
+		document.querySelectorAll(`a:not([aria-label])`),
 	).filter((el) => {
 		const text = el.innerText;
 		return text && text.trim() !== "";
@@ -55,7 +54,7 @@ function _getReadableElements() {
 			...Array.from(placeholderElements),
 			...buttonsWithText,
 			...linksWithText,
-		])
+		]),
 	);
 
 	return readableElements;
@@ -103,7 +102,7 @@ export const clickOnReadableElement = async (tabId: string, index: number) => {
 export const fillTextToReadableElement = async (
 	tabId: string,
 	index: number,
-	value: string
+	value: string,
 ) => {
 	const results = await browser.tabs.executeScript(+tabId, {
 		code: toIIFE(`
@@ -143,7 +142,7 @@ export const captureActiveTab = async () => {
 export const clickOnViewableElement = async (
 	tabId: string,
 	x: number,
-	y: number
+	y: number,
 ) => {
 	const results = await browser.tabs.executeScript(+tabId, {
 		code: toIIFE(`
@@ -161,7 +160,7 @@ export const fillTextToViewableElement = async (
 	tabId: string,
 	x: number,
 	y: number,
-	value: string
+	value: string,
 ) => {
 	const results = await browser.tabs.executeScript(+tabId, {
 		code: toIIFE(`

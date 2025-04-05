@@ -1,11 +1,11 @@
-import "core-js/proposals"
+import "core-js/proposals";
+import type { RootRouter } from "@mcp-browser-kit/server/routers/root";
 import {
 	createTRPCClient,
 	createWSClient,
 	loggerLink,
 	wsLink,
 } from "@trpc/client";
-import type { RootRouter } from "@mcp-browser-kit/server/routers/root";
 import { rpcServer } from "./helpers/rpc-server";
 import { addDevTool } from "./utils/add-dev-tool";
 

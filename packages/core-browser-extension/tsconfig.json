@@ -1,0 +1,16 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"include": ["**/*"],
+	"references": [
+		{
+			"path": "../utils"
+		}
+	],
+	"compilerOptions": {
+		"outDir": "../../.moon/cache/types/packages/core-browser-extension",
+		"paths": {
+			"@mcp-browser-kit/utils/*": ["../utils/src/*"],
+			"@mcp-browser-kit/utils": ["../utils/src/index.ts"]
+		}
+	}
+}

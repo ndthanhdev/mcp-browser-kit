@@ -1,8 +1,8 @@
 import { createHTTPServer } from "@trpc/server/adapters/standalone";
-import { rootRouter } from "../routers/root";
-import { createContext } from "./create-context";
 import { applyWSSHandler } from "@trpc/server/adapters/ws";
 import { WebSocketServer } from "ws";
+import { rootRouter } from "../routers/root";
+import { createContext } from "./create-context";
 
 export const startTRpcServer = () => {
 	const wss = new WebSocketServer({
@@ -38,4 +38,5 @@ export const startTRpcServer = () => {
 	};
 	process.on("SIGTERM", shutdown);
 	process.on("SIGINT", shutdown);
+	process.stdin.on("close", shutdown);
 };

@@ -1,7 +1,16 @@
 {
 	"extends": "../../tsconfig.options.json",
 	"compilerOptions": {
-		"paths": {},
+		"emitDeclarationOnly": true,
+		"paths": {
+			"@mcp-browser-kit/types": ["../types/src/index.ts"],
+			"@mcp-browser-kit/types/*": ["../types/src/*"]
+		},
 		"outDir": "../../.moon/cache/types/packages/rpc"
-	}
+	},
+	"references": [
+		{
+			"path": "../types"
+		}
+	]
 }

@@ -3,7 +3,7 @@ const Constants = {
 };
 
 export const addDevTool = (value: object) => {
-	const obj = (globalThis as any);
+	const obj = globalThis as any;
 	if (obj[Constants.name] === undefined) {
 		obj[Constants.name] = {};
 	}

@@ -9,7 +9,7 @@ interface ClickAnimationOptions {
 export function playClickAnimationAdvance(
 	x: number,
 	y: number,
-	options: ClickAnimationOptions = {}
+	options: ClickAnimationOptions = {},
 ): void {
 	const defaultOptions: Required<ClickAnimationOptions> = {
 		size: 20,
