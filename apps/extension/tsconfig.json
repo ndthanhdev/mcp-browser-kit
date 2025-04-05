@@ -2,21 +2,12 @@
 	"extends": "../../tsconfig.options.json",
 	"compilerOptions": {
 		"noEmit": true,
-		"lib": [
-			"DOM",
-			"ESNext"
-		],
+		"lib": ["DOM", "ESNext"],
 		"baseUrl": ".",
 		"paths": {
-			"@mcp-browser-kit/server/*": [
-				"../server/src/*"
-			],
-			"@mcp-browser-kit/rpc": [
-				"../../packages/rpc/src/index.ts"
-			],
-			"@mcp-browser-kit/rpc/*": [
-				"../../packages/rpc/src/*"
-			],
+			"@mcp-browser-kit/server/*": ["../server/src/*"],
+			"@mcp-browser-kit/rpc": ["../../packages/rpc/src/index.ts"],
+			"@mcp-browser-kit/rpc/*": ["../../packages/rpc/src/*"],
 			"@mcp-browser-kit/core-extension": [
 				"../../packages/core-extension/src/index.ts"
 			],
@@ -37,7 +28,7 @@
 		"../server/src/**/*",
 		"../../packages/rpc/src/**/*",
 		"../../../packages/core-extension/src/**/*",
-		"../../../packages/driven-browser-driver/src/**/*",
+		"../../../packages/driven-browser-driver/src/**/*"
 	],
 	"references": [
 		{

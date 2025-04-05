@@ -14,9 +14,7 @@
 		"typescript": "^5.8.2"
 	},
 	"type": "module",
-	"files": [
-		"dist"
-	],
+	"files": ["dist"],
 	"dependencies": {
 		"data-urls": "^5.0.0",
 		"ws": "^8.18.1"

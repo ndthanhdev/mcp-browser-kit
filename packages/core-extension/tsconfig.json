@@ -1,8 +1,6 @@
 {
 	"extends": "../../tsconfig.options.json",
-	"include": [
-		"**/*"
-	],
+	"include": ["**/*"],
 	"references": [
 		{
 			"path": "../core-server"
@@ -14,18 +12,10 @@
 	"compilerOptions": {
 		"outDir": "../../.moon/cache/types/packages/core-extension",
 		"paths": {
-			"@mcp-browser-kit/utils/*": [
-				"../utils/src/*"
-			],
-			"@mcp-browser-kit/utils": [
-				"../utils/src/index.ts"
-			],
-			"@mcp-browser-kit/core-server": [
-				"../core-server/src/index.ts"
-			],
-			"@mcp-browser-kit/core-server/*": [
-				"../core-server/src/*"
-			]
+			"@mcp-browser-kit/utils/*": ["../utils/src/*"],
+			"@mcp-browser-kit/utils": ["../utils/src/index.ts"],
+			"@mcp-browser-kit/core-server": ["../core-server/src/index.ts"],
+			"@mcp-browser-kit/core-server/*": ["../core-server/src/*"]
 		}
 	}
 }

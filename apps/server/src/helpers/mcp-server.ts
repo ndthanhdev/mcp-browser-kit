@@ -33,7 +33,9 @@ const createServer = async () => {
 
 	server.tool(
 		"captureActiveTab",
-		[combinationDescription, toolsInputPort.captureActiveTabInstruction()].join("\n"),
+		[combinationDescription, toolsInputPort.captureActiveTabInstruction()].join(
+			"\n",
+		),
 		{},
 		async () => {
 			const screenshot = await toolsInputPort.captureActiveTab();

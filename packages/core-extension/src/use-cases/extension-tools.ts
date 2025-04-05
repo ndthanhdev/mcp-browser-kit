@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
+import type { ReadableElement, Screenshot, Tab } from "../entities";
 import type { ExtensionToolsInputPort } from "../input-ports";
-import type { Tab, Screenshot, ReadableElement } from "../entities";
 import { BrowserDriverOutputPort } from "../output-ports";
 
 @injectable()
@@ -26,7 +26,11 @@ export class ExtensionToolsUseCase implements ExtensionToolsInputPort {
 		return this.browserDriver.getReadableElements(tabId);
 	};
 
-	clickOnViewableElement = (tabId: string, x: number, y: number): Promise<void> => {
+	clickOnViewableElement = (
+		tabId: string,
+		x: number,
+		y: number,
+	): Promise<void> => {
 		return this.browserDriver.clickOnViewableElement(tabId, x, y);
 	};
 

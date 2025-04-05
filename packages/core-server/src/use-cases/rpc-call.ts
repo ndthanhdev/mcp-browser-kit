@@ -1,8 +1,8 @@
 import { inject, injectable } from "inversify";
-import type { Tab } from "../entities/tab";
-import { ExtensionDriverOutputPort } from "../output-ports";
-import type { ToolsInputPort } from "../input-ports";
 import type { ReadableElement, Screenshot } from "../entities";
+import type { Tab } from "../entities/tab";
+import type { ToolsInputPort } from "../input-ports";
+import { ExtensionDriverOutputPort } from "../output-ports";
 
 @injectable()
 export class RpcCallUseCase implements ToolsInputPort {
@@ -52,7 +52,11 @@ export class RpcCallUseCase implements ToolsInputPort {
 		].join("\n");
 	};
 
-	clickOnViewableElement = (tabId: string, x: number, y: number): Promise<void> => {
+	clickOnViewableElement = (
+		tabId: string,
+		x: number,
+		y: number,
+	): Promise<void> => {
 		return this.extensionDriver.clickOnViewableElement(tabId, x, y);
 	};
 

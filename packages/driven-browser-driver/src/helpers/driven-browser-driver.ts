@@ -1,7 +1,7 @@
 import type {
-	Tab,
-	Screenshot,
 	ReadableElement,
+	Screenshot,
+	Tab,
 } from "@mcp-browser-kit/browser-extension/entities";
 import type { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
 import { injectable } from "inversify";

@@ -1,4 +1,6 @@
 import "core-js/proposals";
+import { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension";
+import { DrivenBrowserDriver } from "@mcp-browser-kit/driven-browser-driver";
 import type { RootRouter } from "@mcp-browser-kit/server/routers/root";
 import {
 	createTRPCClient,
@@ -7,8 +9,6 @@ import {
 	wsLink,
 } from "@trpc/client";
 import { container } from "./helpers/container";
-import { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension";
-import { DrivenBrowserDriver } from "@mcp-browser-kit/driven-browser-driver";
 import { createRpcServer } from "./helpers/create-rpc-server";
 
 container

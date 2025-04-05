@@ -1,8 +1,8 @@
-import { z } from "zod";
-import { publicProcedure, router } from "../helpers/trpc";
-import { container } from "src/helpers/container";
 import { ExtensionDriverOutputPort } from "@mcp-browser-kit/core-server";
 import type { DrivenExtensionDriver } from "@mcp-browser-kit/driven-extension-driver/helpers/driven-extension-driver";
+import { container } from "src/helpers/container";
+import { z } from "zod";
+import { publicProcedure, router } from "../helpers/trpc";
 
 export const defer = router({
 	onMessage: publicProcedure.subscription(async function* (opts) {
