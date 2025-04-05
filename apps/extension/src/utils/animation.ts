@@ -20,7 +20,7 @@ export function playClickAnimationAdvance(
 			borderRadius: "50%",
 			pointerEvents: "none",
 			position: "absolute",
-			zIndex: 9999,
+			zIndex: "9999",
 		},
 	};
 

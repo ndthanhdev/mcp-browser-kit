@@ -9,7 +9,7 @@ import { createBrowserRpcClient } from "./browser-rpc-client";
 
 @injectable()
 export class DrivenBrowserDriver implements BrowserDriverOutputPort {
-	private readonly browserRpcClient = createBrowserRpcClient();
+	public readonly browserRpcClient = createBrowserRpcClient();
 
 	captureActiveTab(): Promise<Screenshot> {
 		return this.browserRpcClient.defer("captureActiveTab");

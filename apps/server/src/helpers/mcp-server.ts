@@ -1,9 +1,18 @@
-import { GetTabsInputPort } from "@mcp-browser-kit/core-server";
+import {
+	CaptureActiveTabInputPort,
+	ClickOnReadableElementInputPort,
+	ClickOnViewableElementInputPort,
+	FillTextToReadableElementInputPort,
+	FillTextToViewableElementInputPort,
+	GetInnerTextInputPort,
+	GetReadableElementsInputPort,
+	GetTabsInputPort,
+	InvokeJsFnInputPort,
+} from "@mcp-browser-kit/core-server/input-ports";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { container } from "./container";
-import { rpcClient } from "./rpc-client";
 
 // Create server instance
 const server = new McpServer({
@@ -60,7 +69,10 @@ server.tool(
 	].join("\n"),
 	{},
 	async () => {
-		const screenshot = await rpcClient.defer("captureActiveTab");
+		const captureActiveTab = container.get<CaptureActiveTabInputPort>(
+			CaptureActiveTabInputPort,
+		);
+		const screenshot = await captureActiveTab.captureActiveTab();
 		return {
 			content: [
 				{
@@ -95,7 +107,10 @@ server.tool(
 		tabId: z.string().describe("Tab ID to extract text from"),
 	},
 	async ({ tabId }) => {
-		const innerText = await rpcClient.defer("getInnerText", tabId);
+		const getInnerText = container.get<GetInnerTextInputPort>(
+			GetInnerTextInputPort,
+		);
+		const innerText = await getInnerText.getInnerText(tabId);
 		return {
 			content: [
 				{
@@ -121,7 +136,10 @@ server.tool(
 		tabId: z.string().describe("Tab ID to extract elements from"),
 	},
 	async ({ tabId }) => {
-		const elements = await rpcClient.defer("getReadableElements", tabId);
+		const getReadableElements = container.get<GetReadableElementsInputPort>(
+			GetReadableElementsInputPort,
+		);
+		const elements = await getReadableElements.getReadableElements(tabId);
 		return {
 			content: [
 				{
@@ -153,7 +171,11 @@ server.tool(
 		y: z.number().describe("Y coordinate (pixels) of the element to click"),
 	},
 	async ({ tabId, x, y }) => {
-		await rpcClient.defer("clickOnViewableElement", tabId, x, y);
+		const clickOnViewableElement =
+			container.get<ClickOnViewableElementInputPort>(
+				ClickOnViewableElementInputPort,
+			);
+		await clickOnViewableElement.clickOnViewableElement(tabId, x, y);
 		return {
 			content: [
 				{
@@ -186,7 +208,17 @@ server.tool(
 		value: z.string().describe("Text to enter into the input field"),
 	},
 	async ({ tabId, x, y, value }) => {
-		await rpcClient.defer("fillTextToViewableElement", tabId, x, y, value);
+		// await rpcClient.defer("fillTextToViewableElement", tabId, x, y, value);
+		const fillTextToViewableElement =
+			container.get<FillTextToViewableElementInputPort>(
+				FillTextToViewableElementInputPort,
+			);
+		await fillTextToViewableElement.fillTextToViewableElement(
+			tabId,
+			x,
+			y,
+			value,
+		);
 		return {
 			content: [
 				{
@@ -217,7 +249,15 @@ server.tool(
 		value: z.string().describe("Text to enter into the input field"),
 	},
 	async ({ tabId, index, value }) => {
-		await rpcClient.defer("fillTextToReadableElement", tabId, index, value);
+		const fillTextToReadableElement =
+			container.get<FillTextToReadableElementInputPort>(
+				FillTextToReadableElementInputPort,
+			);
+		await fillTextToReadableElement.fillTextToReadableElement(
+			tabId,
+			index,
+			value,
+		);
 		return {
 			content: [
 				{
@@ -247,7 +287,11 @@ server.tool(
 		index: z.number().describe("Element index from getReadableElements"),
 	},
 	async ({ tabId, index }) => {
-		await rpcClient.defer("clickOnReadableElement", tabId, index);
+		const clickOnReadableElement =
+			container.get<ClickOnReadableElementInputPort>(
+				ClickOnReadableElementInputPort,
+			);
+		await clickOnReadableElement.clickOnReadableElement(tabId, index);
 		return {
 			content: [
 				{
@@ -277,7 +321,8 @@ server.tool(
 			.describe("JavaScript function body to execute in page context"),
 	},
 	async ({ tabId, fnBodyCode }) => {
-		const result = await rpcClient.defer("invokeJsFn", tabId, fnBodyCode);
+		const invokeJsFn = container.get<InvokeJsFnInputPort>(InvokeJsFnInputPort);
+		const result = await invokeJsFn.invokeJsFn(tabId, fnBodyCode);
 		return {
 			content: [
 				{
