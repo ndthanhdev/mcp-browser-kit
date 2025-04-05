@@ -1,4 +1,3 @@
-import { createHTTPServer } from "@trpc/server/adapters/standalone";
 import { applyWSSHandler } from "@trpc/server/adapters/ws";
 import { WebSocketServer } from "ws";
 import { rootRouter } from "../routers/root";

@@ -1,7 +1,7 @@
-import type { Tab } from "@mcp-browser-kit/server/services/tab-service";
 import parseDataURL from "data-urls";
 import { imageDimensionsFromData } from "image-dimensions";
 import { addDevTool } from "./add-dev-tool";
+import type { Func } from "@mcp-browser-kit/types/src";
 
 export const toIIFE = (fn: Func | string) => {
 	if (typeof fn === "function") {
@@ -11,7 +11,9 @@ export const toIIFE = (fn: Func | string) => {
 	return `(()=>{${fn}})()`;
 };
 
-export const getExecuteScriptResult = async <T = any>(results: any[]) => {
+export const getExecuteScriptResult = async <T = unknown>(
+	results: unknown[],
+) => {
 	if (!Array.isArray(results)) {
 		return undefined;
 	}
