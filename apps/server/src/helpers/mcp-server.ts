@@ -1,14 +1,4 @@
-import {
-	CaptureActiveTabInputPort,
-	ClickOnReadableElementInputPort,
-	ClickOnViewableElementInputPort,
-	FillTextToReadableElementInputPort,
-	FillTextToViewableElementInputPort,
-	GetInnerTextInputPort,
-	GetReadableElementsInputPort,
-	GetTabsInputPort,
-	InvokeJsFnInputPort,
-} from "@mcp-browser-kit/core-server/input-ports";
+import { RpcCallInputPort } from "@mcp-browser-kit/core-server/input-ports";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -16,32 +6,7 @@ import { container } from "./container";
 
 const createServer = async () => {
 	// Dependency instances
-	const getTabs = container.get<GetTabsInputPort>(GetTabsInputPort);
-	const captureActiveTab = container.get<CaptureActiveTabInputPort>(
-		CaptureActiveTabInputPort,
-	);
-	const getInnerText = container.get<GetInnerTextInputPort>(
-		GetInnerTextInputPort,
-	);
-	const getReadableElements = container.get<GetReadableElementsInputPort>(
-		GetReadableElementsInputPort,
-	);
-	const clickOnViewableElement = container.get<ClickOnViewableElementInputPort>(
-		ClickOnViewableElementInputPort,
-	);
-	const fillTextToViewableElement =
-		container.get<FillTextToViewableElementInputPort>(
-			FillTextToViewableElementInputPort,
-		);
-	const fillTextToReadableElement =
-		container.get<FillTextToReadableElementInputPort>(
-			FillTextToReadableElementInputPort,
-		);
-	const clickOnReadableElement = container.get<ClickOnReadableElementInputPort>(
-		ClickOnReadableElementInputPort,
-	);
-	const invokeJsFn = container.get<InvokeJsFnInputPort>(InvokeJsFnInputPort);
-
+	const rpcCall = container.get<RpcCallInputPort>(RpcCallInputPort);
 	// Create server instance
 	const server = new McpServer({
 		name: "MCP Browser Kit",
@@ -54,8 +19,8 @@ const createServer = async () => {
 
 	const combinationDescription = [""].join("\n");
 
-	server.tool("getTabs", getTabs.getTabsInstruction(), {}, async () => {
-		const tabs = await getTabs.getTabs();
+	server.tool("getTabs", rpcCall.getTabsInstruction(), {}, async () => {
+		const tabs = await rpcCall.getTabs();
 		return {
 			content: [
 				{
@@ -68,13 +33,10 @@ const createServer = async () => {
 
 	server.tool(
 		"captureActiveTab",
-		[
-			combinationDescription,
-			captureActiveTab.captureActiveTabInstruction(),
-		].join("\n"),
+		[combinationDescription, rpcCall.captureActiveTabInstruction()].join("\n"),
 		{},
 		async () => {
-			const screenshot = await captureActiveTab.captureActiveTab();
+			const screenshot = await rpcCall.captureActiveTab();
 			return {
 				content: [
 					{
@@ -93,12 +55,12 @@ const createServer = async () => {
 
 	server.tool(
 		"getInnerText",
-		getInnerText.getInnerTextInstruction(),
+		rpcCall.getInnerTextInstruction(),
 		{
 			tabId: z.string().describe("Tab ID to extract text from"),
 		},
 		async ({ tabId }) => {
-			const innerText = await getInnerText.getInnerText(tabId);
+			const innerText = await rpcCall.getInnerText(tabId);
 			return {
 				content: [
 					{
@@ -112,12 +74,12 @@ const createServer = async () => {
 
 	server.tool(
 		"getReadableElements",
-		getReadableElements.getReadableElementsInstruction(),
+		rpcCall.getReadableElementsInstruction(),
 		{
 			tabId: z.string().describe("Tab ID to extract elements from"),
 		},
 		async ({ tabId }) => {
-			const elements = await getReadableElements.getReadableElements(tabId);
+			const elements = await rpcCall.getReadableElements(tabId);
 			return {
 				content: [
 					{
@@ -131,14 +93,14 @@ const createServer = async () => {
 
 	server.tool(
 		"clickOnViewableElement",
-		clickOnViewableElement.clickOnViewableElementInstruction(),
+		rpcCall.clickOnViewableElementInstruction(),
 		{
 			tabId: z.string().describe("Tab ID of the active tab"),
 			x: z.number().describe("X coordinate (pixels) of the element to click"),
 			y: z.number().describe("Y coordinate (pixels) of the element to click"),
 		},
 		async ({ tabId, x, y }) => {
-			await clickOnViewableElement.clickOnViewableElement(tabId, x, y);
+			await rpcCall.clickOnViewableElement(tabId, x, y);
 			return {
 				content: [
 					{
@@ -152,7 +114,7 @@ const createServer = async () => {
 
 	server.tool(
 		"fillTextToViewableElement",
-		fillTextToViewableElement.fillTextToViewableElementInstruction(),
+		rpcCall.fillTextToViewableElementInstruction(),
 		{
 			tabId: z.string().describe("Tab ID of the active tab"),
 			x: z.number().describe("X coordinate (pixels) of the input element"),
@@ -160,12 +122,7 @@ const createServer = async () => {
 			value: z.string().describe("Text to enter into the input field"),
 		},
 		async ({ tabId, x, y, value }) => {
-			await fillTextToViewableElement.fillTextToViewableElement(
-				tabId,
-				x,
-				y,
-				value,
-			);
+			await rpcCall.fillTextToViewableElement(tabId, x, y, value);
 			return {
 				content: [
 					{
@@ -179,18 +136,14 @@ const createServer = async () => {
 
 	server.tool(
 		"fillTextToReadableElement",
-		fillTextToReadableElement.fillTextToReadableElementInstruction(),
+		rpcCall.fillTextToReadableElementInstruction(),
 		{
 			tabId: z.string().describe("Tab ID to target"),
 			index: z.number().describe("Element index from getReadableElements"),
 			value: z.string().describe("Text to enter into the input field"),
 		},
 		async ({ tabId, index, value }) => {
-			await fillTextToReadableElement.fillTextToReadableElement(
-				tabId,
-				index,
-				value,
-			);
+			await rpcCall.fillTextToReadableElement(tabId, index, value);
 			return {
 				content: [
 					{
@@ -204,13 +157,13 @@ const createServer = async () => {
 
 	server.tool(
 		"clickOnReadableElement",
-		clickOnReadableElement.clickOnReadableElementInstruction(),
+		rpcCall.clickOnReadableElementInstruction(),
 		{
 			tabId: z.string().describe("Tab ID to target"),
 			index: z.number().describe("Element index from getReadableElements"),
 		},
 		async ({ tabId, index }) => {
-			await clickOnReadableElement.clickOnReadableElement(tabId, index);
+			await rpcCall.clickOnReadableElement(tabId, index);
 			return {
 				content: [
 					{
@@ -224,7 +177,7 @@ const createServer = async () => {
 
 	server.tool(
 		"invokeJsFn",
-		invokeJsFn.invokeJsFnInstruction(),
+		rpcCall.invokeJsFnInstruction(),
 		{
 			tabId: z.string().describe("Tab ID to run JavaScript in"),
 			fnBodyCode: z
@@ -232,7 +185,7 @@ const createServer = async () => {
 				.describe("JavaScript function body to execute in page context"),
 		},
 		async ({ tabId, fnBodyCode }) => {
-			const result = await invokeJsFn.invokeJsFn(tabId, fnBodyCode);
+			const result = await rpcCall.invokeJsFn(tabId, fnBodyCode);
 			return {
 				content: [
 					{

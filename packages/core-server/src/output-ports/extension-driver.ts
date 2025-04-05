@@ -1,6 +1,5 @@
+import type { ReadableElement, Screenshot } from "../entities";
 import type { Tab } from "../entities/tab";
-import type { Screenshot } from "../input-ports/capture-active-tab";
-import type { ReadableElement } from "../input-ports/get-readable-elements";
 
 export interface ExtensionDriverOutputPort {
 	getTabs(): Promise<Tab[]>;
