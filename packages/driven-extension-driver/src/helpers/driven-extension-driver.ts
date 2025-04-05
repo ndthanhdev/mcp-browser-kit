@@ -1,30 +1,30 @@
 import type {
-	BrowserDriverOutputPort,
+	ExtensionDriverOutputPort,
 	ReadableElement,
 	Screenshot,
 	Tab,
 } from "@mcp-browser-kit/core-server";
 import { injectable } from "inversify";
-import { createBrowserRpcClient } from "./browser-rpc-client";
+import { createExtensionRpcClient } from "./extension-rpc-client";
 
 @injectable()
-export class DrivenBrowserDriver implements BrowserDriverOutputPort {
-	public readonly browserRpcClient = createBrowserRpcClient();
+export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
+	public readonly extensionRpcClient = createExtensionRpcClient();
 
 	captureActiveTab(): Promise<Screenshot> {
-		return this.browserRpcClient.defer("captureActiveTab");
+		return this.extensionRpcClient.defer("captureActiveTab");
 	}
 
 	getInnerText(tabId: string): Promise<string> {
-		return this.browserRpcClient.defer("getInnerText", tabId);
+		return this.extensionRpcClient.defer("getInnerText", tabId);
 	}
 
 	getReadableElements(tabId: string): Promise<ReadableElement[]> {
-		return this.browserRpcClient.defer("getReadableElements", tabId);
+		return this.extensionRpcClient.defer("getReadableElements", tabId);
 	}
 
 	clickOnViewableElement(tabId: string, x: number, y: number): Promise<void> {
-		return this.browserRpcClient.defer("clickOnViewableElement", tabId, x, y);
+		return this.extensionRpcClient.defer("clickOnViewableElement", tabId, x, y);
 	}
 
 	fillTextToViewableElement(
@@ -33,7 +33,7 @@ export class DrivenBrowserDriver implements BrowserDriverOutputPort {
 		y: number,
 		value: string,
 	): Promise<void> {
-		return this.browserRpcClient.defer(
+		return this.extensionRpcClient.defer(
 			"fillTextToViewableElement",
 			tabId,
 			x,
@@ -43,7 +43,11 @@ export class DrivenBrowserDriver implements BrowserDriverOutputPort {
 	}
 
 	clickOnReadableElement(tabId: string, index: number): Promise<void> {
-		return this.browserRpcClient.defer("clickOnReadableElement", tabId, index);
+		return this.extensionRpcClient.defer(
+			"clickOnReadableElement",
+			tabId,
+			index,
+		);
 	}
 
 	fillTextToReadableElement(
@@ -51,7 +55,7 @@ export class DrivenBrowserDriver implements BrowserDriverOutputPort {
 		index: number,
 		value: string,
 	): Promise<void> {
-		return this.browserRpcClient.defer(
+		return this.extensionRpcClient.defer(
 			"fillTextToReadableElement",
 			tabId,
 			index,
@@ -60,10 +64,10 @@ export class DrivenBrowserDriver implements BrowserDriverOutputPort {
 	}
 
 	invokeJsFn(tabId: string, fnBodyCode: string): Promise<unknown> {
-		return this.browserRpcClient.defer("invokeJsFn", tabId, fnBodyCode);
+		return this.extensionRpcClient.defer("invokeJsFn", tabId, fnBodyCode);
 	}
 
 	getTabs(): Promise<Tab[]> {
-		return this.browserRpcClient.defer("getTabs");
+		return this.extensionRpcClient.defer("getTabs");
 	}
 }

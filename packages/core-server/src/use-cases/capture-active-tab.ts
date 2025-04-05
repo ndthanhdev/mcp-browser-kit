@@ -1,13 +1,13 @@
 import { inject, injectable } from "inversify";
 import type { Screenshot } from "../input-ports/capture-active-tab";
 import type { CaptureActiveTabInputPort } from "../input-ports/capture-active-tab";
-import { BrowserDriverOutputPort } from "../output-ports";
+import { ExtensionDriverOutputPort } from "../output-ports";
 
 @injectable()
 export class CaptureActiveTabUseCase implements CaptureActiveTabInputPort {
 	constructor(
-		@inject(BrowserDriverOutputPort)
-		private readonly browserDriver: BrowserDriverOutputPort,
+		@inject(ExtensionDriverOutputPort)
+		private readonly browserDriver: ExtensionDriverOutputPort,
 	) {}
 
 	captureActiveTabInstruction(): string {

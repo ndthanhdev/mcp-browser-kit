@@ -30,13 +30,13 @@
 			"path": "packages/core-browser-driver"
 		},
 		{
-			"path": "packages/core-browser-extension"
+			"path": "packages/core-extension"
 		},
 		{
 			"path": "packages/core-server"
 		},
 		{
-			"path": "packages/driven-browser-driver"
+			"path": "packages/driven-extension-driver"
 		},
 		{
 			"path": "packages/rpc"

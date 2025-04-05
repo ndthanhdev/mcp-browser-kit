@@ -1,1 +1,1 @@
-export * from "./browser-driver";
+export * from "./extension-driver";

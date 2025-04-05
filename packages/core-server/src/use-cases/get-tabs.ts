@@ -1,13 +1,13 @@
 import { inject, injectable } from "inversify";
 import type { Tab } from "../entities/tab";
 import type { GetTabsInputPort } from "../input-ports/get-tabs";
-import { BrowserDriverOutputPort } from "../output-ports";
+import { ExtensionDriverOutputPort } from "../output-ports";
 
 @injectable()
 export class GetTabsUseCase implements GetTabsInputPort {
 	constructor(
-		@inject(BrowserDriverOutputPort)
-		private readonly browserDriver: BrowserDriverOutputPort,
+		@inject(ExtensionDriverOutputPort)
+		private readonly browserDriver: ExtensionDriverOutputPort,
 	) {}
 
 	getTabsInstruction(): string {

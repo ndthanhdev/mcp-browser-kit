@@ -524,9 +524,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mcp-browser-kit/browser-extension@workspace:packages/core-browser-extension":
+"@mcp-browser-kit/browser-extension@workspace:packages/core-extension":
   version: 0.0.0-use.local
-  resolution: "@mcp-browser-kit/browser-extension@workspace:packages/core-browser-extension"
+  resolution: "@mcp-browser-kit/browser-extension@workspace:packages/core-extension"
   languageName: unknown
   linkType: soft
 
@@ -536,9 +536,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mcp-browser-kit/driven-browser-driver@workspace:packages/driven-browser-driver":
+"@mcp-browser-kit/driven-extension-driver@workspace:packages/driven-extension-driver":
   version: 0.0.0-use.local
-  resolution: "@mcp-browser-kit/driven-browser-driver@workspace:packages/driven-browser-driver"
+  resolution: "@mcp-browser-kit/driven-extension-driver@workspace:packages/driven-extension-driver"
   languageName: unknown
   linkType: soft
 

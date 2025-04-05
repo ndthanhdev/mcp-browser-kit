@@ -2,7 +2,7 @@ import type { Tab } from "../entities/tab";
 import type { Screenshot } from "../input-ports/capture-active-tab";
 import type { ReadableElement } from "../input-ports/get-readable-elements";
 
-export interface BrowserDriverOutputPort {
+export interface ExtensionDriverOutputPort {
 	getTabs(): Promise<Tab[]>;
 	captureActiveTab(): Promise<Screenshot>;
 	getInnerText(tabId: string): Promise<string>;
@@ -23,4 +23,4 @@ export interface BrowserDriverOutputPort {
 	invokeJsFn(tabId: string, fnBodyCode: string): Promise<unknown>;
 }
 
-export const BrowserDriverOutputPort = Symbol("BrowserDriverOutputPort");
+export const ExtensionDriverOutputPort = Symbol("ExtensionDriverOutputPort");

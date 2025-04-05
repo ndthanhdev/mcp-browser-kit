@@ -1,12 +1,12 @@
 import { inject, injectable } from "inversify";
 import type { InvokeJsFnInputPort } from "../input-ports/invoke-js-fn";
-import { BrowserDriverOutputPort } from "../output-ports";
+import { ExtensionDriverOutputPort } from "../output-ports";
 
 @injectable()
 export class InvokeJsFnUseCase implements InvokeJsFnInputPort {
 	constructor(
-		@inject(BrowserDriverOutputPort)
-		private readonly browserDriver: BrowserDriverOutputPort,
+		@inject(ExtensionDriverOutputPort)
+		private readonly browserDriver: ExtensionDriverOutputPort,
 	) {}
 
 	invokeJsFnInstruction(): string {

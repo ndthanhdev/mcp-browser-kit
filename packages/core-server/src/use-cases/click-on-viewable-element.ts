@@ -1,14 +1,14 @@
 import { inject, injectable } from "inversify";
 import type { ClickOnViewableElementInputPort } from "../input-ports/click-on-viewable-element";
-import { BrowserDriverOutputPort } from "../output-ports";
+import { ExtensionDriverOutputPort } from "../output-ports";
 
 @injectable()
 export class ClickOnViewableElementUseCase
 	implements ClickOnViewableElementInputPort
 {
 	constructor(
-		@inject(BrowserDriverOutputPort)
-		private readonly browserDriver: BrowserDriverOutputPort,
+		@inject(ExtensionDriverOutputPort)
+		private readonly browserDriver: ExtensionDriverOutputPort,
 	) {}
 
 	clickOnViewableElementInstruction(): string {

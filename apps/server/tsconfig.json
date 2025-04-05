@@ -11,11 +11,11 @@
 				"../../packages/core-server/src/index.ts"
 			],
 			"@mcp-browser-kit/core-server/*": ["../../packages/core-server/src/*"],
-			"@mcp-browser-kit/driven-browser-driver": [
-				"../../packages/driven-browser-driver/src/index.ts"
+			"@mcp-browser-kit/driven-extension-driver": [
+				"../../packages/driven-extension-driver/src/index.ts"
 			],
-			"@mcp-browser-kit/driven-browser-driver/*": [
-				"../../packages/driven-browser-driver/src/*"
+			"@mcp-browser-kit/driven-extension-driver/*": [
+				"../../packages/driven-extension-driver/src/*"
 			]
 		},
 		"outDir": "../../.moon/cache/types/apps/server"
@@ -24,14 +24,14 @@
 		"src/**/*.ts",
 		"../../packages/rpc/src/**/*.ts",
 		"../../packages/core-server/src/**/*.ts",
-		"../../packages/driven-browser-driver/src/**/*.ts"
+		"../../packages/driven-extension-driver/src/**/*.ts"
 	],
 	"references": [
 		{
 			"path": "../../packages/core-server"
 		},
 		{
-			"path": "../../packages/driven-browser-driver"
+			"path": "../../packages/driven-extension-driver"
 		},
 		{
 			"path": "../../packages/rpc"

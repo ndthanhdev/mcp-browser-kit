@@ -1,14 +1,14 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../helpers/trpc";
 import { container } from "src/helpers/container";
-import { BrowserDriverOutputPort } from "@mcp-browser-kit/core-server";
-import type { DrivenBrowserDriver } from "@mcp-browser-kit/driven-browser-driver/helpers/driven-browser-driver";
+import { ExtensionDriverOutputPort } from "@mcp-browser-kit/core-server";
+import type { DrivenBrowserDriver } from "@mcp-browser-kit/driven-extension-driver/helpers/driven-extension-driver";
 
 export const defer = router({
 	onMessage: publicProcedure.subscription(async function* (opts) {
 		const { signal } = opts;
 
-		const drivenBrowserDriver = container.get<BrowserDriverOutputPort>(
+		const drivenBrowserDriver = container.get<ExtensionDriverOutputPort>(
 			BrowserDriverOutputPort,
 		) as DrivenBrowserDriver;
 		let messageTaskNew =
@@ -39,7 +39,7 @@ export const defer = router({
 		.mutation(async (opts) => {
 			const { id, isOk, result } = opts.input;
 
-			const drivenBrowserDriver = container.get<BrowserDriverOutputPort>(
+			const drivenBrowserDriver = container.get<ExtensionDriverOutputPort>(
 				BrowserDriverOutputPort,
 			) as DrivenBrowserDriver;
 

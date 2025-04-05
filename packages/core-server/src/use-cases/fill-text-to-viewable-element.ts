@@ -1,14 +1,14 @@
 import { inject, injectable } from "inversify";
 import type { FillTextToViewableElementInputPort } from "../input-ports/fill-text-to-viewable-element";
-import { BrowserDriverOutputPort } from "../output-ports";
+import { ExtensionDriverOutputPort } from "../output-ports";
 
 @injectable()
 export class FillTextToViewableElementUseCase
 	implements FillTextToViewableElementInputPort
 {
 	constructor(
-		@inject(BrowserDriverOutputPort)
-		private readonly browserDriver: BrowserDriverOutputPort,
+		@inject(ExtensionDriverOutputPort)
+		private readonly browserDriver: ExtensionDriverOutputPort,
 	) {}
 
 	fillTextToViewableElementInstruction(): string {

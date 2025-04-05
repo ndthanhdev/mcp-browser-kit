@@ -1,12 +1,12 @@
 import { inject, injectable } from "inversify";
 import type { GetInnerTextInputPort } from "../input-ports/get-inner-text";
-import { BrowserDriverOutputPort } from "../output-ports";
+import { ExtensionDriverOutputPort } from "../output-ports";
 
 @injectable()
 export class GetInnerTextUseCase implements GetInnerTextInputPort {
 	constructor(
-		@inject(BrowserDriverOutputPort)
-		private readonly browserDriver: BrowserDriverOutputPort,
+		@inject(ExtensionDriverOutputPort)
+		private readonly browserDriver: ExtensionDriverOutputPort,
 	) {}
 
 	getInnerTextInstruction(): string {

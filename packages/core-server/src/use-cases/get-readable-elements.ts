@@ -3,15 +3,15 @@ import type {
 	GetReadableElementsInputPort,
 	ReadableElement,
 } from "../input-ports/get-readable-elements";
-import { BrowserDriverOutputPort } from "../output-ports";
+import { ExtensionDriverOutputPort } from "../output-ports";
 
 @injectable()
 export class GetReadableElementsUseCase
 	implements GetReadableElementsInputPort
 {
 	constructor(
-		@inject(BrowserDriverOutputPort)
-		private readonly browserDriver: BrowserDriverOutputPort,
+		@inject(ExtensionDriverOutputPort)
+		private readonly browserDriver: ExtensionDriverOutputPort,
 	) {}
 
 	getReadableElementsInstruction(): string {
