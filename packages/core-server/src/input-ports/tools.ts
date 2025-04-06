@@ -1,4 +1,4 @@
-import type { ExtensionToolsInputPort } from "@mcp-browser-kit/browser-extension";
+import type { ExtensionToolsInputPort } from "@mcp-browser-kit/core-extension";
 
 // ToolsInputPort - Combined interface for all RPC calls
 export interface ToolsInputPort extends ExtensionToolsInputPort {

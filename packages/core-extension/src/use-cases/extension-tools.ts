@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import type { ReadableElement, Screenshot, Tab } from "../entities";
+import type { ElementRecord, Screenshot, Tab } from "../entities";
 import type { ExtensionToolsInputPort } from "../input-ports";
 import { BrowserDriverOutputPort } from "../output-ports";
 
@@ -22,7 +22,7 @@ export class ExtensionToolsUseCase implements ExtensionToolsInputPort {
 		return this.browserDriver.getInnerText(tabId);
 	};
 
-	getReadableElements = (tabId: string): Promise<ReadableElement[]> => {
+	getReadableElements = (tabId: string): Promise<ElementRecord[]> => {
 		return this.browserDriver.getReadableElements(tabId);
 	};
 

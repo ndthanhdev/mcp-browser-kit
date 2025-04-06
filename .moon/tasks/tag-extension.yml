@@ -25,6 +25,7 @@ tasks:
     inputs: 
       - '@group(assets)'
       - '@group(sources)'
+      - /packages/*/src/**/*
     outputs:
       - '@group(dist-vendors)'
       - '@group(dist-assets)'

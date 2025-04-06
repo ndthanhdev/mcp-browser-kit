@@ -1,10 +1,10 @@
-import type { ReadableElement, Screenshot, Tab } from "../entities";
+import type { ElementRecord, Screenshot, Tab } from "../entities";
 
 export interface ExtensionToolsInputPort {
 	getTabs(): Promise<Tab[]>;
 	captureActiveTab(): Promise<Screenshot>;
 	getInnerText(tabId: string): Promise<string>;
-	getReadableElements(tabId: string): Promise<ReadableElement[]>;
+	getReadableElements(tabId: string): Promise<ElementRecord[]>;
 	clickOnViewableElement(tabId: string, x: number, y: number): Promise<void>;
 	fillTextToViewableElement(
 		tabId: string,

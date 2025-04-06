@@ -1,7 +1,7 @@
 {
 	"extends": "../../tsconfig.options.json",
 	"compilerOptions": {
-		"noEmit": true,
+		"emitDeclarationOnly": true,
 		"lib": ["DOM", "ESNext"],
 		"baseUrl": ".",
 		"paths": {

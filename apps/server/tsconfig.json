@@ -22,9 +22,9 @@
 	},
 	"include": [
 		"src/**/*.ts",
-		"../../packages/rpc/src/**/*.ts",
-		"../../packages/core-server/src/**/*.ts",
-		"../../packages/driven-extension-driver/src/**/*.ts"
+		"../../packages/rpc/src/**/*",
+		"../../packages/core-server/src/**/*",
+		"../../packages/driven-extension-driver/src/**/*"
 	],
 	"references": [
 		{

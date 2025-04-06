@@ -1,5 +1,12 @@
 import Emittery from "emittery";
+import type { ConditionalPick } from "type-fest";
+import type { Func } from "@mcp-browser-kit/types";
+
 import type { ProcedureMap } from "./server";
+
+export type ToProcedureMap<T> = T extends object
+	? ConditionalPick<T, Func>
+	: never;
 
 export interface DeferMessage {
 	procedure: string;
@@ -13,7 +20,10 @@ export interface ResolveMessage {
 	result: unknown;
 }
 
-export class RpcClient<T extends ProcedureMap> {
+export class RpcClient<
+	T extends {},
+	U extends ProcedureMap = ToProcedureMap<T>,
+> {
 	private id = 0;
 	private pending: Map<string, PromiseWithResolvers<unknown>> = new Map();
 	public readonly emitter: Emittery<{
@@ -41,12 +51,12 @@ export class RpcClient<T extends ProcedureMap> {
 		return String(this.id);
 	};
 
-	public defer = <K extends keyof T>(
+	public defer = <K extends keyof U>(
 		method: K,
-		...args: Parameters<T[K]>
-	): Promise<Awaited<ReturnType<T[K]>>> => {
+		...args: Parameters<U[K]>
+	): Promise<Awaited<ReturnType<U[K]>>> => {
 		const id = this.createId();
-		const defer = Promise.withResolvers<Awaited<ReturnType<T[K]>>>();
+		const defer = Promise.withResolvers<Awaited<ReturnType<U[K]>>>();
 
 		defer.promise.finally(() => {
 			this.pending.delete(id);

@@ -25,8 +25,8 @@
 			"@mcp-browser-kit/types/*": ["../types/src/*"],
 			"@mcp-browser-kit/rpc": ["../rpc/src/index.ts"],
 			"@mcp-browser-kit/rpc/*": ["../rpc/src/*"],
-			"@mcp-browser-kit/browser-extension": ["../core-extension/src/index.ts"],
-			"@mcp-browser-kit/browser-extension/*": ["../core-extension/src/*"],
+			"@mcp-browser-kit/core-extension": ["../core-extension/src/index.ts"],
+			"@mcp-browser-kit/core-extension/*": ["../core-extension/src/*"],
 			"@mcp-browser-kit/core-extension": ["../core-extension/src/index.ts"],
 			"@mcp-browser-kit/core-extension/*": ["../core-extension/src/*"]
 		}

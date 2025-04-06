@@ -1,3 +1,3 @@
 export * from "./tab";
 export * from "./screenshot";
-export * from "./readable-element";
+export * from "./element-record";

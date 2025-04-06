@@ -19,6 +19,7 @@
 		"superjson": "^2.2.2",
 		"tsconfig-moon": "^1.4.0",
 		"tsup": "^8.4.0",
+		"type-fest": "^4.39.1",
 		"typescript": "^5.8.2",
 		"web-ext": "^8.5.0",
 		"webextension-polyfill": "^0.12.0",
@@ -26,7 +27,10 @@
 	},
 	"name": "root",
 	"private": true,
-	"workspaces": ["apps/*", "packages/*"],
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
 	"engines": {
 		"node": "~22.14"
 	},

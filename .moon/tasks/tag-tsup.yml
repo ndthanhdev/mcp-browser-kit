@@ -18,5 +18,6 @@ tasks:
       - "@group(assets)"
       - "@group(sources)"
       - "@group(tsup)"
+      - /packages/*/src/**/*
     outputs:
       - "@group(dist-js)"

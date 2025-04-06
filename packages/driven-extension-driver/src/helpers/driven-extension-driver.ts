@@ -1,6 +1,6 @@
 import type {
 	ExtensionDriverOutputPort,
-	ReadableElement,
+	ElementRecord,
 	Screenshot,
 	Tab,
 } from "@mcp-browser-kit/core-server";
@@ -19,7 +19,7 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		return this.extensionRpcClient.defer("getInnerText", tabId);
 	};
 
-	getReadableElements = (tabId: string): Promise<ReadableElement[]> => {
+	getReadableElements = (tabId: string): Promise<ElementRecord[]> => {
 		return this.extensionRpcClient.defer("getReadableElements", tabId);
 	};
 
