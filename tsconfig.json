@@ -2,6 +2,7 @@
 	"extends": "./tsconfig.options.json",
 	"compilerOptions": {
 		"baseUrl": ".",
+		"noEmit": true,
 		"paths": {
 			"@mcp-browser-kit/server/*": ["apps/server/src/*"],
 			"@mcp-browser-kit/extension/*": ["apps/extension/src/*"],

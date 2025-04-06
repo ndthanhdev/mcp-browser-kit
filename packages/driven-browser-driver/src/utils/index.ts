@@ -1,3 +1,3 @@
 export * from "./animation-tools";
-export * from "./content-tools";
-export * from "./user-actions";
+export * from "./setup-content-tools";
+export * from "./background-tools";

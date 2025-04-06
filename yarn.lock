@@ -4606,6 +4606,7 @@ __metadata:
     superjson: "npm:^2.2.2"
     tsconfig-moon: "npm:^1.4.0"
     tsup: "npm:^8.4.0"
+    type-fest: "npm:^4.39.1"
     typescript: "npm:^5.8.2"
     web-ext: "npm:^8.5.0"
     webextension-polyfill: "npm:^0.12.0"
@@ -5347,7 +5348,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^4.18.2, type-fest@npm:^4.21.0":
+"type-fest@npm:^4.18.2, type-fest@npm:^4.21.0, type-fest@npm:^4.39.1":
   version: 4.39.1
   resolution: "type-fest@npm:4.39.1"
   checksum: 10c0/f5bf302eb2e2f70658be1757aa578f4a09da3f65699b0b12b7ae5502ccea76e5124521a6e6b69540f442c3dc924c394202a2ab58718d0582725c7ac23c072594

@@ -1,4 +1,4 @@
-import type { BrowserDriverOutputPort } from "@mcp-browser-kit/browser-extension/output-ports/browser-driver";
+import type { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension/output-ports/browser-driver";
 
 export interface ExtensionDriverOutputPort extends BrowserDriverOutputPort {}
 

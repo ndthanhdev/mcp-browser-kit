@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import type { ReadableElement, Screenshot } from "../entities";
+import type { ElementRecord, Screenshot } from "../entities";
 import type { Tab } from "../entities/tab";
 import type { ToolsInputPort } from "../input-ports";
 import { ExtensionDriverOutputPort } from "../output-ports";
@@ -125,7 +125,7 @@ export class RpcCallUseCase implements ToolsInputPort {
 		].join("\n");
 	};
 
-	getReadableElements = (tabId: string): Promise<ReadableElement[]> => {
+	getReadableElements = (tabId: string): Promise<ElementRecord[]> => {
 		return this.extensionDriver.getReadableElements(tabId);
 	};
 

@@ -1,11 +1,11 @@
-import type { ReadableElement, Screenshot } from "../entities";
+import type { ElementRecord, Screenshot } from "../entities";
 import type { Tab } from "../entities/tab";
 
 export interface BrowserDriverOutputPort {
 	getTabs(): Promise<Tab[]>;
 	captureActiveTab(): Promise<Screenshot>;
 	getInnerText(tabId: string): Promise<string>;
-	getReadableElements(tabId: string): Promise<ReadableElement[]>;
+	getReadableElements(tabId: string): Promise<ElementRecord[]>;
 	clickOnViewableElement(tabId: string, x: number, y: number): Promise<void>;
 	fillTextToViewableElement(
 		tabId: string,
