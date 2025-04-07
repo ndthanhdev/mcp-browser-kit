@@ -1,7 +1,7 @@
-import { Get, Paths } from "type-fest";
+import type { Func } from "@mcp-browser-kit/types";
+import type { Get, Paths } from "type-fest";
 import * as animation from "./animation-tools";
 import * as dom from "./dom-tools";
-import { Func } from "@mcp-browser-kit/types";
 
 export const contentTools = {
 	animation,

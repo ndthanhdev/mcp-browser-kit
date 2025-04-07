@@ -4,16 +4,16 @@ export const getReadableHtmlElements = () => {
 	const labeledElements =
 		document.querySelectorAll<HTMLElement>("[aria-label]");
 	const placeholderElements = document.querySelectorAll<HTMLElement>(
-		":not([aria-label])[placeholder]"
+		":not([aria-label])[placeholder]",
 	);
 	const buttonsWithText = Array.from(
-		document.querySelectorAll<HTMLElement>("button:not([aria-label])")
+		document.querySelectorAll<HTMLElement>("button:not([aria-label])"),
 	).filter((el) => {
 		const text = el.innerText;
 		return text && text.trim() !== "";
 	});
 	const linksWithText = Array.from(
-		document.querySelectorAll<HTMLElement>("a:not([aria-label])")
+		document.querySelectorAll<HTMLElement>("a:not([aria-label])"),
 	).filter((el) => {
 		const text = el.innerText;
 		return text && text.trim() !== "";
@@ -25,7 +25,7 @@ export const getReadableHtmlElements = () => {
 			...Array.from(placeholderElements),
 			...buttonsWithText,
 			...linksWithText,
-		])
+		]),
 	);
 
 	return readableElements;
@@ -73,7 +73,11 @@ export const clickOnViewableElement = (x: number, y: number) => {
 	}
 };
 
-export const fillTextToViewableElement = (x: number, y: number, value: string) => {
+export const fillTextToViewableElement = (
+	x: number,
+	y: number,
+	value: string,
+) => {
 	const element = document.elementFromPoint(x, y);
 	if (element) {
 		(element as HTMLInputElement).value = value;

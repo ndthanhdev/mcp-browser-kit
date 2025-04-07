@@ -1,6 +1,6 @@
 import type {
-	ExtensionDriverOutputPort,
 	ElementRecord,
+	ExtensionDriverOutputPort,
 	Screenshot,
 	Tab,
 } from "@mcp-browser-kit/core-server";

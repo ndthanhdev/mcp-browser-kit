@@ -27,10 +27,7 @@
 	},
 	"name": "root",
 	"private": true,
-	"workspaces": [
-		"apps/*",
-		"packages/*"
-	],
+	"workspaces": ["apps/*", "packages/*"],
 	"engines": {
 		"node": "~22.14"
 	},
