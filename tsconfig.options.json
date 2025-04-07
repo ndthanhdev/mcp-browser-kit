@@ -12,8 +12,6 @@
 		"emitDecoratorMetadata": true,
 		"module": "ESNext",
 		"target": "ES2024",
-		"lib": [
-			"ESNext"
-		],
+		"lib": ["ESNext"]
 	}
 }

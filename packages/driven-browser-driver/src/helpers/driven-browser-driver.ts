@@ -32,14 +32,14 @@ export class DrivenBrowserDriver implements BrowserDriverOutputPort {
 		tabId: string,
 		x: number,
 		y: number,
-		value: string
+		value: string,
 	): Promise<void> {
 		return executeContentTool(
 			tabId,
 			"dom.fillTextToViewableElement",
 			x,
 			y,
-			value
+			value,
 		);
 	}
 	clickOnReadableElement(tabId: string, index: number): Promise<void> {
@@ -48,13 +48,13 @@ export class DrivenBrowserDriver implements BrowserDriverOutputPort {
 	fillTextToReadableElement(
 		tabId: string,
 		index: number,
-		value: string
+		value: string,
 	): Promise<void> {
 		return executeContentTool(
 			tabId,
 			"dom.fillTextToReadableElement",
 			index,
-			value
+			value,
 		);
 	}
 }

@@ -1,6 +1,6 @@
+import type { Func } from "@mcp-browser-kit/types";
 import Emittery from "emittery";
 import type { ConditionalPick } from "type-fest";
-import type { Func } from "@mcp-browser-kit/types";
 
 import type { ProcedureMap } from "./server";
 
