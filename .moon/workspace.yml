@@ -14,3 +14,11 @@ $schema: './cache/schemas/workspace.json'
 projects:
   - 'packages/*'
   - 'apps/*'
+  - 'etc/scripts'
+
+vcs:
+  manager: git
+  defaultBranch: main
+  hooks:
+    pre-commit:
+      - moon scripts:check

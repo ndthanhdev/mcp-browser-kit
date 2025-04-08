@@ -1,0 +1,10 @@
+{
+	"name": "scripts",
+	"version": "3.0.1",
+	"packageManager": "yarn@4.8.0",
+	"homepage": "https://github.com/ndthanhdev/mcp-browser-kit",
+	"type": "module",
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4"
+	}
+}

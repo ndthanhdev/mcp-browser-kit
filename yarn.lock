@@ -555,6 +555,7 @@ __metadata:
     "@mcp-browser-kit/rpc": "workspace:*"
     "@modelcontextprotocol/sdk": "npm:^1.8.0"
     typescript: "npm:^5.8.2"
+    web-ext: "npm:^8.5.0"
   languageName: unknown
   linkType: soft
 
@@ -575,8 +576,8 @@ __metadata:
     typescript: "npm:^5.8.2"
     ws: "npm:^8.18.1"
   bin:
-    mcp-browser-kit: dist/main.js
-    server: dist/main.js
+    mcp-browser-kit: build/tsup/dist/main.js
+    server: build/tsup/dist/main.js
   languageName: unknown
   linkType: soft
 
@@ -4693,6 +4694,14 @@ __metadata:
   checksum: 10c0/6bf86318a254c5d898ede6bd3ded15daf68ae08a5495a2739564eb265cd13bcc64a07ab466fb204f67ce472bb534eb8612dac587435515169593f4fffa11de7c
   languageName: node
   linkType: hard
+
+"scripts@workspace:etc/scripts":
+  version: 0.0.0-use.local
+  resolution: "scripts@workspace:etc/scripts"
+  dependencies:
+    "@biomejs/biome": "npm:^1.9.4"
+  languageName: unknown
+  linkType: soft
 
 "semver@npm:7.7.1, semver@npm:^7.3.5, semver@npm:^7.6.0, semver@npm:^7.6.3":
   version: 7.7.1

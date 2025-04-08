@@ -9,7 +9,9 @@
 .moon/docker
 
 node_modules/
-dist/
+
+# build
+build/
 
 # Yarn zero install
 .yarn/*

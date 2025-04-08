@@ -4,9 +4,9 @@
 	"packageManager": "yarn@4.8.0",
 	"devDependencies": {
 		"@modelcontextprotocol/sdk": "^1.8.0",
-		"typescript": "^5.8.2"
+		"typescript": "^5.8.2",
+		"web-ext": "^8.5.0"
 	},
-	"files": ["dist"],
 	"dependencies": {
 		"@mcp-browser-kit/rpc": "workspace:*"
 	}

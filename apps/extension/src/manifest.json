@@ -5,15 +5,24 @@
 	"version": "3.0.0",
 
 	"description": "Allow MCP Browser Kit to interact with the browser.",
-	"permissions": ["tabs", "activeTab", "scripting", "<all_urls>"],
+	"permissions": [
+		"tabs",
+		"activeTab",
+		"scripting",
+		"<all_urls>"
+	],
 	"icons": {
 		"48": "assets/images/border-48.png"
 	},
 
 	"content_scripts": [
 		{
-			"matches": ["<all_urls>"],
-			"js": ["content.js"]
+			"matches": [
+				"<all_urls>"
+			],
+			"js": [
+				"content.js"
+			]
 		}
 	],
 	"background": {

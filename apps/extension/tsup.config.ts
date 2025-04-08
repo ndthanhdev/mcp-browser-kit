@@ -8,4 +8,5 @@ export default defineConfig({
 	format: ["esm"],
 	noExternal: [/.+/],
 	target: "chrome135",
+	outDir: "build/tsup/dist",
 });
