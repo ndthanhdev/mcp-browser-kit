@@ -1,6 +1,6 @@
 import type { Tab } from "@mcp-browser-kit/core-server";
 import type { Func } from "@mcp-browser-kit/types";
-import parseDataURL from "data-urls";
+import parseDataUrl from "data-urls";
 import { imageDimensionsFromData } from "image-dimensions";
 import { Base64 } from "js-base64";
 
@@ -33,7 +33,7 @@ export const getTabs = async () => {
 
 export const captureActiveTab = async () => {
 	const dataUrl = await browser.tabs.captureVisibleTab();
-	const parsed = parseDataURL(dataUrl);
+	const parsed = parseDataUrl(dataUrl);
 
 	if (!parsed?.body) {
 		throw new Error("Failed to parse data URL or body is undefined.");

@@ -5,28 +5,49 @@ fileGroups:
     - assets/**/*
   sources:
     - src/**/*
-  dist-assets:
-    - dist/assets/**/*
-  dist-manifest:
-    - dist/manifest.json
-  dist-vendors:
-    - dist/vendors/**/*
+  tsup-dist:
+    - build/tsup/dist/**/*
+  extension-assets:
+    - build/extension/tmp/assets/**/*
+  extension-manifest:
+    - build/extension/tmp/manifest.json
+  extension-vendors:
+    - build/extension/tmp/vendors/**/*
+  extension-dist:
+    - build/extension/dist/**/*
 
 tasks:
-  extension-build:
-    platform: system
+  extension-copy-assets:
+    deps:
+      - ~:tsup-build
     script: |
       #!/usr/bin/env bash
-      rm -rf ./dist/assets ./dist/manifest.json ./dist/vendors
-      mkdir -p ./dist/vendors/
-      cp -r ./src/manifest.json ./dist/manifest.json
-      cp -r ./assets/ ./dist/assets
-      cp -r $workspaceRoot/node_modules/webextension-polyfill/dist ./dist/vendors/webextension-polyfill
+      rm -rf ./build/extension/
+      mkdir -p ./build/extension/tmp/vendors/
+      cp -r build/tsup/dist/* ./build/extension/tmp/
+      cp -r ./src/manifest.json ./build/extension/tmp/manifest.json
+      cp -r ./assets/ ./build/extension/tmp/assets/
+      cp -r $workspaceRoot/node_modules/webextension-polyfill/dist ./build/extension/tmp/vendors/webextension-polyfill
     inputs: 
       - '@group(assets)'
       - '@group(sources)'
-      - /packages/*/src/**/*
+      - '@group(tsup-dist)'
     outputs:
-      - '@group(dist-vendors)'
-      - '@group(dist-assets)'
-      - '@group(dist-manifest)'
+      - '@group(extension-vendors)'
+      - '@group(extension-assets)'
+      - '@group(extension-manifest)'
+  extension-build:
+    options:
+      runDepsInParallel: false
+    deps:
+      - extension-copy-assets
+    toolchain: node
+    script: |
+      web-ext build -o --source-dir=$projectRoot/build/extension/tmp -a=$projectRoot/build/extension/dist
+    inputs:
+      - '@group(tsup-dist)'
+      - '@group(extension-assets)'
+      - '@group(extension-manifest)'
+      - '@group(extension-vendors)'
+    outputs:
+      - '@group(extension-dist)'

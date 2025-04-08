@@ -1,5 +1,7 @@
 $schema: "https://moonrepo.dev/schemas/project.json"
 language: typescript
+toolchain:
+  default: node
 
 tags:
   - tsup

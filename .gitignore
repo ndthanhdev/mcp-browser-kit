@@ -7,9 +7,12 @@
 # moon
 .moon/cache
 .moon/docker
+.moon/hooks
 
 node_modules/
-dist/
+
+# build
+build/
 
 # Yarn zero install
 .yarn/*

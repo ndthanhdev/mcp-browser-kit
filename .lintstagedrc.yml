@@ -1,0 +1,2 @@
+"*.{js,jsx,ts,tsx,json,jsonc}":
+  - biome check --write 

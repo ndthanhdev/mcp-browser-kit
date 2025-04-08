@@ -27,9 +27,13 @@
 	},
 	"name": "root",
 	"private": true,
-	"workspaces": ["apps/*", "packages/*"],
+	"workspaces": [
+		"etc/scripts",
+		"apps/*",
+		"packages/*"
+	],
 	"engines": {
-		"node": "~22.14"
+		"node": "^22.14.0"
 	},
-	"packageManager": "yarn@4.8.0"
+	"packageManager": "yarn@4.8.1"
 }

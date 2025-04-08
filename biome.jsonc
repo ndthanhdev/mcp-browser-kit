@@ -7,7 +7,10 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"ignore": ["dist", "cache"]
+		"ignore": [
+			"build",
+			"cache"
+		]
 	},
 	"formatter": {
 		"enabled": true,
@@ -28,6 +31,12 @@
 		},
 		"parser": {
 			"unsafeParameterDecoratorsEnabled": true
+		}
+	},
+	"json": {
+		"formatter": {
+			// force newline
+			"lineWidth": 1
 		}
 	}
 }

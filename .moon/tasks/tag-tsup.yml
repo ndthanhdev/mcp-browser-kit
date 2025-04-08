@@ -5,19 +5,21 @@ fileGroups:
     - assets/**/*
   sources:
     - src/**/*
-  tsup:
+  tsup-config:
     - tsup.config.ts
-  dist-js:
-    - dist/**/*.{cjs,mjs,js}
+  tsup-dist:
+    - ./build/tsup/dist/**/*
 
 tasks:
   tsup-build:
     toolchain: node
-    command: tsup
+    script: |
+      tsc --build --verbose
+      tsup
     inputs:
       - "@group(assets)"
       - "@group(sources)"
-      - "@group(tsup)"
+      - "@group(tsup-config)"
       - /packages/*/src/**/*
     outputs:
-      - "@group(dist-js)"
+      - "@group(tsup-dist)"

@@ -26,7 +26,7 @@
 				"../../packages/driven-extension-driver/src/*"
 			]
 		},
-		"outDir": "../../.moon/cache/types/apps/server"
+		"outDir": "../../.moon/cache/types/etc/scripts"
 	},
 	"include": [
 		"src/**/*.ts",

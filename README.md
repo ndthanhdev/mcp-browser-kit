@@ -1,5 +1,9 @@
 # MCP Browser Kit
 
+
+[![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-60a5fa?style=flat&logo=biome)](https://biomejs.dev)
+
+
 An MCP Server for interacting with manifest v2 compatible browsers.
 
 https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
