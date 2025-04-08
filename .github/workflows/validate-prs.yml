@@ -13,5 +13,7 @@ jobs:
       - uses: "actions/checkout@v4"
         with:
           fetch-depth: 0
-      - uses: "moonrepo/setup-toolchain@v0"
+      - uses: "moonrepo/setup-proto@v0"
+      - run: "proto use"
+      - run: "yarn install"
       - run: "moon ci :check :build"

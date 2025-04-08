@@ -1,5 +1,7 @@
 $schema: "https://moonrepo.dev/schemas/project.json"
 language: typescript
+toolchain:
+  default: node
 
 
 fileGroups:
@@ -15,7 +17,6 @@ fileGroups:
 
 tasks:
   check:
-    toolchain: node
     script: |
       yarn biome check $workspaceRoot
     inputs:
