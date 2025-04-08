@@ -7,6 +7,7 @@
 # moon
 .moon/cache
 .moon/docker
+.moon/hooks
 
 node_modules/
 
