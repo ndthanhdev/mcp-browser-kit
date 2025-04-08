@@ -1,4 +1,4 @@
-name: Validate Pull Requests
+name: Validate PR
 
 on:
   pull_request:
@@ -6,8 +6,8 @@ on:
       - main
 
 jobs:
-  validate:
-    name: "Validate"
+  validate-pr:
+    name: "Validate PR"
     runs-on: "ubuntu-latest"
     steps:
       - uses: "actions/checkout@v4"
