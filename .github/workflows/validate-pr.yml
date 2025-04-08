@@ -1,0 +1,19 @@
+name: Validate PR
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-pr:
+    name: "Validate PR"
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+        with:
+          fetch-depth: 0
+      - uses: "moonrepo/setup-proto@v0"
+      - run: "proto use"
+      - run: "yarn install"
+      - run: "moon ci :check :build"

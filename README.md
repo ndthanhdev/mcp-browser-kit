@@ -24,7 +24,7 @@ https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
    }
    ```
 
-2. Download and extract [MCP Browser Kit Extension](https://github.com/ndthanhdev/mcp-browser-kit/releases/download/v3.0.0/extension.zip)
+2. Download and unzip the latest [MCP Browser Kit Extension](https://github.com/ndthanhdev/mcp-browser-kit/releases)
 3. [Load extension](#load-extension) into a manifest v2 compatible browser:
 
    - Chrome ❌
