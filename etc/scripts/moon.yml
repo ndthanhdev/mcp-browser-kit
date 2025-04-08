@@ -1,9 +1,9 @@
 $schema: "https://moonrepo.dev/schemas/project.json"
 language: typescript
-platform: node
+
 
 fileGroups:
-  checkable:
+  biome-files:
     - /**/*.{js,cjs,mjs}
     - /**/*.{ts,tsx}
     - /**/*.{jsx,tsx}
@@ -15,8 +15,8 @@ fileGroups:
 
 tasks:
   check:
-    platform: node
+    toolchain: node
     script: |
       yarn biome check $workspaceRoot
     inputs:
-      - '@group(checkable)'
+      - '@group(biome-files)'

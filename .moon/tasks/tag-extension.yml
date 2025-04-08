@@ -18,7 +18,8 @@ fileGroups:
 
 tasks:
   extension-copy-assets:
-    platform: system
+    deps:
+      - ~:tsup-build
     script: |
       #!/usr/bin/env bash
       rm -rf ./build/extension/
@@ -40,7 +41,7 @@ tasks:
       runDepsInParallel: false
     deps:
       - extension-copy-assets
-    platform: node
+    toolchain: node
     script: |
       web-ext build -o --source-dir=$projectRoot/build/extension/tmp -a=$projectRoot/build/extension/dist
     inputs:
