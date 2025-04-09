@@ -9,6 +9,16 @@ export class ExtensionToolsUseCase implements ExtensionToolsInputPort {
 		@inject(BrowserDriverOutputPort)
 		private readonly browserDriver: BrowserDriverOutputPort,
 	) {}
+	hitEnterOnViewableElement = (
+		tabId: string,
+		x: number,
+		y: number,
+	): Promise<void> => {
+		return this.browserDriver.hitEnterOnViewableElement(tabId, x, y);
+	};
+	hitEnterOnReadableElement = (tabId: string, index: number): Promise<void> => {
+		return this.browserDriver.hitEnterOnReadableElement(tabId, index);
+	};
 
 	getTabs = (): Promise<Tab[]> => {
 		return this.browserDriver.getTabs();

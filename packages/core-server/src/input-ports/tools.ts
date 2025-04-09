@@ -20,11 +20,17 @@ export interface ToolsInputPort extends ExtensionToolsInputPort {
 	// FillTextToViewableElement
 	fillTextToViewableElementInstruction(): string;
 
+	// HitEnterOnViewableElement
+	hitEnterOnViewableElementInstruction(): string;
+
 	// ClickOnReadableElement
 	clickOnReadableElementInstruction(): string;
 
 	// FillTextToReadableElement
 	fillTextToReadableElementInstruction(): string;
+
+	// HitEnterOnReadableElement
+	hitEnterOnReadableElementInstruction(): string;
 
 	// InvokeJsFn
 	invokeJsFnInstruction(): string;

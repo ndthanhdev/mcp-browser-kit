@@ -137,6 +137,47 @@ const createServer = async () => {
 	);
 
 	server.tool(
+		"hitEnterOnViewableElement",
+		toolsInputPort.hitEnterOnViewableElementInstruction(),
+		{
+			tabId: z.string().describe("Tab ID of the active tab"),
+			x: z.number().describe("X coordinate (pixels) of the input element"),
+			y: z.number().describe("Y coordinate (pixels) of the input element"),
+		},
+		async ({ tabId, x, y }) => {
+			await toolsInputPort.hitEnterOnViewableElement(tabId, x, y);
+			return {
+				content: [
+					{
+						type: "text",
+						text: "Done",
+					},
+				],
+			};
+		},
+	);
+
+	server.tool(
+		"clickOnReadableElement",
+		toolsInputPort.clickOnReadableElementInstruction(),
+		{
+			tabId: z.string().describe("Tab ID to target"),
+			index: z.number().describe("Element index from getReadableElements"),
+		},
+		async ({ tabId, index }) => {
+			await toolsInputPort.clickOnReadableElement(tabId, index);
+			return {
+				content: [
+					{
+						type: "text",
+						text: "Done",
+					},
+				],
+			};
+		},
+	);
+
+	server.tool(
 		"fillTextToReadableElement",
 		toolsInputPort.fillTextToReadableElementInstruction(),
 		{
@@ -158,14 +199,14 @@ const createServer = async () => {
 	);
 
 	server.tool(
-		"clickOnReadableElement",
-		toolsInputPort.clickOnReadableElementInstruction(),
+		"hitEnterOnReadableElement",
+		toolsInputPort.hitEnterOnReadableElementInstruction(),
 		{
 			tabId: z.string().describe("Tab ID to target"),
 			index: z.number().describe("Element index from getReadableElements"),
 		},
 		async ({ tabId, index }) => {
-			await toolsInputPort.clickOnReadableElement(tabId, index);
+			await toolsInputPort.hitEnterOnReadableElement(tabId, index);
 			return {
 				content: [
 					{
