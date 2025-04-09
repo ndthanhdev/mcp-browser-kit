@@ -16,4 +16,4 @@ jobs:
       - uses: "moonrepo/setup-proto@v0"
       - run: "proto use"
       - run: "yarn install"
-      - run: "moon ci :check :build"
+      - run: "moon run :check :build"

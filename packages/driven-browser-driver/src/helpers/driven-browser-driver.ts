@@ -10,6 +10,16 @@ import { executeContentTool } from "../utils/execute-content-tool";
 
 @injectable()
 export class DrivenBrowserDriver implements BrowserDriverOutputPort {
+	hitEnterOnViewableElement = (
+		tabId: string,
+		x: number,
+		y: number,
+	): Promise<void> => {
+		return executeContentTool(tabId, "dom.hitEnterOnViewableElement", x, y);
+	};
+	hitEnterOnReadableElement = (tabId: string, index: number): Promise<void> => {
+		return executeContentTool(tabId, "dom.hitEnterOnReadableElement", index);
+	};
 	getTabs(): Promise<Tab[]> {
 		return backgroundTools.getTabs();
 	}

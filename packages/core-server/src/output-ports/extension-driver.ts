@@ -1,5 +1,5 @@
-import type { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension/output-ports/browser-driver";
+import type { ExtensionToolsInputPort } from "@mcp-browser-kit/core-extension";
 
-export interface ExtensionDriverOutputPort extends BrowserDriverOutputPort {}
+export interface ExtensionDriverOutputPort extends ExtensionToolsInputPort {}
 
 export const ExtensionDriverOutputPort = Symbol("ExtensionDriverOutputPort");

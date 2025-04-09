@@ -11,6 +11,26 @@ import { createExtensionRpcClient } from "../utils/extension-rpc-client";
 export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 	public readonly extensionRpcClient = createExtensionRpcClient();
 
+	hitEnterOnViewableElement = (
+		tabId: string,
+		x: number,
+		y: number,
+	): Promise<void> => {
+		return this.extensionRpcClient.defer(
+			"hitEnterOnViewableElement",
+			tabId,
+			x,
+			y,
+		);
+	};
+	hitEnterOnReadableElement = (tabId: string, index: number): Promise<void> => {
+		return this.extensionRpcClient.defer(
+			"hitEnterOnReadableElement",
+			tabId,
+			index,
+		);
+	};
+
 	captureActiveTab = (): Promise<Screenshot> => {
 		return this.extensionRpcClient.defer("captureActiveTab");
 	};

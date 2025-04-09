@@ -10,6 +10,35 @@ export class RpcCallUseCase implements ToolsInputPort {
 		@inject(ExtensionDriverOutputPort)
 		private readonly extensionDriver: ExtensionDriverOutputPort,
 	) {}
+	hitEnterOnViewableElementInstruction = (): string => {
+		return [
+			"↵ Hits the Enter key on an element at specific X,Y coordinates",
+			"* Use this to trigger actions like form submission or button clicks",
+			"* Requires tabId from getTabs and x,y coordinates from the screenshot",
+			"* Coordinates are based on the captureActiveTab screenshot dimensions",
+			"* Parameters: tabId, x, y",
+		].join("\n");
+	};
+	hitEnterOnReadableElementInstruction = (): string => {
+		return [
+			"↵ Hits the Enter key on an element identified by its index from getReadableElements",
+			"* Use this to trigger actions like form submission or button clicks",
+			"* Requires tabId from getTabs and index from getReadableElements",
+			"* More reliable than coordinate-based clicking for dynamic layouts",
+			"* First call getReadableElements to get the index, then use this tool",
+			"* Parameters: tabId, index",
+		].join("\n");
+	};
+	hitEnterOnViewableElement = (
+		tabId: string,
+		x: number,
+		y: number,
+	): Promise<void> => {
+		return this.extensionDriver.hitEnterOnViewableElement(tabId, x, y);
+	};
+	hitEnterOnReadableElement = (tabId: string, index: number): Promise<void> => {
+		return this.extensionDriver.hitEnterOnReadableElement(tabId, index);
+	};
 
 	captureActiveTabInstruction = (): string => {
 		return [
@@ -67,6 +96,9 @@ export class RpcCallUseCase implements ToolsInputPort {
 			"* Requires tabId from getTabs, index from getReadableElements, and text to enter",
 			"* Works with text inputs, textareas, and other editable elements",
 			"* First call getReadableElements to get the index, then use this tool",
+			"* After filling text, check for associated submit-like buttons (submit, search, send, etc.)",
+			"* If submit button is visible, use clickOnReadableElement with that button",
+			"* If no submit button is visible, use hitEnterOnReadableElement instead",
 			"* Parameters: tabId, index, value (text to enter)",
 		].join("\n");
 	};
@@ -86,6 +118,9 @@ export class RpcCallUseCase implements ToolsInputPort {
 			"* Requires tabId from getTabs, x,y coordinates, and the text to enter",
 			"* Coordinates are based on the captureActiveTab screenshot dimensions",
 			"* First clicks at the specified position, then types the provided text",
+			"* After filling text, check for associated submit-like buttons (submit, search, send, etc.)",
+			"* If submit button is visible, use clickOnViewableElement with that button",
+			"* If no submit button is visible, use hitEnterOnViewableElement instead",
 			"* Parameters: tabId, x, y, value (text to enter)",
 		].join("\n");
 	};
