@@ -13,11 +13,7 @@ export interface BrowserDriverOutputPort {
 		y: number,
 		value: string,
 	): Promise<void>;
-	hitEnterOnViewableElement(
-		tabId: string,
-		x: number,
-		y: number,
-	): Promise<void>;
+	hitEnterOnViewableElement(tabId: string, x: number, y: number): Promise<void>;
 	clickOnReadableElement(tabId: string, index: number): Promise<void>;
 	fillTextToReadableElement(
 		tabId: string,
