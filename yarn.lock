@@ -552,14 +552,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/extension@workspace:apps/extension"
   dependencies:
-    "@mcp-browser-kit/rpc": "workspace:*"
     "@modelcontextprotocol/sdk": "npm:^1.8.0"
     typescript: "npm:^5.8.2"
     web-ext: "npm:^8.5.0"
   languageName: unknown
   linkType: soft
 
-"@mcp-browser-kit/rpc@workspace:*, @mcp-browser-kit/rpc@workspace:packages/rpc":
+"@mcp-browser-kit/rpc@workspace:packages/rpc":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/rpc@workspace:packages/rpc"
   languageName: unknown
