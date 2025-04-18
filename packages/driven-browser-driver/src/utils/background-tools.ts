@@ -3,6 +3,7 @@ import type { Func } from "@mcp-browser-kit/types";
 import parseDataUrl from "data-urls";
 import { imageDimensionsFromData } from "image-dimensions";
 import { Base64 } from "js-base64";
+import browser from "webextension-polyfill";
 
 export const toIIFE = (fn: Func | string) => {
 	if (typeof fn === "function") {

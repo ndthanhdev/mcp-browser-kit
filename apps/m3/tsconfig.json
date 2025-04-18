@@ -8,9 +8,6 @@
 		],
 		"baseUrl": ".",
 		"paths": {
-			"@mcp-browser-kit/server/*": [
-				"../server/src/*"
-			],
 			"@mcp-browser-kit/rpc": [
 				"../../packages/rpc/src/index.ts"
 			],
@@ -34,16 +31,19 @@
 			],
 			"@mcp-browser-kit/core-server/*": [
 				"../../packages/core-server/src/*"
-			]
+			],
+			"@mcp-browser-kit/server/*": [
+				"../server/src/*"
+			],
 		},
-		"outDir": "../../.moon/cache/types/apps/extension"
+		"outDir": "../../.moon/cache/types/apps/m3"
 	},
 	"include": [
 		"src/**/*",
 		"../server/src/**/*",
 		"../../packages/rpc/src/**/*",
-		"../../../packages/core-extension/src/**/*",
-		"../../../packages/driven-browser-driver/src/**/*"
+		"../../packages/core-extension/src/**/*",
+		"../../packages/driven-browser-driver/src/**/*"
 	],
 	"references": [
 		{
