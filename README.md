@@ -43,8 +43,8 @@ https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
   1.  Open `brave://extensions/`
   2.  Enable `Developer mode`
   3.  Click `Load unpacked`
-  4.  Select the `extension` folder
+  4.  Select the unpacked release folder
 - Firefox
   1.  Open `about:debugging#/runtime/this-firefox`
   2.  Click `Load Temporary Add-on`
-  3.  Select the `manifest.json` file in the `extension` folder
+  3.  Select the `manifest.json` file in the unpacked release folder
