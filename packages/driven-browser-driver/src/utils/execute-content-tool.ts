@@ -4,7 +4,7 @@ import {
 	type GetTool,
 	type ToolKeys,
 	contentToolsIdentifier,
-} from "./setup-content-tools";
+} from "./setup-content-script-tools";
 
 export const getExecuteScriptResult = async <T = void>(results: unknown[]) => {
 	if (!Array.isArray(results)) {

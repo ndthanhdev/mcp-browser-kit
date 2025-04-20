@@ -1,11 +1,11 @@
 import type { Func } from "@mcp-browser-kit/types";
 import Emittery from "emittery";
-import type { ConditionalPick } from "type-fest";
+import type { ConditionalPickDeep, Get, Paths, Split } from "type-fest";
 
-import type { ProcedureMap } from "./server";
+import type { GetProcedure, ProcedureMap } from "./server";
 
 export type ToProcedureMap<T> = T extends object
-	? ConditionalPick<T, Func>
+	? ConditionalPickDeep<T, Func>
 	: never;
 
 export interface DeferMessage {
@@ -22,7 +22,7 @@ export interface ResolveMessage {
 
 export class RpcClient<
 	T extends {},
-	U extends ProcedureMap = ToProcedureMap<T>,
+	U extends ProcedureMap<T> = ProcedureMap<T>,
 > {
 	private id = 0;
 	private pending: Map<string, PromiseWithResolvers<unknown>> = new Map();
@@ -51,12 +51,12 @@ export class RpcClient<
 		return String(this.id);
 	};
 
-	public defer = <K extends keyof U>(
+	public defer = <K extends Paths<U>>(
 		method: K,
-		...args: Parameters<U[K]>
-	): Promise<Awaited<ReturnType<U[K]>>> => {
+		...args: Parameters<GetProcedure<U, K>>
+	): Promise<Awaited<ReturnType<GetProcedure<U, K>>>> => {
 		const id = this.createId();
-		const defer = Promise.withResolvers<Awaited<ReturnType<U[K]>>>();
+		const defer = Promise.withResolvers<Awaited<ReturnType<GetProcedure<U, K>>>>();
 
 		defer.promise.finally(() => {
 			this.pending.delete(id);

@@ -10,6 +10,7 @@ import {
 import type { RootRouter } from "@mcp-browser-kit/server/routers/root";
 import { DrivenBrowserDriverM3 } from "@mcp-browser-kit/driven-browser-driver";
 import { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension";
+
 browser.alarms.create("keepAlive", { periodInMinutes: 1 });
 browser.alarms.onAlarm.addListener((info) => {
 	if (info.name === "keepAlive") {

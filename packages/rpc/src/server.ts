@@ -1,30 +1,39 @@
 import type { Func } from "@mcp-browser-kit/types";
+import * as R from "ramda";
 import type { DeferMessage, ResolveMessage } from "./client";
+import type {
+	ConditionalPickDeep,
+	Get,
+	Paths,
+	IsStringLiteral,
+} from "type-fest";
 
-export interface ProcedureMap {
-	[key: string]: Func;
-}
+export type ProcedureMap<T extends {}> = ConditionalPickDeep<T, Func>;
 
-export class RpcServer<T extends ProcedureMap> {
-	private procedures: T;
+export type GetProcedure<
+	T extends {},
+	K extends Paths<T>,
+> = IsStringLiteral<K> extends true
+	? Get<T, Extract<K, string>> extends Func
+		? Get<T, Extract<K, string>>
+		: never
+	: never;
 
-	constructor(procedures: T) {
+export class RpcServer<
+	T extends {},
+	U extends ProcedureMap<T> = ProcedureMap<T>,
+> {
+	private procedures: U;
+
+	constructor(procedures: U) {
 		this.procedures = procedures;
-	}
-
-	addProcedure<K extends string, V extends Func>(
-		name: K,
-		procedure: V,
-	): RpcServer<T & { [key in K]: V }> {
-		return new RpcServer({
-			...this.procedures,
-			[name]: procedure,
-		});
 	}
 
 	async handleDefer(message: DeferMessage): Promise<ResolveMessage> {
 		const { procedure, args, id } = message;
-		const fn = this.procedures[procedure];
+		const fn = R.pathOr(undefined, procedure.split("."), this.procedures) as
+			| Func
+			| undefined;
 
 		if (!fn) {
 			return Promise.resolve({
@@ -53,4 +62,6 @@ export class RpcServer<T extends ProcedureMap> {
 	}
 }
 
-export type InferProcedureMap<T> = T extends RpcServer<infer U> ? U : never;
+export type InferProcedureMap<T> = T extends RpcServer<infer U>
+	? ProcedureMap<U>
+	: never;

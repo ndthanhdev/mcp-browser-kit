@@ -6,10 +6,12 @@ import type {
 import type { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
 import { injectable } from "inversify";
 import * as backgroundTools from "../utils/background-tools";
-import { executeContentToolM3 } from "../utils/execute-content-tool";
+import { createRpcClientM3 } from "./create-content-script-rpc-m3";
 
 @injectable()
 export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
+	public readonly extensionRpcClient = createRpcClientM3();
+
 	getTabs = (): Promise<Tab[]> => {
 		return backgroundTools.getTabs();
 	};
@@ -19,7 +21,9 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 	};
 
 	getInnerText = (tabId: string): Promise<string> => {
-		return executeContentToolM3(tabId, "dom.getInnerText");
+		const task = this.extensionRpcClient.defer("dom.getInnerText");
+
+		return task;
 	};
 
 	getReadableElements = (tabId: string): Promise<ElementRecord[]> => {
