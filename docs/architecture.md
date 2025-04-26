@@ -6,22 +6,53 @@
 ```mermaid
 flowchart TD
   McpServer
-  subgraph Server
-    Tools
-    ExtensionDriver
 
-    Tools--> ExtensionDriver
+  subgraph Server
+    subgraph ServerDriving["Driving"]
+      ToolCalls 
+      ToolDescriptions
+    end
+    subgraph ServerCore["Core"]
+      ToolCallUseCases
+      ToolDescriptionUseCases
+    end
+
+    
+    subgraph ServerDriven["Driven"]
+      ExtensionDriver
+      DescriptionsProvider
+      ConfigProvider["ConfigProvider"]
+    end
+
+    ToolCalls --> ToolCallUseCases
+    ToolCallUseCases --> ExtensionDriver
+    ToolDescriptions --> ToolDescriptionUseCases
+    ToolDescriptionUseCases --> DescriptionsProvider
+    ToolDescriptionUseCases --> ConfigProvider
   end
 
-  McpServer-->Tools
+  McpServer-->ServerDriving
 
   subgraph Extension
-    ExtensionTool
-    BrowserDriver
+    subgraph ExtensionDriving["Driving"]
+      ExtensionTool
+    end
 
-    ExtensionTool--> BrowserDriver
+    subgraph ExtensionCore["Core"]
+      ExtensionToolUseCases
+    end
+    subgraph ExtensionDriven["Driven"]
+      BrowserDriver
+    end
+
+    ExtensionTool --> ExtensionToolUseCases
+    ExtensionToolUseCases -->BrowserDriver
   end
-  ExtensionDriver --> ExtensionTool
+
+  Browser
+
+  ExtensionDriver --> ExtensionDriving
+  BrowserDriver --> Browser
 ```
 
 # M3 Architecture
