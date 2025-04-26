@@ -2,7 +2,7 @@ import { ExtensionToolsInputPort } from "@mcp-browser-kit/core-extension";
 import { RpcServer } from "@mcp-browser-kit/rpc";
 import { container } from "./container";
 
-export const createRpcServer = () => {
+export const createTabRpcServer = () => {
 	const extensionTools = container.get<ExtensionToolsInputPort>(
 		ExtensionToolsInputPort,
 	);

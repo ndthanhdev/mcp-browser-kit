@@ -1,5 +1,4 @@
 import browser from "webextension-polyfill";
-import { createRpcServer } from "./helpers/create-rpc-server";
 import { container } from "./helpers/container";
 import {
 	createTRPCClient,
@@ -10,6 +9,7 @@ import {
 import type { RootRouter } from "@mcp-browser-kit/server/routers/root";
 import { DrivenBrowserDriverM3 } from "@mcp-browser-kit/driven-browser-driver";
 import { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension";
+import { createSwRpcServer } from "./helpers/create-sw-rpc-server";
 
 browser.alarms.create("keepAlive", { periodInMinutes: 1 });
 browser.alarms.onAlarm.addListener((info) => {
@@ -41,11 +41,11 @@ const trpc = createTRPCClient<RootRouter>({
 		}),
 	],
 });
-const rpcServer = createRpcServer();
+const swRpcServer = createSwRpcServer();
 trpc.defer.onMessage.subscribe(undefined, {
 	onData: async (data) => {
 		console.log("defer", data);
-		const message = await rpcServer.handleDefer(data);
+		const message = await swRpcServer.handleDefer(data);
 		console.log("resolve", message);
 
 		trpc.defer.resolve.mutate(message);
