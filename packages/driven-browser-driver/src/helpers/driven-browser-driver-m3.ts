@@ -7,25 +7,28 @@ import type { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension/ou
 import { injectable } from "inversify";
 import * as backgroundTools from "../utils/background-tools";
 import { createM3TabRpcClient } from "./create-rpc-m3";
-import type { DeferMessage } from "@mcp-browser-kit/rpc";
+import type { DeferMessage, ResolveMessage } from "@mcp-browser-kit/rpc";
 import type { Merge } from "type-fest";
 import type { Func } from "@mcp-browser-kit/types";
+import browser from "webextension-polyfill";
 
 @injectable()
 export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 	public readonly tabRpcClient = createM3TabRpcClient();
 
-	handleTabMessage = () => {};
+	handleTabMessage = (message: unknown) => {
+		this.tabRpcClient.emitter.emit("resolve", message as ResolveMessage);
+	};
 
 	private _unlink: Func | undefined;
 	unlinkRpc = () => {
-		browser.runtime.onMessage.removeListener(this.handleTabMessage);
+		// browser.runtime.onMessage.removeListener(this.handleTabMessage);
 		this._unlink?.();
 	};
 
 	linkRpc = () => {
 		this.unlinkRpc();
-		browser.runtime.onMessage.addListener(this.handleTabMessage);
+		// browser.runtime.onMessage.addListener(this.handleTabMessage);
 		this._unlink = this.tabRpcClient.onDefer<
 			Merge<
 				DeferMessage,
@@ -34,7 +37,8 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 				}
 			>
 		>(async (message) => {
-			await browser.tabs.sendMessage(+message.tabId, message);
+			const response = await browser.tabs.sendMessage(+message.tabId, message);
+			this.handleTabMessage(response);
 		});
 
 		return this._unlink;
@@ -45,7 +49,7 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 	};
 
 	captureActiveTab = (): Promise<Screenshot> => {
-		return backgroundTools.captureActiveTab();
+		return Promise.reject("captureActiveTab is not supported");
 	};
 
 	getInnerText = (tabId: string): Promise<string> => {
@@ -59,7 +63,11 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 	};
 
 	getReadableElements = (tabId: string): Promise<ElementRecord[]> => {
-		throw new Error("Method not implemented.");
+		return this.tabRpcClient.defer({
+			method: "dom.getReadableElements",
+			args: [],
+			tabId,
+		});
 	};
 
 	clickOnViewableElement = (
@@ -67,7 +75,11 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 		x: number,
 		y: number,
 	): Promise<void> => {
-		throw new Error("Method not implemented.");
+		return this.tabRpcClient.defer({
+			method: "dom.clickOnViewableElement",
+			args: [x, y],
+			tabId,
+		});
 	};
 
 	fillTextToViewableElement = (
@@ -76,7 +88,11 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 		y: number,
 		value: string,
 	): Promise<void> => {
-		throw new Error("Method not implemented.");
+		return this.tabRpcClient.defer({
+			method: "dom.fillTextToViewableElement",
+			args: [x, y, value],
+			tabId,
+		});
 	};
 
 	hitEnterOnViewableElement = (
@@ -84,11 +100,19 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 		x: number,
 		y: number,
 	): Promise<void> => {
-		throw new Error("Method not implemented.");
+		return this.tabRpcClient.defer({
+			method: "dom.hitEnterOnViewableElement",
+			args: [x, y],
+			tabId,
+		});
 	};
 
 	clickOnReadableElement = (tabId: string, index: number): Promise<void> => {
-		throw new Error("Method not implemented.");
+		return this.tabRpcClient.defer({
+			method: "dom.clickOnReadableElement",
+			args: [index],
+			tabId,
+		});
 	};
 
 	fillTextToReadableElement = (
@@ -96,14 +120,22 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 		index: number,
 		value: string,
 	): Promise<void> => {
-		throw new Error("Method not implemented.");
+		return this.tabRpcClient.defer({
+			method: "dom.fillTextToReadableElement",
+			args: [index, value],
+			tabId,
+		});
 	};
 
 	hitEnterOnReadableElement = (tabId: string, index: number): Promise<void> => {
-		throw new Error("Method not implemented.");
+		return this.tabRpcClient.defer({
+			method: "dom.hitEnterOnReadableElement",
+			args: [index],
+			tabId,
+		});
 	};
 
 	invokeJsFn = (tabId: string, fnBodyCode: string): Promise<unknown> => {
-		throw new Error("Method not implemented.");
+		return Promise.reject("invokeJsFn is not supported");
 	};
 }

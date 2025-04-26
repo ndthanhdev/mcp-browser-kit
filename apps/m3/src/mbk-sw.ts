@@ -24,6 +24,11 @@ container
 	.bind<BrowserDriverOutputPort>(BrowserDriverOutputPort)
 	.to(DrivenBrowserDriverM3);
 
+const driverM3 = container.get<BrowserDriverOutputPort>(
+	BrowserDriverOutputPort,
+) as DrivenBrowserDriverM3;
+driverM3.linkRpc();
+
 // const rpcServer = createRpcServer();
 
 // create persistent WebSocket connection
