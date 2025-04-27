@@ -1,11 +1,11 @@
 import type { Func } from "@mcp-browser-kit/types";
 import Emittery from "emittery";
-import type { ConditionalPick } from "type-fest";
+import type { ConditionalPickDeep, Get, Merge, Paths, Split } from "type-fest";
 
-import type { ProcedureMap } from "./server";
+import type { GetProcedure, ProcedureMap } from "./server";
 
 export type ToProcedureMap<T> = T extends object
-	? ConditionalPick<T, Func>
+	? ConditionalPickDeep<T, Func>
 	: never;
 
 export interface DeferMessage {
@@ -20,9 +20,22 @@ export interface ResolveMessage {
 	result: unknown;
 }
 
+export type DeferArgs<
+	T extends object,
+	U extends Paths<T>,
+	ExtraArgs = object,
+> = Merge<
+	ExtraArgs,
+	{
+		method: U;
+		args: Parameters<GetProcedure<T, U>>;
+	}
+>;
+
 export class RpcClient<
 	T extends {},
-	U extends ProcedureMap = ToProcedureMap<T>,
+	ExtraArgs = object,
+	U extends ProcedureMap<T> = ProcedureMap<T>,
 > {
 	private id = 0;
 	private pending: Map<string, PromiseWithResolvers<unknown>> = new Map();
@@ -51,12 +64,16 @@ export class RpcClient<
 		return String(this.id);
 	};
 
-	public defer = <K extends keyof U>(
-		method: K,
-		...args: Parameters<U[K]>
-	): Promise<Awaited<ReturnType<U[K]>>> => {
+	public defer = <K extends Paths<U>>({
+		method,
+		args,
+		...extraArgs
+	}: DeferArgs<U, K, ExtraArgs>): Promise<
+		Awaited<ReturnType<GetProcedure<U, K>>>
+	> => {
 		const id = this.createId();
-		const defer = Promise.withResolvers<Awaited<ReturnType<U[K]>>>();
+		const defer =
+			Promise.withResolvers<Awaited<ReturnType<GetProcedure<U, K>>>>();
 
 		defer.promise.finally(() => {
 			this.pending.delete(id);
@@ -64,6 +81,7 @@ export class RpcClient<
 		this.pending.set(id, defer as PromiseWithResolvers<unknown>);
 
 		this.emitter.emit("defer", {
+			...extraArgs,
 			procedure: String(method),
 			args,
 			id,
@@ -72,9 +90,12 @@ export class RpcClient<
 		return defer.promise;
 	};
 
-	public onDefer = (
-		callback: (message: DeferMessage) => void,
+	public onDefer = <K extends DeferMessage>(
+		callback: (message: K) => void,
 	): (() => void) => {
-		return this.emitter.on("defer", callback);
+		return this.emitter.on(
+			"defer",
+			callback as (message: DeferMessage) => void,
+		);
 	};
 }

@@ -1,8 +1,8 @@
 import type {
+	BasicBrowserContext,
 	ElementRecord,
 	ExtensionDriverOutputPort,
 	Screenshot,
-	Tab,
 } from "@mcp-browser-kit/core-server";
 import { injectable } from "inversify";
 import { createExtensionRpcClient } from "../utils/extension-rpc-client";
@@ -16,31 +16,37 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		x: number,
 		y: number,
 	): Promise<void> => {
-		return this.extensionRpcClient.defer(
-			"hitEnterOnViewableElement",
-			tabId,
-			x,
-			y,
-		);
+		return this.extensionRpcClient.defer({
+			method: "hitEnterOnViewableElement",
+			args: [tabId, x, y],
+		});
 	};
 	hitEnterOnReadableElement = (tabId: string, index: number): Promise<void> => {
-		return this.extensionRpcClient.defer(
-			"hitEnterOnReadableElement",
-			tabId,
-			index,
-		);
+		return this.extensionRpcClient.defer({
+			method: "hitEnterOnReadableElement",
+			args: [tabId, index],
+		});
 	};
 
 	captureActiveTab = (): Promise<Screenshot> => {
-		return this.extensionRpcClient.defer("captureActiveTab");
+		return this.extensionRpcClient.defer({
+			method: "captureActiveTab",
+			args: [],
+		});
 	};
 
 	getInnerText = (tabId: string): Promise<string> => {
-		return this.extensionRpcClient.defer("getInnerText", tabId);
+		return this.extensionRpcClient.defer({
+			method: "getInnerText",
+			args: [tabId],
+		});
 	};
 
 	getReadableElements = (tabId: string): Promise<ElementRecord[]> => {
-		return this.extensionRpcClient.defer("getReadableElements", tabId);
+		return this.extensionRpcClient.defer({
+			method: "getReadableElements",
+			args: [tabId],
+		});
 	};
 
 	clickOnViewableElement = (
@@ -48,7 +54,10 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		x: number,
 		y: number,
 	): Promise<void> => {
-		return this.extensionRpcClient.defer("clickOnViewableElement", tabId, x, y);
+		return this.extensionRpcClient.defer({
+			method: "clickOnViewableElement",
+			args: [tabId, x, y],
+		});
 	};
 
 	fillTextToViewableElement = (
@@ -57,21 +66,17 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		y: number,
 		value: string,
 	): Promise<void> => {
-		return this.extensionRpcClient.defer(
-			"fillTextToViewableElement",
-			tabId,
-			x,
-			y,
-			value,
-		);
+		return this.extensionRpcClient.defer({
+			method: "fillTextToViewableElement",
+			args: [tabId, x, y, value],
+		});
 	};
 
 	clickOnReadableElement = (tabId: string, index: number): Promise<void> => {
-		return this.extensionRpcClient.defer(
-			"clickOnReadableElement",
-			tabId,
-			index,
-		);
+		return this.extensionRpcClient.defer({
+			method: "clickOnReadableElement",
+			args: [tabId, index],
+		});
 	};
 
 	fillTextToReadableElement = (
@@ -79,19 +84,23 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		index: number,
 		value: string,
 	): Promise<void> => {
-		return this.extensionRpcClient.defer(
-			"fillTextToReadableElement",
-			tabId,
-			index,
-			value,
-		);
+		return this.extensionRpcClient.defer({
+			method: "fillTextToReadableElement",
+			args: [tabId, index, value],
+		});
 	};
 
 	invokeJsFn = (tabId: string, fnBodyCode: string): Promise<unknown> => {
-		return this.extensionRpcClient.defer("invokeJsFn", tabId, fnBodyCode);
+		return this.extensionRpcClient.defer({
+			method: "invokeJsFn",
+			args: [tabId, fnBodyCode],
+		});
 	};
 
-	getTabs = (): Promise<Tab[]> => {
-		return this.extensionRpcClient.defer("getTabs");
+	getBasicBrowserContext = (): Promise<BasicBrowserContext> => {
+		return this.extensionRpcClient.defer({
+			method: "getBasicBrowserContext",
+			args: [],
+		});
 	};
 }

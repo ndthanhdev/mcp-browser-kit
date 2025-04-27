@@ -1,5 +1,5 @@
 import { Container } from "inversify";
-import { ToolsInputPort } from "../input-ports";
+import { ToolCallsInputPort } from "../input-ports";
 import { RpcCallUseCase } from "../use-cases";
 
 export const createCoreServerContainer = () => {
@@ -8,7 +8,7 @@ export const createCoreServerContainer = () => {
 	});
 
 	// Add bindings here
-	container.bind<ToolsInputPort>(ToolsInputPort).to(RpcCallUseCase);
+	container.bind<ToolCallsInputPort>(ToolCallsInputPort).to(RpcCallUseCase);
 
 	return container;
 };

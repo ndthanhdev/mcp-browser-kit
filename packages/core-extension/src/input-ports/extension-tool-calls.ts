@@ -1,7 +1,12 @@
 import type { ElementRecord, Screenshot, Tab } from "../entities";
 
-export interface ExtensionToolsInputPort {
-	getTabs(): Promise<Tab[]>;
+export interface BasicBrowserContext {
+	tabs: Tab[];
+	manifestVersion: number;
+}
+
+export interface ExtensionToolCallsInputPort {
+	getBasicBrowserContext(): Promise<BasicBrowserContext>;
 	captureActiveTab(): Promise<Screenshot>;
 	getInnerText(tabId: string): Promise<string>;
 	getReadableElements(tabId: string): Promise<ElementRecord[]>;
@@ -22,4 +27,6 @@ export interface ExtensionToolsInputPort {
 	hitEnterOnReadableElement(tabId: string, index: number): Promise<void>;
 	invokeJsFn(tabId: string, fnBodyCode: string): Promise<unknown>;
 }
-export const ExtensionToolsInputPort = Symbol.for("ExtensionToolsInputPort");
+export const ExtensionToolCallsInputPort = Symbol.for(
+	"ExtensionToolCallsInputPort",
+);

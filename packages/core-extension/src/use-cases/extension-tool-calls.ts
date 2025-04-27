@@ -1,10 +1,13 @@
 import { inject, injectable } from "inversify";
 import type { ElementRecord, Screenshot, Tab } from "../entities";
-import type { ExtensionToolsInputPort } from "../input-ports";
+import type {
+	BasicBrowserContext,
+	ExtensionToolCallsInputPort,
+} from "../input-ports";
 import { BrowserDriverOutputPort } from "../output-ports";
 
 @injectable()
-export class ExtensionToolsUseCase implements ExtensionToolsInputPort {
+export class ExtensionToolsUseCase implements ExtensionToolCallsInputPort {
 	constructor(
 		@inject(BrowserDriverOutputPort)
 		private readonly browserDriver: BrowserDriverOutputPort,
@@ -20,8 +23,14 @@ export class ExtensionToolsUseCase implements ExtensionToolsInputPort {
 		return this.browserDriver.hitEnterOnReadableElement(tabId, index);
 	};
 
-	getTabs = (): Promise<Tab[]> => {
-		return this.browserDriver.getTabs();
+	getBasicBrowserContext = async (): Promise<BasicBrowserContext> => {
+		const tabs = await this.browserDriver.getTabs();
+		const manifestVersion = await this.browserDriver.getManifestVersion();
+
+		return {
+			tabs,
+			manifestVersion,
+		};
 	};
 
 	captureActiveTab = (): Promise<Screenshot> => {

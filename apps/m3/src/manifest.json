@@ -1,0 +1,32 @@
+{
+	"$schema": "https://json.schemastore.org/chrome-manifest.json",
+	"manifest_version": 3,
+	"name": "MCP Browser Kit M3",
+	"version": "4.0.0",
+	"description": "Allow MCP Browser Kit to interact with this browser.",
+	"permissions": [
+		"tabs",
+		"activeTab",
+		"scripting",
+		"alarms"
+	],
+	"host_permissions": [
+		"http://*/*",
+		"https://*/*"
+	],
+	"content_security_policy": {},
+	"content_scripts": [
+		{
+			"matches": [
+				"<all_urls>"
+			],
+			"js": [
+				"mbk-content.js"
+			]
+		}
+	],
+	"background": {
+		"service_worker": "mbk-sw.js",
+		"type": "module"
+	}
+}

@@ -1,0 +1,22 @@
+$schema: "https://moonrepo.dev/schemas/project.json"
+language: typescript
+toolchain:
+  default: node
+
+tags:
+  - tsup
+  - extension
+
+tasks:
+  build:
+    deps:
+      - ~:tsup-build
+      - ~:extension-build
+    options:
+      runDepsInParallel: false
+
+dependsOn:
+  - rpc
+  - core-extension
+  - driven-browser-driver
+  - core-server

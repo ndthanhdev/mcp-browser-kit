@@ -1,5 +1,5 @@
 import { Container } from "inversify";
-import { ExtensionToolsInputPort } from "../input-ports";
+import { ExtensionToolCallsInputPort } from "../input-ports";
 import { ExtensionToolsUseCase } from "../use-cases";
 
 export const createCoreExtensionContainer = () => {
@@ -9,7 +9,7 @@ export const createCoreExtensionContainer = () => {
 
 	// Add bindings here
 	container
-		.bind<ExtensionToolsInputPort>(ExtensionToolsInputPort)
+		.bind<ExtensionToolCallsInputPort>(ExtensionToolCallsInputPort)
 		.to(ExtensionToolsUseCase);
 
 	return container;

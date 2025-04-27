@@ -1,9 +1,9 @@
-import type { ExtensionToolsInputPort } from "@mcp-browser-kit/core-extension";
+import type { ExtensionToolCallsInputPort } from "@mcp-browser-kit/core-extension";
 
 // ToolsInputPort - Combined interface for all RPC calls
-export interface ToolsInputPort extends ExtensionToolsInputPort {
+export interface ToolCallsInputPort extends ExtensionToolCallsInputPort {
 	// GetTabs
-	getTabsInstruction(): string;
+	getBasicBrowserContextInstruction(): string;
 
 	// CaptureActiveTab
 	captureActiveTabInstruction(): string;
@@ -35,4 +35,4 @@ export interface ToolsInputPort extends ExtensionToolsInputPort {
 	// InvokeJsFn
 	invokeJsFnInstruction(): string;
 }
-export const ToolsInputPort = Symbol.for("ToolsInputPort");
+export const ToolCallsInputPort = Symbol.for("ToolCallsInputPort");

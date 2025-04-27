@@ -1,4 +1,4 @@
-import { ToolsInputPort } from "@mcp-browser-kit/core-server/input-ports";
+import { ToolCallsInputPort } from "@mcp-browser-kit/core-server/input-ports";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -6,7 +6,7 @@ import { container } from "./container";
 
 const createServer = async () => {
 	// Dependency instances
-	const toolsInputPort = container.get<ToolsInputPort>(ToolsInputPort);
+	const toolsInputPort = container.get<ToolCallsInputPort>(ToolCallsInputPort);
 	// Create server instance
 	const server = new McpServer({
 		name: "MCP Browser Kit",
@@ -19,17 +19,22 @@ const createServer = async () => {
 
 	const combinationDescription = [""].join("\n");
 
-	server.tool("getTabs", toolsInputPort.getTabsInstruction(), {}, async () => {
-		const tabs = await toolsInputPort.getTabs();
-		return {
-			content: [
-				{
-					type: "text",
-					text: `Tabs: ${JSON.stringify(tabs)}`,
-				},
-			],
-		};
-	});
+	server.tool(
+		"getBasicBrowserContext",
+		toolsInputPort.getBasicBrowserContextInstruction(),
+		{},
+		async () => {
+			const tabs = await toolsInputPort.getBasicBrowserContext();
+			return {
+				content: [
+					{
+						type: "text",
+						text: `Tabs: ${JSON.stringify(tabs)}`,
+					},
+				],
+			};
+		},
+	);
 
 	server.tool(
 		"captureActiveTab",

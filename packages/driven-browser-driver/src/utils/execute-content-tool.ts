@@ -1,8 +1,10 @@
+import * as R from "ramda";
+import browser from "webextension-polyfill";
 import {
 	type GetTool,
 	type ToolKeys,
 	contentToolsIdentifier,
-} from "./setup-content-tools";
+} from "./setup-content-script-tools";
 
 export const getExecuteScriptResult = async <T = void>(results: unknown[]) => {
 	if (!Array.isArray(results)) {
@@ -24,4 +26,18 @@ export const executeContentTool = async <T extends ToolKeys>(
 	});
 
 	return getExecuteScriptResult<Awaited<ReturnType<GetTool<T>>>>(results);
+};
+
+export const executeContentToolM3 = async <T extends ToolKeys>(
+	tabId: string,
+	tool: T,
+	...args: Parameters<GetTool<T>>
+): Promise<Awaited<ReturnType<GetTool<T>>>> => {
+	const response = await browser.tabs.sendMessage(+tabId, {
+		type: "execute-tool",
+		tool,
+		args,
+	});
+
+	return response as Awaited<ReturnType<GetTool<T>>>;
 };
