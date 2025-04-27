@@ -27,4 +27,6 @@ export interface ExtensionToolCallsInputPort {
 	hitEnterOnReadableElement(tabId: string, index: number): Promise<void>;
 	invokeJsFn(tabId: string, fnBodyCode: string): Promise<unknown>;
 }
-export const ExtensionToolCallsInputPort = Symbol.for("ExtensionToolCallsInputPort");
+export const ExtensionToolCallsInputPort = Symbol.for(
+	"ExtensionToolCallsInputPort",
+);

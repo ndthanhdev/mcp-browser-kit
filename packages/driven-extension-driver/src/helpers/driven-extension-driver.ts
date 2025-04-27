@@ -1,8 +1,8 @@
 import type {
+	BasicBrowserContext,
 	ElementRecord,
 	ExtensionDriverOutputPort,
 	Screenshot,
-	BasicBrowserContext,
 } from "@mcp-browser-kit/core-server";
 import { injectable } from "inversify";
 import { createExtensionRpcClient } from "../utils/extension-rpc-client";
