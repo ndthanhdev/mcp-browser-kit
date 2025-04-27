@@ -14,21 +14,19 @@ flowchart TD
     end
     subgraph ServerCore["Core"]
       ToolCallUseCases
-      ToolDescriptionUseCases
+      ToolDescriptionUseCase
     end
 
     
     subgraph ServerDriven["Driven"]
       ExtensionDriver
-      DescriptionsProvider
       ConfigProvider["ConfigProvider"]
     end
 
     ToolCalls --> ToolCallUseCases
     ToolCallUseCases --> ExtensionDriver
-    ToolDescriptions --> ToolDescriptionUseCases
-    ToolDescriptionUseCases --> DescriptionsProvider
-    ToolDescriptionUseCases --> ConfigProvider
+    ToolDescriptions --> ToolDescriptionUseCase
+    ToolDescriptionUseCase --> ConfigProvider
   end
 
   McpServer-->ServerDriving

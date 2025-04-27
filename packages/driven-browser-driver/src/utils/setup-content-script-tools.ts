@@ -1,6 +1,6 @@
 import type { Func } from "@mcp-browser-kit/types";
-import type { Get, Paths } from "type-fest";
 import * as R from "ramda";
+import type { Get, Paths } from "type-fest";
 import * as animation from "./animation-tools";
 import * as dom from "./dom-tools";
 

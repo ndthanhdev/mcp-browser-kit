@@ -3,6 +3,7 @@ import type { Tab } from "../entities/tab";
 
 export interface BrowserDriverOutputPort {
 	getTabs(): Promise<Tab[]>;
+	getManifestVersion(): Promise<number>;
 	captureActiveTab(): Promise<Screenshot>;
 	getInnerText(tabId: string): Promise<string>;
 	getReadableElements(tabId: string): Promise<ElementRecord[]>;

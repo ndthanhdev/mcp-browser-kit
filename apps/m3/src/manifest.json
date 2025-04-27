@@ -14,9 +14,7 @@
 		"http://*/*",
 		"https://*/*"
 	],
-	"content_security_policy": {
-		
-	},
+	"content_security_policy": {},
 	"content_scripts": [
 		{
 			"matches": [

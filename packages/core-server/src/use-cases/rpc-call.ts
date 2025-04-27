@@ -1,15 +1,19 @@
+import type { BasicBrowserContext } from "@mcp-browser-kit/core-extension";
 import { inject, injectable } from "inversify";
 import type { ElementRecord, Screenshot } from "../entities";
-import type { Tab } from "../entities/tab";
-import type { ToolsInputPort } from "../input-ports";
+import type { ToolCallsInputPort } from "../input-ports";
 import { ExtensionDriverOutputPort } from "../output-ports";
 
 @injectable()
-export class RpcCallUseCase implements ToolsInputPort {
+export class RpcCallUseCase implements ToolCallsInputPort {
 	constructor(
 		@inject(ExtensionDriverOutputPort)
 		private readonly extensionDriver: ExtensionDriverOutputPort,
 	) {}
+
+	getBasicBrowserContext(): Promise<BasicBrowserContext> {
+		return this.extensionDriver.getBasicBrowserContext();
+	}
 	hitEnterOnViewableElementInstruction = (): string => {
 		return [
 			"↵ Hits the Enter key on an element at specific X,Y coordinates",
@@ -48,6 +52,7 @@ export class RpcCallUseCase implements ToolsInputPort {
 			"* No parameters are needed as it automatically captures the active tab",
 			"* Returns an image with width, height, and data in base64 format",
 			"* Workflow: 1) getTabs → 2) captureActiveTab → 3) interact with elements",
+			"* NOTE: This feature is only available in browsers supporting Manifest Version 2",
 		].join("\n");
 	};
 
@@ -164,19 +169,27 @@ export class RpcCallUseCase implements ToolsInputPort {
 		return this.extensionDriver.getReadableElements(tabId);
 	};
 
-	getTabsInstruction = (): string => {
+	getBasicBrowserContextInstruction = (): string => {
 		return [
-			"⚠️ CRITICAL FIRST STEP - ALWAYS START HERE BEFORE ANY OTHER TOOLS!",
-			"* This tool MUST be called first to obtain the list of open browser tabs.",
-			"* Each tab includes a unique ID that is required for all subsequent tool operations.",
-			"* Note which tab is active (marked with 'active: true') as this is essential information.",
-			"* The tabId from this list is required for captureActiveTab and all other interactions.",
-			"* Workflow: 1) getTabs → 2) captureActiveTab → 3) interact with elements",
+			"🌐 GET BROWSER CONTEXT - CRITICAL FIRST STEP BEFORE USING ANY OTHER TOOLS!",
+			"* This tool MUST be called first to initialize browser automation and get essential data.",
+			"* Returns data structure with:",
+			"  - tabs: Array of browser tabs with properties like id, url, title, and active status",
+			"  - manifestVersion: Version of extension manifest format supported by the browser",
+			"* Each tab includes a unique tabId required for all other tool operations",
+			"* The active tab (marked with 'active: true') is typically your target for automation",
+			"* The manifestVersion determines which browser features and extension capabilities are available",
+			"* Different browsers support different manifest versions, affecting available tools and API access",
+			"* Standard workflow:",
+			"  1) getBasicBrowserContext → get browser state and tabId",
+			"  2) Analyze page content based on your goal and manifest version:",
+			"     - If interaction is required (clicking, filling forms, etc.):",
+			"       · For Manifest Version 2: Use captureActiveTab for visual context or getReadableElements for element identification",
+			"       · For other Manifest Versions: Use only getReadableElements for element identification",
+			"     - If no interaction is required (just reading page content):",
+			"       · Use getInnerText to extract all visible text from the page",
+			"  3) Interact using click/fill/enter tools with the obtained tabId",
 		].join("\n");
-	};
-
-	getTabs = (): Promise<Tab[]> => {
-		return this.extensionDriver.getTabs();
 	};
 
 	invokeJsFnInstruction = (): string => {
@@ -188,6 +201,7 @@ export class RpcCallUseCase implements ToolsInputPort {
 			"* Example: 'return document.title;' to get the page title",
 			"* Gives you full flexibility for custom browser automation",
 			"* Parameters: tabId, fnBodyCode (JavaScript code as string)",
+			"* NOTE: This feature is only available in browsers supporting Manifest Version 2",
 		].join("\n");
 	};
 

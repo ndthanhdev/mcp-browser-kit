@@ -1,6 +1,6 @@
-import { RpcServer, RpcClient, type DeferMessage } from "@mcp-browser-kit/rpc";
-import { type ContentTools, contentTools } from "../utils";
+import { type DeferMessage, RpcClient, RpcServer } from "@mcp-browser-kit/rpc";
 import browser from "webextension-polyfill";
+import { type ContentTools, contentTools } from "../utils";
 
 export const createM3TabRpcServer = () => {
 	const rpcServer = new RpcServer(contentTools);

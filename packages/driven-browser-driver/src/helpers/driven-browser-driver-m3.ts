@@ -4,16 +4,19 @@ import type {
 	Tab,
 } from "@mcp-browser-kit/core-extension/entities";
 import type { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
+import type { DeferMessage, ResolveMessage } from "@mcp-browser-kit/rpc";
+import type { Func } from "@mcp-browser-kit/types";
 import { injectable } from "inversify";
+import type { Merge } from "type-fest";
+import browser from "webextension-polyfill";
 import * as backgroundTools from "../utils/background-tools";
 import { createM3TabRpcClient } from "./create-rpc-m3";
-import type { DeferMessage, ResolveMessage } from "@mcp-browser-kit/rpc";
-import type { Merge } from "type-fest";
-import type { Func } from "@mcp-browser-kit/types";
-import browser from "webextension-polyfill";
 
 @injectable()
 export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
+	getManifestVersion(): Promise<number> {
+		return Promise.resolve(3);
+	}
 	public readonly tabRpcClient = createM3TabRpcClient();
 
 	handleTabMessage = (message: unknown) => {

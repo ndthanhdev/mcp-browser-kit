@@ -1,7 +1,12 @@
 import type { ElementRecord, Screenshot, Tab } from "../entities";
 
-export interface ExtensionToolsInputPort {
-	getTabs(): Promise<Tab[]>;
+export interface BasicBrowserContext {
+	tabs: Tab[];
+	manifestVersion: number;
+}
+
+export interface ExtensionToolCallsInputPort {
+	getBasicBrowserContext(): Promise<BasicBrowserContext>;
 	captureActiveTab(): Promise<Screenshot>;
 	getInnerText(tabId: string): Promise<string>;
 	getReadableElements(tabId: string): Promise<ElementRecord[]>;

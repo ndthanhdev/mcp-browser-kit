@@ -97,7 +97,7 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		});
 	};
 
-	getTabs = (): Promise<Tab[]> => {
+	getBasicBrowserContext = (): Promise<Tab[]> => {
 		return this.extensionRpcClient.defer({
 			method: "getTabs",
 			args: [],

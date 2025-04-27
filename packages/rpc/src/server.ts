@@ -1,12 +1,12 @@
 import type { Func } from "@mcp-browser-kit/types";
 import * as R from "ramda";
-import type { DeferMessage, ResolveMessage } from "./client";
 import type {
 	ConditionalPickDeep,
 	Get,
-	Paths,
 	IsStringLiteral,
+	Paths,
 } from "type-fest";
+import type { DeferMessage, ResolveMessage } from "./client";
 
 export type ProcedureMap<T extends {}> = ConditionalPickDeep<T, Func>;
 

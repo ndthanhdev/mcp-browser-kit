@@ -1,14 +1,14 @@
-import browser from "webextension-polyfill";
-import { container } from "./helpers/container";
+import { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension";
+import { DrivenBrowserDriverM3 } from "@mcp-browser-kit/driven-browser-driver";
+import type { RootRouter } from "@mcp-browser-kit/server/routers/root";
 import {
 	createTRPCClient,
 	createWSClient,
 	loggerLink,
 	wsLink,
 } from "@trpc/client";
-import type { RootRouter } from "@mcp-browser-kit/server/routers/root";
-import { DrivenBrowserDriverM3 } from "@mcp-browser-kit/driven-browser-driver";
-import { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension";
+import browser from "webextension-polyfill";
+import { container } from "./helpers/container";
 import { createSwRpcServer } from "./helpers/create-sw-rpc-server";
 
 browser.alarms.create("keepAlive", { periodInMinutes: 1 });

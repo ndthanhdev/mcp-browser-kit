@@ -34,7 +34,7 @@
 			],
 			"@mcp-browser-kit/server/*": [
 				"../server/src/*"
-			],
+			]
 		},
 		"outDir": "../../.moon/cache/types/apps/m3"
 	},

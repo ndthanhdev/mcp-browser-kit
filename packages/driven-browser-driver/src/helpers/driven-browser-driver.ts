@@ -10,6 +10,9 @@ import { executeContentTool } from "../utils/execute-content-tool";
 
 @injectable()
 export class DrivenBrowserDriver implements BrowserDriverOutputPort {
+	getManifestVersion(): Promise<number> {
+		return Promise.resolve(2);
+	}
 	hitEnterOnViewableElement = (
 		tabId: string,
 		x: number,
