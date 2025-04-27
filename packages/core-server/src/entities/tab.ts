@@ -4,3 +4,8 @@ export interface Tab {
 	url: string;
 	active: boolean;
 }
+
+export interface BasicBrowserContext {
+	tabs: Tab[];
+	manifestVersion: number;
+}

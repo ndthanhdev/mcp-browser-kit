@@ -2,7 +2,7 @@ import type {
 	ElementRecord,
 	ExtensionDriverOutputPort,
 	Screenshot,
-	Tab,
+	BasicBrowserContext,
 } from "@mcp-browser-kit/core-server";
 import { injectable } from "inversify";
 import { createExtensionRpcClient } from "../utils/extension-rpc-client";
@@ -97,9 +97,9 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		});
 	};
 
-	getBasicBrowserContext = (): Promise<Tab[]> => {
+	getBasicBrowserContext = (): Promise<BasicBrowserContext> => {
 		return this.extensionRpcClient.defer({
-			method: "getTabs",
+			method: "getBasicBrowserContext",
 			args: [],
 		});
 	};

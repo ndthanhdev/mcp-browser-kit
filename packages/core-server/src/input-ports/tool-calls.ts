@@ -35,4 +35,4 @@ export interface ToolCallsInputPort extends ExtensionToolCallsInputPort {
 	// InvokeJsFn
 	invokeJsFnInstruction(): string;
 }
-export const ToolsInputPort = Symbol.for("ToolsInputPort");
+export const ToolCallsInputPort = Symbol.for("ToolCallsInputPort");
