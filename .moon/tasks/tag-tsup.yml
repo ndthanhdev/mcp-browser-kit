@@ -24,6 +24,8 @@ tasks:
       - "@group(tsup-dist)"
   tsup-build:
     toolchain: node
+    options:
+      runDepsInParallel: false
     deps:
       - tsup-tsc
     script: |
