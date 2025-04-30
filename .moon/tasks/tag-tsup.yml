@@ -11,10 +11,22 @@ fileGroups:
     - ./build/tsup/dist/**/*
 
 tasks:
-  tsup-build:
+  tsup-tsc:
     toolchain: node
     script: |
-      tsc --build --verbose
+      tsc --build
+    inputs:
+      - "@group(assets)"
+      - "@group(sources)"
+      - "@group(tsup-config)"
+      - /packages/*/src/**/*
+    outputs:
+      - "@group(tsup-dist)"
+  tsup-build:
+    toolchain: node
+    deps:
+      - tsup-tsc
+    script: |
       tsup
     inputs:
       - "@group(assets)"

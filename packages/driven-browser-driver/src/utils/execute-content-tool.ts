@@ -1,4 +1,3 @@
-import * as R from "ramda";
 import browser from "webextension-polyfill";
 import {
 	type GetTool,
