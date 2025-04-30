@@ -19,9 +19,8 @@ tasks:
       - "@group(assets)"
       - "@group(sources)"
       - "@group(tsup-config)"
-      - /packages/*/src/**/*
-    outputs:
-      - "@group(tsup-dist)"
+    # outputs:
+    #   - "@group(tsup-dist)"
   tsup-build:
     toolchain: node
     options:
