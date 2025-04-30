@@ -1,6 +1,6 @@
 import type { Func } from "@mcp-browser-kit/types";
 import Emittery from "emittery";
-import type { ConditionalPickDeep, Get, Merge, Paths, Split } from "type-fest";
+import type { ConditionalPickDeep, Merge, Paths } from "type-fest";
 
 import type { GetProcedure, ProcedureMap } from "./server";
 
