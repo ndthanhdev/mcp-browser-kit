@@ -7,7 +7,7 @@ import type {
 	Paths,
 } from "type-fest";
 import type { DeferMessage, ResolveMessage } from "./client";
-import { MessageChannel } from "./types/message-channel";
+import type { MessageChannel } from "./types/message-channel";
 
 export type ProcedureMap<T extends {}> = ConditionalPickDeep<T, Func>;
 
@@ -16,8 +16,8 @@ export type GetProcedure<
 	K extends Paths<T>,
 > = IsStringLiteral<K> extends true
 	? Get<T, Extract<K, string>> extends Func
-	? Get<T, Extract<K, string>>
-	: never
+		? Get<T, Extract<K, string>>
+		: never
 	: never;
 
 export class RpcServer<
@@ -27,8 +27,9 @@ export class RpcServer<
 	private procedures: U;
 	private unsubscribe: (() => void) | undefined;
 
-	constructor(procedures: U,
-		private readonly messageChannel?: MessageChannel
+	constructor(
+		procedures: U,
+		private readonly messageChannel?: MessageChannel,
 	) {
 		this.procedures = procedures;
 	}
@@ -40,19 +41,16 @@ export class RpcServer<
 
 		const channel = this.messageChannel;
 
-		this.unsubscribe = channel.subscribe(
-			(message: unknown) => {
+		this.unsubscribe = channel.subscribe((message: unknown) => {
+			const msg = message as DeferMessage;
 
-				const msg = message as DeferMessage;
-
-				this.handleDefer(msg).then((result) => {
-					channel.publish(result);
-				});
-			},
-		);
+			this.handleDefer(msg).then((result) => {
+				channel.publish(result);
+			});
+		});
 
 		return this.unsubscribe;
-	}
+	};
 
 	stopListen = () => {
 		if (!this.unsubscribe) {
@@ -61,7 +59,7 @@ export class RpcServer<
 
 		this.unsubscribe();
 		this.unsubscribe = undefined;
-	}
+	};
 
 	async handleDefer(message: DeferMessage): Promise<ResolveMessage> {
 		const { procedure, args, id } = message;

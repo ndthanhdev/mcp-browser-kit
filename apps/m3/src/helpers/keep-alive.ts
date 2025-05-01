@@ -1,53 +1,52 @@
-import browser, { Runtime } from "webextension-polyfill";
+import browser, { type Runtime } from "webextension-polyfill";
 
 export interface KeepAliveMessage {
-  action: "keepAlive";
+	action: "keepAlive";
 }
 
 export interface KeepAliveResponse {
-  action: "keepAliveAck";
+	action: "keepAliveAck";
 }
-
 
 export const startKeepAlive = () => {
-  const keepAlive = async () => {
-    const response = await
-      browser.runtime.sendMessage<KeepAliveMessage, KeepAliveResponse>(
-        { action: "keepAlive" },
-      );
-    if (response?.action !== "keepAliveAck") {
-      console.error("Keep alive failed");
-    }
-  }
+	const keepAlive = async () => {
+		const response = await browser.runtime.sendMessage<
+			KeepAliveMessage,
+			KeepAliveResponse
+		>({ action: "keepAlive" });
+		if (response?.action !== "keepAliveAck") {
+			console.error("Keep alive failed");
+		}
+	};
 
-  keepAlive();
+	keepAlive();
 
-  const id = setInterval(keepAlive, 25_000);
+	const id = setInterval(keepAlive, 25_000);
 
-  const stop = () => {
-    clearInterval(id);
-  }
+	const stop = () => {
+		clearInterval(id);
+	};
 
-  return stop
-}
+	return stop;
+};
 
 export const startListenKeepAlive = () => {
-  const keepAliveHandler = (
-    message: unknown,
-    sender: Runtime.MessageSender,
-    sendResponse: (response?: KeepAliveResponse) => void
-  ) => {
-    const msg = message as KeepAliveMessage;
-    if (msg.action === "keepAlive") {
-      sendResponse({ action: "keepAliveAck" });
-    }
+	const keepAliveHandler = (
+		message: unknown,
+		sender: Runtime.MessageSender,
+		sendResponse: (response?: KeepAliveResponse) => void,
+	) => {
+		const msg = message as KeepAliveMessage;
+		if (msg.action === "keepAlive") {
+			sendResponse({ action: "keepAliveAck" });
+		}
 
-    return true as true
-  };
+		return true as true;
+	};
 
-  browser.runtime.onMessage.addListener(keepAliveHandler);
+	browser.runtime.onMessage.addListener(keepAliveHandler);
 
-  return () => {
-    browser.runtime.onMessage.removeListener(keepAliveHandler);
-  };
-}
+	return () => {
+		browser.runtime.onMessage.removeListener(keepAliveHandler);
+	};
+};
