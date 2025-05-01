@@ -10,6 +10,7 @@ import {
 import browser from "webextension-polyfill";
 import { container } from "./helpers/container";
 import { createSwRpcServer } from "./helpers/create-sw-rpc-server";
+import { startListenKeepAlive } from "./helpers/keep-alive";
 
 browser.alarms.create("keepAlive", { periodInMinutes: 1 });
 browser.alarms.onAlarm.addListener((info) => {
@@ -56,3 +57,4 @@ trpc.defer.onMessage.subscribe(undefined, {
 		trpc.defer.resolve.mutate(message);
 	},
 });
+startListenKeepAlive();

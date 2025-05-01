@@ -10,7 +10,7 @@ import { injectable } from "inversify";
 import type { Merge } from "type-fest";
 import browser from "webextension-polyfill";
 import * as backgroundTools from "../utils/background-tools";
-import { createM3TabRpcClient } from "./create-rpc-m3";
+import { createM3TabRpcClient } from "./create-m3-tab-rpc";
 
 @injectable()
 export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {

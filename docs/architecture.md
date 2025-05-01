@@ -69,15 +69,16 @@ flowchart TD
     TabRpcClient
   end
   SWRpcServer
-  SWRpcServer
   subgraph Extension["Extension (M3)"]
     ExtensionTool
+    ExtensionToolUseCases
     BrowserDriver
   end
   Tab
   SWRpcClient --> SWRpcServer
   SWRpcServer --> ExtensionTool
-  ExtensionTool --> BrowserDriver
+  ExtensionTool --> ExtensionToolUseCases
+  ExtensionToolUseCases --> BrowserDriver
   TabRpcClient --> TabRpcServer
 ```
 
