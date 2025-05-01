@@ -548,9 +548,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mcp-browser-kit/extension@workspace:apps/extension":
+"@mcp-browser-kit/m2@workspace:apps/m2":
   version: 0.0.0-use.local
-  resolution: "@mcp-browser-kit/extension@workspace:apps/extension"
+  resolution: "@mcp-browser-kit/m2@workspace:apps/m2"
   dependencies:
     "@modelcontextprotocol/sdk": "npm:^1.8.0"
     typescript: "npm:^5.8.2"
