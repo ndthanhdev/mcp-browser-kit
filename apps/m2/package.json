@@ -1,5 +1,5 @@
 {
-	"name": "@mcp-browser-kit/extension",
+	"name": "@mcp-browser-kit/m2",
 	"type": "module",
 	"packageManager": "yarn@4.8.0",
 	"devDependencies": {

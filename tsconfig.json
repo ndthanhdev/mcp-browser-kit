@@ -7,8 +7,8 @@
 			"@mcp-browser-kit/server/*": [
 				"apps/server/src/*"
 			],
-			"@mcp-browser-kit/extension/*": [
-				"apps/extension/src/*"
+			"@mcp-browser-kit/m2/*": [
+				"apps/m2/src/*"
 			],
 			"@mcp-browser-kit/rpc": [
 				"packages/rpc/src/index.ts"
@@ -40,7 +40,7 @@
 	],
 	"references": [
 		{
-			"path": "apps/extension"
+			"path": "apps/m2"
 		},
 		{
 			"path": "apps/m3"
