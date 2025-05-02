@@ -1,8 +1,8 @@
 {
 	"$schema": "https://json.schemastore.org/webextension.json",
 	"manifest_version": 2,
-	"name": "MCP Browser Kit",
-	"version": "4.0.0",
+	"name": "MCP Browser Kit M2",
+	"version": "5.0.0",
 
 	"description": "Allow MCP Browser Kit to interact with the browser.",
 	"permissions": [
@@ -21,14 +21,14 @@
 				"<all_urls>"
 			],
 			"js": [
-				"content.js"
+				"mbk-content.js"
 			]
 		}
 	],
 	"background": {
 		"scripts": [
 			"vendors/webextension-polyfill/browser-polyfill.min.js",
-			"background.js"
+			"mbk-background.js"
 		],
 		"persistent": true
 	}

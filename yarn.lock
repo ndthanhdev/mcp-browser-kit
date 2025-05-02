@@ -3976,6 +3976,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"p-timeout@npm:^6.1.4":
+  version: 6.1.4
+  resolution: "p-timeout@npm:6.1.4"
+  checksum: 10c0/019edad1c649ab07552aa456e40ce7575c4b8ae863191477f02ac8d283ac8c66cedef0ca93422735130477a051dfe952ba717641673fd3599befdd13f63bcc33
+  languageName: node
+  linkType: hard
+
 "package-json-from-dist@npm:^1.0.0":
   version: 1.0.1
   resolution: "package-json-from-dist@npm:1.0.1"
@@ -4636,6 +4643,7 @@ __metadata:
     image-dimensions: "npm:^2.3.0"
     inversify: "npm:7.0.0-alpha.5"
     js-base64: "npm:^3.7.7"
+    p-timeout: "npm:^6.1.4"
     ramda: "npm:^0.30.1"
     reflect-metadata: "npm:^0.2.2"
     sanitize-html: "npm:^2.15.0"

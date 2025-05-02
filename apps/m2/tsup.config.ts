@@ -1,7 +1,7 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-	entry: ["src/content.ts", "src/background.ts"],
+	entry: ["src/mbk-content.ts", "src/mbk-background.ts"],
 	splitting: false,
 	sourcemap: true,
 	clean: true,

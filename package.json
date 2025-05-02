@@ -16,6 +16,7 @@
 		"image-dimensions": "^2.3.0",
 		"inversify": "7.0.0-alpha.5",
 		"js-base64": "^3.7.7",
+		"p-timeout": "^6.1.4",
 		"ramda": "^0.30.1",
 		"reflect-metadata": "^0.2.2",
 		"sanitize-html": "^2.15.0",

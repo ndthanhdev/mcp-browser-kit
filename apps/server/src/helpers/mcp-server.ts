@@ -29,7 +29,7 @@ const createServer = async () => {
 				content: [
 					{
 						type: "text",
-						text: `Tabs: ${JSON.stringify(tabs)}`,
+						text: `${JSON.stringify(tabs)}`,
 					},
 				],
 			};
