@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/ndthanhdev/mcp-browser-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/ndthanhdev/mcp-browser-kit/actions/workflows/ci.yml) [![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-60a5fa?style=flat&logo=biome)](https://biomejs.dev)
 
-An MCP Server for interacting with your local browsers.
+An MCP Server that enables AI assistants to interact with your local browsers.
 
 > **Note**: Consider using a separate browser profile or dedicated browser instance with this MCP to prevent sensitive data from being unintentionally exposed to AI model providers.
 
