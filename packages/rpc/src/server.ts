@@ -25,23 +25,13 @@ export class RpcServer<
 	U extends ProcedureMap<T> = ProcedureMap<T>,
 > {
 	private procedures: U;
-	private unsubscribe: (() => void) | undefined;
 
-	constructor(
-		procedures: U,
-		private readonly messageChannel?: MessageChannel,
-	) {
+	constructor(procedures: U) {
 		this.procedures = procedures;
 	}
 
-	startListen = () => {
-		if (!this.messageChannel) {
-			throw new Error("Message subscriber is not defined");
-		}
-
-		const channel = this.messageChannel;
-
-		this.unsubscribe = channel.subscribe((message: unknown) => {
+	startListen = (channel: MessageChannel) => {
+		const unsubscribe = channel.subscribe((message: unknown) => {
 			const msg = message as DeferMessage;
 
 			this.handleDefer(msg).then((result) => {
@@ -49,16 +39,7 @@ export class RpcServer<
 			});
 		});
 
-		return this.unsubscribe;
-	};
-
-	stopListen = () => {
-		if (!this.unsubscribe) {
-			throw new Error("Did not start listening");
-		}
-
-		this.unsubscribe();
-		this.unsubscribe = undefined;
+		return unsubscribe;
 	};
 
 	async handleDefer(message: DeferMessage): Promise<ResolveMessage> {

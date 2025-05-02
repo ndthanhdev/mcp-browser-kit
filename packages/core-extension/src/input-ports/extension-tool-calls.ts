@@ -6,7 +6,7 @@ export interface BasicBrowserContext {
 }
 
 export interface ExtensionToolCallsInputPort {
-	getBasicBrowserContext(): Promise<BasicBrowserContext>;
+	getBasicBrowserContext(): Promise<BasicBrowserContext | string>;
 	captureActiveTab(): Promise<Screenshot>;
 	getInnerText(tabId: string): Promise<string>;
 	getReadableElements(tabId: string): Promise<ElementRecord[]>;

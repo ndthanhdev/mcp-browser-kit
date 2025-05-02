@@ -1,6 +1,7 @@
 import type { Func } from "@mcp-browser-kit/types";
 import Emittery from "emittery";
 import type { ConditionalPickDeep, Merge, Paths } from "type-fest";
+import type { MessageChannel } from "./types/message-channel";
 
 import type { GetProcedure, ProcedureMap } from "./server";
 
@@ -97,5 +98,15 @@ export class RpcClient<
 			"defer",
 			callback as (message: DeferMessage) => void,
 		);
+	};
+
+	public startListen = (messageChannel: MessageChannel) => {
+		const unsubscribe = messageChannel.subscribe((message: unknown) => {
+			const msg = message as ResolveMessage;
+
+			this.emitter.emit("resolve", msg);
+		});
+
+		return unsubscribe;
 	};
 }

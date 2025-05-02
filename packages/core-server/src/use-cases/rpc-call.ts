@@ -1,5 +1,7 @@
 import type { BasicBrowserContext } from "@mcp-browser-kit/core-extension";
 import { inject, injectable } from "inversify";
+import pTimeout from "p-timeout";
+
 import type { ElementRecord, Screenshot } from "../entities";
 import type { ToolCallsInputPort } from "../input-ports";
 import { ExtensionDriverOutputPort } from "../output-ports";
@@ -11,14 +13,24 @@ export class RpcCallUseCase implements ToolCallsInputPort {
 		private readonly extensionDriver: ExtensionDriverOutputPort,
 	) {}
 
-	getBasicBrowserContext(): Promise<BasicBrowserContext> {
-		return this.extensionDriver.getBasicBrowserContext();
-	}
+	getBasicBrowserContext = async (): Promise<BasicBrowserContext | string> => {
+		const pGetBasicBrowserContext =
+			this.extensionDriver.getBasicBrowserContext();
+
+		const result = await pTimeout(pGetBasicBrowserContext, {
+			milliseconds: 3000,
+			fallback: () => {
+				return "An error occurred, use this instruction to tell the user what to do: Browser extension not found. To use MCP Browser Kit, please install and enable the latest extension";
+			},
+		});
+
+		return result;
+	};
 	hitEnterOnViewableElementInstruction = (): string => {
 		return [
 			"↵ Hits the Enter key on an element at specific X,Y coordinates",
 			"* Use this to trigger actions like form submission or button clicks",
-			"* Requires tabId from getTabs and x,y coordinates from the screenshot",
+			"* Requires tabId from getBasicBrowserContext and x,y coordinates from the screenshot",
 			"* Coordinates are based on the captureActiveTab screenshot dimensions",
 			"* Parameters: tabId, x, y",
 		].join("\n");
@@ -27,7 +39,7 @@ export class RpcCallUseCase implements ToolCallsInputPort {
 		return [
 			"↵ Hits the Enter key on an element identified by its index from getReadableElements",
 			"* Use this to trigger actions like form submission or button clicks",
-			"* Requires tabId from getTabs and index from getReadableElements",
+			"* Requires tabId from getBasicBrowserContext and index from getReadableElements",
 			"* More reliable than coordinate-based clicking for dynamic layouts",
 			"* First call getReadableElements to get the index, then use this tool",
 			"* Parameters: tabId, index",
@@ -47,11 +59,11 @@ export class RpcCallUseCase implements ToolCallsInputPort {
 	captureActiveTabInstruction = (): string => {
 		return [
 			"📷 Captures a screenshot of the active browser tab",
-			"* Use this tool after calling getTabs to obtain visual context of the current page",
+			"* Use this tool after calling getBasicBrowserContext to obtain visual context of the current page",
 			"* The screenshot helps you see what the browser is displaying to the user",
 			"* No parameters are needed as it automatically captures the active tab",
 			"* Returns an image with width, height, and data in base64 format",
-			"* Workflow: 1) getTabs → 2) captureActiveTab → 3) interact with elements",
+			"* Workflow: 1) getBasicBrowserContext → 2) captureActiveTab → 3) interact with elements",
 			"* NOTE: This feature is only available in browsers supporting Manifest Version 2",
 		].join("\n");
 	};
@@ -64,7 +76,7 @@ export class RpcCallUseCase implements ToolCallsInputPort {
 		return [
 			"🔘 Clicks on an element identified by its index from getReadableElements",
 			"* Use this to click on elements after identifying them by their text",
-			"* Requires tabId from getTabs and index from getReadableElements",
+			"* Requires tabId from getBasicBrowserContext and index from getReadableElements",
 			"* More reliable than coordinate-based clicking for dynamic layouts",
 			"* First call getReadableElements to get the index, then use this tool",
 			"* Parameters: tabId, index",
@@ -79,7 +91,7 @@ export class RpcCallUseCase implements ToolCallsInputPort {
 		return [
 			"👆 Clicks on an element at specific X,Y coordinates",
 			"* Use this to click on elements by their position on the screen",
-			"* Requires tabId from getTabs and x,y coordinates from the screenshot",
+			"* Requires tabId from getBasicBrowserContext and x,y coordinates from the screenshot",
 			"* Coordinates are based on the captureActiveTab screenshot dimensions",
 			"* Useful when you know the visual position of an element",
 			"* Parameters: tabId, x, y",
@@ -98,7 +110,7 @@ export class RpcCallUseCase implements ToolCallsInputPort {
 		return [
 			"✏️ Types text into an input field identified by its index from getReadableElements",
 			"* Use this to enter text into form fields identified by their text",
-			"* Requires tabId from getTabs, index from getReadableElements, and text to enter",
+			"* Requires tabId from getBasicBrowserContext, index from getReadableElements, and text to enter",
 			"* Works with text inputs, textareas, and other editable elements",
 			"* First call getReadableElements to get the index, then use this tool",
 			"* After filling text, check for associated submit-like buttons (submit, search, send, etc.)",
@@ -120,7 +132,7 @@ export class RpcCallUseCase implements ToolCallsInputPort {
 		return [
 			"⌨️ Types text into an input field at specific X,Y coordinates",
 			"* Use this to enter text into form fields by their position",
-			"* Requires tabId from getTabs, x,y coordinates, and the text to enter",
+			"* Requires tabId from getBasicBrowserContext, x,y coordinates, and the text to enter",
 			"* Coordinates are based on the captureActiveTab screenshot dimensions",
 			"* First clicks at the specified position, then types the provided text",
 			"* After filling text, check for associated submit-like buttons (submit, search, send, etc.)",
@@ -143,7 +155,7 @@ export class RpcCallUseCase implements ToolCallsInputPort {
 		return [
 			"📝 Extracts all text content from the current web page",
 			"* Retrieves all visible text from the active tab",
-			"* Requires the tabId obtained from getTabs",
+			"* Requires the tabId obtained from getBasicBrowserContext",
 			"* Use this to analyze the page content without visual elements",
 			"* Returns a string containing all the text on the page",
 			"* Useful for getting a quick overview of page content",
@@ -158,7 +170,7 @@ export class RpcCallUseCase implements ToolCallsInputPort {
 		return [
 			"🔍 Lists all interactive elements on the page with their text",
 			"* Returns a list of elements with their index, HTML tag, and text content",
-			"* Requires the tabId obtained from getTabs",
+			"* Requires the tabId obtained from getBasicBrowserContext",
 			"* Each element is returned as [index, tag, text]",
 			"* Use the index to interact with elements through click or fill operations",
 			"* Helps you identify which elements can be interacted with by their text",
@@ -196,7 +208,7 @@ export class RpcCallUseCase implements ToolCallsInputPort {
 		return [
 			"⚙️ Executes custom JavaScript code in the context of the web page",
 			"* Use this for advanced operations not covered by other tools",
-			"* Requires tabId from getTabs and JavaScript code to execute",
+			"* Requires tabId from getBasicBrowserContext and JavaScript code to execute",
 			"* The code should be the body of a function that returns a value",
 			"* Example: 'return document.title;' to get the page title",
 			"* Gives you full flexibility for custom browser automation",

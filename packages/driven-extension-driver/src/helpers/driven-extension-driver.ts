@@ -97,7 +97,7 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		});
 	};
 
-	getBasicBrowserContext = (): Promise<BasicBrowserContext> => {
+	getBasicBrowserContext = (): Promise<BasicBrowserContext | string> => {
 		return this.extensionRpcClient.defer({
 			method: "getBasicBrowserContext",
 			args: [],
