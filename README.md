@@ -37,7 +37,7 @@ https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
 6. Start messaging on your MCP Client:
 
    ```
-   use browser-kit, Star the last open GitHub repo on my browser
+   Use browser-kit, star the last open GitHub repo on my browser
    ```
 
 ## Compatibility table
