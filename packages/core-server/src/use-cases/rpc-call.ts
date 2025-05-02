@@ -14,8 +14,12 @@ export class RpcCallUseCase implements ToolCallsInputPort {
 	) {}
 
 	getBasicBrowserContext = async (): Promise<BasicBrowserContext | string> => {
-		const pGetBasicBrowserContext =
-			this.extensionDriver.getBasicBrowserContext();
+		const pGetBasicBrowserContext = this.extensionDriver
+			.getBasicBrowserContext()
+			.catch((error) => {
+				console.error("Error in getBasicBrowserContext:", error);
+				return `An error occurred ${error}, use this instruction to tell the user what to do: An error occurred, update extension may help fix this issue`;
+			});
 
 		const result = await pTimeout(pGetBasicBrowserContext, {
 			milliseconds: 3000,
