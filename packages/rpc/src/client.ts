@@ -108,5 +108,5 @@ export class RpcClient<
 		});
 
 		return unsubscribe;
-	}
+	};
 }

@@ -1,6 +1,6 @@
 import type { BasicBrowserContext } from "@mcp-browser-kit/core-extension";
 import { inject, injectable } from "inversify";
-import pTimeout from 'p-timeout';
+import pTimeout from "p-timeout";
 
 import type { ElementRecord, Screenshot } from "../entities";
 import type { ToolCallsInputPort } from "../input-ports";
@@ -11,10 +11,11 @@ export class RpcCallUseCase implements ToolCallsInputPort {
 	constructor(
 		@inject(ExtensionDriverOutputPort)
 		private readonly extensionDriver: ExtensionDriverOutputPort,
-	) { }
+	) {}
 
 	getBasicBrowserContext = async (): Promise<BasicBrowserContext | string> => {
-		const pGetBasicBrowserContext = this.extensionDriver.getBasicBrowserContext();
+		const pGetBasicBrowserContext =
+			this.extensionDriver.getBasicBrowserContext();
 
 		const result = await pTimeout(pGetBasicBrowserContext, {
 			milliseconds: 3000,
@@ -24,7 +25,7 @@ export class RpcCallUseCase implements ToolCallsInputPort {
 		});
 
 		return result;
-	}
+	};
 	hitEnterOnViewableElementInstruction = (): string => {
 		return [
 			"↵ Hits the Enter key on an element at specific X,Y coordinates",

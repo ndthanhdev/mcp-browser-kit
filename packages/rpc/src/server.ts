@@ -16,8 +16,8 @@ export type GetProcedure<
 	K extends Paths<T>,
 > = IsStringLiteral<K> extends true
 	? Get<T, Extract<K, string>> extends Func
-	? Get<T, Extract<K, string>>
-	: never
+		? Get<T, Extract<K, string>>
+		: never
 	: never;
 
 export class RpcServer<
@@ -26,13 +26,11 @@ export class RpcServer<
 > {
 	private procedures: U;
 
-	constructor(
-		procedures: U
-	) {
+	constructor(procedures: U) {
 		this.procedures = procedures;
 	}
 
-	startListen = (channel: MessageChannel,) => {
+	startListen = (channel: MessageChannel) => {
 		const unsubscribe = channel.subscribe((message: unknown) => {
 			const msg = message as DeferMessage;
 
