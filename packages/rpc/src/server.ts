@@ -58,8 +58,6 @@ export class RpcServer<
 
 		try {
 			const result = await fn(...args);
-			console.log("result", result);
-
 			return Promise.resolve({
 				id,
 				isOk: true,

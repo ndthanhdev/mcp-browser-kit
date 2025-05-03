@@ -20,3 +20,4 @@ dependsOn:
   - core-extension
   - driven-browser-driver
   - core-server
+  - driven-logger-factory

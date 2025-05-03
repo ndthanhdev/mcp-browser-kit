@@ -1,6 +1,5 @@
 import "core-js/proposals";
-import { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension";
-import { DrivenBrowserDriver } from "@mcp-browser-kit/driven-browser-driver";
+import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension";
 import type { RootRouter } from "@mcp-browser-kit/server/routers/root";
 import {
 	createTRPCClient,
@@ -11,9 +10,9 @@ import {
 import { container } from "./helpers/container";
 import { createRpcServer } from "./helpers/create-rpc-server";
 
-container
-	.bind<BrowserDriverOutputPort>(BrowserDriverOutputPort)
-	.to(DrivenBrowserDriver);
+const deferLogger = container
+	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
+	.create("trp", "defer");
 
 // create persistent WebSocket connection
 const wsClient = createWSClient({
@@ -33,9 +32,9 @@ const rpcServer = createRpcServer();
 
 trpc.defer.onMessage.subscribe(undefined, {
 	onData: async (data) => {
-		console.log("defer", data);
+		deferLogger.info("defer", data);
 		const message = await rpcServer.handleDefer(data);
-		console.log("resolve", message);
+		deferLogger.info("resolve", message);
 
 		trpc.defer.resolve.mutate(message);
 	},

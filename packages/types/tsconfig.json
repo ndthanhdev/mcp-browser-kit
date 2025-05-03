@@ -3,20 +3,7 @@
 	"include": [
 		"**/*"
 	],
-	"references": [
-		{
-			"path": "../core-server"
-		}
-	],
 	"compilerOptions": {
-		"outDir": "../../.moon/cache/types/packages/types",
-		"paths": {
-			"@mcp-browser-kit/core-server": [
-				"../core-server/src/index.ts"
-			],
-			"@mcp-browser-kit/core-server/*": [
-				"../core-server/src/*"
-			]
-		}
+		"outDir": "../../.moon/cache/types/packages/types"
 	}
 }
