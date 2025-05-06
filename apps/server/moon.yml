@@ -16,3 +16,4 @@ dependsOn:
   - rpc
   - core-server
   - driven-extension-driver
+  - driven-logger-factory

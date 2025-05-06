@@ -17,10 +17,10 @@ flowchart TD
       ToolDescriptionUseCase
     end
 
-    
     subgraph ServerDriven["Driven"]
       ExtensionDriver
       ConfigProvider["ConfigProvider"]
+      LoggerProvider["LoggerProvider"]
     end
 
     ToolCalls --> ToolCallUseCases

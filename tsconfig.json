@@ -64,6 +64,9 @@
 			"path": "packages/driven-extension-driver"
 		},
 		{
+			"path": "packages/driven-logger-factory"
+		},
+		{
 			"path": "packages/rpc"
 		},
 		{

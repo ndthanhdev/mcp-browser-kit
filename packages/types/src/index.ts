@@ -1,2 +1,2 @@
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-export type Func = (...args: any[]) => any;
+export * from "./func";
+export * from "./logger-factory";
