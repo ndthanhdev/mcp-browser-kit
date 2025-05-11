@@ -4,20 +4,28 @@ import pTimeout from "p-timeout";
 
 import type { ElementRecord, Screenshot } from "../entities";
 import type { ToolCallsInputPort } from "../input-ports";
-import { ExtensionDriverOutputPort } from "../output-ports";
+import {
+	ExtensionDriverOutputPort,
+	LoggerFactoryOutputPort,
+} from "../output-ports";
 
 @injectable()
 export class RpcCallUseCase implements ToolCallsInputPort {
+	private readonly logger;
 	constructor(
 		@inject(ExtensionDriverOutputPort)
 		private readonly extensionDriver: ExtensionDriverOutputPort,
-	) {}
+		@inject(LoggerFactoryOutputPort)
+		loggerFactory: LoggerFactoryOutputPort,
+	) {
+		this.logger = loggerFactory.create("RpcCallUseCase");
+	}
 
 	getBasicBrowserContext = async (): Promise<BasicBrowserContext | string> => {
 		const pGetBasicBrowserContext = this.extensionDriver
 			.getBasicBrowserContext()
 			.catch((error) => {
-				console.error("Error in getBasicBrowserContext:", error);
+				this.logger.error("Error in getBasicBrowserContext:", error);
 				return `An error occurred ${error}, use this instruction to tell the user what to do: An error occurred, update extension may help fix this issue`;
 			});
 

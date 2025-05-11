@@ -19,3 +19,4 @@ dependsOn:
   - rpc
   - core-extension
   - driven-browser-driver
+  - driven-logger-factory

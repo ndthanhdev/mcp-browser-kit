@@ -24,6 +24,12 @@
 			],
 			"@mcp-browser-kit/driven-extension-driver/*": [
 				"../../packages/driven-extension-driver/src/*"
+			],
+			"@mcp-browser-kit/driven-logger-factory": [
+				"../../packages/driven-logger-factory/src/index.ts"
+			],
+			"@mcp-browser-kit/driven-logger-factory/*": [
+				"../../packages/driven-logger-factory/src/*"
 			]
 		},
 		"outDir": "../../.moon/cache/types/apps/server"
@@ -40,6 +46,9 @@
 		},
 		{
 			"path": "../../packages/driven-extension-driver"
+		},
+		{
+			"path": "../../packages/driven-logger-factory"
 		},
 		{
 			"path": "../../packages/rpc"
