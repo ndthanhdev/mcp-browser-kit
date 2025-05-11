@@ -8,7 +8,7 @@
 		"server": "build/tsup/dist/main.js"
 	},
 	"devDependencies": {
-		"@modelcontextprotocol/sdk": "^1.11.0",
+		"@modelcontextprotocol/sdk": "^1.11.1",
 		"@types/data-urls": "^3.0.4",
 		"@types/ws": "^8.18.1",
 		"typescript": "^5.8.3"

@@ -576,7 +576,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/m2@workspace:apps/m2"
   dependencies:
-    "@modelcontextprotocol/sdk": "npm:^1.11.0"
+    "@modelcontextprotocol/sdk": "npm:^1.11.1"
     typescript: "npm:^5.8.3"
     web-ext: "npm:^8.6.0"
   languageName: unknown
@@ -586,7 +586,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/m3@workspace:apps/m3"
   dependencies:
-    "@modelcontextprotocol/sdk": "npm:^1.11.0"
+    "@modelcontextprotocol/sdk": "npm:^1.11.1"
     typescript: "npm:^5.8.3"
     web-ext: "npm:^8.6.0"
   languageName: unknown
@@ -602,7 +602,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/server@workspace:apps/server"
   dependencies:
-    "@modelcontextprotocol/sdk": "npm:^1.11.0"
+    "@modelcontextprotocol/sdk": "npm:^1.11.1"
     "@types/data-urls": "npm:^3.0.4"
     "@types/ws": "npm:^8.18.1"
     data-urls: "npm:^5.0.0"
@@ -633,9 +633,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@modelcontextprotocol/sdk@npm:^1.11.0":
-  version: 1.11.0
-  resolution: "@modelcontextprotocol/sdk@npm:1.11.0"
+"@modelcontextprotocol/sdk@npm:^1.11.1":
+  version: 1.11.1
+  resolution: "@modelcontextprotocol/sdk@npm:1.11.1"
   dependencies:
     content-type: "npm:^1.0.5"
     cors: "npm:^2.8.5"
@@ -647,7 +647,7 @@ __metadata:
     raw-body: "npm:^3.0.0"
     zod: "npm:^3.23.8"
     zod-to-json-schema: "npm:^3.24.1"
-  checksum: 10c0/10ce5ebe54b238df614051e0f2ef8f037fee6ceda7a870f5892c84efe21cbdcdb7e932d9be25e91982e0eb40e4c8ed33da9b0b2ca01df6baa76eb0cd5cb89ce6
+  checksum: 10c0/43ae2c8ebcc55a0f050f94fa325dfcb038325fd3b11d7c0ca2bc005d41a007f0039e90632f12ebf316e17d7a002233bc6e62f4d4626bf84edb24bd580c47671f
   languageName: node
   linkType: hard
 
@@ -924,12 +924,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^22.15.3":
+"@types/node@npm:*":
   version: 22.15.3
   resolution: "@types/node@npm:22.15.3"
   dependencies:
     undici-types: "npm:~6.21.0"
   checksum: 10c0/2879f012d1aeba0bfdb5fed80d165f4f2cb3d1f2e1f98a24b18d4a211b4ace7d64bf2622784c78355982ffc1081ba79d0934efc2fb8353913e5871a63609661f
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^22.15.17":
+  version: 22.15.17
+  resolution: "@types/node@npm:22.15.17"
+  dependencies:
+    undici-types: "npm:~6.21.0"
+  checksum: 10c0/fb92aa10b628683c5b965749f955bc2322485ecb0ea6c2f4cae5f2c7537a16834607e67083a9e9281faaae8d7dee9ada8d6a5c0de9a52c17d82912ef00c0fdd4
   languageName: node
   linkType: hard
 
@@ -942,12 +951,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/sanitize-html@npm:^2.15.0":
-  version: 2.15.0
-  resolution: "@types/sanitize-html@npm:2.15.0"
+"@types/sanitize-html@npm:^2.16.0":
+  version: 2.16.0
+  resolution: "@types/sanitize-html@npm:2.16.0"
   dependencies:
     htmlparser2: "npm:^8.0.0"
-  checksum: 10c0/446479c1ed34ee21e5c7eef803056a7fbb984559c16b05a6e53a06f5ecb0e4efd8d3bcfb07f9a73bd15e0be86fd1f12a5f5a539546edab05e9667543b8780800
+  checksum: 10c0/1d5ff68e07815d86a6832fba9b86f21af1824fd1080b765485688dc2777e03c22c6058ae12ba67ac3ee1aa1731f99626ed465e914ed6982bfe7c6c7144b79d45
   languageName: node
   linkType: hard
 
@@ -4871,9 +4880,9 @@ __metadata:
     "@trpc/server": "npm:^11.1.2"
     "@types/data-urls": "npm:^3.0.4"
     "@types/firefox-webext-browser": "npm:^120.0.4"
-    "@types/node": "npm:^22.15.3"
+    "@types/node": "npm:^22.15.17"
     "@types/ramda": "npm:^0.30.2"
-    "@types/sanitize-html": "npm:^2.15.0"
+    "@types/sanitize-html": "npm:^2.16.0"
     "@types/webextension-polyfill": "npm:^0.12.3"
     change-case: "npm:^5.4.4"
     consola: "npm:^3.4.2"
@@ -4893,13 +4902,13 @@ __metadata:
     superjson: "npm:^2.2.2"
     tsconfig-moon: "npm:^1.4.0"
     tsup: "npm:^8.4.0"
-    type-fest: "npm:^4.40.1"
+    type-fest: "npm:^4.41.0"
     typescript: "npm:^5.8.3"
     web-ext: "npm:^8.6.0"
     webextension-polyfill: "npm:^0.12.0"
     winston: "npm:^3.17.0"
     winston-transport-browserconsole: "npm:^1.0.5"
-    zod: "npm:^3.24.3"
+    zod: "npm:^3.24.4"
   languageName: unknown
   linkType: soft
 
@@ -5689,10 +5698,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^4.18.2, type-fest@npm:^4.21.0, type-fest@npm:^4.40.1":
+"type-fest@npm:^4.18.2, type-fest@npm:^4.21.0":
   version: 4.40.1
   resolution: "type-fest@npm:4.40.1"
   checksum: 10c0/590cb7d4dcd3da83efe49b5b52cd041661f6fa29f18cb76650fe1fdeb4090688e92955656e9d981e606abb13d25c0418be8c6c6504d80e87fe18dc9ca0888392
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^4.41.0":
+  version: 4.41.0
+  resolution: "type-fest@npm:4.41.0"
+  checksum: 10c0/f5ca697797ed5e88d33ac8f1fec21921839871f808dc59345c9cf67345bfb958ce41bd821165dbf3ae591cedec2bf6fe8882098dfdd8dc54320b859711a2c1e4
   languageName: node
   linkType: hard
 
@@ -6243,9 +6259,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.23.8, zod@npm:^3.24.3":
+"zod@npm:^3.23.8":
   version: 3.24.3
   resolution: "zod@npm:3.24.3"
   checksum: 10c0/ab0369810968d0329a1a141e9418e01e5c9c2a4905cbb7cb7f5a131d6e9487596e1400e21eeff24c4a8ee28dacfa5bd6103893765c055b7a98c2006a5a4fc68d
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.24.4":
+  version: 3.24.4
+  resolution: "zod@npm:3.24.4"
+  checksum: 10c0/ab3112f017562180a41a0f83d870b333677f7d6b77f106696c56894567051b91154714a088149d8387a4f50806a2520efcb666f108cd384a35c236a191186d91
   languageName: node
   linkType: hard
