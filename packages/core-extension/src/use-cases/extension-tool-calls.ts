@@ -4,14 +4,23 @@ import type {
 	BasicBrowserContext,
 	ExtensionToolCallsInputPort,
 } from "../input-ports";
-import { BrowserDriverOutputPort } from "../output-ports";
+import {
+	BrowserDriverOutputPort,
+	LoggerFactoryOutputPort,
+} from "../output-ports";
 
 @injectable()
 export class ExtensionToolsUseCase implements ExtensionToolCallsInputPort {
+	private readonly logger;
+
 	constructor(
 		@inject(BrowserDriverOutputPort)
 		private readonly browserDriver: BrowserDriverOutputPort,
-	) {}
+		@inject(LoggerFactoryOutputPort)
+		private readonly loggerFactory: LoggerFactoryOutputPort,
+	) {
+		this.logger = this.loggerFactory.create("ExtensionToolsUseCase");
+	}
 	hitEnterOnViewableElement = (
 		tabId: string,
 		x: number,
@@ -24,9 +33,19 @@ export class ExtensionToolsUseCase implements ExtensionToolCallsInputPort {
 	};
 
 	getBasicBrowserContext = async (): Promise<BasicBrowserContext> => {
+		this.logger.verbose("getBasicBrowserContext");
 		const tabs = await this.browserDriver.getTabs();
-		const manifestVersion = await this.browserDriver.getManifestVersion();
+		this.logger.verbose("getBasicBrowserContext - getting tabs - done");
 
+		const manifestVersion = await this.browserDriver.getManifestVersion();
+		this.logger.verbose(
+			"getBasicBrowserContext - getting manifestVersion - done",
+		);
+
+		this.logger.info("getBasicBrowserContext - got tabs and manifestVersion", {
+			tabs,
+			manifestVersion,
+		});
 		return {
 			tabs,
 			manifestVersion,

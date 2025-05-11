@@ -15,7 +15,7 @@ export const startKeepAlive = () => {
 			KeepAliveResponse
 		>({ action: "keepAlive" });
 		if (response?.action !== "keepAliveAck") {
-			console.error("Keep alive failed");
+			throw new Error("Keep alive failed");
 		}
 	};
 

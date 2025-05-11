@@ -5,21 +5,12 @@
 	],
 	"references": [
 		{
-			"path": "../core-extension"
-		},
-		{
 			"path": "../types"
 		}
 	],
 	"compilerOptions": {
-		"outDir": "../../.moon/cache/types/packages/core-server",
+		"outDir": "../../.moon/cache/types/packages/driven-logger-factory",
 		"paths": {
-			"@mcp-browser-kit/core-extension": [
-				"../core-extension/src/index.ts"
-			],
-			"@mcp-browser-kit/core-extension/*": [
-				"../core-extension/src/*"
-			],
 			"@mcp-browser-kit/types": [
 				"../types/src/index.ts"
 			],

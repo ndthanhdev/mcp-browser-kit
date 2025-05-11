@@ -5,6 +5,9 @@
 	],
 	"references": [
 		{
+			"path": "../types"
+		},
+		{
 			"path": "../utils"
 		}
 	],
@@ -16,6 +19,12 @@
 			],
 			"@mcp-browser-kit/utils": [
 				"../utils/src/index.ts"
+			],
+			"@mcp-browser-kit/types": [
+				"../types/src/index.ts"
+			],
+			"@mcp-browser-kit/types/*": [
+				"../types/src/*"
 			]
 		}
 	}
