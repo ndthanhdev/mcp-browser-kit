@@ -22,3 +22,7 @@ vcs:
   hooks:
     pre-commit:
       - moon scripts:check
+
+generator:
+  templates:
+    - file://../ndthanhdev.github.io/etc/templates

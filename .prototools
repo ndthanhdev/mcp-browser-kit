@@ -1,3 +1,11 @@
+dagger = "^0"
 moon = "^1"
 node = "^22"
 yarn = "^4"
+
+[plugins]
+dagger = "source:https://raw.githubusercontent.com/Phault/proto-toml-plugins/main/dagger/plugin.toml"
+
+[settings]
+auto-install = true
+auto-clean = true

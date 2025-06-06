@@ -1,0 +1,3 @@
+# yaml-language-server: $schema: 'https://moonrepo.dev/schemas/project.json'
+type: tool
+id: workflow-runtime
