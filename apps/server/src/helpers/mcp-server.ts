@@ -2,8 +2,8 @@ import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
 import { ToolCallsInputPort } from "@mcp-browser-kit/core-server/input-ports";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
 import { over } from "ok-value-error-reason";
+import { z } from "zod";
 import { container } from "./container";
 const logger = container
 	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
@@ -118,7 +118,9 @@ const createServer = async () => {
 		},
 		async ({ tabId }) => {
 			logger.info("Executing getInnerText", { tabId });
-			const overInnerText = await over(() => toolsInputPort.getInnerText(tabId));
+			const overInnerText = await over(() =>
+				toolsInputPort.getInnerText(tabId),
+			);
 
 			if (!overInnerText.ok) {
 				logger.error("Failed to get inner text", {
@@ -160,7 +162,9 @@ const createServer = async () => {
 		},
 		async ({ tabId }) => {
 			logger.info("Executing getReadableElements", { tabId });
-			const overElements = await over(() => toolsInputPort.getReadableElements(tabId));
+			const overElements = await over(() =>
+				toolsInputPort.getReadableElements(tabId),
+			);
 
 			if (!overElements.ok) {
 				logger.error("Failed to get readable elements", {
@@ -204,7 +208,9 @@ const createServer = async () => {
 		},
 		async ({ tabId, x, y }) => {
 			logger.info("Executing clickOnViewableElement", { tabId, x, y });
-			const overClick = await over(() => toolsInputPort.clickOnViewableElement(tabId, x, y));
+			const overClick = await over(() =>
+				toolsInputPort.clickOnViewableElement(tabId, x, y),
+			);
 
 			if (!overClick.ok) {
 				logger.error("Failed to click on viewable element", {
@@ -247,7 +253,9 @@ const createServer = async () => {
 		},
 		async ({ tabId, x, y, value }) => {
 			logger.info("Executing fillTextToViewableElement", { tabId, x, y });
-			const overFill = await over(() => toolsInputPort.fillTextToViewableElement(tabId, x, y, value));
+			const overFill = await over(() =>
+				toolsInputPort.fillTextToViewableElement(tabId, x, y, value),
+			);
 
 			if (!overFill.ok) {
 				logger.error("Failed to fill text to viewable element", {
@@ -294,7 +302,9 @@ const createServer = async () => {
 		},
 		async ({ tabId, x, y }) => {
 			logger.info("Executing hitEnterOnViewableElement", { tabId, x, y });
-			const overEnter = await over(() => toolsInputPort.hitEnterOnViewableElement(tabId, x, y));
+			const overEnter = await over(() =>
+				toolsInputPort.hitEnterOnViewableElement(tabId, x, y),
+			);
 
 			if (!overEnter.ok) {
 				logger.error("Failed to hit enter on viewable element", {
@@ -335,7 +345,9 @@ const createServer = async () => {
 		},
 		async ({ tabId, index }) => {
 			logger.info("Executing clickOnReadableElement", { tabId, index });
-			const overClick = await over(() => toolsInputPort.clickOnReadableElement(tabId, index));
+			const overClick = await over(() =>
+				toolsInputPort.clickOnReadableElement(tabId, index),
+			);
 
 			if (!overClick.ok) {
 				logger.error("Failed to click on readable element", {
@@ -376,7 +388,9 @@ const createServer = async () => {
 		},
 		async ({ tabId, index, value }) => {
 			logger.info("Executing fillTextToReadableElement", { tabId, index });
-			const overFill = await over(() => toolsInputPort.fillTextToReadableElement(tabId, index, value));
+			const overFill = await over(() =>
+				toolsInputPort.fillTextToReadableElement(tabId, index, value),
+			);
 
 			if (!overFill.ok) {
 				logger.error("Failed to fill text to readable element", {
@@ -420,7 +434,9 @@ const createServer = async () => {
 		},
 		async ({ tabId, index }) => {
 			logger.info("Executing hitEnterOnReadableElement", { tabId, index });
-			const overEnter = await over(() => toolsInputPort.hitEnterOnReadableElement(tabId, index));
+			const overEnter = await over(() =>
+				toolsInputPort.hitEnterOnReadableElement(tabId, index),
+			);
 
 			if (!overEnter.ok) {
 				logger.error("Failed to hit enter on readable element", {
@@ -462,7 +478,9 @@ const createServer = async () => {
 		},
 		async ({ tabId, fnBodyCode }) => {
 			logger.info("Executing invokeJsFn", { tabId });
-			const overResult = await over(() => toolsInputPort.invokeJsFn(tabId, fnBodyCode));
+			const overResult = await over(() =>
+				toolsInputPort.invokeJsFn(tabId, fnBodyCode),
+			);
 
 			if (!overResult.ok) {
 				logger.error("Failed to invoke JavaScript function", {
