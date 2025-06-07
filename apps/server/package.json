@@ -1,6 +1,6 @@
 {
 	"name": "@mcp-browser-kit/server",
-	"version": "5.0.1",
+	"version": "5.0.2",
 	"packageManager": "yarn@4.8.0",
 	"homepage": "https://github.com/ndthanhdev/mcp-browser-kit",
 	"bin": {
