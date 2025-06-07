@@ -2,6 +2,7 @@ import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
 import { ToolCallsInputPort } from "@mcp-browser-kit/core-server/input-ports";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { over } from "ok-value-error-reason";
 import { z } from "zod";
 import { container } from "./container";
 const logger = container
@@ -31,7 +32,23 @@ const createServer = async () => {
 		{},
 		async () => {
 			logger.info("Executing getBasicBrowserContext");
-			const ctx = await toolsInputPort.getBasicBrowserContext();
+			const overCtx = await over(toolsInputPort.getBasicBrowserContext);
+
+			if (!overCtx.ok) {
+				logger.error("Failed to get basic browser context", {
+					reason: overCtx.reason,
+				});
+				return {
+					content: [
+						{
+							type: "text",
+							text: `Error getting browser context: ${overCtx.reason}`,
+						},
+					],
+				};
+			}
+
+			const ctx = overCtx.value;
 			logger.verbose("Retrieved browser context", { tabs: ctx });
 			return {
 				content: [
@@ -53,7 +70,25 @@ const createServer = async () => {
 		{},
 		async () => {
 			logger.info("Executing captureActiveTab");
-			const screenshot = await toolsInputPort.captureActiveTab();
+			const overScreenshot = await over(toolsInputPort.captureActiveTab);
+
+			if (!overScreenshot.ok) {
+				logger.error("Failed to capture active tab screenshot", {
+					reason: overScreenshot.reason,
+				});
+				return {
+					content: [
+						{
+							type: "text",
+							text: `Error capturing screenshot: ${overScreenshot.reason}`,
+						},
+					],
+				};
+			}
+
+			// const screenshot = overScreenshot.value;
+
+			const screenshot = overScreenshot.value;
 			logger.verbose("Screenshot captured", {
 				width: screenshot.width,
 				height: screenshot.height,
@@ -83,7 +118,26 @@ const createServer = async () => {
 		},
 		async ({ tabId }) => {
 			logger.info("Executing getInnerText", { tabId });
-			const innerText = await toolsInputPort.getInnerText(tabId);
+			const overInnerText = await over(() =>
+				toolsInputPort.getInnerText(tabId),
+			);
+
+			if (!overInnerText.ok) {
+				logger.error("Failed to get inner text", {
+					tabId,
+					reason: overInnerText.reason,
+				});
+				return {
+					content: [
+						{
+							type: "text",
+							text: `Error getting inner text: ${overInnerText.reason}`,
+						},
+					],
+				};
+			}
+
+			const innerText = overInnerText.value;
 			logger.verbose("Retrieved innerText", {
 				tabId,
 				textLength: innerText?.length,
@@ -108,7 +162,26 @@ const createServer = async () => {
 		},
 		async ({ tabId }) => {
 			logger.info("Executing getReadableElements", { tabId });
-			const elements = await toolsInputPort.getReadableElements(tabId);
+			const overElements = await over(() =>
+				toolsInputPort.getReadableElements(tabId),
+			);
+
+			if (!overElements.ok) {
+				logger.error("Failed to get readable elements", {
+					tabId,
+					reason: overElements.reason,
+				});
+				return {
+					content: [
+						{
+							type: "text",
+							text: `Error getting readable elements: ${overElements.reason}`,
+						},
+					],
+				};
+			}
+
+			const elements = overElements.value;
 			logger.verbose("Retrieved readable elements", {
 				tabId,
 				elementCount: elements.length,
@@ -135,7 +208,27 @@ const createServer = async () => {
 		},
 		async ({ tabId, x, y }) => {
 			logger.info("Executing clickOnViewableElement", { tabId, x, y });
-			await toolsInputPort.clickOnViewableElement(tabId, x, y);
+			const overClick = await over(() =>
+				toolsInputPort.clickOnViewableElement(tabId, x, y),
+			);
+
+			if (!overClick.ok) {
+				logger.error("Failed to click on viewable element", {
+					tabId,
+					x,
+					y,
+					reason: overClick.reason,
+				});
+				return {
+					content: [
+						{
+							type: "text",
+							text: `Error clicking on element: ${overClick.reason}`,
+						},
+					],
+				};
+			}
+
 			logger.verbose("Clicked on viewable element", { tabId, x, y });
 			return {
 				content: [
@@ -160,7 +253,27 @@ const createServer = async () => {
 		},
 		async ({ tabId, x, y, value }) => {
 			logger.info("Executing fillTextToViewableElement", { tabId, x, y });
-			await toolsInputPort.fillTextToViewableElement(tabId, x, y, value);
+			const overFill = await over(() =>
+				toolsInputPort.fillTextToViewableElement(tabId, x, y, value),
+			);
+
+			if (!overFill.ok) {
+				logger.error("Failed to fill text to viewable element", {
+					tabId,
+					x,
+					y,
+					reason: overFill.reason,
+				});
+				return {
+					content: [
+						{
+							type: "text",
+							text: `Error filling text: ${overFill.reason}`,
+						},
+					],
+				};
+			}
+
 			logger.verbose("Filled text to viewable element", {
 				tabId,
 				x,
@@ -189,7 +302,27 @@ const createServer = async () => {
 		},
 		async ({ tabId, x, y }) => {
 			logger.info("Executing hitEnterOnViewableElement", { tabId, x, y });
-			await toolsInputPort.hitEnterOnViewableElement(tabId, x, y);
+			const overEnter = await over(() =>
+				toolsInputPort.hitEnterOnViewableElement(tabId, x, y),
+			);
+
+			if (!overEnter.ok) {
+				logger.error("Failed to hit enter on viewable element", {
+					tabId,
+					x,
+					y,
+					reason: overEnter.reason,
+				});
+				return {
+					content: [
+						{
+							type: "text",
+							text: `Error hitting enter: ${overEnter.reason}`,
+						},
+					],
+				};
+			}
+
 			logger.verbose("Hit enter on viewable element", { tabId, x, y });
 			return {
 				content: [
@@ -212,7 +345,26 @@ const createServer = async () => {
 		},
 		async ({ tabId, index }) => {
 			logger.info("Executing clickOnReadableElement", { tabId, index });
-			await toolsInputPort.clickOnReadableElement(tabId, index);
+			const overClick = await over(() =>
+				toolsInputPort.clickOnReadableElement(tabId, index),
+			);
+
+			if (!overClick.ok) {
+				logger.error("Failed to click on readable element", {
+					tabId,
+					index,
+					reason: overClick.reason,
+				});
+				return {
+					content: [
+						{
+							type: "text",
+							text: `Error clicking on element: ${overClick.reason}`,
+						},
+					],
+				};
+			}
+
 			logger.verbose("Clicked on readable element", { tabId, index });
 			return {
 				content: [
@@ -236,7 +388,26 @@ const createServer = async () => {
 		},
 		async ({ tabId, index, value }) => {
 			logger.info("Executing fillTextToReadableElement", { tabId, index });
-			await toolsInputPort.fillTextToReadableElement(tabId, index, value);
+			const overFill = await over(() =>
+				toolsInputPort.fillTextToReadableElement(tabId, index, value),
+			);
+
+			if (!overFill.ok) {
+				logger.error("Failed to fill text to readable element", {
+					tabId,
+					index,
+					reason: overFill.reason,
+				});
+				return {
+					content: [
+						{
+							type: "text",
+							text: `Error filling text: ${overFill.reason}`,
+						},
+					],
+				};
+			}
+
 			logger.verbose("Filled text to readable element", {
 				tabId,
 				index,
@@ -263,7 +434,26 @@ const createServer = async () => {
 		},
 		async ({ tabId, index }) => {
 			logger.info("Executing hitEnterOnReadableElement", { tabId, index });
-			await toolsInputPort.hitEnterOnReadableElement(tabId, index);
+			const overEnter = await over(() =>
+				toolsInputPort.hitEnterOnReadableElement(tabId, index),
+			);
+
+			if (!overEnter.ok) {
+				logger.error("Failed to hit enter on readable element", {
+					tabId,
+					index,
+					reason: overEnter.reason,
+				});
+				return {
+					content: [
+						{
+							type: "text",
+							text: `Error hitting enter: ${overEnter.reason}`,
+						},
+					],
+				};
+			}
+
 			logger.verbose("Hit enter on readable element", { tabId, index });
 			return {
 				content: [
@@ -288,7 +478,26 @@ const createServer = async () => {
 		},
 		async ({ tabId, fnBodyCode }) => {
 			logger.info("Executing invokeJsFn", { tabId });
-			const result = await toolsInputPort.invokeJsFn(tabId, fnBodyCode);
+			const overResult = await over(() =>
+				toolsInputPort.invokeJsFn(tabId, fnBodyCode),
+			);
+
+			if (!overResult.ok) {
+				logger.error("Failed to invoke JavaScript function", {
+					tabId,
+					reason: overResult.reason,
+				});
+				return {
+					content: [
+						{
+							type: "text",
+							text: `Error invoking JavaScript: ${overResult.reason}`,
+						},
+					],
+				};
+			}
+
+			const result = overResult.value;
 			logger.verbose("JavaScript function executed", {
 				tabId,
 				hasResult: result !== undefined,
@@ -303,6 +512,10 @@ const createServer = async () => {
 			};
 		},
 	);
+
+	process.on("unhandledRejection", (reason, promise) => {
+		logger.error("Unhandled Rejection at:", promise, "reason:", reason);
+	});
 
 	logger.info("All MCP server tools registered successfully");
 	return server;
