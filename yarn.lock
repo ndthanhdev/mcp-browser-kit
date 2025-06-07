@@ -4052,6 +4052,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ok-value-error-reason@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "ok-value-error-reason@npm:1.1.0"
+  checksum: 10c0/878cfb579cb068f396cf8adbc81362db08953b6ee167c89a8bf6d50b7ad2a9b9ac46dfea4a5cea9a744e03857226d130a15c00c27521d07c92bf156e7d38816b
+  languageName: node
+  linkType: hard
+
 "on-exit-leak-free@npm:^2.1.0":
   version: 2.1.2
   resolution: "on-exit-leak-free@npm:2.1.2"
@@ -4884,6 +4891,7 @@ __metadata:
     image-dimensions: "npm:^2.3.0"
     inversify: "npm:^7.5.1"
     js-base64: "npm:^3.7.7"
+    ok-value-error-reason: "npm:^1.1.0"
     p-timeout: "npm:^6.1.4"
     pino: "npm:^9.6.0"
     pino-pretty: "npm:^13.0.0"
