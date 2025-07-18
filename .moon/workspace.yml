@@ -1,4 +1,4 @@
-# https://moonrepo.dev/docs/config/workspace
+# yaml-language-server: $schema: 'https://moonrepo.dev/docs/config/workspace.json'
 $schema: './cache/schemas/workspace.json'
 
 # Require a specific version of moon while running commands, otherwise fail.
@@ -9,16 +9,21 @@ $schema: './cache/schemas/workspace.json'
 
 # REQUIRED: A map of all projects found within the workspace, or a list or file system globs.
 # When using a map, each entry requires a unique project ID as the map key, and a file system
-# path to the project folder as the map value. File paths are relative from the workspace root,
+# path to the project folder as the map value. File pathsFile paths are relative from the workspace root,
 # and cannot reference projects located outside the workspace boundary.
 projects:
   - 'packages/*'
   - 'apps/*'
-  - 'etc/scripts'
+  - 'etc/*'
 
 vcs:
   manager: git
   defaultBranch: main
+  provider: github
   hooks:
     pre-commit:
       - moon scripts:check
+
+generator:
+  templates:
+    - file://./etc/submodules/n8v/etc/templates

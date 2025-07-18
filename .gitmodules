@@ -1,0 +1,3 @@
+[submodule "etc/submodules/n8v"]
+	path = etc/submodules/n8v
+	url = git@github.com:ndthanhdev/ndthanhdev.github.io.git

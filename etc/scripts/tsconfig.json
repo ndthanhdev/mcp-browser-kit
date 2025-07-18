@@ -1,48 +1,11 @@
 {
 	"extends": "../../tsconfig.options.json",
 	"compilerOptions": {
-		"emitDeclarationOnly": true,
 		"baseUrl": ".",
+		"outDir": "../../.moon/cache/types/etc/scripts",
 		"paths": {
-			"@mcp-browser-kit/m2/*": [
-				"../m2/src/*"
-			],
-			"@mcp-browser-kit/rpc": [
-				"../../packages/rpc/src/index.ts"
-			],
-			"@mcp-browser-kit/rpc/*": [
-				"../../packages/rpc/src/*"
-			],
-			"@mcp-browser-kit/core-server": [
-				"../../packages/core-server/src/index.ts"
-			],
-			"@mcp-browser-kit/core-server/*": [
-				"../../packages/core-server/src/*"
-			],
-			"@mcp-browser-kit/driven-extension-driver": [
-				"../../packages/driven-extension-driver/src/index.ts"
-			],
-			"@mcp-browser-kit/driven-extension-driver/*": [
-				"../../packages/driven-extension-driver/src/*"
-			]
-		},
-		"outDir": "../../.moon/cache/types/etc/scripts"
-	},
-	"include": [
-		"src/**/*.ts",
-		"../../packages/rpc/src/**/*",
-		"../../packages/core-server/src/**/*",
-		"../../packages/driven-extension-driver/src/**/*"
-	],
-	"references": [
-		{
-			"path": "../../packages/core-server"
-		},
-		{
-			"path": "../../packages/driven-extension-driver"
-		},
-		{
-			"path": "../../packages/rpc"
+			"@mcp-browser-kit/scripts/*": ["*"]
 		}
-	]
+	},
+	"include": ["**/*.ts"]
 }

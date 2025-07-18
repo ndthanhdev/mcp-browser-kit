@@ -1,10 +1,13 @@
 {
-	"name": "scripts",
-	"version": "3.0.1",
-	"packageManager": "yarn@4.8.0",
-	"homepage": "https://github.com/ndthanhdev/mcp-browser-kit",
+	"name": "@mcp-browser-kit/scripts",
+	"packageManager": "yarn@4.2.2",
 	"type": "module",
 	"devDependencies": {
-		"@biomejs/biome": "^1.9.4"
+		"tsx": "^4.19.2",
+		"typescript": "^5.7.3",
+		"zx": "^8.3.0"
+	},
+	"dependencies": {
+		"luxon": "^3.5.0"
 	}
 }
