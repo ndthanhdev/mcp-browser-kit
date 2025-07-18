@@ -5,6 +5,4 @@ import { workDirs } from "@mcp-browser-kit/scripts/utils/work-dirs";
 $.verbose = true;
 cd(workDirs.path);
 
-await pipeOutput($`moon ci`);
-
 await pipeOutput($`moon :check`);
