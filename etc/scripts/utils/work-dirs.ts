@@ -5,6 +5,7 @@ import * as path from "node:path";
 $.verbose = true;
 
 const root = path.resolve(import.meta.dirname, "../../../");
+const build = path.resolve(root, "build");
 const apps = path.resolve(root, "apps");
 const m2 = path.resolve(apps, "m2");
 const m3 = path.resolve(apps, "m3");
@@ -14,6 +15,15 @@ const workflowRuntime = path.resolve(etc, "workflow-runtime");
 const scripts = path.resolve(etc, "scripts");
 
 export const workDirs = {
+	build: {
+		path: build,
+		apps: {
+			path: path.resolve(build, "apps"),
+		},
+		tars: {
+			path: path.resolve(build, "tars"),
+		},
+	},
 	apps: {
 		path: apps,
 		m2: {
