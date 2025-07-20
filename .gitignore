@@ -11,8 +11,8 @@
 
 node_modules/
 
-# build
-build/
+# target
+target/
 
 # Yarn zero install
 .yarn/*

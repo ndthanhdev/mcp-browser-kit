@@ -6,15 +6,15 @@ fileGroups:
   sources:
     - src/**/*
   tsup-dist:
-    - build/tsup/dist/**/*
+    - target/tsup/dist/**/*
   extension-assets:
-    - build/extension/tmp/assets/**/*
+    - target/extension/tmp/assets/**/*
   extension-manifest:
-    - build/extension/tmp/manifest.json
+    - target/extension/tmp/manifest.json
   extension-vendors:
-    - build/extension/tmp/vendors/**/*
+    - target/extension/tmp/vendors/**/*
   extension-dist:
-    - build/extension/dist/**/*
+    - target/extension/dist/**/*
 
 tasks:
   extension-copy-assets:
@@ -22,12 +22,12 @@ tasks:
       - ~:tsup-build
     script: |
       #!/usr/bin/env bash
-      rm -rf ./build/extension/
-      mkdir -p ./build/extension/tmp/vendors/
-      cp -r build/tsup/dist/* ./build/extension/tmp/
-      cp -r ./src/manifest.json ./build/extension/tmp/manifest.json
-      cp -r ./assets/ ./build/extension/tmp/assets/
-      cp -r $workspaceRoot/node_modules/webextension-polyfill/dist ./build/extension/tmp/vendors/webextension-polyfill
+      rm -rf ./target/extension/
+      mkdir -p ./target/extension/tmp/vendors/
+      cp -r target/tsup/dist/* ./target/extension/tmp/
+      cp -r ./src/manifest.json ./target/extension/tmp/manifest.json
+      cp -r ./assets/ ./target/extension/tmp/assets/
+      cp -r $workspaceRoot/node_modules/webextension-polyfill/dist ./target/extension/tmp/vendors/webextension-polyfill
     inputs: 
       - '@group(assets)'
       - '@group(sources)'
@@ -43,7 +43,7 @@ tasks:
       - extension-copy-assets
     toolchain: node
     script: |
-      web-ext build -o --source-dir=$projectRoot/build/extension/tmp -a=$projectRoot/build/extension/dist
+      web-ext build -o --source-dir=$projectRoot/target/extension/tmp -a=$projectRoot/target/extension/dist
     inputs:
       - '@group(tsup-dist)'
       - '@group(extension-assets)'

@@ -8,5 +8,5 @@ export default defineConfig({
 	format: ["esm"],
 	target: "node22",
 	noExternal: ["@mcp-browser-kit/rpc"],
-	outDir: "build/tsup/dist",
+	outDir: "target/tsup/dist",
 });

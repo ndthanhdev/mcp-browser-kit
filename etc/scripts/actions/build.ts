@@ -24,10 +24,10 @@ interface BuildTarget {
 }
 
 const buildConfig: BuildConfig = {
-	sourcePattern: "apps/*/build",
-	outputDir: workDirs.build.path,
-	tarsDir: workDirs.build.tars.path,
-	appsDir: workDirs.build.apps.path,
+	sourcePattern: "apps/*/target",
+	outputDir: workDirs.target.path,
+	tarsDir: workDirs.target.tars.path,
+	appsDir: workDirs.target.apps.path,
 };
 
 // Pure functions for build operations
@@ -35,11 +35,11 @@ const extractAppNameFromPath = (buildPath: string): string => {
 	return buildPath.split("/")[1];
 };
 
-const createBuildTarget = (buildDir: string, config: BuildConfig): BuildTarget => {
-	const name = extractAppNameFromPath(buildDir);
+const createBuildTarget = (targetDir: string, config: BuildConfig): BuildTarget => {
+	const name = extractAppNameFromPath(targetDir);
 	return {
 		name,
-		sourcePath: buildDir,
+		sourcePath: targetDir,
 		targetPath: path.join(config.appsDir, name),
 		tarPath: path.join(config.tarsDir, `${name}.tar.gz`),
 	};
