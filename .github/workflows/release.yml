@@ -2,8 +2,8 @@ name: Release Prod
 
 on:
   push:
-    tags:
-      - v*.*.*
+    branches:
+      - release/*.*
 
 jobs:
   call-function:
@@ -33,4 +33,5 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file_glob: target/release/m*.tar.gz
           tag: ${{ github.ref }}
+          draft: true
           overwrite: true
