@@ -8,76 +8,26 @@ import path from "node:path";
 $.verbose = true;
 cd(workDirs.path);
 
-// Configuration
-interface BuildConfig {
-	sourcePattern: string;
-	outputDir: string;
-	tarsDir: string;
-	appsDir: string;
-}
+// Build apps and create release archives
+await pipeOutput($`moon :build`);
 
-interface BuildTarget {
-	name: string;
-	sourcePath: string;
-	targetPath: string;
-	tarPath: string;
-}
+// Prepare output directories
+await fse.emptyDir(workDirs.target.path);
+await fse.emptyDir(workDirs.target.release.path);
 
-const buildConfig: BuildConfig = {
-	sourcePattern: "apps/*/target",
-	outputDir: workDirs.target.path,
-	tarsDir: workDirs.target.tars.path,
-	appsDir: workDirs.target.apps.path,
-};
+// Find all built apps and process them
+const buildDirs = await glob(["apps/*/target"], { onlyFiles: false });
 
-// Pure functions for build operations
-const extractAppNameFromPath = (buildPath: string): string => {
-	return buildPath.split("/")[1];
-};
-
-const createBuildTarget = (targetDir: string, config: BuildConfig): BuildTarget => {
-	const name = extractAppNameFromPath(targetDir);
-	return {
-		name,
-		sourcePath: targetDir,
-		targetPath: path.join(config.appsDir, name),
-		tarPath: path.join(config.tarsDir, `${name}.tar.gz`),
-	};
-};
-
-const copyBuildArtifacts = async (target: BuildTarget): Promise<void> => {
-	await fse.copy(target.sourcePath, target.targetPath);
-	console.log(`Copied ${target.sourcePath} to ${target.targetPath}`);
-};
-
-const createTarArchive = async (target: BuildTarget, config: BuildConfig): Promise<void> => {
-	await $`tar -czf ${target.tarPath} -C ${config.appsDir} ${target.name}`;
-	console.log(`Created tar.gz: ${target.tarPath}`);
-};
-
-const processBuildTarget = async (target: BuildTarget, config: BuildConfig): Promise<void> => {
-	await copyBuildArtifacts(target);
-	await createTarArchive(target, config);
-};
-
-const prepareBuildDirectories = async (config: BuildConfig): Promise<void> => {
-	await fse.emptyDir(config.outputDir);
-	await fse.ensureDir(config.tarsDir);
-};
-
-const discoverBuildTargets = async (config: BuildConfig): Promise<BuildTarget[]> => {
-	const buildDirs = await glob([config.sourcePattern], { onlyFiles: false });
-	return buildDirs.map(buildDir => createBuildTarget(buildDir, config));
-};
-
-// Main execution pipeline
-const runBuildPipeline = async (config: BuildConfig): Promise<void> => {
-	await pipeOutput($`moon :build`);
-	await prepareBuildDirectories(config);
+await Promise.all(buildDirs.map(async (buildDir) => {
+	const appName = buildDir.split("/")[1];
+	const targetPath = path.join(workDirs.target.apps.path, appName);
+	const tarPath = path.join(workDirs.target.release.path, `${appName}.tar.gz`);
 	
-	const targets = await discoverBuildTargets(config);
-	await Promise.all(targets.map(target => processBuildTarget(target, config)));
-};
-
-// Execute the build
-await runBuildPipeline(buildConfig);
+	// Copy build artifacts
+	await fse.copy(buildDir, targetPath);
+	console.log(`Copied ${buildDir} to ${targetPath}`);
+	
+	// Create tar.gz archive
+	await $`tar -czf ${tarPath} -C ${workDirs.target.apps.path} ${appName}`;
+	console.log(`Created tar.gz: ${tarPath}`);
+}));

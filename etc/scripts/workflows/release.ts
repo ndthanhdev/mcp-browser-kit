@@ -1,8 +1,11 @@
 #!/usr/bin/env -S yarn dlx tsx
 import "zx/globals";
 import { workDirs } from "../utils/work-dirs";
+import fse from "fs-extra";
 
 $.verbose = true;
+
+await fse.emptyDir(workDirs.target.release.path);
 
 cd(workDirs.etc.workflowRuntime.path);
 
@@ -23,5 +26,9 @@ await $`${[
 	"with-action",
 	"--action",
 	"build",
-	"stdout",
+	"container",
+	"directory",
+	`--path=${workDirs.target.release.relativePath}`,
+	"export",
+	`--path=${workDirs.target.release.path}`,
 ]}`;

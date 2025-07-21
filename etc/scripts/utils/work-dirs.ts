@@ -13,6 +13,7 @@ const server = path.resolve(apps, "server");
 const etc = path.resolve(root, "etc");
 const workflowRuntime = path.resolve(etc, "workflow-runtime");
 const scripts = path.resolve(etc, "scripts");
+const release = path.resolve(target, "release");
 
 export const workDirs = {
 	target: {
@@ -20,8 +21,9 @@ export const workDirs = {
 		apps: {
 			path: path.resolve(target, "apps"),
 		},
-		tars: {
-			path: path.resolve(target, "tars"),
+		release: {
+			path: release,
+			relativePath: path.relative(root, release),
 		},
 	},
 	apps: {

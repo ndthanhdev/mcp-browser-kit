@@ -26,3 +26,11 @@ jobs:
 
       - run: "yarn install"
       - run: "./etc/scripts/workflows/release.ts"
+
+      - name: Upload extensions
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file_glob: target/release/m*.tar.gz
+          tag: ${{ github.ref }}
+          overwrite: true
