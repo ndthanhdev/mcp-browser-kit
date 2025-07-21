@@ -1,23 +1,8 @@
-$schema: "https://moonrepo.dev/schemas/project.json"
+# yaml-language-server: $schema: 'https://moonrepo.dev/schemas/project.json'
 language: typescript
-toolchain:
-  default: node
+platform: node
+type: tool
 
-
-fileGroups:
-  biome-files:
-    - /**/*.{js,cjs,mjs}
-    - /**/*.{ts,tsx}
-    - /**/*.{jsx,tsx}
-    - /**/*.{json,jsonc}
-    - /**/*.{html,css}
-    - /**/*.{yml,yaml}
-    - /**/*.{gql,graphql}
-    - /**/*.{md,mdx}
-
-tasks:
-  check:
-    script: |
-      yarn biome check $workspaceRoot
-    inputs:
-      - '@group(biome-files)'
+project:
+  name: "@mcp-browser-kit/scripts"
+  description: scripts

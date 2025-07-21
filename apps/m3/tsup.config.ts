@@ -9,6 +9,6 @@ export default defineConfig({
 	noExternal: [/.+/],
 	target: "chrome135",
 	platform: "browser",
-	outDir: "build/tsup/dist",
+	outDir: "target/tsup/dist",
 	shims: true,
 });

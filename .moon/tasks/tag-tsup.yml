@@ -8,7 +8,7 @@ fileGroups:
   tsup-config:
     - tsup.config.ts
   tsup-dist:
-    - ./build/tsup/dist/**/*
+    - ./target/tsup/dist/**/*
 
 tasks:
   tsup-tsc:
