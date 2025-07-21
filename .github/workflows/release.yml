@@ -1,4 +1,4 @@
-name: Release Prod
+name: Release
 
 on:
   push:
@@ -6,8 +6,8 @@ on:
       - release/*.*
 
 jobs:
-  call-function:
-    name: Call function
+  release:
+    name: Release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,7 +31,8 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file_glob: target/release/m*.tar.gz
+          file: target/release/m*.tar.gz
+          file_glob: true
           tag: ${{ github.ref }}
           draft: true
           overwrite: true
