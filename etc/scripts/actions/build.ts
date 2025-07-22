@@ -16,18 +16,29 @@ await fse.emptyDir(workDirs.target.path);
 await fse.emptyDir(workDirs.target.release.path);
 
 // Find all built apps and process them
-const buildDirs = await glob(["apps/*/target"], { onlyFiles: false });
+const targetDirs = await glob(["apps/*/target"], { onlyFiles: false });
 
-await Promise.all(buildDirs.map(async (buildDir) => {
-	const appName = buildDir.split("/")[1];
-	const targetPath = path.join(workDirs.target.apps.path, appName);
-	const tarPath = path.join(workDirs.target.release.path, `${appName}.tar.gz`);
-	
-	// Copy build artifacts
-	await fse.copy(buildDir, targetPath);
-	console.log(`Copied ${buildDir} to ${targetPath}`);
-	
-	// Create tar.gz archive
-	await $`tar -czf ${tarPath} -C ${workDirs.target.apps.path} ${appName}`;
-	console.log(`Created tar.gz: ${tarPath}`);
-}));
+await Promise.all(
+	targetDirs.map(async (buildDir) => {
+		const appName = buildDir.split("/")[1];
+		const targetPath = path.join(workDirs.target.apps.path, appName);
+
+		// Copy build artifacts
+		await fse.copy(buildDir, targetPath);
+		console.log(`Copied ${buildDir} to ${targetPath}`);
+	}),
+);
+
+const extensionZips = await glob(["target/apps/**/extension/dist/*.zip"]);
+
+await Promise.all(
+	extensionZips.map(async (zipPath) => {
+		const targetZipPath = path.join(
+			workDirs.target.release.path,
+			path.basename(zipPath),
+		);
+
+		await fse.copy(zipPath, targetZipPath);
+		console.log(`Copied extension zip: ${targetZipPath}`);
+	}),
+);
