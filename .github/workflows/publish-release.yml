@@ -10,6 +10,8 @@ jobs:
   publish-release:
     name: Publish Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required for creating releases and uploading assets
     steps:
       - uses: actions/checkout@v4
 
