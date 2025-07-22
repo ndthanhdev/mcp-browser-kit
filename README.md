@@ -29,7 +29,7 @@ https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
    - Check the [Compatibility table](#compatibility-table) below to see which build (M2 or M3) is compatible with your browser
    - Note that M2 builds offer more functionality than M3 builds, so prefer M2 if your browser supports both
 
-3. Download and unzip the latest compatible build from [Releases page](https://github.com/ndthanhdev/mcp-browser-kit/releases).
+3. Download and unzip the latest compatible build from [The Latest Release](https://github.com/ndthanhdev/mcp-browser-kit/releases/latest).
 
 4. [Load the extension](#load-extension) into a compatible browser and enable it.
 
