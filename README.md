@@ -3,6 +3,8 @@
 [![Build and Test](https://github.com/ndthanhdev/mcp-browser-kit/actions/workflows/build-test.yml/badge.svg)](https://github.com/ndthanhdev/mcp-browser-kit/actions/workflows/build-test.yml)
 [![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-60a5fa?style=flat&logo=biome)](https://biomejs.dev)
 
+[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/ndthanhdev/mcp-browser-kit)](https://archestra.ai/mcp-catalog/ndthanhdev__mcp-browser-kit)
+
 An MCP Server that enables AI assistants to interact with your local browsers.
 
 > **Note**: Consider using a separate browser profile or dedicated browser instance with this MCP to prevent sensitive data from being unintentionally exposed to AI model providers.
