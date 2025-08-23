@@ -1,6 +1,6 @@
 {
 	"devDependencies": {
-		"@biomejs/biome": "^1.9.4",
+		"@biomejs/biome": "2.0.6",
 		"@trpc/client": "^11.1.2",
 		"@trpc/server": "^11.1.2",
 		"@types/data-urls": "^3.0.4",
