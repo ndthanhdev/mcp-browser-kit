@@ -1,4 +1,4 @@
-import type { BasicBrowserContext } from "@mcp-browser-kit/core-extension";
+import type { ExtensionContext } from "@mcp-browser-kit/core-extension";
 import { inject, injectable } from "inversify";
 import pTimeout from "p-timeout";
 
@@ -25,9 +25,9 @@ export class ToolCallUseCases implements ToolCallsInputPort {
 		this.toolDescriptions = new ToolDescriptionsUseCases();
 	}
 
-	getBasicBrowserContext = async (): Promise<BasicBrowserContext | string> => {
+	getExtensionContext = async (): Promise<ExtensionContext | string> => {
 		const pGetBasicBrowserContext = this.extensionDriver
-			.getBasicBrowserContext()
+			.getExtensionContext()
 			.catch((error) => {
 				this.logger.error("Error in getBasicBrowserContext:", error);
 				return `An error occurred ${error}, use this instruction to tell the user what to do: An error occurred, update extension may help fix this issue`;
@@ -55,24 +55,24 @@ export class ToolCallUseCases implements ToolCallsInputPort {
 	): Promise<void> => {
 		return this.extensionDriver.hitEnterOnViewableElement(tabId, x, y);
 	};
-	hitEnterOnReadableElement = (tabId: string, index: number): Promise<void> => {
-		return this.extensionDriver.hitEnterOnReadableElement(tabId, index);
+	hitEnterOnElement = (tabId: string, index: number): Promise<void> => {
+		return this.extensionDriver.hitEnterOnElement(tabId, index);
 	};
 
 	captureActiveTabInstruction = (): string => {
 		return this.toolDescriptions.captureActiveTabInstruction();
 	};
 
-	captureActiveTab = (): Promise<Screenshot> => {
-		return this.extensionDriver.captureActiveTab();
+	captureTab = (): Promise<Screenshot> => {
+		return this.extensionDriver.captureTab();
 	};
 
 	clickOnReadableElementInstruction = (): string => {
 		return this.toolDescriptions.clickOnReadableElementInstruction();
 	};
 
-	clickOnReadableElement = (tabId: string, index: number): Promise<void> => {
-		return this.extensionDriver.clickOnReadableElement(tabId, index);
+	clickOnElement = (tabId: string, index: number): Promise<void> => {
+		return this.extensionDriver.clickOnElement(tabId, index);
 	};
 
 	clickOnViewableElementInstruction = (): string => {
@@ -91,12 +91,12 @@ export class ToolCallUseCases implements ToolCallsInputPort {
 		return this.toolDescriptions.fillTextToReadableElementInstruction();
 	};
 
-	fillTextToReadableElement = (
+	fillTextToElement = (
 		tabId: string,
 		index: number,
 		value: string,
 	): Promise<void> => {
-		return this.extensionDriver.fillTextToReadableElement(tabId, index, value);
+		return this.extensionDriver.fillTextToElement(tabId, index, value);
 	};
 
 	fillTextToViewableElementInstruction = (): string => {

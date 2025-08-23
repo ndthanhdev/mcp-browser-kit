@@ -1,5 +1,5 @@
 import type { ElementRecord, Screenshot } from "../types";
-import type { Tab } from "../types/tab";
+import type { Tab } from "../types/context-data";
 
 export interface BrowserDriverOutputPort {
 	getTabs(): Promise<Tab[]>;

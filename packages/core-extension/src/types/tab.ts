@@ -1,14 +1,6 @@
-export interface Tab {
-	foreground: boolean;
-	extensionId: string;
-	tabId: string;
+export interface ExtensionTabInfo {
+	id: string;
+	active: boolean;
 	title: string;
 	url: string;
-	windowId: string;
-}
-
-export interface ExtensionInstance {
-	id: string;
-	manifestVersion: number;
-	active: boolean;
 }

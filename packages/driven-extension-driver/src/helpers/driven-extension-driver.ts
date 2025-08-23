@@ -21,14 +21,14 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 			args: [tabId, x, y],
 		});
 	};
-	hitEnterOnReadableElement = (tabId: string, index: number): Promise<void> => {
+	hitEnterOnElement = (tabId: string, index: number): Promise<void> => {
 		return this.extensionRpcClient.defer({
 			method: "hitEnterOnReadableElement",
 			args: [tabId, index],
 		});
 	};
 
-	captureActiveTab = (): Promise<Screenshot> => {
+	captureTab = (): Promise<Screenshot> => {
 		return this.extensionRpcClient.defer({
 			method: "captureActiveTab",
 			args: [],
@@ -72,14 +72,14 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		});
 	};
 
-	clickOnReadableElement = (tabId: string, index: number): Promise<void> => {
+	clickOnElement = (tabId: string, index: number): Promise<void> => {
 		return this.extensionRpcClient.defer({
 			method: "clickOnReadableElement",
 			args: [tabId, index],
 		});
 	};
 
-	fillTextToReadableElement = (
+	fillTextToElement = (
 		tabId: string,
 		index: number,
 		value: string,
@@ -97,7 +97,7 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		});
 	};
 
-	getBasicBrowserContext = (): Promise<ExtensionInstance | string> => {
+	getExtensionContext = (): Promise<ExtensionInstance | string> => {
 		return this.extensionRpcClient.defer({
 			method: "getBasicBrowserContext",
 			args: [],

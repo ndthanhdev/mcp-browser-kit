@@ -1,1 +1,5 @@
-export type ElementRecord = [number, string, string]; // [index, HTML tag, accessible text]
+export interface ElementRecord {
+	elementId: number;
+	accessibleRole: string;
+	accessibleText: string;
+}

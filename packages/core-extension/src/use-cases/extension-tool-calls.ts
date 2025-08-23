@@ -28,11 +28,11 @@ export class ExtensionToolsUseCase implements ExtensionToolCallsInputPort {
 	): Promise<void> => {
 		return this.browserDriver.hitEnterOnViewableElement(tabId, x, y);
 	};
-	hitEnterOnReadableElement = (tabId: string, index: number): Promise<void> => {
+	hitEnterOnElement = (tabId: string, index: number): Promise<void> => {
 		return this.browserDriver.hitEnterOnReadableElement(tabId, index);
 	};
 
-	getBasicBrowserContext = async (): Promise<BasicBrowserContext> => {
+	getExtensionContext = async (): Promise<BasicBrowserContext> => {
 		this.logger.verbose("getBasicBrowserContext");
 		const tabs = await this.browserDriver.getTabs();
 		this.logger.verbose("getBasicBrowserContext - getting tabs - done");
@@ -52,7 +52,7 @@ export class ExtensionToolsUseCase implements ExtensionToolCallsInputPort {
 		};
 	};
 
-	captureActiveTab = (): Promise<Screenshot> => {
+	captureTab = (): Promise<Screenshot> => {
 		return this.browserDriver.captureActiveTab();
 	};
 
@@ -81,11 +81,11 @@ export class ExtensionToolsUseCase implements ExtensionToolCallsInputPort {
 		return this.browserDriver.fillTextToViewableElement(tabId, x, y, value);
 	};
 
-	clickOnReadableElement = (tabId: string, index: number): Promise<void> => {
+	clickOnElement = (tabId: string, index: number): Promise<void> => {
 		return this.browserDriver.clickOnReadableElement(tabId, index);
 	};
 
-	fillTextToReadableElement = (
+	fillTextToElement = (
 		tabId: string,
 		index: number,
 		value: string,
