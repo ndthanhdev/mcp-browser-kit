@@ -1,9 +1,9 @@
-import type { ElementRecord, Screenshot } from "../types";
-import type { Tab } from "../types/tab";
+import type { BasicBrowserContext } from "./browser-context";
+import type { ElementRecord } from "./element-record";
+import type { Screenshot } from "./screenshot";
 
-export interface BrowserDriverOutputPort {
-	getTabs(): Promise<Tab[]>;
-	getManifestVersion(): Promise<number>;
+export interface ExtensionTools {
+	getBasicBrowserContext(): Promise<BasicBrowserContext | string>;
 	captureActiveTab(): Promise<Screenshot>;
 	getInnerText(tabId: string): Promise<string>;
 	getReadableElements(tabId: string): Promise<ElementRecord[]>;
@@ -24,5 +24,3 @@ export interface BrowserDriverOutputPort {
 	hitEnterOnReadableElement(tabId: string, index: number): Promise<void>;
 	invokeJsFn(tabId: string, fnBodyCode: string): Promise<unknown>;
 }
-
-export const BrowserDriverOutputPort = Symbol("BrowserDriverOutputPort");

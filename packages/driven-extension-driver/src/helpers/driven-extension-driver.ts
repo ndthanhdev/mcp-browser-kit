@@ -1,5 +1,5 @@
 import type {
-	BasicBrowserContext,
+	ExtensionInstance,
 	ElementRecord,
 	ExtensionDriverOutputPort,
 	Screenshot,
@@ -97,7 +97,7 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		});
 	};
 
-	getBasicBrowserContext = (): Promise<BasicBrowserContext | string> => {
+	getBasicBrowserContext = (): Promise<ExtensionInstance | string> => {
 		return this.extensionRpcClient.defer({
 			method: "getBasicBrowserContext",
 			args: [],

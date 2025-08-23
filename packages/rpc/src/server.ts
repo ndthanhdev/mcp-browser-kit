@@ -1,15 +1,12 @@
-import type { Func } from "@mcp-browser-kit/types";
+import type { ExtractService, Func } from "@mcp-browser-kit/types";
 import * as R from "ramda";
 import type {
-	ConditionalPickDeep,
 	Get,
 	IsStringLiteral,
 	Paths,
 } from "type-fest";
 import type { DeferMessage, ResolveMessage } from "./client";
 import type { MessageChannel } from "./types/message-channel";
-
-export type ProcedureMap<T extends {}> = ConditionalPickDeep<T, Func>;
 
 export type GetProcedure<
 	T extends {},
@@ -22,7 +19,7 @@ export type GetProcedure<
 
 export class RpcServer<
 	T extends {},
-	U extends ProcedureMap<T> = ProcedureMap<T>,
+	U extends ExtractService<T> = ExtractService<T>,
 > {
 	private procedures: U;
 

@@ -2,7 +2,7 @@ import type {
 	ElementRecord,
 	Screenshot,
 	Tab,
-} from "@mcp-browser-kit/core-extension/entities";
+} from "packages/core-extension/src/tyoes";
 import type { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
 import { injectable } from "inversify";
 import * as backgroundTools from "../utils/background-tools";

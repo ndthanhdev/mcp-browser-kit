@@ -1,4 +1,4 @@
-export * from "./entities";
+export * from "./types";
 export * from "./input-ports";
 export * from "./output-ports";
 export * from "./use-cases";

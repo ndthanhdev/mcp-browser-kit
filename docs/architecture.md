@@ -3,58 +3,75 @@
 - [M2 Architecture](#m2-architecture)
 
 # Overall Architecture
+
 ```mermaid
 flowchart TD
-  McpServer
-
-  subgraph Server
-    subgraph ServerDriving["Driving"]
-      ToolCalls 
-      ToolDescriptions
-    end
-    subgraph ServerCore["Core"]
-      ToolCallUseCases
-      ToolDescriptionUseCase
-    end
-
-    subgraph ServerDriven["Driven"]
-      ExtensionDriver
-      ConfigProvider["ConfigProvider"]
-      LoggerProvider["LoggerProvider"]
-    end
-
-    ToolCalls --> ToolCallUseCases
-    ToolCallUseCases --> ExtensionDriver
-    ToolDescriptions --> ToolDescriptionUseCase
-    ToolDescriptionUseCase --> ConfigProvider
-  end
-
-  McpServer-->ServerDriving
-
-  subgraph Extension
-    subgraph ExtensionDriving["Driving"]
-      ExtensionTool
-    end
-
-    subgraph ExtensionCore["Core"]
-      ExtensionToolUseCases
-    end
-    subgraph ExtensionDriven["Driven"]
-      BrowserDriver
-    end
-
-    ExtensionTool --> ExtensionToolUseCases
-    ExtensionToolUseCases -->BrowserDriver
-  end
-
+  McpServers
+  Extensions
   Browser
 
-  ExtensionDriver --> ExtensionDriving
-  BrowserDriver --> Browser
+  McpServers -.-|"n"| Extensions
+  Extensions -.- Browser
+```
+
+```mermaid
+---
+title: Overall Architecture
+---
+flowchart TD
+  subgraph ServerDriving["Driving"]
+    ToolCalls
+    ToolDescriptions
+  end
+
+  subgraph ServerCore["Core"]
+    ToolCallUseCases
+    ToolDescriptionUseCase
+    DriverManager
+    ToolCallDispatcher
+  end
+
+  subgraph ServerDriven["Driven"]
+    ExtensionDriver
+    ConfigProvider["ConfigProvider"]
+    LoggerProvider["LoggerProvider"]
+    ExtensionDriverProvider
+  end
+
+  ToolCalls --> ToolCallUseCases
+  ToolDescriptions --> ToolDescriptionUseCase
+  ToolCallUseCases --"x"--> ExtensionDriver
+  ToolDescriptionUseCase --> ConfigProvider
+  ToolCallUseCases--> ToolCallDispatcher
+  ToolCallDispatcher --> DriverManager
+  DriverManager --> ExtensionDriverProvider
+  %% end
+
+  %% McpServer-->ServerDriving
+
+  %% subgraph Extension
+    %% subgraph ExtensionDriving["Driving"]
+    %%   ExtensionTool
+    %% end
+
+    %% subgraph ExtensionCore["Core"]
+    %%   ExtensionToolUseCases
+    %% end
+    %% subgraph ExtensionDriven["Driven"]
+    %%   BrowserDriver
+    %% end
+
+    %% ExtensionTool --> ExtensionToolUseCases
+    %% ExtensionToolUseCases -->BrowserDriver
+  %% end
+
+  %% Browser
+
+  %% ExtensionDriver --> ExtensionDriving
+  %% BrowserDriver --> Browser
 ```
 
 # M3 Architecture
-
 
 ```mermaid
 flowchart TD

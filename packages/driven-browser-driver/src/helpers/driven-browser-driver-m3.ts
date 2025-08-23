@@ -2,7 +2,7 @@ import type {
 	ElementRecord,
 	Screenshot,
 	Tab,
-} from "@mcp-browser-kit/core-extension/entities";
+} from "packages/core-extension/src/tyoes";
 import type { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
 import type { DeferMessage, ResolveMessage } from "@mcp-browser-kit/rpc";
 import type { Func } from "@mcp-browser-kit/types";

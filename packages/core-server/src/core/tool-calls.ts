@@ -2,7 +2,7 @@ import type { BasicBrowserContext } from "@mcp-browser-kit/core-extension";
 import { inject, injectable } from "inversify";
 import pTimeout from "p-timeout";
 
-import type { ElementRecord, Screenshot } from "../entities";
+import type { ElementRecord, Screenshot } from "../types";
 import type { ToolCallsInputPort } from "../input-ports";
 import {
 	ExtensionDriverOutputPort,

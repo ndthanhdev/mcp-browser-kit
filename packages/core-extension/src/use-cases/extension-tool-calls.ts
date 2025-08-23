@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import type { ElementRecord, Screenshot } from "../entities";
+import type { ElementRecord, Screenshot } from "../types";
 import type {
 	BasicBrowserContext,
 	ExtensionToolCallsInputPort,

@@ -1,18 +1,15 @@
-import type { Func } from "@mcp-browser-kit/types";
+import type { ExtractService, Func } from "@mcp-browser-kit/types";
 import Emittery from "emittery";
-import type { ConditionalPickDeep, Merge, Paths } from "type-fest";
+import type { Paths } from "type-fest";
 import type { MessageChannel } from "./types/message-channel";
 
-import type { GetProcedure, ProcedureMap } from "./server";
-
-export type ToProcedureMap<T> = T extends object
-	? ConditionalPickDeep<T, Func>
-	: never;
+import type { GetProcedure } from "./server";
 
 export interface DeferMessage {
 	procedure: string;
 	args: unknown[];
 	id: string;
+	extraArgs: unknown;
 }
 
 export interface ResolveMessage {
@@ -25,19 +22,37 @@ export type DeferArgs<
 	T extends object,
 	U extends Paths<T>,
 	ExtraArgs = object,
-> = Merge<
-	ExtraArgs,
-	{
-		method: U;
-		args: Parameters<GetProcedure<T, U>>;
-	}
->;
+> = {
+	method: U;
+	args: Parameters<GetProcedure<T, U>>;
+	extraArgs: ExtraArgs;
+};
+
+export interface IRpcClient<
+	T extends {},
+	ExtraArgs = object,
+	U extends ExtractService<T> = ExtractService<T>,
+> {
+	readonly emitter: Emittery<{
+		defer: DeferMessage;
+		resolve: ResolveMessage;
+	}>;
+
+	defer<K extends Paths<U>>(
+		args: DeferArgs<U, K, ExtraArgs>,
+	): Promise<Awaited<ReturnType<GetProcedure<U, K>>>>;
+
+	onDefer<K extends DeferMessage>(callback: (message: K) => void): () => void;
+
+	startListen(messageChannel: MessageChannel): () => void;
+}
 
 export class RpcClient<
 	T extends {},
 	ExtraArgs = object,
-	U extends ProcedureMap<T> = ProcedureMap<T>,
-> {
+	U extends ExtractService<T> = ExtractService<T>,
+> implements IRpcClient<T, ExtraArgs, U>
+{
 	private id = 0;
 	private pending: Map<string, PromiseWithResolvers<unknown>> = new Map();
 	public readonly emitter: Emittery<{
@@ -68,7 +83,7 @@ export class RpcClient<
 	public defer = <K extends Paths<U>>({
 		method,
 		args,
-		...extraArgs
+		extraArgs,
 	}: DeferArgs<U, K, ExtraArgs>): Promise<
 		Awaited<ReturnType<GetProcedure<U, K>>>
 	> => {
@@ -82,7 +97,7 @@ export class RpcClient<
 		this.pending.set(id, defer as PromiseWithResolvers<unknown>);
 
 		this.emitter.emit("defer", {
-			...extraArgs,
+			extraArgs,
 			procedure: String(method),
 			args,
 			id,
