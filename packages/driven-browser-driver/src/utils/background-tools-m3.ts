@@ -1,25 +1,8 @@
-import type { Tab } from "@mcp-browser-kit/core-server";
-import type { Func } from "@mcp-browser-kit/types";
+import type { ExtensionTabInfo } from "@mcp-browser-kit/core-extension/types";
 import parseDataUrl from "data-urls";
 import { imageDimensionsFromData } from "image-dimensions";
 import { Base64 } from "js-base64";
 import browser from "webextension-polyfill";
-
-export const toIIFE = (fn: Func | string) => {
-	if (typeof fn === "function") {
-		return `(${fn.toString()})()`;
-	}
-
-	return `(()=>{${fn}})()`;
-};
-
-export const getExecuteScriptResult = async <T = void>(results: unknown[]) => {
-	if (!Array.isArray(results)) {
-		throw new Error("Invalid results");
-	}
-
-	return results[0] as T;
-};
 
 export const getTabs = async () => {
 	const tabs = await browser.tabs.query({});
@@ -29,7 +12,7 @@ export const getTabs = async () => {
 		title: tab.title ?? "",
 		url: tab.url ?? "",
 		active: tab.active ?? false,
-	})) as Tab[];
+	})) as ExtensionTabInfo[];
 };
 
 export const captureActiveTab = async () => {
@@ -52,12 +35,4 @@ export const captureActiveTab = async () => {
 		width: dimensions.width,
 		height: dimensions.height,
 	};
-};
-
-export const invokeJsFn = async (tabId: string, fnCode: string) => {
-	const results = await browser.tabs.executeScript(+tabId, {
-		code: toIIFE(fnCode),
-	});
-
-	return getExecuteScriptResult(results);
 };

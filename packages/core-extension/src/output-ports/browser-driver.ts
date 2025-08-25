@@ -1,5 +1,4 @@
 import type {
-	ElementRecord,
 	ExtensionInfo,
 	ExtensionTabInfo,
 	ExtensionWindowInfo,
@@ -19,9 +18,7 @@ export interface BrowserDriverOutputPort {
 	captureTab(tabId: string): Promise<Screenshot>;
 	getHtml(tabId: string): Promise<string>;
 	getSelection(tabId: string): Promise<Selection>;
-	getInnerText(tabId: string): Promise<string>;
-	getReadableElements(tabId: string): Promise<ElementRecord[]>;
-	clickOnViewableElement(tabId: string, x: number, y: number): Promise<void>;
+	clickOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
 	focusOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
 	fillTextToFocusedElement(tabId: string, value: string): Promise<void>;
 	hitEnterOnFocusedElement(tabId: string): Promise<void>;

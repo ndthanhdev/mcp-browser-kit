@@ -10,7 +10,7 @@ export type ExtractService<T extends {}> = ConditionalPickDeep<T, Func>;
 
 export type ExtractMethod<
 	T extends {},
-	K extends Paths<T>,
+	K extends Paths<T>
 > = IsStringLiteral<K> extends true
 	? Get<T, Extract<K, string>> extends Func
 		? Get<T, Extract<K, string>>
@@ -20,7 +20,7 @@ export type ExtractMethod<
 export type ExtractMethodArgs<
 	T extends object,
 	U extends Paths<T>,
-	ExtraArgs = object,
+	ExtraArgs = object
 > = {
 	method: U;
 	args: Parameters<ExtractMethod<T, U>>;
@@ -30,9 +30,9 @@ export type ExtractMethodArgs<
 export type RpcClient<
 	T extends {},
 	ExtraArgs = object,
-	U extends ExtractService<T> = ExtractService<T>,
+	U extends ExtractService<T> = ExtractService<T>
 > = {
 	[K in Paths<U>]: (
-		args: ExtractMethodArgs<U, K, ExtraArgs>,
+		args: ExtractMethodArgs<U, K, ExtraArgs>
 	) => Promise<Awaited<ReturnType<ExtractMethod<U, K>>>>;
 };

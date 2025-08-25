@@ -1,9 +1,8 @@
-import type { ExtractService, Func } from "@mcp-browser-kit/types";
+import type { ExtractService } from "@mcp-browser-kit/types";
 import Emittery from "emittery";
 import type { Paths } from "type-fest";
-import type { MessageChannel } from "./types/message-channel";
-
 import type { GetProcedure } from "./server";
+import type { MessageChannel } from "./types/message-channel";
 
 export interface DeferMessage {
 	procedure: string;
@@ -21,7 +20,7 @@ export interface ResolveMessage {
 export type DeferArgs<
 	T extends object,
 	U extends Paths<T>,
-	ExtraArgs = object,
+	ExtraArgs = object
 > = {
 	method: U;
 	args: Parameters<GetProcedure<T, U>>;
@@ -31,7 +30,7 @@ export type DeferArgs<
 export interface IRpcClient<
 	T extends {},
 	ExtraArgs = object,
-	U extends ExtractService<T> = ExtractService<T>,
+	U extends ExtractService<T> = ExtractService<T>
 > {
 	readonly emitter: Emittery<{
 		defer: DeferMessage;
@@ -39,7 +38,7 @@ export interface IRpcClient<
 	}>;
 
 	defer<K extends Paths<U>>(
-		args: DeferArgs<U, K, ExtraArgs>,
+		args: DeferArgs<U, K, ExtraArgs>
 	): Promise<Awaited<ReturnType<GetProcedure<U, K>>>>;
 
 	onDefer<K extends DeferMessage>(callback: (message: K) => void): () => void;
@@ -50,7 +49,7 @@ export interface IRpcClient<
 export class RpcClient<
 	T extends {},
 	ExtraArgs = object,
-	U extends ExtractService<T> = ExtractService<T>,
+	U extends ExtractService<T> = ExtractService<T>
 > implements IRpcClient<T, ExtraArgs, U>
 {
 	private id = 0;
@@ -107,11 +106,11 @@ export class RpcClient<
 	};
 
 	public onDefer = <K extends DeferMessage>(
-		callback: (message: K) => void,
+		callback: (message: K) => void
 	): (() => void) => {
 		return this.emitter.on(
 			"defer",
-			callback as (message: DeferMessage) => void,
+			callback as (message: DeferMessage) => void
 		);
 	};
 

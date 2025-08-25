@@ -97,7 +97,7 @@ export class ExtensionToolsUseCase implements ExtensionToolCallsInputPort {
 	};
 
 	clickOnCoordinates = (tabId: string, x: number, y: number): Promise<void> => {
-		return this.browserDriver.clickOnViewableElement(tabId, x, y);
+		return this.browserDriver.clickOnCoordinates(tabId, x, y);
 	};
 
 	fillTextToCoordinates = async (
@@ -107,7 +107,10 @@ export class ExtensionToolsUseCase implements ExtensionToolCallsInputPort {
 		value: string
 	): Promise<void> => {
 		await this.browserDriver.focusOnCoordinates(tabId, x, y);
-		return this.browserDriver.fillTextToFocusedElement(tabId, value);
+		return this.browserDriver.fillTextToFocusedEfillTextToCoordinatesement(
+			tabId,
+			value
+		);
 	};
 
 	clickOnElement = (tabId: string, selector: string): Promise<void> => {
