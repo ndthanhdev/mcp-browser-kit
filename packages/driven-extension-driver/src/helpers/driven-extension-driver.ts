@@ -1,5 +1,5 @@
 import type {
-	BasicBrowserContext,
+	ExtensionInstance,
 	ElementRecord,
 	ExtensionDriverOutputPort,
 	Screenshot,
@@ -11,7 +11,7 @@ import { createExtensionRpcClient } from "../utils/extension-rpc-client";
 export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 	public readonly extensionRpcClient = createExtensionRpcClient();
 
-	hitEnterOnViewableElement = (
+	hitEnterOnCoordinates = (
 		tabId: string,
 		x: number,
 		y: number,
@@ -21,14 +21,14 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 			args: [tabId, x, y],
 		});
 	};
-	hitEnterOnReadableElement = (tabId: string, index: number): Promise<void> => {
+	hitEnterOnElement = (tabId: string, index: number): Promise<void> => {
 		return this.extensionRpcClient.defer({
 			method: "hitEnterOnReadableElement",
 			args: [tabId, index],
 		});
 	};
 
-	captureActiveTab = (): Promise<Screenshot> => {
+	captureTab = (): Promise<Screenshot> => {
 		return this.extensionRpcClient.defer({
 			method: "captureActiveTab",
 			args: [],
@@ -49,7 +49,7 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		});
 	};
 
-	clickOnViewableElement = (
+	clickOnCoordinates = (
 		tabId: string,
 		x: number,
 		y: number,
@@ -60,7 +60,7 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		});
 	};
 
-	fillTextToViewableElement = (
+	fillTextToCoordinates = (
 		tabId: string,
 		x: number,
 		y: number,
@@ -72,14 +72,14 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		});
 	};
 
-	clickOnReadableElement = (tabId: string, index: number): Promise<void> => {
+	clickOnElement = (tabId: string, index: number): Promise<void> => {
 		return this.extensionRpcClient.defer({
 			method: "clickOnReadableElement",
 			args: [tabId, index],
 		});
 	};
 
-	fillTextToReadableElement = (
+	fillTextToElement = (
 		tabId: string,
 		index: number,
 		value: string,
@@ -97,7 +97,7 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		});
 	};
 
-	getBasicBrowserContext = (): Promise<BasicBrowserContext | string> => {
+	getExtensionContext = (): Promise<ExtensionInstance | string> => {
 		return this.extensionRpcClient.defer({
 			method: "getBasicBrowserContext",
 			args: [],

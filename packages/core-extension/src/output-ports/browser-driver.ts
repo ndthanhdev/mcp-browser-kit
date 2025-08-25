@@ -1,27 +1,34 @@
-import type { ElementRecord, Screenshot } from "../entities";
-import type { Tab } from "../entities/tab";
+import type {
+	ExtensionInfo,
+	ExtensionTabInfo,
+	ExtensionWindowInfo,
+	Screenshot,
+	Selection,
+} from "../types";
 
 export interface BrowserDriverOutputPort {
-	getTabs(): Promise<Tab[]>;
-	getManifestVersion(): Promise<number>;
-	captureActiveTab(): Promise<Screenshot>;
-	getInnerText(tabId: string): Promise<string>;
-	getReadableElements(tabId: string): Promise<ElementRecord[]>;
-	clickOnViewableElement(tabId: string, x: number, y: number): Promise<void>;
-	fillTextToViewableElement(
+	getTabs(): Promise<ExtensionTabInfo[]>;
+	getWindows(): Promise<ExtensionWindowInfo[]>;
+	getExtensionInfo(): Promise<ExtensionInfo>;
+	openTab(
+		url: string,
+		windowId: string
+	): Promise<{ tabId: string; windowId: string }>;
+	closeTab(tabId: string): Promise<void>;
+	captureTab(tabId: string): Promise<Screenshot>;
+	getHtml(tabId: string): Promise<string>;
+	getSelection(tabId: string): Promise<Selection>;
+	clickOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
+	focusOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
+	fillTextToFocusedElement(tabId: string, value: string): Promise<void>;
+	hitEnterOnFocusedElement(tabId: string): Promise<void>;
+	clickOnElementBySelector(tabId: string, selector: string): Promise<void>;
+	fillTextToElementBySelector(
 		tabId: string,
-		x: number,
-		y: number,
-		value: string,
+		selector: string,
+		value: string
 	): Promise<void>;
-	hitEnterOnViewableElement(tabId: string, x: number, y: number): Promise<void>;
-	clickOnReadableElement(tabId: string, index: number): Promise<void>;
-	fillTextToReadableElement(
-		tabId: string,
-		index: number,
-		value: string,
-	): Promise<void>;
-	hitEnterOnReadableElement(tabId: string, index: number): Promise<void>;
+	hitEnterOnElementBySelector(tabId: string, selector: string): Promise<void>;
 	invokeJsFn(tabId: string, fnBodyCode: string): Promise<unknown>;
 }
 

@@ -51,10 +51,10 @@ export class ToolDescriptionsUseCases {
 	getReadableElementsInstruction = (): string => {
 		return [
 			"🔍 Lists all interactive elements on the page with their text",
-			"* Returns a list of elements with their index, HTML tag, and text content",
+			"* Returns a list of elements with their elementId, role, and text content",
 			"* Requires the tabId obtained from getBasicBrowserContext",
-			"* Each element is returned as [index, tag, text]",
-			"* Use the index to interact with elements through click or fill operations",
+			"* Each element is returned as {elementId, role, accessibleText}",
+			"* Use the elementId to interact with elements through click or fill operations",
 			"* Helps you identify which elements can be interacted with by their text",
 		].join("\n");
 	};

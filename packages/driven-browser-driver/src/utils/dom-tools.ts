@@ -39,7 +39,11 @@ export const generateElementRecords = (elements: HTMLElement[]) => {
 			el.getAttribute("placeholder") ??
 			el.innerText ??
 			"";
-		return [index, tag, label] as [number, string, string];
+		return {
+			elementId: index,
+			role: tag,
+			accessibleText: label,
+		};
 	});
 	return table;
 };

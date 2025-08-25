@@ -1,8 +1,8 @@
-import type { BasicBrowserContext } from "@mcp-browser-kit/core-extension";
+import type { ExtensionContext } from "@mcp-browser-kit/core-extension";
 import { inject, injectable } from "inversify";
 import pTimeout from "p-timeout";
 
-import type { ElementRecord, Screenshot } from "../entities";
+import type { ElementRecord, Screenshot } from "../types";
 import type { ToolCallsInputPort } from "../input-ports";
 import {
 	ExtensionDriverOutputPort,
@@ -25,9 +25,9 @@ export class ToolCallUseCases implements ToolCallsInputPort {
 		this.toolDescriptions = new ToolDescriptionsUseCases();
 	}
 
-	getBasicBrowserContext = async (): Promise<BasicBrowserContext | string> => {
+	getExtensionContext = async (): Promise<ExtensionContext | string> => {
 		const pGetBasicBrowserContext = this.extensionDriver
-			.getBasicBrowserContext()
+			.getExtensionContext()
 			.catch((error) => {
 				this.logger.error("Error in getBasicBrowserContext:", error);
 				return `An error occurred ${error}, use this instruction to tell the user what to do: An error occurred, update extension may help fix this issue`;
@@ -48,68 +48,68 @@ export class ToolCallUseCases implements ToolCallsInputPort {
 	hitEnterOnReadableElementInstruction = (): string => {
 		return this.toolDescriptions.hitEnterOnReadableElementInstruction();
 	};
-	hitEnterOnViewableElement = (
+	hitEnterOnCoordinates = (
 		tabId: string,
 		x: number,
 		y: number,
 	): Promise<void> => {
-		return this.extensionDriver.hitEnterOnViewableElement(tabId, x, y);
+		return this.extensionDriver.hitEnterOnCoordinates(tabId, x, y);
 	};
-	hitEnterOnReadableElement = (tabId: string, index: number): Promise<void> => {
-		return this.extensionDriver.hitEnterOnReadableElement(tabId, index);
+	hitEnterOnElement = (tabId: string, index: number): Promise<void> => {
+		return this.extensionDriver.hitEnterOnElement(tabId, index);
 	};
 
 	captureActiveTabInstruction = (): string => {
 		return this.toolDescriptions.captureActiveTabInstruction();
 	};
 
-	captureActiveTab = (): Promise<Screenshot> => {
-		return this.extensionDriver.captureActiveTab();
+	captureTab = (): Promise<Screenshot> => {
+		return this.extensionDriver.captureTab();
 	};
 
 	clickOnReadableElementInstruction = (): string => {
 		return this.toolDescriptions.clickOnReadableElementInstruction();
 	};
 
-	clickOnReadableElement = (tabId: string, index: number): Promise<void> => {
-		return this.extensionDriver.clickOnReadableElement(tabId, index);
+	clickOnElement = (tabId: string, index: number): Promise<void> => {
+		return this.extensionDriver.clickOnElement(tabId, index);
 	};
 
 	clickOnViewableElementInstruction = (): string => {
 		return this.toolDescriptions.clickOnViewableElementInstruction();
 	};
 
-	clickOnViewableElement = (
+	clickOnCoordinates = (
 		tabId: string,
 		x: number,
 		y: number,
 	): Promise<void> => {
-		return this.extensionDriver.clickOnViewableElement(tabId, x, y);
+		return this.extensionDriver.clickOnCoordinates(tabId, x, y);
 	};
 
 	fillTextToReadableElementInstruction = (): string => {
 		return this.toolDescriptions.fillTextToReadableElementInstruction();
 	};
 
-	fillTextToReadableElement = (
+	fillTextToElement = (
 		tabId: string,
 		index: number,
 		value: string,
 	): Promise<void> => {
-		return this.extensionDriver.fillTextToReadableElement(tabId, index, value);
+		return this.extensionDriver.fillTextToElement(tabId, index, value);
 	};
 
 	fillTextToViewableElementInstruction = (): string => {
 		return this.toolDescriptions.fillTextToViewableElementInstruction();
 	};
 
-	fillTextToViewableElement = (
+	fillTextToCoordinates = (
 		tabId: string,
 		x: number,
 		y: number,
 		value: string,
 	): Promise<void> => {
-		return this.extensionDriver.fillTextToViewableElement(tabId, x, y, value);
+		return this.extensionDriver.fillTextToCoordinates(tabId, x, y, value);
 	};
 
 	getInnerTextInstruction = (): string => {

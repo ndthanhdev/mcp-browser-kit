@@ -32,7 +32,7 @@ const createServer = async () => {
 		{},
 		async () => {
 			logger.info("Executing getBasicBrowserContext");
-			const overCtx = await over(toolsInputPort.getBasicBrowserContext);
+			const overCtx = await over(toolsInputPort.getExtensionContext);
 
 			if (!overCtx.ok) {
 				logger.error("Failed to get basic browser context", {
@@ -70,7 +70,7 @@ const createServer = async () => {
 		{},
 		async () => {
 			logger.info("Executing captureActiveTab");
-			const overScreenshot = await over(toolsInputPort.captureActiveTab);
+			const overScreenshot = await over(toolsInputPort.captureTab);
 
 			if (!overScreenshot.ok) {
 				logger.error("Failed to capture active tab screenshot", {
@@ -209,7 +209,7 @@ const createServer = async () => {
 		async ({ tabId, x, y }) => {
 			logger.info("Executing clickOnViewableElement", { tabId, x, y });
 			const overClick = await over(() =>
-				toolsInputPort.clickOnViewableElement(tabId, x, y),
+				toolsInputPort.clickOnCoordinates(tabId, x, y),
 			);
 
 			if (!overClick.ok) {
@@ -254,7 +254,7 @@ const createServer = async () => {
 		async ({ tabId, x, y, value }) => {
 			logger.info("Executing fillTextToViewableElement", { tabId, x, y });
 			const overFill = await over(() =>
-				toolsInputPort.fillTextToViewableElement(tabId, x, y, value),
+				toolsInputPort.fillTextToCoordinates(tabId, x, y, value),
 			);
 
 			if (!overFill.ok) {
@@ -303,7 +303,7 @@ const createServer = async () => {
 		async ({ tabId, x, y }) => {
 			logger.info("Executing hitEnterOnViewableElement", { tabId, x, y });
 			const overEnter = await over(() =>
-				toolsInputPort.hitEnterOnViewableElement(tabId, x, y),
+				toolsInputPort.hitEnterOnCoordinates(tabId, x, y),
 			);
 
 			if (!overEnter.ok) {
@@ -346,7 +346,7 @@ const createServer = async () => {
 		async ({ tabId, index }) => {
 			logger.info("Executing clickOnReadableElement", { tabId, index });
 			const overClick = await over(() =>
-				toolsInputPort.clickOnReadableElement(tabId, index),
+				toolsInputPort.clickOnElement(tabId, index),
 			);
 
 			if (!overClick.ok) {
@@ -389,7 +389,7 @@ const createServer = async () => {
 		async ({ tabId, index, value }) => {
 			logger.info("Executing fillTextToReadableElement", { tabId, index });
 			const overFill = await over(() =>
-				toolsInputPort.fillTextToReadableElement(tabId, index, value),
+				toolsInputPort.fillTextToElement(tabId, index, value),
 			);
 
 			if (!overFill.ok) {
@@ -435,7 +435,7 @@ const createServer = async () => {
 		async ({ tabId, index }) => {
 			logger.info("Executing hitEnterOnReadableElement", { tabId, index });
 			const overEnter = await over(() =>
-				toolsInputPort.hitEnterOnReadableElement(tabId, index),
+				toolsInputPort.hitEnterOnElement(tabId, index),
 			);
 
 			if (!overEnter.ok) {

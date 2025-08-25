@@ -1,8 +1,8 @@
 import browser from "webextension-polyfill";
 import {
+	contentToolsIdentifier,
 	type GetTool,
 	type ToolKeys,
-	contentToolsIdentifier,
 } from "./setup-content-script-tools";
 
 export const getExecuteScriptResult = async <T = void>(results: unknown[]) => {
@@ -20,7 +20,7 @@ export const executeContentTool = async <T extends ToolKeys>(
 ): Promise<Awaited<ReturnType<GetTool<T>>>> => {
 	const results = await browser.tabs.executeScript(+tabId, {
 		code: `${contentToolsIdentifier}.${tool}.apply(undefined, ${JSON.stringify(
-			args,
+			args
 		)})`,
 	});
 

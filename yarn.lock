@@ -629,8 +629,8 @@ __metadata:
     typescript: "npm:^5.8.3"
     ws: "npm:^8.18.2"
   bin:
-    mcp-browser-kit: build/tsup/dist/main.js
-    server: build/tsup/dist/main.js
+    mcp-browser-kit: target/tsup/dist/main.js
+    server: target/tsup/dist/main.js
   languageName: unknown
   linkType: soft
 
