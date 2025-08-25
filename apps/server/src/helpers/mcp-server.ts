@@ -209,7 +209,7 @@ const createServer = async () => {
 		async ({ tabId, x, y }) => {
 			logger.info("Executing clickOnViewableElement", { tabId, x, y });
 			const overClick = await over(() =>
-				toolsInputPort.clickOnViewableElement(tabId, x, y),
+				toolsInputPort.clickOnCoordinates(tabId, x, y),
 			);
 
 			if (!overClick.ok) {
@@ -254,7 +254,7 @@ const createServer = async () => {
 		async ({ tabId, x, y, value }) => {
 			logger.info("Executing fillTextToViewableElement", { tabId, x, y });
 			const overFill = await over(() =>
-				toolsInputPort.fillTextToViewableElement(tabId, x, y, value),
+				toolsInputPort.fillTextToCoordinates(tabId, x, y, value),
 			);
 
 			if (!overFill.ok) {
@@ -303,7 +303,7 @@ const createServer = async () => {
 		async ({ tabId, x, y }) => {
 			logger.info("Executing hitEnterOnViewableElement", { tabId, x, y });
 			const overEnter = await over(() =>
-				toolsInputPort.hitEnterOnViewableElement(tabId, x, y),
+				toolsInputPort.hitEnterOnCoordinates(tabId, x, y),
 			);
 
 			if (!overEnter.ok) {

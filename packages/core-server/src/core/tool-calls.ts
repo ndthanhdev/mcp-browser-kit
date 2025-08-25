@@ -48,12 +48,12 @@ export class ToolCallUseCases implements ToolCallsInputPort {
 	hitEnterOnReadableElementInstruction = (): string => {
 		return this.toolDescriptions.hitEnterOnReadableElementInstruction();
 	};
-	hitEnterOnViewableElement = (
+	hitEnterOnCoordinates = (
 		tabId: string,
 		x: number,
 		y: number,
 	): Promise<void> => {
-		return this.extensionDriver.hitEnterOnViewableElement(tabId, x, y);
+		return this.extensionDriver.hitEnterOnCoordinates(tabId, x, y);
 	};
 	hitEnterOnElement = (tabId: string, index: number): Promise<void> => {
 		return this.extensionDriver.hitEnterOnElement(tabId, index);
@@ -79,12 +79,12 @@ export class ToolCallUseCases implements ToolCallsInputPort {
 		return this.toolDescriptions.clickOnViewableElementInstruction();
 	};
 
-	clickOnViewableElement = (
+	clickOnCoordinates = (
 		tabId: string,
 		x: number,
 		y: number,
 	): Promise<void> => {
-		return this.extensionDriver.clickOnViewableElement(tabId, x, y);
+		return this.extensionDriver.clickOnCoordinates(tabId, x, y);
 	};
 
 	fillTextToReadableElementInstruction = (): string => {
@@ -103,13 +103,13 @@ export class ToolCallUseCases implements ToolCallsInputPort {
 		return this.toolDescriptions.fillTextToViewableElementInstruction();
 	};
 
-	fillTextToViewableElement = (
+	fillTextToCoordinates = (
 		tabId: string,
 		x: number,
 		y: number,
 		value: string,
 	): Promise<void> => {
-		return this.extensionDriver.fillTextToViewableElement(tabId, x, y, value);
+		return this.extensionDriver.fillTextToCoordinates(tabId, x, y, value);
 	};
 
 	getInnerTextInstruction = (): string => {

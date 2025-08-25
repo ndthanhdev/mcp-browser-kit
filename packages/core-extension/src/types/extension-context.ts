@@ -1,8 +1,10 @@
 import type { ExtensionInfo } from "./extension-info";
 import type { ExtensionToolName } from "./extension-tools";
-import type { ExtensionTabInfo } from "./tab";
+import type { ExtensionTabInfo } from "./extension-tab-info";
+import type { ExtensionWindowInfo } from "./extension-window-info";
 
 export interface ExtensionContext {
+	availableWindows: ExtensionWindowInfo[];
 	/**
 	 * The tabs that are available to the extension.
 	 */

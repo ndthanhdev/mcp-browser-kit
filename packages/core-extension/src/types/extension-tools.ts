@@ -4,53 +4,55 @@ import type { Selection } from "./selection";
 
 export interface ExtensionTools {
 	getExtensionContext(): Promise<ExtensionContext>;
-	captureTab(windowId: string, tabId: string): Promise<Screenshot>;
+	openTab(
+		url: string,
+		windowId: string
+	): Promise<{
+		tabId: string;
+		windowId: string;
+	}>;
+	closeTab(tabId: string): Promise<void>;
+	captureTab(tabId: string): Promise<Screenshot>;
 	// Move these to server
 	// getInnerText(windowId: string, tabId: string): Promise<string>;
 	// getReadableElements(
 	// 	windowId: string,
 	// 	tabId: string
 	// ): Promise<ElementRecord[]>;
-	getSelection(windowId: string, tabId: string): Promise<Selection>;
-	clickOnViewableElement(
-		windowId: string,
+	getHtml(tabId: string): Promise<string>;
+	getSelection(tabId: string): Promise<Selection>;
+	clickOnCoordinates(
 		tabId: string,
 		x: number,
-		y: number,
+		y: number
 	): Promise<void>;
-	fillTextToViewableElement(
-		windowId: string,
+	fillTextToCoordinates(
 		tabId: string,
 		x: number,
 		y: number,
-		value: string,
+		value: string
 	): Promise<void>;
-	hitEnterOnViewableElement(
-		windowId: string,
+	hitEnterOnCoordinates(
 		tabId: string,
 		x: number,
-		y: number,
+		y: number
 	): Promise<void>;
 	clickOnElement(
-		windowId: string,
 		tabId: string,
-		selector: string,
+		selector: string
 	): Promise<void>;
 	fillTextToElement(
-		windowId: string,
 		tabId: string,
 		selector: string,
-		value: string,
+		value: string
 	): Promise<void>;
 	hitEnterOnElement(
-		windowId: string,
 		tabId: string,
-		selector: string,
+		selector: string
 	): Promise<void>;
 	invokeJsFn(
-		windowId: string,
 		tabId: string,
-		fnBodyCode: string,
+		fnBodyCode: string
 	): Promise<unknown>;
 }
 

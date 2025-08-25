@@ -11,7 +11,7 @@ import { createExtensionRpcClient } from "../utils/extension-rpc-client";
 export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 	public readonly extensionRpcClient = createExtensionRpcClient();
 
-	hitEnterOnViewableElement = (
+	hitEnterOnCoordinates = (
 		tabId: string,
 		x: number,
 		y: number,
@@ -49,7 +49,7 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		});
 	};
 
-	clickOnViewableElement = (
+	clickOnCoordinates = (
 		tabId: string,
 		x: number,
 		y: number,
@@ -60,7 +60,7 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		});
 	};
 
-	fillTextToViewableElement = (
+	fillTextToCoordinates = (
 		tabId: string,
 		x: number,
 		y: number,

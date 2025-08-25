@@ -1,22 +1,37 @@
-- [Overall Architecture](#overall-architecture)
+- [System Overview](#system-overview)
+- [Server Core Architecture (Level 0)](#server-core-architecture-level-0)
+- [Extension Core Architecture (Level 0)](#extension-core-architecture-level-0)
 - [M3 Architecture](#m3-architecture)
 - [M2 Architecture](#m2-architecture)
 
-# Overall Architecture
-
-```mermaid
-flowchart TD
-  McpServers
-  Extensions
-  Browser
-
-  McpServers -.-|"n"| Extensions
-  Extensions -.- Browser
-```
+# System Overview
 
 ```mermaid
 ---
-title: Overall Architecture
+title: System Overview
+---
+flowchart LR
+  McpServer["Mcp Server (Browser Kit)"]
+  Extensions
+  Browser
+
+  subgraph Browser
+    Windows
+    Tabs
+    Extensions["Extension (Browser Kit)"]
+  end
+
+  McpServer -.-|"n"| Extensions
+  Extensions -.- Tabs
+  Extensions -.- Windows
+  Windows -.-|"n"| Tabs
+```
+
+# Server Core Architecture (Level 0)
+
+```mermaid
+---
+title: Server Core Architecture
 ---
 flowchart TD
   subgraph ServerDriving["Driving"]
@@ -25,8 +40,10 @@ flowchart TD
   end
 
   subgraph ServerCore["Core"]
-    ToolCallUseCases
-    ToolDescriptionUseCase
+    subgraph UseCases["Use Cases"]
+      ToolCallUseCases
+      ToolDescriptionUseCase
+    end
     DriverManager
     ToolCallDispatcher
   end
@@ -45,35 +62,49 @@ flowchart TD
   ToolCallUseCases--> ToolCallDispatcher
   ToolCallDispatcher --> DriverManager
   DriverManager --> ExtensionDriverProvider
-  %% end
 
-  %% McpServer-->ServerDriving
+```
 
-  %% subgraph Extension
-    %% subgraph ExtensionDriving["Driving"]
-    %%   ExtensionTool
-    %% end
+# Extension Core Architecture (Level 0)
 
-    %% subgraph ExtensionCore["Core"]
-    %%   ExtensionToolUseCases
-    %% end
-    %% subgraph ExtensionDriven["Driven"]
-    %%   BrowserDriver
-    %% end
+```mermaid
+---
+title: Extension Core Architecture
+---
+flowchart TD
+  subgraph Driving["Driving"]
+    ExtensionToolCalls
+    ManagingConnections
+  end
+  subgraph ExtensionCore["Core"]
+    subgraph UseCases["Use Cases"]
+      ExtensionToolUseCases
+      ManagingConnectionUseCases
+    end
+    ServerConnectionManager
+  end
+  subgraph Driven["Driven"]
+    BrowserDriver
+    ServerConnectionProvider
+    LoggerProvider
+  end
 
-    %% ExtensionTool --> ExtensionToolUseCases
-    %% ExtensionToolUseCases -->BrowserDriver
-  %% end
-
-  %% Browser
-
-  %% ExtensionDriver --> ExtensionDriving
-  %% BrowserDriver --> Browser
+  %% From Driving
+  ExtensionToolCalls --> ExtensionToolUseCases
+  ManagingConnections --> ManagingConnectionUseCases
+  %% From Core
+  ExtensionToolUseCases --> BrowserDriver
+  ExtensionToolUseCases --> ServerConnectionManager
+  ManagingConnectionUseCases --> ServerConnectionManager
+  ServerConnectionManager --> ServerConnectionProvider
 ```
 
 # M3 Architecture
 
 ```mermaid
+---
+title: M3 Architecture
+---
 flowchart TD
   subgraph ExtensionDriver["ExtensionDriver (M3)"]
     SWRpcClient
@@ -87,14 +118,14 @@ flowchart TD
   end
   SWRpcServer
   subgraph Extension["Extension (M3)"]
-    ExtensionTool
+    ExtensionToolCalls
     ExtensionToolUseCases
     BrowserDriver
   end
   Tab
   SWRpcClient --> SWRpcServer
-  SWRpcServer --> ExtensionTool
-  ExtensionTool --> ExtensionToolUseCases
+  SWRpcServer --> ExtensionToolCalls
+  ExtensionToolCalls --> ExtensionToolUseCases
   ExtensionToolUseCases --> BrowserDriver
   TabRpcClient --> TabRpcServer
 ```
