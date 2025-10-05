@@ -4,8 +4,8 @@
 	"packageManager": "yarn@4.8.0",
 	"homepage": "https://github.com/ndthanhdev/mcp-browser-kit",
 	"bin": {
-		"mcp-browser-kit": "build/tsup/dist/main.js",
-		"server": "build/tsup/dist/main.js"
+		"mcp-browser-kit": "target/tsup/dist/main.js",
+		"server": "target/tsup/dist/main.js"
 	},
 	"devDependencies": {
 		"@modelcontextprotocol/sdk": "^1.11.1",
@@ -15,7 +15,7 @@
 	},
 	"type": "module",
 	"files": [
-		"build/tsup/dist"
+		"target/tsup/dist"
 	],
 	"dependencies": {
 		"data-urls": "^5.0.0",

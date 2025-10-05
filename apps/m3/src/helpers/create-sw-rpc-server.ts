@@ -1,13 +1,12 @@
-import { ExtensionToolCallsInputPort } from "@mcp-browser-kit/core-extension";
-import { RpcServer } from "@mcp-browser-kit/rpc";
+import { ExtensionToolCallInputPort } from "@mcp-browser-kit/core-extension";
+import { MessageChannelRpcServer } from "@mcp-browser-kit/utils";
 import { container } from "./container";
 
 export const createSwRpcServer = () => {
-	const extensionTools = container.get<ExtensionToolCallsInputPort>(
-		ExtensionToolCallsInputPort,
+	const extensionTools = container.get<ExtensionToolCallInputPort>(
+		ExtensionToolCallInputPort,
 	);
 
-	const rpcServer = new RpcServer(extensionTools);
-
+	const rpcServer = new MessageChannelRpcServer(extensionTools);
 	return rpcServer;
 };

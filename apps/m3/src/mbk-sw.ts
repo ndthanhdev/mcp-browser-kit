@@ -1,17 +1,11 @@
 import {
 	BrowserDriverOutputPort,
-	LoggerFactoryOutputPort,
+	ServerChannelProviderOutputPort,
 } from "@mcp-browser-kit/core-extension";
 import type { DrivenBrowserDriverM3 } from "@mcp-browser-kit/driven-browser-driver";
-import type { RootRouter } from "@mcp-browser-kit/server/routers/root";
-import {
-	createTRPCClient,
-	createWSClient,
-	loggerLink,
-	wsLink,
-} from "@trpc/client";
+import type { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
+import { ExtensionDrivingTrpcController } from "@mcp-browser-kit/extension-driving-trpc-controller";
 import { container } from "./helpers/container";
-import { createSwRpcServer } from "./helpers/create-sw-rpc-server";
 import { startListenKeepAlive } from "./helpers/keep-alive";
 
 const driverM3 = container.get<BrowserDriverOutputPort>(
@@ -19,31 +13,27 @@ const driverM3 = container.get<BrowserDriverOutputPort>(
 ) as DrivenBrowserDriverM3;
 driverM3.linkRpc();
 
-// create persistent WebSocket connection
-const wsClient = createWSClient({
-	url: "ws://localhost:59089",
-});
-
-const trpc = createTRPCClient<RootRouter>({
-	links: [
-		loggerLink(),
-		wsLink({
-			client: wsClient,
-		}),
-	],
-});
-const swRpcServer = createSwRpcServer();
-
-const deferLogger = container
-	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
-	.create("trp", "defer");
-
-trpc.defer.onMessage.subscribe(undefined, {
-	onData: async (data) => {
-		deferLogger.info("defer", data);
-		const message = await swRpcServer.handleDefer(data);
-		deferLogger.info("resolve", message);
-		trpc.defer.resolve.mutate(message);
-	},
-});
 startListenKeepAlive();
+
+const serverProvider = container.get<ServerChannelProviderOutputPort>(
+	ServerChannelProviderOutputPort,
+) as ExtensionDrivenServerChannelProvider;
+
+// Set up interval to discover and connect to servers every 10 seconds
+setInterval(async () => {
+	try {
+		await serverProvider.discoverAndConnectToServers();
+	} catch (error) {
+		console.error("Error during server discovery and connection:", error);
+	}
+}, 10000);
+
+// Initial discovery call
+serverProvider.discoverAndConnectToServers().catch((error) => {
+	console.error("Error during initial server discovery and connection:", error);
+});
+
+const drivingTrpcController = container.get<ExtensionDrivingTrpcController>(
+	ExtensionDrivingTrpcController,
+);
+drivingTrpcController.listenToServerChannelEvents(serverProvider);

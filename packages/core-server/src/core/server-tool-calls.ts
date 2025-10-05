@@ -1,0 +1,625 @@
+import type {
+	ExtensionContext,
+	ExtensionTabInfo,
+	ExtensionToolCallInputPort,
+	ExtensionWindowInfo,
+	ReadableElementRecord,
+	Screenshot,
+} from "@mcp-browser-kit/core-extension";
+import type { MessageChannelRpcClient, TreeNode } from "@mcp-browser-kit/utils";
+import { Readability } from "@mozilla/readability";
+import { inject, injectable } from "inversify";
+import type { JSDOM } from "jsdom";
+import Lru from "quick-lru";
+
+export interface TabContext {
+	html: string;
+	jsdom: JSDOM;
+	domTree: TreeNode<globalThis.Element>;
+	readableTree: TreeNode<globalThis.Element> | undefined;
+}
+
+import type {
+	BrowserContext,
+	BrowserTabContext,
+	BrowserWindowContext,
+	Context,
+	ServerToolCallsInputPort,
+} from "../input-ports";
+import { LoggerFactoryOutputPort } from "../output-ports";
+import { TabKey, WindowKey } from "../types";
+import { toElementRecords } from "../utils/to-element-records";
+import { ExtensionChannelManager } from "./extension-channel-manager";
+
+@injectable()
+export class ToolCallUseCases implements ServerToolCallsInputPort {
+	private readonly logger;
+	private readonly tabContextCache = new Lru<string, TabContext>({
+		maxSize: 100,
+	});
+
+	constructor(
+		@inject(LoggerFactoryOutputPort)
+		loggerFactory: LoggerFactoryOutputPort,
+		@inject(ExtensionChannelManager)
+		private readonly extensionChannelManager: ExtensionChannelManager,
+	) {
+		this.logger = loggerFactory.create("RpcCallUseCase");
+	}
+
+	async getContext(): Promise<Context> {
+		this.logger.info("Getting browser context");
+
+		try {
+			const rpcClients = this.extensionChannelManager.getRpcClients();
+
+			if (rpcClients.length === 0) {
+				this.logger.warn("No RPC clients available");
+				return {
+					browsers: [],
+				};
+			}
+
+			const browsers = await this.getBrowserContextsFromClients(rpcClients);
+
+			return {
+				browsers,
+			};
+		} catch (error) {
+			this.logger.error("Failed to get context", error);
+			throw error;
+		}
+	}
+
+	private async getBrowserContextsFromClients(
+		rpcClients: MessageChannelRpcClient<ExtensionToolCallInputPort>[],
+	): Promise<BrowserContext[]> {
+		const browsers: BrowserContext[] = [];
+
+		for (const rpcClient of rpcClients) {
+			try {
+				const extensionContext = await rpcClient.call({
+					method: "getExtensionContext",
+					args: [],
+					extraArgs: {},
+				});
+				const browserContext = this.buildBrowserContext(extensionContext);
+				browsers.push(browserContext);
+			} catch (error) {
+				this.logger.error("Failed to get context from RPC client", error);
+			}
+		}
+
+		return browsers;
+	}
+
+	private buildBrowserContext(
+		extensionContext: ExtensionContext,
+	): BrowserContext {
+		const windowsMap = this.groupTabsByWindow(extensionContext);
+		const browserWindows = this.buildBrowserWindows(windowsMap);
+
+		return {
+			browserId: extensionContext.browserId,
+			availableTools: extensionContext.availableTools,
+			browserWindows,
+		};
+	}
+
+	private groupTabsByWindow(
+		extensionContext: ExtensionContext,
+	): Map<string, BrowserTabContext[]> {
+		const windowsMap = new Map<string, BrowserTabContext[]>();
+
+		for (const tab of extensionContext.availableTabs) {
+			const window = this.findWindowForTab(extensionContext);
+			if (!window) continue;
+
+			const windowKey = this.createWindowKey(
+				extensionContext.browserId,
+				window.id,
+			);
+			const browserTab = this.createBrowserTabContext(
+				extensionContext.browserId,
+				window.id,
+				tab,
+			);
+
+			if (!windowsMap.has(windowKey)) {
+				windowsMap.set(windowKey, []);
+			}
+			windowsMap.get(windowKey)?.push(browserTab);
+		}
+
+		return windowsMap;
+	}
+
+	private findWindowForTab(
+		extensionContext: ExtensionContext,
+	): ExtensionWindowInfo | undefined {
+		// This is a simplification - you may need different logic to associate tabs with windows
+		return (
+			extensionContext.availableWindows.find(() => true) ||
+			extensionContext.availableWindows[0]
+		);
+	}
+
+	private createWindowKey(instanceId: string, windowId: string): string {
+		return WindowKey.from({
+			browserId: instanceId,
+			windowId,
+		}).toString();
+	}
+
+	private createBrowserTabContext(
+		instanceId: string,
+		windowId: string,
+		tab: ExtensionTabInfo,
+	): BrowserTabContext {
+		const tabKey = TabKey.from({
+			browserId: instanceId,
+			windowId,
+			tabId: tab.id,
+		}).toString();
+
+		return {
+			tabKey,
+			active: tab.active,
+			title: tab.title,
+			url: tab.url,
+		};
+	}
+
+	private buildBrowserWindows(
+		windowsMap: Map<string, BrowserTabContext[]>,
+	): BrowserWindowContext[] {
+		return Array.from(windowsMap.entries()).map(([windowKey, tabs]) => ({
+			windowKey,
+			tabs,
+		}));
+	}
+
+	async openTab(
+		windowKey: string,
+		url: string,
+	): Promise<{
+		tabKey: string;
+		windowKey: string;
+	}> {
+		this.logger.info(`Opening tab with URL: ${url} in window: ${windowKey}`);
+
+		try {
+			// Parse the windowKey to get windowId and instanceId
+			const windowData = WindowKey.parse(windowKey);
+
+			// Get the RPC client for this browser instance
+			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
+				windowData.browserId,
+			);
+
+			const result = await rpcClient.call({
+				method: "openTab",
+				args: [
+					url,
+					windowData.windowId,
+				],
+				extraArgs: {},
+			});
+
+			this.logger.info("Tab opened successfully", result);
+
+			// Create tab key from the result
+			const tabKey = TabKey.from({
+				browserId: windowData.browserId,
+				windowId: result.windowId,
+				tabId: result.tabId,
+			}).toString();
+
+			return {
+				tabKey,
+				windowKey,
+			};
+		} catch (error) {
+			this.logger.error("Failed to open tab", error);
+			throw error;
+		}
+	}
+
+	async getReadableText(tabKey: string): Promise<string> {
+		this.logger.info(`Getting readable text from tab: ${tabKey}`);
+
+		try {
+			// Load tab context (with JSDOM)
+			const tabContext = await this.loadTabContext(tabKey);
+
+			// Use Mozilla's Readability to extract readable content
+			const reader = new Readability(tabContext.jsdom.window.document);
+			const article = reader.parse();
+
+			if (!article || !article.textContent) {
+				this.logger.warn(
+					"Readability could not parse the page, falling back to text content",
+				);
+				// Fallback to basic text extraction if Readability fails
+				return tabContext.jsdom.window.document.body.textContent?.trim() ?? "";
+			}
+
+			// Return the text content from the article
+			const textContent = article.textContent.trim();
+
+			this.logger.info("Retrieved readable text successfully");
+			return textContent;
+		} catch (error) {
+			this.logger.error("Failed to get readable text", error);
+			throw error;
+		}
+	}
+
+	async getReadableElements(tabKey: string): Promise<ReadableElementRecord[]> {
+		this.logger.info(`Getting readable elements from tab: ${tabKey}`);
+
+		try {
+			// Load tab context with HTML, JSDOM, domTree, and readableTree
+			const tabContext = await this.loadTabContext(tabKey);
+
+			// If no readable tree is available, return empty array
+			if (!tabContext.readableTree) {
+				this.logger.warn("No readable tree available for tab");
+				return [];
+			}
+
+			// Convert readable tree to element records
+			const elementRecords = toElementRecords(tabContext.readableTree);
+
+			this.logger.info(`Retrieved ${elementRecords.length} readable elements`);
+			return elementRecords;
+		} catch (error) {
+			this.logger.error("Failed to get readable elements", error);
+			throw error;
+		}
+	}
+
+	async clickOnElement(tabKey: string, selector: string): Promise<void> {
+		this.logger.info(`Clicking on element ${selector} in tab: ${tabKey}`);
+
+		try {
+			// Parse the tabKey to get tabId and instanceId
+			const tabData = TabKey.parse(tabKey);
+
+			// Get the RPC client for this browser instance
+			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
+				tabData.browserId,
+			);
+
+			await rpcClient.call({
+				method: "clickOnElement",
+				args: [
+					tabData.tabId,
+					selector,
+				],
+				extraArgs: {},
+			});
+
+			this.logger.info("Element clicked successfully");
+		} catch (error) {
+			this.logger.error("Failed to click on element", error);
+			throw error;
+		}
+	}
+
+	async fillTextToElement(
+		tabKey: string,
+		selector: string,
+		value: string,
+	): Promise<void> {
+		this.logger.info(`Filling text to element ${selector} in tab: ${tabKey}`);
+
+		try {
+			// Parse the tabKey to get tabId and instanceId
+			const tabData = TabKey.parse(tabKey);
+
+			// Get the RPC client for this browser instance
+			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
+				tabData.browserId,
+			);
+
+			await rpcClient.call({
+				method: "fillTextToElement",
+				args: [
+					tabData.tabId,
+					selector,
+					value,
+				],
+				extraArgs: {},
+			});
+
+			this.logger.info("Text filled to element successfully");
+		} catch (error) {
+			this.logger.error("Failed to fill text to element", error);
+			throw error;
+		}
+	}
+
+	async captureTab(tabKey: string): Promise<Screenshot> {
+		this.logger.info(`Capturing screenshot from tab: ${tabKey}`);
+
+		try {
+			// Parse the tabKey to get tabId and instanceId
+			const tabData = TabKey.parse(tabKey);
+
+			// Get the RPC client for this browser instance
+			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
+				tabData.browserId,
+			);
+
+			const screenshot = await rpcClient.call({
+				method: "captureTab",
+				args: [
+					tabData.tabId,
+				],
+				extraArgs: {},
+			});
+
+			this.logger.info("Screenshot captured successfully");
+			return screenshot;
+		} catch (error) {
+			this.logger.error("Failed to capture screenshot", error);
+			throw error;
+		}
+	}
+
+	async clickOnCoordinates(
+		tabKey: string,
+		x: number,
+		y: number,
+	): Promise<void> {
+		this.logger.info(`Clicking on coordinates (${x}, ${y}) in tab: ${tabKey}`);
+
+		try {
+			// Parse the tabKey to get tabId and instanceId
+			const tabData = TabKey.parse(tabKey);
+
+			// Get the RPC client for this browser instance
+			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
+				tabData.browserId,
+			);
+
+			await rpcClient.call({
+				method: "clickOnCoordinates",
+				args: [
+					tabData.tabId,
+					x,
+					y,
+				],
+				extraArgs: {},
+			});
+
+			this.logger.info("Clicked on coordinates successfully");
+		} catch (error) {
+			this.logger.error("Failed to click on coordinates", error);
+			throw error;
+		}
+	}
+
+	async closeTab(tabKey: string): Promise<void> {
+		this.logger.info(`Closing tab: ${tabKey}`);
+
+		try {
+			// Parse the tabKey to get tabId and instanceId
+			const tabData = TabKey.parse(tabKey);
+
+			// Get the RPC client for this browser instance
+			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
+				tabData.browserId,
+			);
+
+			await rpcClient.call({
+				method: "closeTab",
+				args: [
+					tabData.tabId,
+				],
+				extraArgs: {},
+			});
+
+			// Clear cached context for this tab
+			this.tabContextCache.delete(tabKey);
+
+			this.logger.info("Tab closed successfully");
+		} catch (error) {
+			this.logger.error("Failed to close tab", error);
+			throw error;
+		}
+	}
+
+	async fillTextToCoordinates(
+		tabKey: string,
+		x: number,
+		y: number,
+		value: string,
+	): Promise<void> {
+		this.logger.info(
+			`Filling text to coordinates (${x}, ${y}) in tab: ${tabKey}`,
+		);
+
+		try {
+			// Parse the tabKey to get tabId and instanceId
+			const tabData = TabKey.parse(tabKey);
+
+			// Get the RPC client for this browser instance
+			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
+				tabData.browserId,
+			);
+
+			await rpcClient.call({
+				method: "fillTextToCoordinates",
+				args: [
+					tabData.tabId,
+					x,
+					y,
+					value,
+				],
+				extraArgs: {},
+			});
+
+			this.logger.info("Text filled to coordinates successfully");
+		} catch (error) {
+			this.logger.error("Failed to fill text to coordinates", error);
+			throw error;
+		}
+	}
+
+	private async loadTabContext(tabKey: string): Promise<TabContext> {
+		this.logger.info(`Loading tab context for: ${tabKey}`);
+		this.logger.error("loadTabContext is not supported without getHtml");
+		throw new Error("loadTabContext is not supported without getHtml");
+	}
+
+	async getSelection(
+		tabKey: string,
+	): Promise<import("@mcp-browser-kit/core-extension").Selection> {
+		this.logger.info(`Getting selection from tab: ${tabKey}`);
+
+		try {
+			// Parse the tabKey to get tabId and instanceId
+			const tabData = TabKey.parse(tabKey);
+
+			// Get the RPC client for this browser instance
+			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
+				tabData.browserId,
+			);
+
+			const selection = await rpcClient.call({
+				method: "getSelection",
+				args: [
+					tabData.tabId,
+				],
+				extraArgs: {},
+			});
+
+			this.logger.info("Selection retrieved successfully");
+			return selection;
+		} catch (error) {
+			this.logger.error("Failed to get selection", error);
+			throw error;
+		}
+	}
+
+	async hitEnterOnCoordinates(
+		tabKey: string,
+		x: number,
+		y: number,
+	): Promise<void> {
+		this.logger.info(
+			`Hitting enter on coordinates (${x}, ${y}) in tab: ${tabKey}`,
+		);
+
+		try {
+			// Parse the tabKey to get tabId and instanceId
+			const tabData = TabKey.parse(tabKey);
+
+			// Get the RPC client for this browser instance
+			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
+				tabData.browserId,
+			);
+
+			await rpcClient.call({
+				method: "hitEnterOnCoordinates",
+				args: [
+					tabData.tabId,
+					x,
+					y,
+				],
+				extraArgs: {},
+			});
+
+			this.logger.info("Hit enter on coordinates successfully");
+		} catch (error) {
+			this.logger.error("Failed to hit enter on coordinates", error);
+			throw error;
+		}
+	}
+
+	async hitEnterOnElement(tabKey: string, selector: string): Promise<void> {
+		this.logger.info(`Hitting enter on element ${selector} in tab: ${tabKey}`);
+
+		try {
+			// Parse the tabKey to get tabId and instanceId
+			const tabData = TabKey.parse(tabKey);
+
+			// Get the RPC client for this browser instance
+			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
+				tabData.browserId,
+			);
+
+			await rpcClient.call({
+				method: "hitEnterOnElement",
+				args: [
+					tabData.tabId,
+					selector,
+				],
+				extraArgs: {},
+			});
+
+			this.logger.info("Hit enter on element successfully");
+		} catch (error) {
+			this.logger.error("Failed to hit enter on element", error);
+			throw error;
+		}
+	}
+
+	async invokeJsFn(tabKey: string, fnBodyCode: string): Promise<unknown> {
+		this.logger.info(`Invoking JavaScript function in tab: ${tabKey}`);
+
+		try {
+			// Parse the tabKey to get tabId and instanceId
+			const tabData = TabKey.parse(tabKey);
+
+			// Get the RPC client for this browser instance
+			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
+				tabData.browserId,
+			);
+
+			const result = await rpcClient.call({
+				method: "invokeJsFn",
+				args: [
+					tabData.tabId,
+					fnBodyCode,
+				],
+				extraArgs: {},
+			});
+
+			this.logger.info("JavaScript function invoked successfully");
+			return result;
+		} catch (error) {
+			this.logger.error("Failed to invoke JavaScript function", error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Gets the cached DOM tree for a tab
+	 * @param tabKey - The tab key
+	 * @returns The cached DOM tree or undefined if not cached
+	 */
+	getDomTree(tabKey: string): TreeNode<globalThis.Element> | undefined {
+		return this.tabContextCache.get(tabKey)?.domTree;
+	}
+
+	/**
+	 * Gets the cached readable tree for a tab
+	 * @param tabKey - The tab key
+	 * @returns The cached readable tree or undefined if not cached
+	 */
+	getReadableTree(tabKey: string): TreeNode<globalThis.Element> | undefined {
+		return this.tabContextCache.get(tabKey)?.readableTree;
+	}
+
+	/**
+	 * Gets the cached tab context (JSDOM, DOM tree, and readable tree)
+	 * @param tabKey - The tab key
+	 * @returns The cached tab context or undefined if not cached
+	 */
+	getTabContext(tabKey: string): TabContext | undefined {
+		return this.tabContextCache.get(tabKey);
+	}
+}

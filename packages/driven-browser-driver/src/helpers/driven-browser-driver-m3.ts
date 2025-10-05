@@ -1,144 +1,201 @@
 import type {
-	ElementRecord,
+	BrowserDriverOutputPort,
+	LoggerFactoryOutputPort,
+} from "@mcp-browser-kit/core-extension/output-ports";
+import { LoggerFactoryOutputPort as LoggerFactoryOutputPortSymbol } from "@mcp-browser-kit/core-extension/output-ports";
+import type {
+	BrowserInfo,
+	ExtensionInfo,
+	ExtensionTabInfo,
+	ExtensionWindowInfo,
 	Screenshot,
-	Tab,
-} from "@mcp-browser-kit/core-extension/entities";
-import type { BrowserDriverOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
-import type { DeferMessage, ResolveMessage } from "@mcp-browser-kit/rpc";
+	Selection,
+} from "@mcp-browser-kit/core-extension/types";
 import type { Func } from "@mcp-browser-kit/types";
-import { injectable } from "inversify";
-import type { Merge } from "type-fest";
-import browser from "webextension-polyfill";
-import * as backgroundTools from "../utils/background-tools";
-import { createM3TabRpcClient } from "./create-m3-tab-rpc";
+import { inject, injectable } from "inversify";
+import * as backgroundToolsM3 from "../utils/background-tools-m3";
+import type { TabRpcService } from "./tab-rpc-service";
 
 @injectable()
 export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
-	getManifestVersion(): Promise<number> {
-		return Promise.resolve(3);
+	private readonly logger;
+
+	constructor(
+		@inject(LoggerFactoryOutputPortSymbol)
+		private readonly loggerFactory: LoggerFactoryOutputPort,
+		private readonly tabRpcService: TabRpcService,
+	) {
+		this.logger = this.loggerFactory.create("DrivenBrowserDriverM3");
 	}
-	public readonly tabRpcClient = createM3TabRpcClient();
 
-	handleTabMessage = (message: unknown) => {
-		this.tabRpcClient.emitter.emit("resolve", message as ResolveMessage);
+	// Browser and Extension Info Methods
+	getBrowserInfo(): Promise<BrowserInfo> {
+		return backgroundToolsM3.getBrowserInfo();
+	}
+
+	getExtensionInfo = (): Promise<ExtensionInfo> => {
+		return backgroundToolsM3.getExtensionInfo();
 	};
 
-	private _unlink: Func | undefined;
-	unlinkRpc = () => {
-		// browser.runtime.onMessage.removeListener(this.handleTabMessage);
-		this._unlink?.();
+	getBrowserId(): Promise<string> {
+		return backgroundToolsM3.getBrowserId();
+	}
+
+	// Tab Management Methods
+	getTabs = (): Promise<ExtensionTabInfo[]> => {
+		return backgroundToolsM3.getTabs();
 	};
 
-	linkRpc = () => {
-		this.unlinkRpc();
-		// browser.runtime.onMessage.addListener(this.handleTabMessage);
-		this._unlink = this.tabRpcClient.onDefer<
-			Merge<
-				DeferMessage,
-				{
-					tabId: string;
-				}
-			>
-		>(async (message) => {
-			const response = await browser.tabs.sendMessage(+message.tabId, message);
-			this.handleTabMessage(response);
+	getWindows = async (): Promise<ExtensionWindowInfo[]> => {
+		return backgroundToolsM3.getWindows();
+	};
+
+	openTab = async (
+		url: string,
+		windowId: string,
+	): Promise<{
+		tabId: string;
+		windowId: string;
+	}> => {
+		this.logger.info(`Opening tab with URL: ${url} in window: ${windowId}`);
+		const result = await backgroundToolsM3.openTab(url, windowId);
+		this.logger.info(`Tab opened with ID: ${result.tabId}`);
+		return result;
+	};
+
+	closeTab = async (tabId: string): Promise<void> => {
+		this.logger.info(`Closing tab with ID: ${tabId}`);
+		await backgroundToolsM3.closeTab(tabId);
+		this.logger.info(`Tab closed: ${tabId}`);
+	};
+
+	captureTab = (tabId: string): Promise<Screenshot> => {
+		return backgroundToolsM3.captureTab(tabId);
+	};
+
+	// DOM Query Methods
+	getSelection = (_tabId: string): Promise<Selection> => {
+		return Promise.reject("getSelection is not supported in M3 driver");
+	};
+
+	// Interaction Methods (Click/Focus)
+	clickOnCoordinates = (tabId: string, x: number, y: number): Promise<void> => {
+		return this.tabRpcService.tabRpcClient.call({
+			method: "dom.clickOnCoordinates",
+			args: [
+				x,
+				y,
+			],
+			extraArgs: {
+				tabId,
+			},
 		});
-
-		return this._unlink;
 	};
 
-	getTabs = (): Promise<Tab[]> => {
-		return backgroundTools.getTabs();
-	};
-
-	captureActiveTab = (): Promise<Screenshot> => {
-		return Promise.reject("captureActiveTab is not supported");
-	};
-
-	getInnerText = (tabId: string): Promise<string> => {
-		const task = this.tabRpcClient.defer({
-			method: "dom.getInnerText",
-			args: [],
-			tabId: tabId,
-		});
-
-		return task;
-	};
-
-	getReadableElements = (tabId: string): Promise<ElementRecord[]> => {
-		return this.tabRpcClient.defer({
-			method: "dom.getReadableElements",
-			args: [],
-			tabId,
-		});
-	};
-
-	clickOnViewableElement = (
+	clickOnElementBySelector = (
 		tabId: string,
-		x: number,
-		y: number,
+		selector: string,
 	): Promise<void> => {
-		return this.tabRpcClient.defer({
-			method: "dom.clickOnViewableElement",
-			args: [x, y],
-			tabId,
+		return this.tabRpcService.tabRpcClient.call({
+			method: "dom.clickOnElementBySelector",
+			args: [
+				selector,
+			],
+			extraArgs: {
+				tabId,
+			},
 		});
 	};
 
-	fillTextToViewableElement = (
+	focusOnCoordinates = (tabId: string, x: number, y: number): Promise<void> => {
+		return this.tabRpcService.tabRpcClient.call({
+			method: "dom.focusOnCoordinates",
+			args: [
+				x,
+				y,
+			],
+			extraArgs: {
+				tabId,
+			},
+		});
+	};
+
+	// Input Methods
+	fillTextToElementBySelector = (
 		tabId: string,
-		x: number,
-		y: number,
+		selector: string,
 		value: string,
 	): Promise<void> => {
-		return this.tabRpcClient.defer({
-			method: "dom.fillTextToViewableElement",
-			args: [x, y, value],
-			tabId,
+		return this.tabRpcService.tabRpcClient.call({
+			method: "dom.fillTextToElementBySelector",
+			args: [
+				selector,
+				value,
+			],
+			extraArgs: {
+				tabId,
+			},
 		});
 	};
 
-	hitEnterOnViewableElement = (
+	fillTextToFocusedElement(tabId: string, value: string): Promise<void> {
+		return this.tabRpcService.tabRpcClient.call({
+			method: "dom.fillTextToFocusedElement",
+			args: [
+				value,
+			],
+			extraArgs: {
+				tabId,
+			},
+		});
+	}
+
+	hitEnterOnElementBySelector = (
 		tabId: string,
-		x: number,
-		y: number,
+		selector: string,
 	): Promise<void> => {
-		return this.tabRpcClient.defer({
-			method: "dom.hitEnterOnViewableElement",
-			args: [x, y],
-			tabId,
+		return this.tabRpcService.tabRpcClient.call({
+			method: "dom.hitEnterOnElementBySelector",
+			args: [
+				selector,
+			],
+			extraArgs: {
+				tabId,
+			},
 		});
 	};
 
-	clickOnReadableElement = (tabId: string, index: number): Promise<void> => {
-		return this.tabRpcClient.defer({
-			method: "dom.clickOnReadableElement",
-			args: [index],
-			tabId,
+	hitEnterOnFocusedElement = (tabId: string): Promise<void> => {
+		return this.tabRpcService.tabRpcClient.call({
+			method: "dom.hitEnterOnFocusedElement",
+			args: [],
+			extraArgs: {
+				tabId,
+			},
 		});
 	};
 
-	fillTextToReadableElement = (
-		tabId: string,
-		index: number,
-		value: string,
-	): Promise<void> => {
-		return this.tabRpcClient.defer({
-			method: "dom.fillTextToReadableElement",
-			args: [index, value],
-			tabId,
-		});
-	};
-
-	hitEnterOnReadableElement = (tabId: string, index: number): Promise<void> => {
-		return this.tabRpcClient.defer({
-			method: "dom.hitEnterOnReadableElement",
-			args: [index],
-			tabId,
-		});
-	};
-
-	invokeJsFn = (tabId: string, fnBodyCode: string): Promise<unknown> => {
+	// JavaScript Execution Methods
+	invokeJsFn = (_tabId: string, _fnBodyCode: string): Promise<unknown> => {
 		return Promise.reject("invokeJsFn is not supported");
+	};
+
+	// RPC Communication Methods
+	linkRpc = (): Func => {
+		this.logger.info("Linking RPC communication");
+		const unlinkFn = this.tabRpcService.linkRpc();
+		this.logger.info("RPC communication linked successfully");
+		return unlinkFn;
+	};
+
+	unlinkRpc = (): void => {
+		this.logger.info("Unlinking RPC communication");
+		this.tabRpcService.unlinkRpc();
+		this.logger.info("RPC communication unlinked");
+	};
+
+	handleTabMessage = (message: unknown): void => {
+		this.logger.verbose("Handling tab message");
+		this.tabRpcService.handleTabMessage(message);
 	};
 }

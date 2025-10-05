@@ -1,7 +1,7 @@
 #!/usr/bin/env -S yarn dlx tsx
 import "zx/globals";
-import { workDirs } from "../utils/work-dirs";
 import fse from "fs-extra";
+import { workDirs } from "../utils/work-dirs";
 
 $.verbose = true;
 

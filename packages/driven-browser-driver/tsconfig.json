@@ -11,10 +11,10 @@
 			"path": "../core-server"
 		},
 		{
-			"path": "../rpc"
+			"path": "../types"
 		},
 		{
-			"path": "../types"
+			"path": "../utils"
 		}
 	],
 	"compilerOptions": {
@@ -37,17 +37,17 @@
 			"@mcp-browser-kit/types/*": [
 				"../types/src/*"
 			],
-			"@mcp-browser-kit/rpc": [
-				"../rpc/src/index.ts"
-			],
-			"@mcp-browser-kit/rpc/*": [
-				"../rpc/src/*"
-			],
 			"@mcp-browser-kit/core-extension": [
 				"../core-extension/src/index.ts"
 			],
 			"@mcp-browser-kit/core-extension/*": [
 				"../core-extension/src/*"
+			],
+			"@mcp-browser-kit/utils": [
+				"../utils/src/index.ts"
+			],
+			"@mcp-browser-kit/utils/*": [
+				"../utils/src/*"
 			]
 		}
 	}

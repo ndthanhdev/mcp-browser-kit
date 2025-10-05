@@ -1,4 +1,85 @@
+import delay from "delay";
 import { playClickAnimationOnElement } from "./animation-tools";
+
+export const clickOnCoordinates = (x: number, y: number) => {
+	const element = document.elementFromPoint(x, y);
+	if (element && element instanceof HTMLElement) {
+		(element as HTMLButtonElement).click();
+	}
+};
+
+export const clickOnElementBySelector = async (selector: string) => {
+	const element = document.querySelector(selector) as HTMLElement;
+	if (element) {
+		playClickAnimationOnElement(element);
+		element.click();
+	}
+};
+
+export const dispatchEnter = async (element: HTMLElement) => {
+	const dict = {
+		key: "Enter",
+		code: "Enter",
+		which: 13,
+		keyCode: 13,
+		bubbles: true,
+		cancelable: true,
+	};
+	const humanDelay = 50 + Math.random() * 150;
+	element.dispatchEvent(new KeyboardEvent("keydown", dict));
+	await delay(humanDelay);
+	element.dispatchEvent(new KeyboardEvent("keyup", dict));
+};
+
+export const fillTextToElementBySelector = (
+	selector: string,
+	value: string,
+) => {
+	const element = document.querySelector(selector) as HTMLElement;
+	if (element) {
+		playClickAnimationOnElement(element);
+		(element as HTMLInputElement).value = value;
+	}
+};
+
+export const fillTextToFocusedElement = (value: string) => {
+	const element = document.activeElement;
+	if (element && element instanceof HTMLElement) {
+		(element as HTMLInputElement).value = value;
+	}
+};
+
+export const focusOnCoordinates = (x: number, y: number) => {
+	const element = document.elementFromPoint(x, y);
+	if (element && element instanceof HTMLElement) {
+		element.focus();
+	}
+};
+
+export const generateElementRecords = (elements: HTMLElement[]) => {
+	const table = elements.map((el, index) => {
+		const tag = el.tagName.toLowerCase();
+		const label =
+			el.getAttribute("aria-label") ??
+			el.getAttribute("placeholder") ??
+			el.innerText ??
+			"";
+		return {
+			elementId: index,
+			role: tag,
+			accessibleText: label,
+		};
+	});
+	return table;
+};
+
+export const getInnerText = () => {
+	return document.body.innerText;
+};
+
+export const getReadableElements = () => {
+	return generateElementRecords(getReadableHtmlElements());
+};
 
 export const getReadableHtmlElements = () => {
 	const labeledElements =
@@ -31,82 +112,17 @@ export const getReadableHtmlElements = () => {
 	return readableElements;
 };
 
-export const generateElementRecords = (elements: HTMLElement[]) => {
-	const table = elements.map((el, index) => {
-		const tag = el.tagName.toLowerCase();
-		const label =
-			el.getAttribute("aria-label") ??
-			el.getAttribute("placeholder") ??
-			el.innerText ??
-			"";
-		return [index, tag, label] as [number, string, string];
-	});
-	return table;
-};
-
-export const getReadableElements = () => {
-	return generateElementRecords(getReadableHtmlElements());
-};
-
-export const clickOnReadableElement = async (index: number) => {
-	const readableElements = getReadableHtmlElements();
-	const element = readableElements[index];
-	playClickAnimationOnElement(element);
-	element.click();
-};
-
-export const fillTextToReadableElement = (index: number, value: string) => {
-	const readableElements = getReadableHtmlElements();
-	const element = readableElements[index];
-	playClickAnimationOnElement(element);
-	(element as HTMLInputElement).value = value;
-};
-
-export const dispatchEnter = (element: HTMLElement) => {
-	const dict = {
-		key: "Enter",
-		code: "Enter",
-		which: 13,
-		keyCode: 13,
-		bubbles: true,
-		cancelable: true,
-	};
-	element.dispatchEvent(new KeyboardEvent("keydown", dict));
-	element.dispatchEvent(new KeyboardEvent("keyup", dict));
-};
-
-export const hitEnterOnReadableElement = (index: number) => {
-	const readableElements = getReadableHtmlElements();
-	const element = readableElements[index];
-	playClickAnimationOnElement(element);
-	dispatchEnter(element);
-};
-
-export const getInnerText = () => {
-	return document.body.innerText;
-};
-
-export const clickOnViewableElement = (x: number, y: number) => {
-	const element = document.elementFromPoint(x, y);
-	if (element && element instanceof HTMLElement) {
-		(element as HTMLButtonElement).click();
+export const hitEnterOnElementBySelector = async (selector: string) => {
+	const element = document.querySelector(selector) as HTMLElement;
+	if (element) {
+		playClickAnimationOnElement(element);
+		await dispatchEnter(element);
 	}
 };
 
-export const fillTextToViewableElement = (
-	x: number,
-	y: number,
-	value: string,
-) => {
-	const element = document.elementFromPoint(x, y);
+export const hitEnterOnFocusedElement = async () => {
+	const element = document.activeElement;
 	if (element && element instanceof HTMLElement) {
-		(element as HTMLInputElement).value = value;
-	}
-};
-
-export const hitEnterOnViewableElement = (x: number, y: number) => {
-	const element = document.elementFromPoint(x, y);
-	if (element && element instanceof HTMLElement) {
-		dispatchEnter(element);
+		await dispatchEnter(element);
 	}
 };

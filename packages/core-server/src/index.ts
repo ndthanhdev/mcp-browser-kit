@@ -1,5 +1,5 @@
-export * from "./entities";
+export * from "./core";
 export * from "./input-ports";
 export * from "./output-ports";
-export * from "./use-cases";
+export * from "./types";
 export * from "./utils";

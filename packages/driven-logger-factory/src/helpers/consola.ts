@@ -1,9 +1,8 @@
 import type { Logger, LoggerFactory } from "@mcp-browser-kit/types";
 import * as changeCase from "change-case";
+import { consola, createConsola, LogLevels } from "consola";
 import { injectable } from "inversify";
 import * as R from "ramda";
-
-import { LogLevels, consola, createConsola } from "consola";
 
 consola.level = LogLevels.verbose;
 const defaultInstance = createConsola({

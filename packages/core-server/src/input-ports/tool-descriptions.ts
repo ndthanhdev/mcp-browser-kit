@@ -8,8 +8,8 @@ export interface ToolDescriptionsInputPort {
 	// CaptureActiveTab
 	captureActiveTabInstruction(): string;
 
-	// GetInnerText
-	getInnerTextInstruction(): string;
+	// GetReadableText
+	getReadableTextInstruction(): string;
 
 	// GetReadableElements
 	getReadableElementsInstruction(): string;

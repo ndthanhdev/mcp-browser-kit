@@ -4,8 +4,12 @@
 		"baseUrl": ".",
 		"outDir": "../../.moon/cache/types/etc/scripts",
 		"paths": {
-			"@mcp-browser-kit/scripts/*": ["*"]
+			"@mcp-browser-kit/scripts/*": [
+				"*"
+			]
 		}
 	},
-	"include": ["**/*.ts"]
+	"include": [
+		"**/*.ts"
+	]
 }

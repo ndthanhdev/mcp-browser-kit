@@ -5,16 +5,19 @@
 	],
 	"references": [
 		{
+			"path": "../core-extension"
+		},
+		{
 			"path": "../core-server"
 		},
 		{
 			"path": "../driven-browser-driver"
 		},
 		{
-			"path": "../rpc"
+			"path": "../types"
 		},
 		{
-			"path": "../types"
+			"path": "../utils"
 		}
 	],
 	"compilerOptions": {
@@ -25,6 +28,12 @@
 			"ES2024.ArrayBuffer"
 		],
 		"paths": {
+			"@mcp-browser-kit/core-extension": [
+				"../core-extension/src/index.ts"
+			],
+			"@mcp-browser-kit/core-extension/*": [
+				"../core-extension/src/*"
+			],
 			"@mcp-browser-kit/core-server": [
 				"../core-server/src/index.ts"
 			],
@@ -37,11 +46,17 @@
 			"@mcp-browser-kit/types/*": [
 				"../types/src/*"
 			],
-			"@mcp-browser-kit/rpc": [
-				"../rpc/src/index.ts"
+			"@mcp-browser-kit/extension-driven-browser-driver": [
+				"../driven-browser-driver/src/index.ts"
 			],
-			"@mcp-browser-kit/rpc/*": [
-				"../rpc/src/*"
+			"@mcp-browser-kit/extension-driven-browser-driver/*": [
+				"../driven-browser-driver/src/*"
+			],
+			"@mcp-browser-kit/utils": [
+				"../utils/src/index.ts"
+			],
+			"@mcp-browser-kit/utils/*": [
+				"../utils/src/*"
 			],
 			"@mcp-browser-kit/driven-browser-driver": [
 				"../driven-browser-driver/src/index.ts"

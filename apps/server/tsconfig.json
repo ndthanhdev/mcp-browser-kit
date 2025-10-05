@@ -7,17 +7,29 @@
 			"@mcp-browser-kit/extension/*": [
 				"../extension/src/*"
 			],
-			"@mcp-browser-kit/rpc": [
-				"../../packages/rpc/src/index.ts"
-			],
-			"@mcp-browser-kit/rpc/*": [
-				"../../packages/rpc/src/*"
-			],
 			"@mcp-browser-kit/core-server": [
 				"../../packages/core-server/src/index.ts"
 			],
 			"@mcp-browser-kit/core-server/*": [
 				"../../packages/core-server/src/*"
+			],
+			"@mcp-browser-kit/server-driven-extension-driver": [
+				"../../packages/driven-extension-driver/src/index.ts"
+			],
+			"@mcp-browser-kit/server-driven-extension-driver/*": [
+				"../../packages/driven-extension-driver/src/*"
+			],
+			"@mcp-browser-kit/extension-driven-logger-factory": [
+				"../../packages/driven-logger-factory/src/index.ts"
+			],
+			"@mcp-browser-kit/extension-driven-logger-factory/*": [
+				"../../packages/driven-logger-factory/src/*"
+			],
+			"@mcp-browser-kit/server-driven-extension-channel-provider": [
+				"../../packages/server-driven-extension-channel-provider/src/index.ts"
+			],
+			"@mcp-browser-kit/server-driven-extension-channel-provider/*": [
+				"../../packages/server-driven-extension-channel-provider/src/*"
 			],
 			"@mcp-browser-kit/driven-extension-driver": [
 				"../../packages/driven-extension-driver/src/index.ts"
@@ -30,6 +42,12 @@
 			],
 			"@mcp-browser-kit/driven-logger-factory/*": [
 				"../../packages/driven-logger-factory/src/*"
+			],
+			"@mcp-browser-kit/utils": [
+				"../../packages/utils/src/index.ts"
+			],
+			"@mcp-browser-kit/utils/*": [
+				"../../packages/utils/src/*"
 			]
 		},
 		"outDir": "../../.moon/cache/types/apps/server"
@@ -38,7 +56,8 @@
 		"src/**/*.ts",
 		"../../packages/rpc/src/**/*",
 		"../../packages/core-server/src/**/*",
-		"../../packages/driven-extension-driver/src/**/*"
+		"../../packages/driven-extension-driver/src/**/*",
+		"../../packages/server-driven-extension-channel-provider/src/**/*"
 	],
 	"references": [
 		{
@@ -51,7 +70,10 @@
 			"path": "../../packages/driven-logger-factory"
 		},
 		{
-			"path": "../../packages/rpc"
+			"path": "../../packages/server-driven-extension-channel-provider"
+		},
+		{
+			"path": "../../packages/utils"
 		}
 	]
 }

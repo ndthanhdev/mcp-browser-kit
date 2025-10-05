@@ -10,18 +10,6 @@
 			"@mcp-browser-kit/m2/*": [
 				"apps/m2/src/*"
 			],
-			"@mcp-browser-kit/rpc": [
-				"packages/rpc/src/index.ts"
-			],
-			"@mcp-browser-kit/rpc/*": [
-				"packages/rpc/src/*"
-			],
-			"@mcp-browser-kit/core-browser-driver": [
-				"packages/core-browser-driver/src/index.ts"
-			],
-			"@mcp-browser-kit/core-browser-driver/*": [
-				"packages/core-browser-driver/src/*"
-			],
 			"@mcp-browser-kit/core-server": [
 				"packages/core-server/src/index.ts"
 			],
@@ -64,10 +52,19 @@
 			"path": "packages/driven-extension-driver"
 		},
 		{
+			"path": "packages/driven-extension-driver-provider"
+		},
+		{
 			"path": "packages/driven-logger-factory"
 		},
 		{
-			"path": "packages/rpc"
+			"path": "packages/extension-driven-server-channel-provider"
+		},
+		{
+			"path": "packages/server-driven-extension-channel-provider"
+		},
+		{
+			"path": "packages/extension-driving-trpc-controller"
 		},
 		{
 			"path": "packages/types"

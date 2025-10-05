@@ -8,22 +8,16 @@
 		],
 		"baseUrl": ".",
 		"paths": {
-			"@mcp-browser-kit/rpc": [
-				"../../packages/rpc/src/index.ts"
-			],
-			"@mcp-browser-kit/rpc/*": [
-				"../../packages/rpc/src/*"
-			],
 			"@mcp-browser-kit/core-extension": [
 				"../../packages/core-extension/src/index.ts"
 			],
 			"@mcp-browser-kit/core-extension/*": [
 				"../../packages/core-extension/src/*"
 			],
-			"@mcp-browser-kit/driven-browser-driver": [
+			"@mcp-browser-kit/extension-driven-browser-driver": [
 				"../../packages/driven-browser-driver/src/index.ts"
 			],
-			"@mcp-browser-kit/driven-browser-driver/*": [
+			"@mcp-browser-kit/extension-driven-browser-driver/*": [
 				"../../packages/driven-browser-driver/src/*"
 			],
 			"@mcp-browser-kit/core-server": [
@@ -34,6 +28,36 @@
 			],
 			"@mcp-browser-kit/server/*": [
 				"../server/src/*"
+			],
+			"@mcp-browser-kit/extension-driven-logger-factory": [
+				"../../packages/driven-logger-factory/src/index.ts"
+			],
+			"@mcp-browser-kit/extension-driven-logger-factory/*": [
+				"../../packages/driven-logger-factory/src/*"
+			],
+			"@mcp-browser-kit/utils": [
+				"../../packages/utils/src/index.ts"
+			],
+			"@mcp-browser-kit/utils/*": [
+				"../../packages/utils/src/*"
+			],
+			"@mcp-browser-kit/extension-driven-server-channel-provider": [
+				"../../packages/extension-driven-server-channel-provider/src/index.ts"
+			],
+			"@mcp-browser-kit/extension-driven-server-channel-provider/*": [
+				"../../packages/extension-driven-server-channel-provider/src/*"
+			],
+			"@mcp-browser-kit/extension-driving-trpc-controller": [
+				"../../packages/extension-driving-trpc-controller/src/index.ts"
+			],
+			"@mcp-browser-kit/extension-driving-trpc-controller/*": [
+				"../../packages/extension-driving-trpc-controller/src/*"
+			],
+			"@mcp-browser-kit/driven-browser-driver": [
+				"../../packages/driven-browser-driver/src/index.ts"
+			],
+			"@mcp-browser-kit/driven-browser-driver/*": [
+				"../../packages/driven-browser-driver/src/*"
 			],
 			"@mcp-browser-kit/driven-logger-factory": [
 				"../../packages/driven-logger-factory/src/index.ts"
@@ -65,7 +89,13 @@
 			"path": "../../packages/driven-logger-factory"
 		},
 		{
-			"path": "../../packages/rpc"
+			"path": "../../packages/extension-driven-server-channel-provider"
+		},
+		{
+			"path": "../../packages/extension-driving-trpc-controller"
+		},
+		{
+			"path": "../../packages/utils"
 		},
 		{
 			"path": "../server"

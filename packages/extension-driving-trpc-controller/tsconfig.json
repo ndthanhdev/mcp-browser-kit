@@ -1,0 +1,40 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"include": [
+		"**/*"
+	],
+	"compilerOptions": {
+		"outDir": "../../.moon/cache/types/packages/extension-driving-trpc-controller",
+		"paths": {
+			"@mcp-browser-kit/core-extension": [
+				"../core-extension/src/index.ts"
+			],
+			"@mcp-browser-kit/core-extension/*": [
+				"../core-extension/src/*"
+			],
+			"@mcp-browser-kit/extension-driven-server-channel-provider": [
+				"../extension-driven-server-channel-provider/src/index.ts"
+			],
+			"@mcp-browser-kit/extension-driven-server-channel-provider/*": [
+				"../extension-driven-server-channel-provider/src/*"
+			],
+			"@mcp-browser-kit/utils": [
+				"../utils/src/index.ts"
+			],
+			"@mcp-browser-kit/utils/*": [
+				"../utils/src/*"
+			]
+		}
+	},
+	"references": [
+		{
+			"path": "../core-extension"
+		},
+		{
+			"path": "../extension-driven-server-channel-provider"
+		},
+		{
+			"path": "../utils"
+		}
+	]
+}

@@ -1,5 +1,5 @@
-import { createCoreServerContainer } from "@mcp-browser-kit/core-server";
 import {
+	createCoreServerContainer,
 	ExtensionDriverOutputPort,
 	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-server";

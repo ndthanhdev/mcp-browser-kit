@@ -1,0 +1,32 @@
+import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension";
+import {
+	ContainerHelper,
+	TabToolsSetup,
+} from "@mcp-browser-kit/driven-browser-driver";
+import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
+import { Container } from "inversify";
+import { startKeepAlive } from "./helpers/keep-alive";
+
+// Create and configure the dependency injection container
+const container = new Container({
+	defaultScope: "Singleton",
+});
+
+// Register logger factory
+container
+	.bind<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
+	.to(DrivenLoggerFactoryConsolaBrowser);
+
+// Setup M3 container with required services
+ContainerHelper.setupM3Container(container);
+
+// Resolve dependencies and start services
+const tabToolsSetup = container.get<TabToolsSetup>(TabToolsSetup);
+
+// Set up tab tools in global scope using the instance
+tabToolsSetup.setUpTabTools();
+
+// Start listening for browser runtime messages
+tabToolsSetup.startListen();
+
+startKeepAlive();

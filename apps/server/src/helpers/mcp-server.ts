@@ -1,17 +1,26 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
-import { ToolCallsInputPort } from "@mcp-browser-kit/core-server/input-ports";
+import {
+	ServerToolCallsInputPort,
+	ToolDescriptionsInputPort,
+} from "@mcp-browser-kit/core-server/input-ports";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { over } from "ok-value-error-reason";
 import { z } from "zod";
 import { container } from "./container";
+
 const logger = container
 	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
 	.create("mcpServer");
 
 const createServer = async () => {
 	logger.info("Initializing MCP Browser Kit Server");
-	const toolsInputPort = container.get<ToolCallsInputPort>(ToolCallsInputPort);
+	const toolsInputPort = container.get<ServerToolCallsInputPort>(
+		ServerToolCallsInputPort,
+	);
+	const toolDescriptionsInputPort = container.get<ToolDescriptionsInputPort>(
+		ToolDescriptionsInputPort,
+	);
 	// Create server instance
 	logger.verbose("Creating MCP server instance");
 	const server = new McpServer({
@@ -23,16 +32,18 @@ const createServer = async () => {
 		},
 	});
 
-	const combinationDescription = [""].join("\n");
+	const combinationDescription = [
+		"",
+	].join("\n");
 
 	logger.verbose("Registering tool: getBasicBrowserContext");
 	server.tool(
 		"getBasicBrowserContext",
-		toolsInputPort.getBasicBrowserContextInstruction(),
+		toolDescriptionsInputPort.getBasicBrowserContextInstruction(),
 		{},
 		async () => {
 			logger.info("Executing getBasicBrowserContext");
-			const overCtx = await over(toolsInputPort.getBasicBrowserContext);
+			const overCtx = await over(toolsInputPort.getContext);
 
 			if (!overCtx.ok) {
 				logger.error("Failed to get basic browser context", {
@@ -49,7 +60,9 @@ const createServer = async () => {
 			}
 
 			const ctx = overCtx.value;
-			logger.verbose("Retrieved browser context", { tabs: ctx });
+			logger.verbose("Retrieved browser context", {
+				tabs: ctx,
+			});
 			return {
 				content: [
 					{
@@ -64,13 +77,14 @@ const createServer = async () => {
 	logger.verbose("Registering tool: captureActiveTab");
 	server.tool(
 		"captureActiveTab",
-		[combinationDescription, toolsInputPort.captureActiveTabInstruction()].join(
-			"\n",
-		),
+		[
+			combinationDescription,
+			toolDescriptionsInputPort.captureActiveTabInstruction(),
+		].join("\n"),
 		{},
 		async () => {
 			logger.info("Executing captureActiveTab");
-			const overScreenshot = await over(toolsInputPort.captureActiveTab);
+			const overScreenshot = await over(toolsInputPort.captureTab);
 
 			if (!overScreenshot.ok) {
 				logger.error("Failed to capture active tab screenshot", {
@@ -109,17 +123,19 @@ const createServer = async () => {
 		},
 	);
 
-	logger.verbose("Registering tool: getInnerText");
+	logger.verbose("Registering tool: getReadableText");
 	server.tool(
-		"getInnerText",
-		toolsInputPort.getInnerTextInstruction(),
+		"getReadableText",
+		toolDescriptionsInputPort.getReadableTextInstruction(),
 		{
 			tabId: z.string().describe("Tab ID to extract text from"),
 		},
 		async ({ tabId }) => {
-			logger.info("Executing getInnerText", { tabId });
+			logger.info("Executing getReadableText", {
+				tabId,
+			});
 			const overInnerText = await over(() =>
-				toolsInputPort.getInnerText(tabId),
+				toolsInputPort.getReadableText(tabId),
 			);
 
 			if (!overInnerText.ok) {
@@ -156,12 +172,14 @@ const createServer = async () => {
 	logger.verbose("Registering tool: getReadableElements");
 	server.tool(
 		"getReadableElements",
-		toolsInputPort.getReadableElementsInstruction(),
+		toolDescriptionsInputPort.getReadableElementsInstruction(),
 		{
 			tabId: z.string().describe("Tab ID to extract elements from"),
 		},
 		async ({ tabId }) => {
-			logger.info("Executing getReadableElements", { tabId });
+			logger.info("Executing getReadableElements", {
+				tabId,
+			});
 			const overElements = await over(() =>
 				toolsInputPort.getReadableElements(tabId),
 			);
@@ -200,16 +218,20 @@ const createServer = async () => {
 	logger.verbose("Registering tool: clickOnViewableElement");
 	server.tool(
 		"clickOnViewableElement",
-		toolsInputPort.clickOnViewableElementInstruction(),
+		toolDescriptionsInputPort.clickOnViewableElementInstruction(),
 		{
 			tabId: z.string().describe("Tab ID of the active tab"),
 			x: z.number().describe("X coordinate (pixels) of the element to click"),
 			y: z.number().describe("Y coordinate (pixels) of the element to click"),
 		},
 		async ({ tabId, x, y }) => {
-			logger.info("Executing clickOnViewableElement", { tabId, x, y });
+			logger.info("Executing clickOnViewableElement", {
+				tabId,
+				x,
+				y,
+			});
 			const overClick = await over(() =>
-				toolsInputPort.clickOnViewableElement(tabId, x, y),
+				toolsInputPort.clickOnCoordinates(tabId, x, y),
 			);
 
 			if (!overClick.ok) {
@@ -229,7 +251,11 @@ const createServer = async () => {
 				};
 			}
 
-			logger.verbose("Clicked on viewable element", { tabId, x, y });
+			logger.verbose("Clicked on viewable element", {
+				tabId,
+				x,
+				y,
+			});
 			return {
 				content: [
 					{
@@ -244,7 +270,7 @@ const createServer = async () => {
 	logger.verbose("Registering tool: fillTextToViewableElement");
 	server.tool(
 		"fillTextToViewableElement",
-		toolsInputPort.fillTextToViewableElementInstruction(),
+		toolDescriptionsInputPort.fillTextToViewableElementInstruction(),
 		{
 			tabId: z.string().describe("Tab ID of the active tab"),
 			x: z.number().describe("X coordinate (pixels) of the input element"),
@@ -252,9 +278,13 @@ const createServer = async () => {
 			value: z.string().describe("Text to enter into the input field"),
 		},
 		async ({ tabId, x, y, value }) => {
-			logger.info("Executing fillTextToViewableElement", { tabId, x, y });
+			logger.info("Executing fillTextToViewableElement", {
+				tabId,
+				x,
+				y,
+			});
 			const overFill = await over(() =>
-				toolsInputPort.fillTextToViewableElement(tabId, x, y, value),
+				toolsInputPort.fillTextToCoordinates(tabId, x, y, value),
 			);
 
 			if (!overFill.ok) {
@@ -294,16 +324,20 @@ const createServer = async () => {
 	logger.verbose("Registering tool: hitEnterOnViewableElement");
 	server.tool(
 		"hitEnterOnViewableElement",
-		toolsInputPort.hitEnterOnViewableElementInstruction(),
+		toolDescriptionsInputPort.hitEnterOnViewableElementInstruction(),
 		{
 			tabId: z.string().describe("Tab ID of the active tab"),
 			x: z.number().describe("X coordinate (pixels) of the input element"),
 			y: z.number().describe("Y coordinate (pixels) of the input element"),
 		},
 		async ({ tabId, x, y }) => {
-			logger.info("Executing hitEnterOnViewableElement", { tabId, x, y });
+			logger.info("Executing hitEnterOnViewableElement", {
+				tabId,
+				x,
+				y,
+			});
 			const overEnter = await over(() =>
-				toolsInputPort.hitEnterOnViewableElement(tabId, x, y),
+				toolsInputPort.hitEnterOnCoordinates(tabId, x, y),
 			);
 
 			if (!overEnter.ok) {
@@ -323,7 +357,11 @@ const createServer = async () => {
 				};
 			}
 
-			logger.verbose("Hit enter on viewable element", { tabId, x, y });
+			logger.verbose("Hit enter on viewable element", {
+				tabId,
+				x,
+				y,
+			});
 			return {
 				content: [
 					{
@@ -338,15 +376,18 @@ const createServer = async () => {
 	logger.verbose("Registering tool: clickOnReadableElement");
 	server.tool(
 		"clickOnReadableElement",
-		toolsInputPort.clickOnReadableElementInstruction(),
+		toolDescriptionsInputPort.clickOnReadableElementInstruction(),
 		{
 			tabId: z.string().describe("Tab ID to target"),
 			index: z.number().describe("Element index from getReadableElements"),
 		},
 		async ({ tabId, index }) => {
-			logger.info("Executing clickOnReadableElement", { tabId, index });
+			logger.info("Executing clickOnReadableElement", {
+				tabId,
+				index,
+			});
 			const overClick = await over(() =>
-				toolsInputPort.clickOnReadableElement(tabId, index),
+				toolsInputPort.clickOnElement(tabId, index),
 			);
 
 			if (!overClick.ok) {
@@ -365,7 +406,10 @@ const createServer = async () => {
 				};
 			}
 
-			logger.verbose("Clicked on readable element", { tabId, index });
+			logger.verbose("Clicked on readable element", {
+				tabId,
+				index,
+			});
 			return {
 				content: [
 					{
@@ -380,16 +424,19 @@ const createServer = async () => {
 	logger.verbose("Registering tool: fillTextToReadableElement");
 	server.tool(
 		"fillTextToReadableElement",
-		toolsInputPort.fillTextToReadableElementInstruction(),
+		toolDescriptionsInputPort.fillTextToReadableElementInstruction(),
 		{
 			tabId: z.string().describe("Tab ID to target"),
 			index: z.number().describe("Element index from getReadableElements"),
 			value: z.string().describe("Text to enter into the input field"),
 		},
 		async ({ tabId, index, value }) => {
-			logger.info("Executing fillTextToReadableElement", { tabId, index });
+			logger.info("Executing fillTextToReadableElement", {
+				tabId,
+				index,
+			});
 			const overFill = await over(() =>
-				toolsInputPort.fillTextToReadableElement(tabId, index, value),
+				toolsInputPort.fillTextToElement(tabId, index, value),
 			);
 
 			if (!overFill.ok) {
@@ -427,15 +474,18 @@ const createServer = async () => {
 	logger.verbose("Registering tool: hitEnterOnReadableElement");
 	server.tool(
 		"hitEnterOnReadableElement",
-		toolsInputPort.hitEnterOnReadableElementInstruction(),
+		toolDescriptionsInputPort.hitEnterOnReadableElementInstruction(),
 		{
 			tabId: z.string().describe("Tab ID to target"),
 			index: z.number().describe("Element index from getReadableElements"),
 		},
 		async ({ tabId, index }) => {
-			logger.info("Executing hitEnterOnReadableElement", { tabId, index });
+			logger.info("Executing hitEnterOnReadableElement", {
+				tabId,
+				index,
+			});
 			const overEnter = await over(() =>
-				toolsInputPort.hitEnterOnReadableElement(tabId, index),
+				toolsInputPort.hitEnterOnElement(tabId, index),
 			);
 
 			if (!overEnter.ok) {
@@ -454,7 +504,10 @@ const createServer = async () => {
 				};
 			}
 
-			logger.verbose("Hit enter on readable element", { tabId, index });
+			logger.verbose("Hit enter on readable element", {
+				tabId,
+				index,
+			});
 			return {
 				content: [
 					{
@@ -469,7 +522,7 @@ const createServer = async () => {
 	logger.verbose("Registering tool: invokeJsFn");
 	server.tool(
 		"invokeJsFn",
-		toolsInputPort.invokeJsFnInstruction(),
+		toolDescriptionsInputPort.invokeJsFnInstruction(),
 		{
 			tabId: z.string().describe("Tab ID to run JavaScript in"),
 			fnBodyCode: z
@@ -477,7 +530,9 @@ const createServer = async () => {
 				.describe("JavaScript function body to execute in page context"),
 		},
 		async ({ tabId, fnBodyCode }) => {
-			logger.info("Executing invokeJsFn", { tabId });
+			logger.info("Executing invokeJsFn", {
+				tabId,
+			});
 			const overResult = await over(() =>
 				toolsInputPort.invokeJsFn(tabId, fnBodyCode),
 			);

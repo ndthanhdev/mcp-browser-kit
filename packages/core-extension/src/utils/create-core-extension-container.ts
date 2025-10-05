@@ -1,6 +1,9 @@
 import { Container } from "inversify";
-import { ExtensionToolCallsInputPort } from "../input-ports";
-import { ExtensionToolsUseCase } from "../use-cases";
+import { ManageChannelUseCases, ToolCallHandlersUseCase } from "../core";
+import {
+	ExtensionToolCallInputPort,
+	ManageChannelsInputPort,
+} from "../input-ports";
 
 export const createCoreExtensionContainer = () => {
 	const container = new Container({
@@ -9,8 +12,12 @@ export const createCoreExtensionContainer = () => {
 
 	// Add bindings here
 	container
-		.bind<ExtensionToolCallsInputPort>(ExtensionToolCallsInputPort)
-		.to(ExtensionToolsUseCase);
+		.bind<ExtensionToolCallInputPort>(ExtensionToolCallInputPort)
+		.to(ToolCallHandlersUseCase);
+
+	container
+		.bind<ManageChannelsInputPort>(ManageChannelsInputPort)
+		.to(ManageChannelUseCases);
 
 	return container;
 };

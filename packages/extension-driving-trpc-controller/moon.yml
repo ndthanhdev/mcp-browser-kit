@@ -1,0 +1,6 @@
+$schema: "https://moonrepo.dev/schemas/project.json"
+language: typescript
+dependsOn:
+  - extension-driven-server-channel-provider
+  - core-extension
+  - utils

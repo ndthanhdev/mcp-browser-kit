@@ -3,7 +3,6 @@ language: typescript
 toolchain:
   default: node
 
-
 tags:
   - tsup
 
@@ -13,7 +12,8 @@ tasks:
       - tsup-build
 
 dependsOn:
-  - rpc
   - core-server
+  - utils
   - driven-extension-driver
   - driven-logger-factory
+  - server-driven-extension-channel-provider

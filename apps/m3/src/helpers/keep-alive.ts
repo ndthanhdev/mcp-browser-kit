@@ -13,7 +13,9 @@ export const startKeepAlive = () => {
 		const response = await browser.runtime.sendMessage<
 			KeepAliveMessage,
 			KeepAliveResponse
-		>({ action: "keepAlive" });
+		>({
+			action: "keepAlive",
+		});
 		if (response?.action !== "keepAliveAck") {
 			throw new Error("Keep alive failed");
 		}
@@ -38,7 +40,9 @@ export const startListenKeepAlive = () => {
 	) => {
 		const msg = message as KeepAliveMessage;
 		if (msg.action === "keepAlive") {
-			sendResponse({ action: "keepAliveAck" });
+			sendResponse({
+				action: "keepAliveAck",
+			});
 		}
 
 		return true as true;

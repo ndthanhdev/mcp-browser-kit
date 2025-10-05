@@ -1,6 +1,9 @@
 import { Container } from "inversify";
-import { ToolCallsInputPort, ToolDescriptionsInputPort } from "../input-ports";
-import { ToolCallUseCases, ToolDescriptionsUseCases } from "../use-cases";
+import { ToolCallUseCases, ToolDescriptionsUseCases } from "../core";
+import {
+	ServerToolCallsInputPort,
+	ToolDescriptionsInputPort,
+} from "../input-ports";
 
 export const createCoreServerContainer = () => {
 	const container = new Container({
@@ -8,7 +11,9 @@ export const createCoreServerContainer = () => {
 	});
 
 	// Add bindings here
-	container.bind<ToolCallsInputPort>(ToolCallsInputPort).to(ToolCallUseCases);
+	container
+		.bind<ServerToolCallsInputPort>(ServerToolCallsInputPort)
+		.to(ToolCallUseCases);
 	container
 		.bind<ToolDescriptionsInputPort>(ToolDescriptionsInputPort)
 		.to(ToolDescriptionsUseCases);

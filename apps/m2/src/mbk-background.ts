@@ -1,41 +1,36 @@
 import "core-js/proposals";
-import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension";
-import type { RootRouter } from "@mcp-browser-kit/server/routers/root";
 import {
-	createTRPCClient,
-	createWSClient,
-	loggerLink,
-	wsLink,
-} from "@trpc/client";
+	LoggerFactoryOutputPort,
+	ServerChannelProviderOutputPort,
+} from "@mcp-browser-kit/core-extension";
+import type { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
 import { container } from "./helpers/container";
-import { createRpcServer } from "./helpers/create-rpc-server";
+import { createMessageChannelRpcServer } from "./helpers/create-message-channel-rpc-server";
 
 const deferLogger = container
 	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
 	.create("trp", "defer");
 
-// create persistent WebSocket connection
-const wsClient = createWSClient({
-	url: "ws://localhost:59089",
-});
+const _serverChannel = createMessageChannelRpcServer();
 
-const trpc = createTRPCClient<RootRouter>({
-	links: [
-		loggerLink(),
-		wsLink({
-			client: wsClient,
-		}),
-	],
-});
+// Set up ServerProvider for automated server discovery and connection
+const serverProvider = container.get<ServerChannelProviderOutputPort>(
+	ServerChannelProviderOutputPort,
+) as ExtensionDrivenServerChannelProvider;
 
-const rpcServer = createRpcServer();
+// Set up interval to discover and connect to servers every 10 seconds
+setInterval(async () => {
+	try {
+		await serverProvider.discoverAndConnectToServers();
+	} catch (error) {
+		deferLogger.error("Error during server discovery and connection:", error);
+	}
+}, 10000);
 
-trpc.defer.onMessage.subscribe(undefined, {
-	onData: async (data) => {
-		deferLogger.info("defer", data);
-		const message = await rpcServer.handleDefer(data);
-		deferLogger.info("resolve", message);
-
-		trpc.defer.resolve.mutate(message);
-	},
+// Initial discovery call
+serverProvider.discoverAndConnectToServers().catch((error) => {
+	deferLogger.error(
+		"Error during initial server discovery and connection:",
+		error,
+	);
 });

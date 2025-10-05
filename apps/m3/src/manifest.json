@@ -21,7 +21,7 @@
 				"<all_urls>"
 			],
 			"js": [
-				"mbk-content.js"
+				"mbk-tab.js"
 			]
 		}
 	],
