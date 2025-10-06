@@ -9,7 +9,9 @@
 		"tabs",
 		"activeTab",
 		"scripting",
-		"<all_urls>"
+		"<all_urls>",
+		"*://localhost:*/*",
+		"*://127.0.0.1:*/*"
 	],
 	"icons": {
 		"48": "assets/images/border-48.png"

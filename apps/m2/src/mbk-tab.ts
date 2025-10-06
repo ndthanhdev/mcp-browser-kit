@@ -1,5 +1,5 @@
 import {
-	ContainerHelper,
+	DrivenBrowserDriverM2,
 	TabToolsSetup,
 } from "@mcp-browser-kit/driven-browser-driver";
 import { Container } from "inversify";
@@ -11,7 +11,7 @@ const container = new Container({
 });
 
 // Setup M2 container with all required services
-ContainerHelper.setupM2Container(container);
+DrivenBrowserDriverM2.setupContainer(container);
 
 // Resolve dependencies and start services
 const tabToolsSetup = container.get<TabToolsSetup>(TabToolsSetup);

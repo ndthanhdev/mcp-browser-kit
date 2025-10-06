@@ -1,6 +1,6 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension";
 import {
-	ContainerHelper,
+	DrivenBrowserDriverM3,
 	TabToolsSetup,
 } from "@mcp-browser-kit/driven-browser-driver";
 import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
@@ -18,7 +18,7 @@ container
 	.to(DrivenLoggerFactoryConsolaBrowser);
 
 // Setup M3 container with required services
-ContainerHelper.setupM3Container(container);
+DrivenBrowserDriverM3.setupContainer(container);
 
 // Resolve dependencies and start services
 const tabToolsSetup = container.get<TabToolsSetup>(TabToolsSetup);

@@ -13,13 +13,40 @@ import type {
 } from "@mcp-browser-kit/core-extension/output-ports";
 import { LoggerFactoryOutputPort as LoggerFactoryOutputPortSymbol } from "@mcp-browser-kit/core-extension/output-ports";
 import type { Func } from "@mcp-browser-kit/types";
+import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import * as backgroundToolsM2 from "../utils/background-tools-m2";
 import * as backgroundToolsM3 from "../utils/background-tools-m3";
+import { TabAnimationTools } from "./tab-animation-tools";
+import { TabContextStore } from "./tab-context-store";
+import { TabDomTools } from "./tab-dom-tools";
 import type { TabRpcService } from "./tab-rpc-service";
+import { TabRpcService as TabRpcServiceClass } from "./tab-rpc-service";
+import { TabTools } from "./tab-tools";
+import { TabToolsSetup } from "./tab-tools-setup";
 
 @injectable()
 export class DrivenBrowserDriverM2 implements BrowserDriverOutputPort {
+	/**
+	 * Setup container bindings for M2 environment - includes tab services and M2 driver
+	 */
+	static setupContainer(container: Container): void {
+		// Tab services
+		container.bind<TabTools>(TabTools).to(TabTools);
+		container.bind<TabDomTools>(TabDomTools).to(TabDomTools);
+		container.bind<TabAnimationTools>(TabAnimationTools).to(TabAnimationTools);
+		container.bind<TabContextStore>(TabContextStore).to(TabContextStore);
+		container.bind<TabToolsSetup>(TabToolsSetup).to(TabToolsSetup);
+
+		// M2 browser driver
+		container
+			.bind<TabRpcServiceClass>(TabRpcServiceClass)
+			.to(TabRpcServiceClass);
+		container
+			.bind<DrivenBrowserDriverM2>(DrivenBrowserDriverM2)
+			.to(DrivenBrowserDriverM2);
+	}
+
 	private readonly logger;
 
 	constructor(

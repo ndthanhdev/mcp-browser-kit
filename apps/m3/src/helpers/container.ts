@@ -2,7 +2,6 @@ import {
 	BrowserDriverOutputPort,
 	createCoreExtensionContainer,
 	LoggerFactoryOutputPort,
-	ServerChannelProviderOutputPort,
 } from "@mcp-browser-kit/core-extension";
 import {
 	DrivenBrowserDriverM3,
@@ -22,9 +21,9 @@ container.bind<TabRpcService>(TabRpcService).to(TabRpcService);
 container
 	.bind<BrowserDriverOutputPort>(BrowserDriverOutputPort)
 	.to(DrivenBrowserDriverM3);
-container
-	.bind<ServerChannelProviderOutputPort>(ServerChannelProviderOutputPort)
-	.to(ExtensionDrivenServerChannelProvider);
+
+// Setup server channel provider with discoverer
+ExtensionDrivenServerChannelProvider.setupContainer(container);
 
 // special services
 container

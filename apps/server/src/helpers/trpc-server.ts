@@ -1,5 +1,6 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
 import { applyWSSHandler } from "@trpc/server/adapters/ws";
+import { createServer } from "http";
 import { WebSocketServer } from "ws";
 import { rootRouter } from "../routers/root";
 import { container } from "./container";
@@ -10,9 +11,43 @@ export const startTrpcServer = () => {
 		.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
 		.create("trpcServer");
 
+	logger.verbose("Starting HTTP Server");
+	// Create HTTP server for health checks and WebSocket upgrade
+	const httpServer = createServer((req, res) => {
+		// Set CORS headers for all requests
+		res.setHeader("Access-Control-Allow-Origin", "*");
+		res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+		res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+		// Handle OPTIONS preflight
+		if (req.method === "OPTIONS") {
+			res.writeHead(204);
+			res.end();
+			return;
+		}
+
+		// Handle health check / discovery requests
+		if (req.method === "GET") {
+			res.writeHead(200, {
+				"Content-Type": "application/json",
+			});
+			res.end(
+				JSON.stringify({
+					status: "ok",
+					service: "mcp-browser-kit",
+				}),
+			);
+			return;
+		}
+
+		res.writeHead(404);
+		res.end();
+	});
+
 	logger.verbose("Starting WebSocket Server");
 	const wss = new WebSocketServer({
-		port: 2769,
+		server: httpServer,
+		verifyClient: () => true, // Allow CORS from any origin
 	});
 
 	logger.verbose("Applying WebSocket Handler");
@@ -36,14 +71,23 @@ export const startTrpcServer = () => {
 		});
 	});
 
-	logger.info("WebSocket Server started and listening on ws://localhost:2769");
+	// Start the HTTP server
+	httpServer.listen(2769, () => {
+		logger.info("HTTP Server started on http://localhost:2769");
+		logger.info(
+			"WebSocket Server started and listening on ws://localhost:2769",
+		);
+	});
 
 	const shutdown = () => {
 		logger.info("Server shutdown initiated");
 		handler.broadcastReconnectNotification();
 		wss.close(() => {
 			logger.info("WebSocket Server successfully closed");
-			process.exit(0);
+			httpServer.close(() => {
+				logger.info("HTTP Server successfully closed");
+				process.exit(0);
+			});
 		});
 	};
 

@@ -1,9 +1,11 @@
 import type {
 	ExtensionDriverProviderEventEmitter,
 	ServerChannelInfo,
+} from "@mcp-browser-kit/core-extension";
+import {
+	LoggerFactoryOutputPort,
 	ServerChannelProviderOutputPort,
 } from "@mcp-browser-kit/core-extension";
-import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension";
 import type { RootRouter } from "@mcp-browser-kit/server/routers/root";
 import type { MessageChannel } from "@mcp-browser-kit/types";
 import type { MessageChannelForRpcServer } from "@mcp-browser-kit/utils";
@@ -17,16 +19,32 @@ import {
 	wsLink,
 } from "@trpc/client";
 import Emittery from "emittery";
+import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
+import { ServerDiscoverer } from "./server-discoverer";
 
 @injectable()
 export class ExtensionDrivenServerChannelProvider
 	implements ServerChannelProviderOutputPort
 {
-	private static readonly MIN_PORT = 2769;
-	private static readonly MAX_PORT = 2799;
 	private static readonly RETRY_DELAY_MS = 10000;
-	private static readonly serverChannelProviderId = createPrefixId("scp");
+	private static readonly serverChannelProviderId = createPrefixId(
+		"server-channel-provider",
+	);
+	private static readonly channelId = createPrefixId("channel");
+
+	/**
+	 * Setup container bindings for ExtensionDrivenServerChannelProvider and its dependencies
+	 */
+	static setupContainer(container: Container): void {
+		// Server discoverer
+		container.bind<ServerDiscoverer>(ServerDiscoverer).to(ServerDiscoverer);
+
+		// Extension-driven server channel provider (bound to output port interface)
+		container
+			.bind<ServerChannelProviderOutputPort>(ServerChannelProviderOutputPort)
+			.to(ExtensionDrivenServerChannelProvider);
+	}
 
 	private readonly instanceId: string;
 	private readonly eventEmitter: ExtensionDriverProviderEventEmitter;
@@ -35,7 +53,6 @@ export class ExtensionDrivenServerChannelProvider
 	private readonly wsClients = new Map<string, TRPCWebSocketClient>();
 	private readonly trpcClients = new Map<string, TRPCClient<RootRouter>>();
 	private readonly channelsByUrl = new Map<string, string>(); // serverUrl -> channelId
-	private readonly serverUrls: string[];
 	private readonly logger;
 	private monitoringSubscriptions?: Map<
 		string,
@@ -47,6 +64,8 @@ export class ExtensionDrivenServerChannelProvider
 	constructor(
 		@inject(LoggerFactoryOutputPort)
 		private readonly loggerFactory: LoggerFactoryOutputPort,
+		@inject(ServerDiscoverer)
+		private readonly serverDiscoverer: ServerDiscoverer,
 	) {
 		this.instanceId =
 			ExtensionDrivenServerChannelProvider.serverChannelProviderId.generate();
@@ -57,18 +76,12 @@ export class ExtensionDrivenServerChannelProvider
 			disconnected: ServerChannelInfo;
 		}>();
 
-		// Generate URLs from localhost port range
-		this.serverUrls = [];
-		for (
-			let port = ExtensionDrivenServerChannelProvider.MIN_PORT;
-			port <= ExtensionDrivenServerChannelProvider.MAX_PORT;
-			port++
-		) {
-			this.serverUrls.push(`ws://localhost:${port}`);
-		}
+		// Listen to server discovery events
+		this.serverDiscoverer.on("online", this.handleServerOnline);
+		this.serverDiscoverer.on("offline", this.handleServerOffline);
 
 		this.logger.verbose(
-			`[${this.instanceId}] Initialized ExtensionDrivenServerProvider with ${this.serverUrls.length} potential server URLs`,
+			`[${this.instanceId}] Initialized ExtensionDrivenServerProvider with ServerDiscoverer`,
 		);
 	}
 
@@ -89,30 +102,38 @@ export class ExtensionDrivenServerChannelProvider
 			return;
 		}
 
-		this.logger.verbose(
-			`[${this.instanceId}] Attempting to connect to ${this.serverUrls.length} servers`,
-		);
+		// Start server discovery - it will emit events for active servers
+		await this.serverDiscoverer.startDiscovery();
 
-		const connectionPromises = this.serverUrls.map(async (serverUrl) => {
-			try {
-				await this.connectToServer(serverUrl);
-			} catch (error) {
-				this.logger.verbose(
-					`[${this.instanceId}] Failed to connect to ${serverUrl}:`,
-					error,
-				);
-			}
-		});
-
-		await Promise.allSettled(connectionPromises);
 		this.logger.verbose(
 			`[${this.instanceId}] Discovery and connection process completed`,
 		);
 	};
 
+	private handleServerOnline = ({ url }: { url: string }): void => {
+		this.logger.verbose(
+			`[${this.instanceId}] Server at ${url} is online, initiating connection`,
+		);
+		this.connectToServer(url).catch((error) => {
+			this.logger.verbose(
+				`[${this.instanceId}] Failed to connect to server at ${url}:`,
+				error,
+			);
+		});
+	};
+
+	private handleServerOffline = ({ url }: { url: string }): void => {
+		this.logger.verbose(
+			`[${this.instanceId}] Server at ${url} is offline, cleaning up connection`,
+		);
+		const channelId = this.channelsByUrl.get(url);
+		if (channelId) {
+			this.cleanupConnection(channelId, url);
+		}
+	};
+
 	private connectToServer = async (serverUrl: string): Promise<void> => {
-		const channelId =
-			ExtensionDrivenServerChannelProvider.serverChannelProviderId.generate();
+		const channelId = ExtensionDrivenServerChannelProvider.channelId.generate();
 
 		this.logger.verbose(
 			`[${this.instanceId}] Attempting to connect to server at ${serverUrl}`,
@@ -122,6 +143,8 @@ export class ExtensionDrivenServerChannelProvider
 			// Create WebSocket client with connection validation
 			const wsClient = createWSClient({
 				url: serverUrl,
+				// biome-ignore lint/style/useNamingConvention: it's a library attribute name
+				WebSocket: WebSocket,
 				onError: (error) => {
 					this.logger.verbose(
 						`[${this.instanceId}] Connection attempt to server at ${serverUrl} failed:`,

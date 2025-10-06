@@ -12,7 +12,9 @@
 	],
 	"host_permissions": [
 		"http://*/*",
-		"https://*/*"
+		"https://*/*",
+		"*://localhost:*/*",
+		"*://127.0.0.1:*/*"
 	],
 	"content_security_policy": {},
 	"content_scripts": [

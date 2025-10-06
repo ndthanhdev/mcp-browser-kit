@@ -13,12 +13,36 @@ import type {
 	TabContext,
 } from "@mcp-browser-kit/core-extension/types";
 import type { Func } from "@mcp-browser-kit/types";
+import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import * as backgroundToolsM3 from "../utils/background-tools-m3";
+import { TabAnimationTools } from "./tab-animation-tools";
+import { TabContextStore } from "./tab-context-store";
+import { TabDomTools } from "./tab-dom-tools";
 import { TabRpcService } from "./tab-rpc-service";
+import { TabTools } from "./tab-tools";
+import { TabToolsSetup } from "./tab-tools-setup";
 
 @injectable()
 export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
+	/**
+	 * Setup container bindings for M3 environment - includes tab services and M3 driver
+	 */
+	static setupContainer(container: Container): void {
+		// Tab services
+		container.bind<TabTools>(TabTools).to(TabTools);
+		container.bind<TabDomTools>(TabDomTools).to(TabDomTools);
+		container.bind<TabAnimationTools>(TabAnimationTools).to(TabAnimationTools);
+		container.bind<TabContextStore>(TabContextStore).to(TabContextStore);
+		container.bind<TabToolsSetup>(TabToolsSetup).to(TabToolsSetup);
+
+		// M3 browser driver services
+		container.bind<TabRpcService>(TabRpcService).to(TabRpcService);
+		container
+			.bind<DrivenBrowserDriverM3>(DrivenBrowserDriverM3)
+			.to(DrivenBrowserDriverM3);
+	}
+
 	private readonly logger;
 
 	constructor(
