@@ -26,7 +26,7 @@ export class TabTools {
 		this.contextStore = contextStore;
 	}
 
-	async loadTabContext(): Promise<TabContext> {
+	loadTabContext = async (): Promise<TabContext> => {
 		// 1. Get root element from document
 		const rootElement = document.documentElement;
 
@@ -59,5 +59,5 @@ export class TabTools {
 			html,
 			readableElementRecords,
 		};
-	}
+	};
 }

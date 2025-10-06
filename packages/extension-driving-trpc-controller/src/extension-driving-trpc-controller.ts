@@ -29,9 +29,9 @@ export class ExtensionDrivingTrpcController {
 	/**
 	 * Connects to a ExtensionDrivenServerChannelProvider and listens for connect/disconnect events
 	 */
-	public listenToServerChannelEvents(
+	public listenToServerChannelEvents = (
 		serverChannelProvider: ExtensionDrivenServerChannelProvider,
-	): () => void {
+	): (() => void) => {
 		this.logger.info("Setting up server channel event listeners");
 
 		// Store reference to the server channel provider
@@ -74,7 +74,7 @@ export class ExtensionDrivingTrpcController {
 				},
 			);
 		};
-	}
+	};
 
 	private handleServerConnected = (channel: ServerChannelInfo): void => {
 		this.logger.info("Server connected", {
@@ -154,7 +154,7 @@ export class ExtensionDrivingTrpcController {
 	/**
 	 * Explicitly clean up all persistent RPC servers (call only on shutdown)
 	 */
-	public destroyAllRpcServers(): void {
+	public destroyAllRpcServers = (): void => {
 		this.logger.info("Destroying all persistent RPC servers");
 
 		// First unsubscribe from all active channel listeners
@@ -170,5 +170,5 @@ export class ExtensionDrivingTrpcController {
 		}
 
 		this.logger.info("All persistent RPC servers destroyed");
-	}
+	};
 }

@@ -6,19 +6,19 @@ import { injectable } from "inversify";
 export class TabContextStore {
 	private latestCapturedTabContext: InternalTabContext | undefined;
 
-	setLatestCapturedTabContext(context: InternalTabContext) {
+	setLatestCapturedTabContext = (context: InternalTabContext) => {
 		this.latestCapturedTabContext = context;
-	}
+	};
 
-	getLatestCapturedTabContext(): InternalTabContext | undefined {
+	getLatestCapturedTabContext = (): InternalTabContext | undefined => {
 		return this.latestCapturedTabContext;
-	}
+	};
 
-	clearLatestCapturedTabContext() {
+	clearLatestCapturedTabContext = () => {
 		this.latestCapturedTabContext = undefined;
-	}
+	};
 
-	getElementFromPath(readablePath: string): HTMLElement | null {
+	getElementFromPath = (readablePath: string): HTMLElement | null => {
 		// Get readableTree from contextStore
 		const tabContext = this.getLatestCapturedTabContext();
 		if (!tabContext?.readableTree) {
@@ -41,5 +41,5 @@ export class TabContextStore {
 		}
 
 		return element;
-	}
+	};
 }

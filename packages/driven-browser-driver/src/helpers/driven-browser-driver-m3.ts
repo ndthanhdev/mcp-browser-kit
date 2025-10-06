@@ -30,7 +30,7 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 		this.logger = this.loggerFactory.create("DrivenBrowserDriverM3");
 	}
 
-	loadTabContext(tabId: string): Promise<TabContext> {
+	loadTabContext = (tabId: string): Promise<TabContext> => {
 		return this.tabRpcService.tabRpcClient.call({
 			method: "loadTabContext",
 			args: [],
@@ -38,20 +38,20 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 				tabId,
 			},
 		});
-	}
+	};
 
 	// Browser and Extension Info Methods
-	getBrowserInfo(): Promise<BrowserInfo> {
+	getBrowserInfo = (): Promise<BrowserInfo> => {
 		return backgroundToolsM3.getBrowserInfo();
-	}
+	};
 
 	getExtensionInfo = (): Promise<ExtensionInfo> => {
 		return backgroundToolsM3.getExtensionInfo();
 	};
 
-	getBrowserId(): Promise<string> {
+	getBrowserId = (): Promise<string> => {
 		return backgroundToolsM3.getBrowserId();
-	}
+	};
 
 	// Tab Management Methods
 	getTabs = (): Promise<ExtensionTabInfo[]> => {
@@ -150,7 +150,7 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 		});
 	};
 
-	fillTextToFocusedElement(tabId: string, value: string): Promise<void> {
+	fillTextToFocusedElement = (tabId: string, value: string): Promise<void> => {
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.fillTextToFocusedElement",
 			args: [
@@ -160,7 +160,7 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 				tabId,
 			},
 		});
-	}
+	};
 
 	hitEnterOnElementBySelector = (
 		tabId: string,

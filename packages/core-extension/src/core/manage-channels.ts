@@ -73,28 +73,28 @@ export class ManageChannelUseCases implements ManageChannelsInputPort {
 	/**
 	 * Get all currently active channels
 	 */
-	getActiveChannels(): ServerChannelInfo[] {
+	getActiveChannels = (): ServerChannelInfo[] => {
 		return Array.from(this.channels.values());
-	}
+	};
 
 	/**
 	 * Get a specific channel by ID
 	 */
-	getChannel(channelId: string): ServerChannelInfo | undefined {
+	getChannel = (channelId: string): ServerChannelInfo | undefined => {
 		return this.channels.get(channelId);
-	}
+	};
 
 	/**
 	 * Check if currently listening for channels
 	 */
-	getIsListening(): boolean {
+	getIsListening = (): boolean => {
 		return this.isListening;
-	}
+	};
 
 	/**
 	 * Get the count of active channels
 	 */
-	getChannelCount(): number {
+	getChannelCount = (): number => {
 		return this.channels.size;
-	}
+	};
 }

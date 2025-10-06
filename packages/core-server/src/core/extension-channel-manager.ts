@@ -28,7 +28,7 @@ export class ExtensionChannelManager {
 		this.startListening();
 	}
 
-	private startListening(): void {
+	private startListening = (): void => {
 		if (this.isListening) {
 			this.logger.warn("Already listening for extension connections");
 			return;
@@ -50,7 +50,7 @@ export class ExtensionChannelManager {
 
 		this.isListening = true;
 		this.logger.info("Successfully started listening for extension channels");
-	}
+	};
 
 	private handleConnectionConnected = async (
 		channel: ChannelInfo,
@@ -143,11 +143,11 @@ export class ExtensionChannelManager {
 	 * Get all active RPC clients
 	 * @returns Array of RPC clients
 	 */
-	public getRpcClients(): Array<
+	public getRpcClients = (): Array<
 		MessageChannelRpcClient<ExtensionToolCallInputPort>
-	> {
+	> => {
 		return Array.from(this.rpcClients.values());
-	}
+	};
 
 	/**
 	 * Get a specific RPC client by browser ID
@@ -155,9 +155,9 @@ export class ExtensionChannelManager {
 	 * @returns The RPC client
 	 * @throws Error if no RPC client is found for the given browser ID
 	 */
-	public getRpcClientByBrowserId(
+	public getRpcClientByBrowserId = (
 		browserId: string,
-	): MessageChannelRpcClient<ExtensionToolCallInputPort> {
+	): MessageChannelRpcClient<ExtensionToolCallInputPort> => {
 		const channelId = this.browserIdToChannelId.get(browserId);
 		if (!channelId) {
 			throw new Error(`No channel found for browser instance: ${browserId}`);
@@ -167,5 +167,5 @@ export class ExtensionChannelManager {
 			throw new Error(`No RPC client found for channel: ${channelId}`);
 		}
 		return rpcClient;
-	}
+	};
 }

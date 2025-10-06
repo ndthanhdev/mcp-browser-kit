@@ -32,7 +32,7 @@ export class EmitteryMessageChannel<T = unknown, U = unknown>
 		return this._outgoing;
 	}
 
-	public reverse(): MessageChannel<U, T> {
+	public reverse = (): MessageChannel<U, T> => {
 		return new EmitteryMessageChannel(this._outgoing, this._incoming);
-	}
+	};
 }

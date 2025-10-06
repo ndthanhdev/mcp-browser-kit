@@ -110,7 +110,7 @@ export class ExtensionDrivenServerChannelProvider
 		);
 	};
 
-	private async connectToServer(serverUrl: string): Promise<void> {
+	private connectToServer = async (serverUrl: string): Promise<void> => {
 		const channelId =
 			ExtensionDrivenServerChannelProvider.serverChannelProviderId.generate();
 
@@ -176,13 +176,13 @@ export class ExtensionDrivenServerChannelProvider
 			this.cleanupConnection(channelId, serverUrl);
 			throw error;
 		}
-	}
+	};
 
-	private setupMessageHandling(
+	private setupMessageHandling = (
 		channelId: string,
 		trpcClient: TRPCClient<RootRouter>,
 		messageChannel: MessageChannelForRpcServer,
-	): void {
+	): void => {
 		const deferLogger = this.loggerFactory.create(
 			"ExtensionDrivenServerProvider",
 			"defer",
@@ -209,13 +209,13 @@ export class ExtensionDrivenServerChannelProvider
 				channelId,
 			});
 		});
-	}
+	};
 
-	private setupConnectionMonitoring(
+	private setupConnectionMonitoring = (
 		channelId: string,
 		serverUrl: string,
 		wsClient: TRPCWebSocketClient,
-	): void {
+	): void => {
 		this.logger.verbose(
 			`[${this.instanceId}] Connection monitoring set up for ${serverUrl}`,
 		);
@@ -254,9 +254,9 @@ export class ExtensionDrivenServerChannelProvider
 			this.monitoringSubscriptions = new Map();
 		}
 		this.monitoringSubscriptions.set(channelId, subscription);
-	}
+	};
 
-	private cleanupConnection(channelId: string, serverUrl: string): void {
+	private cleanupConnection = (channelId: string, serverUrl: string): void => {
 		// Get channel before cleanup for event emission
 		const channel = this.channels.get(channelId);
 
@@ -291,7 +291,7 @@ export class ExtensionDrivenServerChannelProvider
 			);
 			this.eventEmitter.emit("disconnected", channel);
 		}
-	}
+	};
 
 	getMessageChannel = (channelId: string): MessageChannel => {
 		const messageChannel = this.messageChannels.get(channelId);

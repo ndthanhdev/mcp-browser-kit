@@ -1,5 +1,9 @@
 import { Container } from "inversify";
-import { ToolCallUseCases, ToolDescriptionsUseCases } from "../core";
+import {
+	ExtensionChannelManager,
+	ToolCallUseCases,
+	ToolDescriptionsUseCases,
+} from "../core";
 import {
 	ServerToolCallsInputPort,
 	ToolDescriptionsInputPort,
@@ -17,6 +21,7 @@ export const createCoreServerContainer = () => {
 	container
 		.bind<ToolDescriptionsInputPort>(ToolDescriptionsInputPort)
 		.to(ToolDescriptionsUseCases);
+	container.bind<ExtensionChannelManager>(ExtensionChannelManager).toSelf();
 
 	return container;
 };

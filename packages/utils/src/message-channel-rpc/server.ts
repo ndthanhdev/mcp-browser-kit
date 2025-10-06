@@ -37,7 +37,7 @@ export class MessageChannelRpcServer<
 		}
 	};
 
-	async handleDefer(message: DeferMessage): Promise<ResolveMessage> {
+	handleDefer = async (message: DeferMessage): Promise<ResolveMessage> => {
 		const { procedure, args, id } = message;
 		const fn = R.pathOr(undefined, procedure.split("."), this.procedures) as
 			| Func
@@ -65,12 +65,9 @@ export class MessageChannelRpcServer<
 				result: error,
 			});
 		}
-	}
+	};
 }
 
 export type InferProcedureMap<T> = T extends MessageChannelRpcServer<infer U>
 	? ExtractProcedures<U>
 	: never;
-
-
-

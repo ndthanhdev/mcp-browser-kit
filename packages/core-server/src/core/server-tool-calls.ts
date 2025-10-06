@@ -47,7 +47,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		this.logger = loggerFactory.create("RpcCallUseCase");
 	}
 
-	async getContext(): Promise<Context> {
+	getContext = async (): Promise<Context> => {
 		this.logger.info("Getting browser context");
 
 		try {
@@ -69,11 +69,11 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			this.logger.error("Failed to get context", error);
 			throw error;
 		}
-	}
+	};
 
-	private async getBrowserContextsFromClients(
+	private getBrowserContextsFromClients = async (
 		rpcClients: MessageChannelRpcClient<ExtensionToolCallInputPort>[],
-	): Promise<BrowserContext[]> {
+	): Promise<BrowserContext[]> => {
 		const browsers: BrowserContext[] = [];
 
 		for (const rpcClient of rpcClients) {
@@ -91,11 +91,11 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		}
 
 		return browsers;
-	}
+	};
 
-	private buildBrowserContext(
+	private buildBrowserContext = (
 		extensionContext: ExtensionContext,
-	): BrowserContext {
+	): BrowserContext => {
 		const windowsMap = this.groupTabsByWindow(extensionContext);
 		const browserWindows = this.buildBrowserWindows(windowsMap);
 
@@ -104,11 +104,11 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			availableTools: extensionContext.availableTools,
 			browserWindows,
 		};
-	}
+	};
 
-	private groupTabsByWindow(
+	private groupTabsByWindow = (
 		extensionContext: ExtensionContext,
-	): Map<string, BrowserTabContext[]> {
+	): Map<string, BrowserTabContext[]> => {
 		const windowsMap = new Map<string, BrowserTabContext[]>();
 
 		for (const tab of extensionContext.availableTabs) {
@@ -132,30 +132,30 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		}
 
 		return windowsMap;
-	}
+	};
 
-	private findWindowForTab(
+	private findWindowForTab = (
 		extensionContext: ExtensionContext,
-	): ExtensionWindowInfo | undefined {
+	): ExtensionWindowInfo | undefined => {
 		// This is a simplification - you may need different logic to associate tabs with windows
 		return (
 			extensionContext.availableWindows.find(() => true) ||
 			extensionContext.availableWindows[0]
 		);
-	}
+	};
 
-	private createWindowKey(instanceId: string, windowId: string): string {
+	private createWindowKey = (instanceId: string, windowId: string): string => {
 		return WindowKey.from({
 			browserId: instanceId,
 			windowId,
 		}).toString();
-	}
+	};
 
-	private createBrowserTabContext(
+	private createBrowserTabContext = (
 		instanceId: string,
 		windowId: string,
 		tab: ExtensionTabInfo,
-	): BrowserTabContext {
+	): BrowserTabContext => {
 		const tabKey = TabKey.from({
 			browserId: instanceId,
 			windowId,
@@ -168,24 +168,24 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			title: tab.title,
 			url: tab.url,
 		};
-	}
+	};
 
-	private buildBrowserWindows(
+	private buildBrowserWindows = (
 		windowsMap: Map<string, BrowserTabContext[]>,
-	): BrowserWindowContext[] {
+	): BrowserWindowContext[] => {
 		return Array.from(windowsMap.entries()).map(([windowKey, tabs]) => ({
 			windowKey,
 			tabs,
 		}));
-	}
+	};
 
-	async openTab(
+	openTab = async (
 		windowKey: string,
 		url: string,
 	): Promise<{
 		tabKey: string;
 		windowKey: string;
-	}> {
+	}> => {
 		this.logger.info(`Opening tab with URL: ${url} in window: ${windowKey}`);
 
 		try {
@@ -223,9 +223,9 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			this.logger.error("Failed to open tab", error);
 			throw error;
 		}
-	}
+	};
 
-	async getReadableText(tabKey: string): Promise<string> {
+	getReadableText = async (tabKey: string): Promise<string> => {
 		this.logger.info(`Getting readable text from tab: ${tabKey}`);
 
 		try {
@@ -253,9 +253,11 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			this.logger.error("Failed to get readable text", error);
 			throw error;
 		}
-	}
+	};
 
-	async getReadableElements(tabKey: string): Promise<ReadableElementRecord[]> {
+	getReadableElements = async (
+		tabKey: string,
+	): Promise<ReadableElementRecord[]> => {
 		this.logger.info(`Getting readable elements from tab: ${tabKey}`);
 
 		try {
@@ -277,9 +279,12 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			this.logger.error("Failed to get readable elements", error);
 			throw error;
 		}
-	}
+	};
 
-	async clickOnElement(tabKey: string, readablePath: string): Promise<void> {
+	clickOnElement = async (
+		tabKey: string,
+		readablePath: string,
+	): Promise<void> => {
 		this.logger.info(`Clicking on element ${readablePath} in tab: ${tabKey}`);
 
 		try {
@@ -305,13 +310,13 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			this.logger.error("Failed to click on element", error);
 			throw error;
 		}
-	}
+	};
 
-	async fillTextToElement(
+	fillTextToElement = async (
 		tabKey: string,
 		readablePath: string,
 		value: string,
-	): Promise<void> {
+	): Promise<void> => {
 		this.logger.info(
 			`Filling text to element ${readablePath} in tab: ${tabKey}`,
 		);
@@ -340,9 +345,9 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			this.logger.error("Failed to fill text to element", error);
 			throw error;
 		}
-	}
+	};
 
-	async captureTab(tabKey: string): Promise<Screenshot> {
+	captureTab = async (tabKey: string): Promise<Screenshot> => {
 		this.logger.info(`Capturing screenshot from tab: ${tabKey}`);
 
 		try {
@@ -368,13 +373,13 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			this.logger.error("Failed to capture screenshot", error);
 			throw error;
 		}
-	}
+	};
 
-	async clickOnCoordinates(
+	clickOnCoordinates = async (
 		tabKey: string,
 		x: number,
 		y: number,
-	): Promise<void> {
+	): Promise<void> => {
 		this.logger.info(`Clicking on coordinates (${x}, ${y}) in tab: ${tabKey}`);
 
 		try {
@@ -401,9 +406,9 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			this.logger.error("Failed to click on coordinates", error);
 			throw error;
 		}
-	}
+	};
 
-	async closeTab(tabKey: string): Promise<void> {
+	closeTab = async (tabKey: string): Promise<void> => {
 		this.logger.info(`Closing tab: ${tabKey}`);
 
 		try {
@@ -431,14 +436,14 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			this.logger.error("Failed to close tab", error);
 			throw error;
 		}
-	}
+	};
 
-	async fillTextToCoordinates(
+	fillTextToCoordinates = async (
 		tabKey: string,
 		x: number,
 		y: number,
 		value: string,
-	): Promise<void> {
+	): Promise<void> => {
 		this.logger.info(
 			`Filling text to coordinates (${x}, ${y}) in tab: ${tabKey}`,
 		);
@@ -468,17 +473,17 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			this.logger.error("Failed to fill text to coordinates", error);
 			throw error;
 		}
-	}
+	};
 
-	private async loadTabContext(tabKey: string): Promise<TabContext> {
+	private loadTabContext = async (tabKey: string): Promise<TabContext> => {
 		this.logger.info(`Loading tab context for: ${tabKey}`);
 		this.logger.error("loadTabContext is not supported without getHtml");
 		throw new Error("loadTabContext is not supported without getHtml");
-	}
+	};
 
-	async getSelection(
+	getSelection = async (
 		tabKey: string,
-	): Promise<import("@mcp-browser-kit/core-extension").Selection> {
+	): Promise<import("@mcp-browser-kit/core-extension").Selection> => {
 		this.logger.info(`Getting selection from tab: ${tabKey}`);
 
 		try {
@@ -504,13 +509,13 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			this.logger.error("Failed to get selection", error);
 			throw error;
 		}
-	}
+	};
 
-	async hitEnterOnCoordinates(
+	hitEnterOnCoordinates = async (
 		tabKey: string,
 		x: number,
 		y: number,
-	): Promise<void> {
+	): Promise<void> => {
 		this.logger.info(
 			`Hitting enter on coordinates (${x}, ${y}) in tab: ${tabKey}`,
 		);
@@ -539,9 +544,12 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			this.logger.error("Failed to hit enter on coordinates", error);
 			throw error;
 		}
-	}
+	};
 
-	async hitEnterOnElement(tabKey: string, readablePath: string): Promise<void> {
+	hitEnterOnElement = async (
+		tabKey: string,
+		readablePath: string,
+	): Promise<void> => {
 		this.logger.info(
 			`Hitting enter on element ${readablePath} in tab: ${tabKey}`,
 		);
@@ -569,9 +577,9 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			this.logger.error("Failed to hit enter on element", error);
 			throw error;
 		}
-	}
+	};
 
-	async invokeJsFn(tabKey: string, fnBodyCode: string): Promise<unknown> {
+	invokeJsFn = async (tabKey: string, fnBodyCode: string): Promise<unknown> => {
 		this.logger.info(`Invoking JavaScript function in tab: ${tabKey}`);
 
 		try {
@@ -598,32 +606,34 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			this.logger.error("Failed to invoke JavaScript function", error);
 			throw error;
 		}
-	}
+	};
 
 	/**
 	 * Gets the cached DOM tree for a tab
 	 * @param tabKey - The tab key
 	 * @returns The cached DOM tree or undefined if not cached
 	 */
-	getDomTree(tabKey: string): TreeNode<globalThis.Element> | undefined {
+	getDomTree = (tabKey: string): TreeNode<globalThis.Element> | undefined => {
 		return this.tabContextCache.get(tabKey)?.domTree;
-	}
+	};
 
 	/**
 	 * Gets the cached readable tree for a tab
 	 * @param tabKey - The tab key
 	 * @returns The cached readable tree or undefined if not cached
 	 */
-	getReadableTree(tabKey: string): TreeNode<globalThis.Element> | undefined {
+	getReadableTree = (
+		tabKey: string,
+	): TreeNode<globalThis.Element> | undefined => {
 		return this.tabContextCache.get(tabKey)?.readableTree;
-	}
+	};
 
 	/**
 	 * Gets the cached tab context (JSDOM, DOM tree, and readable tree)
 	 * @param tabKey - The tab key
 	 * @returns The cached tab context or undefined if not cached
 	 */
-	getTabContext(tabKey: string): TabContext | undefined {
+	getTabContext = (tabKey: string): TabContext | undefined => {
 		return this.tabContextCache.get(tabKey);
-	}
+	};
 }

@@ -10,10 +10,12 @@ export const startTrpcServer = () => {
 		.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
 		.create("trpcServer");
 
+	logger.verbose("Starting WebSocket Server");
 	const wss = new WebSocketServer({
-		port: 59089,
+		port: 2769,
 	});
 
+	logger.verbose("Applying WebSocket Handler");
 	const handler = applyWSSHandler({
 		wss,
 		router: rootRouter,
@@ -34,7 +36,7 @@ export const startTrpcServer = () => {
 		});
 	});
 
-	logger.info("WebSocket Server started and listening on ws://localhost:59089");
+	logger.info("WebSocket Server started and listening on ws://localhost:2769");
 
 	const shutdown = () => {
 		logger.info("Server shutdown initiated");

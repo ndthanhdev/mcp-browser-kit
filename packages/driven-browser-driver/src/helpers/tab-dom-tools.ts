@@ -8,47 +8,47 @@ export class TabDomTools {
 		@inject(TabContextStore) private readonly contextStore: TabContextStore,
 	) {}
 
-	clickOnCoordinates(x: number, y: number) {
+	clickOnCoordinates = (x: number, y: number) => {
 		return dom.clickOnCoordinates(x, y);
-	}
+	};
 
-	async clickOnElementBySelector(readablePath: string) {
+	clickOnElementBySelector = async (readablePath: string) => {
 		const element = this.contextStore.getElementFromPath(readablePath);
 		if (!element) return;
 		return dom.clickOnElementBySelector(element);
-	}
+	};
 
-	fillTextToElementBySelector(readablePath: string, value: string) {
+	fillTextToElementBySelector = (readablePath: string, value: string) => {
 		const element = this.contextStore.getElementFromPath(readablePath);
 		if (!element) return;
 		return dom.fillTextToElementBySelector(element, value);
-	}
+	};
 
-	fillTextToFocusedElement(value: string) {
+	fillTextToFocusedElement = (value: string) => {
 		return dom.fillTextToFocusedElement(value);
-	}
+	};
 
-	focusOnElement(readablePath: string) {
+	focusOnElement = (readablePath: string) => {
 		const element = this.contextStore.getElementFromPath(readablePath);
 		if (!element) return;
 		return dom.focusOnElement(element);
-	}
+	};
 
-	focusOnCoordinates(x: number, y: number) {
+	focusOnCoordinates = (x: number, y: number) => {
 		return dom.focusOnCoordinates(x, y);
-	}
+	};
 
-	getInnerText() {
+	getInnerText = () => {
 		return dom.getInnerText();
-	}
+	};
 
-	async hitEnterOnElementBySelector(readablePath: string) {
+	hitEnterOnElementBySelector = async (readablePath: string) => {
 		const element = this.contextStore.getElementFromPath(readablePath);
 		if (!element) return;
 		return dom.hitEnterOnElementBySelector(element);
-	}
+	};
 
-	async hitEnterOnFocusedElement() {
+	hitEnterOnFocusedElement = async () => {
 		return dom.hitEnterOnFocusedElement();
-	}
+	};
 }

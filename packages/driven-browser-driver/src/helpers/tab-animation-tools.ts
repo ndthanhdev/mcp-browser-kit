@@ -9,21 +9,21 @@ export class TabAnimationTools {
 		@inject(TabContextStore) private readonly contextStore: TabContextStore,
 	) {}
 
-	playClickAnimationAdvance(
+	playClickAnimationAdvance = (
 		x: number,
 		y: number,
 		options: ClickAnimationOptions = {},
-	): void {
+	): void => {
 		animation.playClickAnimationAdvance(x, y, options);
-	}
+	};
 
-	playClickAnimation(x: number, y: number): void {
+	playClickAnimation = (x: number, y: number): void => {
 		animation.playClickAnimation(x, y);
-	}
+	};
 
-	playClickAnimationOnElementBySelector(readablePath: string): void {
+	playClickAnimationOnElementBySelector = (readablePath: string): void => {
 		const element = this.contextStore.getElementFromPath(readablePath);
 		if (!element) return;
 		animation.playClickAnimationOnElement(element);
-	}
+	};
 }

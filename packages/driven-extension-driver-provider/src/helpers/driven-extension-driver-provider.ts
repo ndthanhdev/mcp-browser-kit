@@ -53,7 +53,7 @@ export class DrivenExtensionDriverProvider
 		return this.eventEmitter.on(event, listener);
 	};
 
-	async createExtensionDriver(): Promise<ExtensionDriverInstance> {
+	createExtensionDriver = async (): Promise<ExtensionDriverInstance> => {
 		const instanceId = `extension-driver-${++this.instanceCounter}`;
 		const driver = new DrivenExtensionDriver();
 
@@ -68,16 +68,16 @@ export class DrivenExtensionDriverProvider
 		await this.eventEmitter.emit("driverCreated", instance);
 
 		return instance;
-	}
+	};
 
-	getExtensionDriver(
+	getExtensionDriver = (
 		instanceId: string,
-	): ExtensionDriverOutputPort | undefined {
+	): ExtensionDriverOutputPort | undefined => {
 		const instance = this.drivers.get(instanceId);
 		return instance?.driver;
-	}
+	};
 
-	async destroyExtensionDriver(instanceId: string): Promise<void> {
+	destroyExtensionDriver = async (instanceId: string): Promise<void> => {
 		const instance = this.drivers.get(instanceId);
 		if (!instance) {
 			this.logger.warn(`Extension driver instance not found: ${instanceId}`);
@@ -88,9 +88,9 @@ export class DrivenExtensionDriverProvider
 		this.logger.info(`Destroyed extension driver instance: ${instanceId}`);
 
 		await this.eventEmitter.emit("driverDestroyed", instance);
-	}
+	};
 
-	listExtensionDrivers(): ExtensionDriverInstance[] {
+	listExtensionDrivers = (): ExtensionDriverInstance[] => {
 		return Array.from(this.drivers.values());
-	}
+	};
 }

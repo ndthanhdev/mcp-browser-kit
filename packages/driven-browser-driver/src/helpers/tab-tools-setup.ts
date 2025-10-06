@@ -81,16 +81,16 @@ export class TabToolsSetup {
 		this.logger.info("TabToolsSetup initialized successfully");
 	}
 
-	private createMcpBrowserKitGlobal(): McpBrowserKitGlobal {
+	private createMcpBrowserKitGlobal = (): McpBrowserKitGlobal => {
 		return {
 			tabTools: this.tabTools,
 		};
-	}
+	};
 
 	/**
 	 * Sets up the tab script tools in the global scope.
 	 */
-	setUpTabTools(): void {
+	setUpTabTools = (): void => {
 		this.logger.verbose("Setting up tab tools in global scope");
 
 		if (!theGlobal[tabToolsIdentifier]) {
@@ -99,7 +99,7 @@ export class TabToolsSetup {
 		} else {
 			this.logger.verbose("Tab tools already set up in global scope");
 		}
-	}
+	};
 
 	/**
 	 * Gets the RPC server instance.
@@ -159,7 +159,7 @@ export class TabToolsSetup {
 	/**
 	 * Starts listening for browser runtime messages and forwards them through the channel.
 	 */
-	startListen(): void {
+	startListen = (): void => {
 		this.logger.info("Starting to listen for browser runtime messages");
 
 		// Set up response listener for the channel
@@ -181,12 +181,12 @@ export class TabToolsSetup {
 		};
 
 		this.logger.info("Browser runtime message listener started successfully");
-	}
+	};
 
 	/**
 	 * Stops listening and cleans up all event listeners.
 	 */
-	stopListen(): void {
+	stopListen = (): void => {
 		this.logger.info("Stopping listeners and cleaning up");
 
 		// Stop channel listener
@@ -229,5 +229,5 @@ export class TabToolsSetup {
 		this.rpcServer.stopListen();
 
 		this.logger.info("All listeners stopped and cleaned up successfully");
-	}
+	};
 }
