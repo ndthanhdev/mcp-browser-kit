@@ -2,5 +2,5 @@
 import { startMcpServer } from "./helpers/mcp-server";
 import { startTrpcServer } from "./helpers/trpc-server";
 
-startTrpcServer();
+await startTrpcServer();
 startMcpServer();

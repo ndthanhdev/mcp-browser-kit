@@ -1,5 +1,5 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension";
-import { createPrefixId } from "@mcp-browser-kit/utils";
+import { createPrefixId, MAX_PORT, MIN_PORT } from "@mcp-browser-kit/utils";
 import Emittery from "emittery";
 import { inject, injectable } from "inversify";
 
@@ -16,8 +16,6 @@ export interface PortDiscoveryEvents {
 
 @injectable()
 export class ServerDiscoverer {
-	private static readonly MIN_PORT = 2769;
-	private static readonly MAX_PORT = 2799;
 	private static readonly CONNECTION_TIMEOUT_MS = 3000;
 	private static readonly CHECK_INTERVAL_MS = 5000; // Check every 5 seconds
 	private static readonly serverDiscovererId = createPrefixId("sd");
@@ -38,7 +36,7 @@ export class ServerDiscoverer {
 		this.eventEmitter = new Emittery<PortDiscoveryEvents>();
 
 		this.logger.verbose(
-			`[${this.instanceId}] Initialized ServerDiscoverer for ports ${ServerDiscoverer.MIN_PORT}-${ServerDiscoverer.MAX_PORT}`,
+			`[${this.instanceId}] Initialized ServerDiscoverer for ports ${MIN_PORT}-${MAX_PORT}`,
 		);
 	}
 
@@ -102,11 +100,7 @@ export class ServerDiscoverer {
 		const discoveryPromises: Promise<void>[] = [];
 		const currentlyOnlinePorts = new Set<number>();
 
-		for (
-			let port = ServerDiscoverer.MIN_PORT;
-			port <= ServerDiscoverer.MAX_PORT;
-			port++
-		) {
+		for (let port = MIN_PORT; port <= MAX_PORT; port++) {
 			discoveryPromises.push(
 				this.checkPort(port).then((isOnline) => {
 					if (isOnline) {

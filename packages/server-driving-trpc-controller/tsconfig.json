@@ -1,0 +1,31 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"include": [
+		"**/*"
+	],
+	"compilerOptions": {
+		"outDir": "../../.moon/cache/types/packages/server-driving-trpc-controller",
+		"paths": {
+			"@mcp-browser-kit/core-server": [
+				"../core-server/src/index.ts"
+			],
+			"@mcp-browser-kit/core-server/*": [
+				"../core-server/src/*"
+			],
+			"@mcp-browser-kit/utils": [
+				"../utils/src/index.ts"
+			],
+			"@mcp-browser-kit/utils/*": [
+				"../utils/src/*"
+			]
+		}
+	},
+	"references": [
+		{
+			"path": "../core-server"
+		},
+		{
+			"path": "../utils"
+		}
+	]
+}

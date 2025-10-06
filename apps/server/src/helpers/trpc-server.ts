@@ -1,4 +1,5 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
+import { PortFinder } from "@mcp-browser-kit/server-driving-trpc-controller";
 import { applyWSSHandler } from "@trpc/server/adapters/ws";
 import { createServer } from "http";
 import { WebSocketServer } from "ws";
@@ -6,10 +7,12 @@ import { rootRouter } from "../routers/root";
 import { container } from "./container";
 import { createContext } from "./create-context";
 
-export const startTrpcServer = () => {
+export const startTrpcServer = async () => {
 	const logger = container
 		.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
 		.create("trpcServer");
+
+	const portFinder = container.get<PortFinder>(PortFinder);
 
 	logger.verbose("Starting HTTP Server");
 	// Create HTTP server for health checks and WebSocket upgrade
@@ -71,11 +74,18 @@ export const startTrpcServer = () => {
 		});
 	});
 
+	// Find an available port
+	const port = await portFinder.findAvailablePort();
+	if (port === null) {
+		logger.error("No available ports found in the configured range");
+		throw new Error("No available ports found");
+	}
+
 	// Start the HTTP server
-	httpServer.listen(2769, () => {
-		logger.info("HTTP Server started on http://localhost:2769");
+	httpServer.listen(port, () => {
+		logger.info(`HTTP Server started on http://localhost:${port}`);
 		logger.info(
-			"WebSocket Server started and listening on ws://localhost:2769",
+			`WebSocket Server started and listening on ws://localhost:${port}`,
 		);
 	});
 
