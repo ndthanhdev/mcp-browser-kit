@@ -32,7 +32,7 @@ export const registerBrowserTools = (
 		toolDescriptionsInputPort.getBasicBrowserContextInstruction(),
 		{},
 		async () => {
-			logger.info("Executing getBasicBrowserContext");
+			logger.verbose("Executing getBasicBrowserContext");
 			const overCtx = await over(toolsInputPort.getContext);
 
 			if (!overCtx.ok) {

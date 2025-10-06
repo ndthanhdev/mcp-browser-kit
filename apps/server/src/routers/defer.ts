@@ -1,3 +1,4 @@
+import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
 import { ExtensionChannelProviderOutputPort } from "@mcp-browser-kit/core-server/output-ports/extension-channel-provider";
 import type { ServerDrivenExtensionChannelProvider } from "@mcp-browser-kit/server-driven-extension-channel-provider";
 import type { DeferMessage, ResolveMessage } from "@mcp-browser-kit/utils";
@@ -14,6 +15,11 @@ const channelIdSchema = z.string().refine((val) => channelId.isValid(val), {
 	message: "Invalid channel ID format",
 });
 
+// Create logger instance
+const logger = container
+	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
+	.create("deferRouter");
+
 export const defer = router({
 	onMessage: publicProcedure
 		.input(
@@ -25,18 +31,25 @@ export const defer = router({
 			const { signal, input } = opts;
 			const { channelId } = input;
 
+			logger.info(`Opening subscription for channel: ${channelId}`);
+
 			const extensionChannelProvider =
 				container.get<ExtensionChannelProviderOutputPort>(
 					ExtensionChannelProviderOutputPort,
 				) as ServerDrivenExtensionChannelProvider;
 
 			const channel = extensionChannelProvider.openChannel(channelId);
+			logger.verbose(`Channel opened: ${channelId}`);
 
 			let defer = Promise.withResolvers<DeferMessage>();
 
-			const unsubscribe = channel.incoming.on(
+			const unsubscribe = channel.outgoing.on(
 				"defer",
 				(message: DeferMessage) => {
+					logger.verbose(
+						`Received defer message on channel ${channelId}:`,
+						message,
+					);
 					defer.resolve(message);
 				},
 			);
@@ -44,6 +57,7 @@ export const defer = router({
 			let stopped = false;
 			if (signal) {
 				signal.onabort = () => {
+					logger.info(`Subscription aborted for channel: ${channelId}`);
 					unsubscribe();
 					stopped = true;
 				};
@@ -52,6 +66,7 @@ export const defer = router({
 				yield await defer.promise;
 				defer = Promise.withResolvers<DeferMessage>();
 			}
+			logger.info(`Subscription ended for channel: ${channelId}`);
 		}),
 	resolve: publicProcedure
 		.input(
@@ -64,6 +79,16 @@ export const defer = router({
 		)
 		.mutation(async (opts) => {
 			const { id, isOk, result, channelId } = opts.input;
+
+			logger.info(
+				`Resolving message ${id} on channel ${channelId} (isOk: ${isOk})`,
+			);
+			logger.verbose("Resolve details:", {
+				id,
+				isOk,
+				result,
+				channelId,
+			});
 
 			const extensionChannelProvider =
 				container.get<ExtensionChannelProviderOutputPort>(
@@ -78,6 +103,7 @@ export const defer = router({
 				result,
 			};
 
-			channel.outgoing.emit("resolve", resolveMessage);
+			channel.incoming.emit("resolve", resolveMessage);
+			logger.verbose(`Resolve message emitted for ${id}`);
 		}),
 });

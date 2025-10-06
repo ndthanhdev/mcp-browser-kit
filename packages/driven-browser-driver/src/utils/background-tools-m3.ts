@@ -9,6 +9,7 @@ import parseDataUrl from "data-urls";
 import { imageDimensionsFromData } from "image-dimensions";
 import { Base64 } from "js-base64";
 import browser from "webextension-polyfill";
+import { getBrowserInfoPolyfill } from "./browser-info-polyfill";
 import { LocalStorageKeys } from "./storage-keys";
 
 const extensionInstanceId = createPrefixId("extension");
@@ -40,7 +41,7 @@ export const closeTab = async (tabId: string): Promise<void> => {
 };
 
 export const getBrowserInfo = async (): Promise<BrowserInfo> => {
-	const browserInfo = await browser.runtime.getBrowserInfo();
+	const browserInfo = await getBrowserInfoPolyfill();
 
 	return {
 		browserName: browserInfo.name,

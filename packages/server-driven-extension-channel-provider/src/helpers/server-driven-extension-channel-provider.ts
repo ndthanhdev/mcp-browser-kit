@@ -6,7 +6,7 @@ import type {
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server/output-ports/logger-factory";
 import type {
 	DeferData,
-	MessageChannelForRpcServer,
+	MessageChannelForRpcClient,
 	ResolveData,
 } from "@mcp-browser-kit/utils";
 import { createPrefixId, EmitteryMessageChannel } from "@mcp-browser-kit/utils";
@@ -23,7 +23,7 @@ export class ServerDrivenExtensionChannelProvider
 	private readonly channels = new Map<string, ChannelInfo>();
 	private readonly messageChannels = new Map<
 		string,
-		MessageChannelForRpcServer
+		MessageChannelForRpcClient
 	>();
 	private readonly logger;
 	public readonly on: ExtensionDriverProviderEventEmitter["on"];
@@ -47,7 +47,7 @@ export class ServerDrivenExtensionChannelProvider
 		this.logger.verbose("Initialized ServerDrivenExtensionChannelProvider");
 	}
 
-	getMessageChannel = (channelId: string): MessageChannelForRpcServer => {
+	getMessageChannel = (channelId: string): MessageChannelForRpcClient => {
 		this.logger.verbose(`Getting message channel for channelId: ${channelId}`);
 
 		const messageChannel = this.messageChannels.get(channelId);
@@ -67,7 +67,7 @@ export class ServerDrivenExtensionChannelProvider
 	 * @returns MessageChannelRpcServerType for the newly created channel
 	 * @throws Error if channelId is not valid or already exists
 	 */
-	public openChannel = (id: string): MessageChannelForRpcServer => {
+	public openChannel = (id: string): MessageChannelForRpcClient => {
 		// Validate channelId has the correct prefix format
 		if (!channelId.isValid(id)) {
 			this.logger.verbose(`Invalid channel ID format: ${id}`);

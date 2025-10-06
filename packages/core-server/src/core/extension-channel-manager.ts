@@ -92,6 +92,8 @@ export class ExtensionChannelManager {
 
 				this.logger.info("Browser instance mapped to channel", {
 					browserId: context.browserId,
+					browserName: context.browserInfo.browserName,
+					browserVersion: context.browserInfo.browserVersion,
 					channelId: channel.channelId,
 				});
 			} catch (error) {

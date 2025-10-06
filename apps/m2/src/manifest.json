@@ -9,6 +9,7 @@
 		"tabs",
 		"activeTab",
 		"scripting",
+		"storage",
 		"<all_urls>",
 		"*://localhost:*/*",
 		"*://127.0.0.1:*/*"

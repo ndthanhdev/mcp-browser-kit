@@ -48,10 +48,13 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 	}
 
 	getContext = async (): Promise<Context> => {
-		this.logger.info("Getting browser context");
+		this.logger.verbose("Getting browser context");
 
 		try {
 			const rpcClients = this.extensionChannelManager.getRpcClients();
+			this.logger.verbose("Found RPC clients", {
+				rpcClients,
+			});
 
 			if (rpcClients.length === 0) {
 				this.logger.warn("No RPC clients available");
@@ -61,6 +64,9 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			}
 
 			const browsers = await this.getBrowserContextsFromClients(rpcClients);
+			this.logger.verbose("Found browsers", {
+				browsers,
+			});
 
 			return {
 				browsers,
@@ -76,13 +82,22 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 	): Promise<BrowserContext[]> => {
 		const browsers: BrowserContext[] = [];
 
-		for (const rpcClient of rpcClients) {
+		for (let i = 0; i < rpcClients.length; i++) {
+			const rpcClient = rpcClients[i];
+
 			try {
 				const extensionContext = await rpcClient.call({
 					method: "getExtensionContext",
 					args: [],
 					extraArgs: {},
 				});
+
+				this.logger.info("Retrieved extension context", {
+					browserId: extensionContext.browserId,
+					browser: `${extensionContext.browserInfo.browserName} ${extensionContext.browserInfo.browserVersion}`,
+					tabs: extensionContext.availableTabs.length,
+				});
+
 				const browserContext = this.buildBrowserContext(extensionContext);
 				browsers.push(browserContext);
 			} catch (error) {
