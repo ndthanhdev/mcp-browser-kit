@@ -7,7 +7,7 @@ import { z } from "zod";
 import { publicProcedure, router } from "../helpers/trpc";
 
 // Create channel ID prefix utility
-const channelId = createPrefixId("chn");
+const channelId = createPrefixId("channel");
 
 // Custom channel ID validation schema
 const channelIdSchema = z.string().refine((val) => channelId.isValid(val), {

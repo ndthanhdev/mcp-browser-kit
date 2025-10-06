@@ -11,7 +11,7 @@ import { Base64 } from "js-base64";
 import browser from "webextension-polyfill";
 import { LocalStorageKeys } from "./storage-keys";
 
-const extensionInstanceId = createPrefixId("ext");
+const extensionInstanceId = createPrefixId("extension");
 
 export const captureTab = async (_tabId: string) => {
 	const dataUrl = await browser.tabs.captureVisibleTab();

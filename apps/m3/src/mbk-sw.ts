@@ -19,17 +19,8 @@ const serverProvider = container.get<ServerChannelProviderOutputPort>(
 	ServerChannelProviderOutputPort,
 ) as ExtensionDrivenServerChannelProvider;
 
-// Set up interval to discover and connect to servers every 10 seconds
-setInterval(async () => {
-	try {
-		await serverProvider.discoverAndConnectToServers();
-	} catch (error) {
-		console.error("Error during server discovery and connection:", error);
-	}
-}, 10000);
-
 // Initial discovery call
-serverProvider.discoverAndConnectToServers().catch((error) => {
+serverProvider.startServersDiscovering().catch((error) => {
 	console.error("Error during initial server discovery and connection:", error);
 });
 

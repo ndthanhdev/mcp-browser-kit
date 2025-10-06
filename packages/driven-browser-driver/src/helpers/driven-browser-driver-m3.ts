@@ -15,7 +15,7 @@ import type {
 import type { Func } from "@mcp-browser-kit/types";
 import { inject, injectable } from "inversify";
 import * as backgroundToolsM3 from "../utils/background-tools-m3";
-import type { TabRpcService } from "./tab-rpc-service";
+import { TabRpcService } from "./tab-rpc-service";
 
 @injectable()
 export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
@@ -24,6 +24,7 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 	constructor(
 		@inject(LoggerFactoryOutputPortSymbol)
 		private readonly loggerFactory: LoggerFactoryOutputPort,
+		@inject(TabRpcService)
 		private readonly tabRpcService: TabRpcService,
 	) {
 		this.logger = this.loggerFactory.create("DrivenBrowserDriverM3");

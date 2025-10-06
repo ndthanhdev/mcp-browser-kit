@@ -25,8 +25,8 @@ export class ExtensionDrivenServerChannelProvider
 {
 	private static readonly MIN_PORT = 2769;
 	private static readonly MAX_PORT = 2799;
-	private static readonly CONNECTION_TIMEOUT = 3000;
-	private static readonly serverChannelProviderId = createPrefixId("schp");
+	private static readonly RETRY_DELAY_MS = 10000;
+	private static readonly serverChannelProviderId = createPrefixId("scp");
 
 	private readonly instanceId: string;
 	private readonly eventEmitter: ExtensionDriverProviderEventEmitter;
@@ -76,42 +76,24 @@ export class ExtensionDrivenServerChannelProvider
 		return this.eventEmitter.on(event, callback);
 	};
 
-	discoverAndConnectToServers = async (): Promise<void> => {
+	startServersDiscovering = async (): Promise<void> => {
 		this.logger.verbose(
 			`[${this.instanceId}] Starting discovery and connection to servers`,
 		);
 
-		// Filter out URLs that are already connected
-		const unconnectedUrls = this.serverUrls.filter((serverUrl) => {
-			const existingChannelId = this.channelsByUrl.get(serverUrl);
-			if (existingChannelId) {
-				// Check if the channel still exists and is valid
-				const channel = this.channels.get(existingChannelId);
-				if (channel) {
-					this.logger.verbose(
-						`[${this.instanceId}] Skipping ${serverUrl} - already connected`,
-					);
-					return false;
-				}
-				// Channel was removed but URL mapping still exists, clean it up
-				this.channelsByUrl.delete(serverUrl);
-				return true;
-			}
-			return true;
-		});
-
-		if (unconnectedUrls.length === 0) {
-			this.logger.verbose(
-				`[${this.instanceId}] All servers are already connected`,
+		// If there are any existing channels, log warning and resolve
+		if (this.channels.size > 0) {
+			this.logger.warn(
+				`[${this.instanceId}] Existing channels detected (${this.channels.size}). Skipping server discovery.`,
 			);
 			return;
 		}
 
 		this.logger.verbose(
-			`[${this.instanceId}] Attempting to connect to ${unconnectedUrls.length} unconnected servers`,
+			`[${this.instanceId}] Attempting to connect to ${this.serverUrls.length} servers`,
 		);
 
-		const connectionPromises = unconnectedUrls.map(async (serverUrl) => {
+		const connectionPromises = this.serverUrls.map(async (serverUrl) => {
 			try {
 				await this.connectToServer(serverUrl);
 			} catch (error) {
@@ -138,7 +120,16 @@ export class ExtensionDrivenServerChannelProvider
 
 		try {
 			// Create WebSocket client with connection validation
-			const wsClient = await this.createWebSocketClient(serverUrl);
+			const wsClient = createWSClient({
+				url: serverUrl,
+				onError: (error) => {
+					this.logger.verbose(
+						`[${this.instanceId}] Connection attempt to server at ${serverUrl} failed:`,
+						error,
+					);
+				},
+				retryDelayMs: () => ExtensionDrivenServerChannelProvider.RETRY_DELAY_MS,
+			});
 
 			// Create TRPC client
 			const trpcClient = createTRPCClient<RootRouter>({
@@ -185,67 +176,6 @@ export class ExtensionDrivenServerChannelProvider
 			this.cleanupConnection(channelId, serverUrl);
 			throw error;
 		}
-	}
-
-	private async createWebSocketClient(
-		serverUrl: string,
-	): Promise<TRPCWebSocketClient> {
-		// Create deferred promise using Promise.withResolvers()
-		const { promise, resolve, reject } =
-			Promise.withResolvers<TRPCWebSocketClient>();
-
-		// Set up connection timeout
-		const timeoutId = setTimeout(() => {
-			reject(new Error("Connection timeout"));
-		}, ExtensionDrivenServerChannelProvider.CONNECTION_TIMEOUT);
-
-		let isResolved = false;
-
-		const handleSuccess = () => {
-			if (!isResolved) {
-				isResolved = true;
-				clearTimeout(timeoutId);
-				resolve(wsClient);
-			}
-		};
-
-		const handleError = (error: unknown) => {
-			if (!isResolved) {
-				isResolved = true;
-				clearTimeout(timeoutId);
-				reject(error);
-			}
-		};
-
-		// Create WebSocket client
-		const wsClient = createWSClient({
-			url: serverUrl,
-		});
-
-		// Subscribe to connection state changes
-		const subscription = wsClient.connectionState.subscribe({
-			next: (state) => {
-				// Handle different connection states
-				if (state.type === "state" && state.state === "idle") {
-					// Connection is established and idle (ready)
-					handleSuccess();
-				} else if (state.type === "state" && state.state === "connecting") {
-					// Still connecting, wait
-				} else if (state.type === "state" && state.state === "pending") {
-					// Pending state, wait
-				}
-			},
-			error: (error) => {
-				handleError(error);
-			},
-		});
-
-		// Clean up subscription when promise settles
-		promise.finally(() => {
-			subscription.unsubscribe();
-		});
-
-		return promise;
 	}
 
 	private setupMessageHandling(

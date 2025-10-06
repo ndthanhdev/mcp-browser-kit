@@ -1,3 +1,4 @@
+import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
 import type { Func, Logger, LoggerFactory } from "@mcp-browser-kit/types";
 import {
 	type DeferData,
@@ -58,8 +59,10 @@ export class TabToolsSetup {
 	private browserMessageUnsubscribe?: () => void;
 
 	constructor(
+		@inject(LoggerFactoryOutputPort)
 		loggerFactory: LoggerFactory,
-		@inject(TabTools) private readonly tabTools: TabTools,
+		@inject(TabTools)
+		private readonly tabTools: TabTools,
 	) {
 		this.logger = loggerFactory.create("TabToolsSetup");
 

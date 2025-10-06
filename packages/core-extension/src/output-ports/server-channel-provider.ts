@@ -12,7 +12,7 @@ export type ExtensionDriverProviderEventEmitter = Emittery<{
 
 export type ServerChannelProviderOutputPort = {
 	on: ExtensionDriverProviderEventEmitter["on"];
-	discoverAndConnectToServers: () => Promise<void>;
+	startServersDiscovering: () => Promise<void>;
 	getMessageChannel: (channelId: string) => MessageChannel;
 };
 

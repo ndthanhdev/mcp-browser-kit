@@ -9,14 +9,14 @@ import { nanoid } from "nanoid";
  * @example
  * ```ts
  * const userId = createPrefixId('user');
- * const id1 = userId.generate(); // 'user-a1b2c3d4'
- * const id2 = userId.generate(); // 'user-e5f6g7h8'
+ * const id1 = userId.generate(); // 'user:a1b2c3d4'
+ * const id2 = userId.generate(); // 'user:e5f6g7h8'
  *
- * userId.isValid('user-a1b2c3d4'); // true
+ * userId.isValid('user:a1b2c3d4'); // true
  * userId.isValid('invalid-id'); // false
  *
  * const sessionId = createPrefixId('UserSession');
- * sessionId.generate(); // 'user-session-a1b2c3d4'
+ * sessionId.generate(); // 'user-session:a1b2c3d4'
  * ```
  */
 export const createPrefixId = (prefix: string) => {
@@ -25,9 +25,9 @@ export const createPrefixId = (prefix: string) => {
 	return {
 		/**
 		 * Generates a new ID with the predefined prefix
-		 * @returns A new ID in the format `<prefix>-<nanoid-length-8>`
+		 * @returns A new ID in the format `<prefix>:<nanoid-length-8>`
 		 */
-		generate: () => `${normalizedPrefix}-${nanoid(8)}`,
+		generate: () => `${normalizedPrefix}:${nanoid(8)}`,
 
 		/**
 		 * Validates if a given ID matches the expected prefix pattern
@@ -35,7 +35,7 @@ export const createPrefixId = (prefix: string) => {
 		 * @returns `true` if the ID matches the pattern, `false` otherwise
 		 */
 		isValid: (id: string) => {
-			const pattern = new RegExp(`^${normalizedPrefix}-[A-Za-z0-9_-]{8}$`);
+			const pattern = new RegExp(`^${normalizedPrefix}:[A-Za-z0-9_-]{8}$`);
 			return pattern.test(id);
 		},
 	};

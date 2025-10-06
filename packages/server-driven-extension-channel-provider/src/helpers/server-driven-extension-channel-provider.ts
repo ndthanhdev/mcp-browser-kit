@@ -13,7 +13,7 @@ import { createPrefixId, EmitteryMessageChannel } from "@mcp-browser-kit/utils";
 import Emittery from "emittery";
 import { inject, injectable } from "inversify";
 
-const channelId = createPrefixId("sch");
+const channelId = createPrefixId("server-channel-provider");
 
 @injectable()
 export class ServerDrivenExtensionChannelProvider
