@@ -1,6 +1,8 @@
 import type {
 	ExtensionContext,
+	ReadableElementRecord,
 	Selection,
+	TabContext,
 } from "@mcp-browser-kit/core-extension";
 import type {
 	ExtensionDriverOutputPort,
@@ -47,12 +49,12 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 			},
 		});
 	};
-	hitEnterOnElement = (tabId: string, selector: string): Promise<void> => {
+	hitEnterOnElement = (tabId: string, readablePath: string): Promise<void> => {
 		return this.extensionRpcClient.call({
 			method: "hitEnterOnElement",
 			args: [
 				tabId,
-				selector,
+				readablePath,
 			],
 			extraArgs: {
 				tabId,
@@ -106,12 +108,12 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 		});
 	};
 
-	clickOnElement = (tabId: string, selector: string): Promise<void> => {
+	clickOnElement = (tabId: string, readablePath: string): Promise<void> => {
 		return this.extensionRpcClient.call({
 			method: "clickOnElement",
 			args: [
 				tabId,
-				selector,
+				readablePath,
 			],
 			extraArgs: {
 				tabId,
@@ -121,14 +123,14 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 
 	fillTextToElement = (
 		tabId: string,
-		selector: string,
+		readablePath: string,
 		value: string,
 	): Promise<void> => {
 		return this.extensionRpcClient.call({
 			method: "fillTextToElement",
 			args: [
 				tabId,
-				selector,
+				readablePath,
 				value,
 			],
 			extraArgs: {
@@ -192,6 +194,42 @@ export class DrivenExtensionDriver implements ExtensionDriverOutputPort {
 	getSelection = (tabId: string): Promise<Selection> => {
 		return this.extensionRpcClient.call({
 			method: "getSelection",
+			args: [
+				tabId,
+			],
+			extraArgs: {
+				tabId,
+			},
+		});
+	};
+
+	loadTabContext = (tabId: string): Promise<TabContext> => {
+		return this.extensionRpcClient.call({
+			method: "loadTabContext",
+			args: [
+				tabId,
+			],
+			extraArgs: {
+				tabId,
+			},
+		});
+	};
+
+	getReadableElements = (tabId: string): Promise<ReadableElementRecord[]> => {
+		return this.extensionRpcClient.call({
+			method: "getReadableElements",
+			args: [
+				tabId,
+			],
+			extraArgs: {
+				tabId,
+			},
+		});
+	};
+
+	getReadableText = (tabId: string): Promise<string> => {
+		return this.extensionRpcClient.call({
+			method: "getReadableText",
 			args: [
 				tabId,
 			],

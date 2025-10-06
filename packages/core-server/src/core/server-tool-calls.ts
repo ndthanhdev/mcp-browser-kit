@@ -279,8 +279,8 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		}
 	}
 
-	async clickOnElement(tabKey: string, selector: string): Promise<void> {
-		this.logger.info(`Clicking on element ${selector} in tab: ${tabKey}`);
+	async clickOnElement(tabKey: string, readablePath: string): Promise<void> {
+		this.logger.info(`Clicking on element ${readablePath} in tab: ${tabKey}`);
 
 		try {
 			// Parse the tabKey to get tabId and instanceId
@@ -295,7 +295,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 				method: "clickOnElement",
 				args: [
 					tabData.tabId,
-					selector,
+					readablePath,
 				],
 				extraArgs: {},
 			});
@@ -309,10 +309,12 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 	async fillTextToElement(
 		tabKey: string,
-		selector: string,
+		readablePath: string,
 		value: string,
 	): Promise<void> {
-		this.logger.info(`Filling text to element ${selector} in tab: ${tabKey}`);
+		this.logger.info(
+			`Filling text to element ${readablePath} in tab: ${tabKey}`,
+		);
 
 		try {
 			// Parse the tabKey to get tabId and instanceId
@@ -327,7 +329,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 				method: "fillTextToElement",
 				args: [
 					tabData.tabId,
-					selector,
+					readablePath,
 					value,
 				],
 				extraArgs: {},
@@ -539,8 +541,10 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		}
 	}
 
-	async hitEnterOnElement(tabKey: string, selector: string): Promise<void> {
-		this.logger.info(`Hitting enter on element ${selector} in tab: ${tabKey}`);
+	async hitEnterOnElement(tabKey: string, readablePath: string): Promise<void> {
+		this.logger.info(
+			`Hitting enter on element ${readablePath} in tab: ${tabKey}`,
+		);
 
 		try {
 			// Parse the tabKey to get tabId and instanceId
@@ -555,7 +559,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 				method: "hitEnterOnElement",
 				args: [
 					tabData.tabId,
-					selector,
+					readablePath,
 				],
 				extraArgs: {},
 			});

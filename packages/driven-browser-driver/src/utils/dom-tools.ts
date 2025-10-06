@@ -8,8 +8,7 @@ export const clickOnCoordinates = (x: number, y: number) => {
 	}
 };
 
-export const clickOnElementBySelector = async (selector: string) => {
-	const element = document.querySelector(selector) as HTMLElement;
+export const clickOnElementBySelector = async (element: HTMLElement) => {
 	if (element) {
 		playClickAnimationOnElement(element);
 		element.click();
@@ -32,10 +31,9 @@ export const dispatchEnter = async (element: HTMLElement) => {
 };
 
 export const fillTextToElementBySelector = (
-	selector: string,
+	element: HTMLElement,
 	value: string,
 ) => {
-	const element = document.querySelector(selector) as HTMLElement;
 	if (element) {
 		playClickAnimationOnElement(element);
 		(element as HTMLInputElement).value = value;
@@ -49,6 +47,12 @@ export const fillTextToFocusedElement = (value: string) => {
 	}
 };
 
+export const focusOnElement = (element: HTMLElement) => {
+	if (element) {
+		element.focus();
+	}
+};
+
 export const focusOnCoordinates = (x: number, y: number) => {
 	const element = document.elementFromPoint(x, y);
 	if (element && element instanceof HTMLElement) {
@@ -56,64 +60,11 @@ export const focusOnCoordinates = (x: number, y: number) => {
 	}
 };
 
-export const generateElementRecords = (elements: HTMLElement[]) => {
-	const table = elements.map((el, index) => {
-		const tag = el.tagName.toLowerCase();
-		const label =
-			el.getAttribute("aria-label") ??
-			el.getAttribute("placeholder") ??
-			el.innerText ??
-			"";
-		return {
-			elementId: index,
-			role: tag,
-			accessibleText: label,
-		};
-	});
-	return table;
-};
-
 export const getInnerText = () => {
 	return document.body.innerText;
 };
 
-export const getReadableElements = () => {
-	return generateElementRecords(getReadableHtmlElements());
-};
-
-export const getReadableHtmlElements = () => {
-	const labeledElements =
-		document.querySelectorAll<HTMLElement>("[aria-label]");
-	const placeholderElements = document.querySelectorAll<HTMLElement>(
-		":not([aria-label])[placeholder]",
-	);
-	const buttonsWithText = Array.from(
-		document.querySelectorAll<HTMLElement>("button:not([aria-label])"),
-	).filter((el) => {
-		const text = el.innerText;
-		return text && text.trim() !== "";
-	});
-	const linksWithText = Array.from(
-		document.querySelectorAll<HTMLElement>("a:not([aria-label])"),
-	).filter((el) => {
-		const text = el.innerText;
-		return text && text.trim() !== "";
-	});
-
-	const readableElements = Array.from(
-		new Set([
-			...Array.from(labeledElements),
-			...Array.from(placeholderElements),
-			...buttonsWithText,
-			...linksWithText,
-		]),
-	);
-
-	return readableElements;
-};
-
-export const hitEnterOnElementBySelector = async (selector: string) => {
-	const element = document.querySelector(selector) as HTMLElement;
+export const hitEnterOnElementBySelector = async (element: HTMLElement) => {
 	if (element) {
 		playClickAnimationOnElement(element);
 		await dispatchEnter(element);

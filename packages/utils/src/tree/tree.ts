@@ -174,3 +174,56 @@ export function treeToPathValueArray<T, U = T>(
 
 	return result;
 }
+
+/**
+ * Finds a node in the tree by its path
+ * @param tree - The root node to search
+ * @param path - Dot-separated path of indices (e.g., "0" for root, "0.1" for second child, "0.1.0" for its first grandchild)
+ * @returns The node at the specified path, or null if not found
+ *
+ * @example
+ * ```ts
+ * const tree = {
+ *   data: 'root',
+ *   children: [
+ *     { data: 'child1' },
+ *     { data: 'child2', children: [{ data: 'grandchild' }] }
+ *   ]
+ * };
+ * const node = findNodeByPath(tree, "0.1.0");
+ * // { data: 'grandchild' }
+ *
+ * const notFound = findNodeByPath(tree, "0.5");
+ * // null
+ * ```
+ */
+export function findNodeByPath<T>(
+	tree: TreeNode<T>,
+	path: string,
+): TreeNode<T> | null {
+	const indices = path.split(".").map(Number);
+
+	// Validate path starts with root index (0)
+	if (indices.length === 0 || indices[0] !== 0 || indices.some(Number.isNaN)) {
+		return null;
+	}
+
+	let current: TreeNode<T> = tree;
+
+	// Traverse from index 1 onwards (index 0 is the root)
+	for (let i = 1; i < indices.length; i++) {
+		const childIndex = indices[i];
+
+		if (
+			!current.children ||
+			childIndex < 0 ||
+			childIndex >= current.children.length
+		) {
+			return null;
+		}
+
+		current = current.children[childIndex];
+	}
+
+	return current;
+}

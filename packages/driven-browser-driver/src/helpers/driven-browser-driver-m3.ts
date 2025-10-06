@@ -10,6 +10,7 @@ import type {
 	ExtensionWindowInfo,
 	Screenshot,
 	Selection,
+	TabContext,
 } from "@mcp-browser-kit/core-extension/types";
 import type { Func } from "@mcp-browser-kit/types";
 import { inject, injectable } from "inversify";
@@ -26,6 +27,16 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 		private readonly tabRpcService: TabRpcService,
 	) {
 		this.logger = this.loggerFactory.create("DrivenBrowserDriverM3");
+	}
+
+	loadTabContext(tabId: string): Promise<TabContext> {
+		return this.tabRpcService.tabRpcClient.call({
+			method: "loadTabContext",
+			args: [],
+			extraArgs: {
+				tabId,
+			},
+		});
 	}
 
 	// Browser and Extension Info Methods
@@ -94,12 +105,12 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 
 	clickOnElementBySelector = (
 		tabId: string,
-		selector: string,
+		readableTreePath: string,
 	): Promise<void> => {
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.clickOnElementBySelector",
 			args: [
-				selector,
+				readableTreePath,
 			],
 			extraArgs: {
 				tabId,
@@ -123,13 +134,13 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 	// Input Methods
 	fillTextToElementBySelector = (
 		tabId: string,
-		selector: string,
+		readableTreePath: string,
 		value: string,
 	): Promise<void> => {
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.fillTextToElementBySelector",
 			args: [
-				selector,
+				readableTreePath,
 				value,
 			],
 			extraArgs: {
@@ -152,12 +163,12 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 
 	hitEnterOnElementBySelector = (
 		tabId: string,
-		selector: string,
+		readableTreePath: string,
 	): Promise<void> => {
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.hitEnterOnElementBySelector",
 			args: [
-				selector,
+				readableTreePath,
 			],
 			extraArgs: {
 				tabId,

@@ -1,4 +1,4 @@
-interface ClickAnimationOptions {
+export interface ClickAnimationOptions {
 	size?: number;
 	color?: string;
 	duration?: number;

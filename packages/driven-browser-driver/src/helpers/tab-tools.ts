@@ -1,27 +1,34 @@
-import type {
-	InternalTabContext,
-	TabContext,
-} from "@mcp-browser-kit/core-extension";
-import { injectable } from "inversify";
-import * as animation from "../utils/animation-tools";
-import * as dom from "../utils/dom-tools";
+import type { TabContext } from "@mcp-browser-kit/core-extension";
+import { inject, injectable } from "inversify";
 import { toDomTree } from "../utils/to-dom-tree";
 import { toElementRecords } from "../utils/to-element-records";
 import { domTreeToReadableTree } from "../utils/to-readable-tree";
+import { TabAnimationTools } from "./tab-animation-tools";
+import { TabContextStore } from "./tab-context-store";
+import { TabDomTools } from "./tab-dom-tools";
 
 /**
  * TabTools class provides access to browser automation tools.
  */
 @injectable()
 export class TabTools {
-	public readonly animation = animation;
-	public readonly dom = dom;
+	public readonly animation: TabAnimationTools;
+	public readonly dom: TabDomTools;
+	private readonly contextStore: TabContextStore;
 
-	private latestCapturedTabContext: InternalTabContext | undefined;
+	constructor(
+		@inject(TabDomTools) dom: TabDomTools,
+		@inject(TabAnimationTools) animation: TabAnimationTools,
+		@inject(TabContextStore) contextStore: TabContextStore,
+	) {
+		this.dom = dom;
+		this.animation = animation;
+		this.contextStore = contextStore;
+	}
 
-	async loadTabContext(_tabId: string): Promise<TabContext> {
+	async loadTabContext(): Promise<TabContext> {
 		// 1. Get root element from document
-		const rootElement = document.body || document.documentElement;
+		const rootElement = document.documentElement;
 
 		// 2. Convert root element to DOM tree
 		const domTree = toDomTree(rootElement);
@@ -39,12 +46,12 @@ export class TabTools {
 
 		// Store the internal context (only if readableTree exists)
 		if (readableTree) {
-			this.latestCapturedTabContext = {
+			this.contextStore.setLatestCapturedTabContext({
 				html,
 				readableElementRecords,
 				domTree,
 				readableTree,
-			};
+			});
 		}
 
 		// Return the public context

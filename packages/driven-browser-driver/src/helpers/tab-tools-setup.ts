@@ -8,7 +8,6 @@ import {
 	type ResolveMessage,
 } from "@mcp-browser-kit/utils";
 import { inject, injectable } from "inversify";
-import * as R from "ramda";
 import type { Get, Paths } from "type-fest";
 import browser, { type Runtime } from "webextension-polyfill";
 import { TabTools } from "./tab-tools";
@@ -27,10 +26,8 @@ export type GetTool<T extends ToolKeys> = Get<TabTools, T> extends Func
 
 export const tabToolsIdentifier = "$mcpBrowserKit";
 
-export type McpBrowserKitGlobal = TabTools & {
-	callTool: <T extends ToolKeys>(
-		args: CallToolArgs<T>,
-	) => Promise<ReturnType<GetTool<T>>>;
+export type McpBrowserKitGlobal = {
+	tabTools: TabTools;
 };
 
 declare global {
@@ -81,37 +78,11 @@ export class TabToolsSetup {
 		this.logger.info("TabToolsSetup initialized successfully");
 	}
 
-	/**
-	 * Calls a tool by name with the provided arguments.
-	 */
-	callTool = async <T extends ToolKeys>({
-		tool,
-		args,
-	}: CallToolArgs<T>): Promise<ReturnType<GetTool<T>>> => {
-		this.logger.verbose("Calling tool:", tool, "with args:", args);
-
-		const toolFunction = R.pathOr(
-			undefined,
-			[
-				tabToolsIdentifier,
-				...tool.split("."),
-			],
-			theGlobal,
-		) as GetTool<T> | undefined;
-
-		if (toolFunction) {
-			const result = await toolFunction.apply(
-				undefined,
-				args as Parameters<GetTool<T>>,
-			);
-			this.logger.verbose("Tool call result:", result);
-			return result;
-		}
-
-		const error = `Tool ${tool} not found`;
-		this.logger.error(error);
-		throw new Error(error);
-	};
+	private createMcpBrowserKitGlobal(): McpBrowserKitGlobal {
+		return {
+			tabTools: this.tabTools,
+		};
+	}
 
 	/**
 	 * Sets up the tab script tools in the global scope.
@@ -120,10 +91,7 @@ export class TabToolsSetup {
 		this.logger.verbose("Setting up tab tools in global scope");
 
 		if (!theGlobal[tabToolsIdentifier]) {
-			theGlobal[tabToolsIdentifier] = {
-				...this.tabTools,
-				callTool: this.callTool,
-			};
+			theGlobal[tabToolsIdentifier] = this.createMcpBrowserKitGlobal();
 			this.logger.info("Tab tools successfully set up in global scope");
 		} else {
 			this.logger.verbose("Tab tools already set up in global scope");

@@ -1,3 +1,4 @@
+import { Readability } from "@mozilla/readability";
 import { inject, injectable } from "inversify";
 import type { ExtensionToolCallInputPort } from "../input-ports";
 import {
@@ -31,8 +32,8 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 		await this.browserDriver.focusOnCoordinates(tabId, x, y);
 		return this.browserDriver.hitEnterOnFocusedElement(tabId);
 	};
-	hitEnterOnElement = (tabId: string, selector: string): Promise<void> => {
-		return this.browserDriver.hitEnterOnElementBySelector(tabId, selector);
+	hitEnterOnElement = (tabId: string, readablePath: string): Promise<void> => {
+		return this.browserDriver.hitEnterOnElementBySelector(tabId, readablePath);
 	};
 
 	getExtensionContext = async (): Promise<ExtensionContext> => {
@@ -111,23 +112,65 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 		return this.browserDriver.fillTextToFocusedElement(tabId, value);
 	};
 
-	clickOnElement = (tabId: string, selector: string): Promise<void> => {
-		return this.browserDriver.clickOnElementBySelector(tabId, selector);
+	clickOnElement = (tabId: string, readablePath: string): Promise<void> => {
+		return this.browserDriver.clickOnElementBySelector(tabId, readablePath);
 	};
 
 	fillTextToElement = (
 		tabId: string,
-		selector: string,
+		readablePath: string,
 		value: string,
 	): Promise<void> => {
 		return this.browserDriver.fillTextToElementBySelector(
 			tabId,
-			selector,
+			readablePath,
 			value,
 		);
 	};
 
 	invokeJsFn = (tabId: string, fnBodyCode: string): Promise<unknown> => {
 		return this.browserDriver.invokeJsFn(tabId, fnBodyCode);
+	};
+
+	loadTabContext = (tabId: string) => {
+		return this.browserDriver.loadTabContext(tabId);
+	};
+
+	getReadableElements = async (tabKey: string) => {
+		const tabContext = await this.browserDriver.loadTabContext(tabKey);
+		return tabContext.readableElementRecords;
+	};
+
+	getReadableText = async (tabKey: string) => {
+		this.logger.info(`Getting readable text from tab: ${tabKey}`);
+
+		try {
+			const tabContext = await this.browserDriver.loadTabContext(tabKey);
+
+			// Parse HTML into a Document using DOMParser
+			const parser = new DOMParser();
+			const doc = parser.parseFromString(tabContext.html, "text/html");
+
+			// Use Mozilla's Readability to extract readable content
+			const reader = new Readability(doc);
+			const article = reader.parse();
+
+			if (!article || !article.textContent) {
+				this.logger.warn(
+					"Readability could not parse the page, falling back to text content",
+				);
+				// Fallback to basic text extraction if Readability fails
+				return doc.body.textContent?.trim() ?? "";
+			}
+
+			// Return the text content from the article
+			const textContent = article.textContent.trim();
+
+			this.logger.info("Retrieved readable text successfully");
+			return textContent;
+		} catch (error) {
+			this.logger.error("Failed to get readable text", error);
+			throw error;
+		}
 	};
 }

@@ -28,10 +28,10 @@ export function toElementRecords(
 			element.textContent?.trim() ??
 			"";
 
-		return {
+		return [
 			path,
 			accessibleRole,
 			accessibleText,
-		};
+		];
 	});
 }

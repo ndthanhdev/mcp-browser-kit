@@ -31,7 +31,7 @@ export interface Context {
 export type ServerToolCallsInputPort = {
 	captureTab: (tabKey: string) => Promise<Screenshot>;
 	clickOnCoordinates: (tabKey: string, x: number, y: number) => Promise<void>;
-	clickOnElement: (tabKey: string, selector: string) => Promise<void>;
+	clickOnElement: (tabKey: string, readablePath: string) => Promise<void>;
 	closeTab: (tabKey: string) => Promise<void>;
 	fillTextToCoordinates: (
 		tabKey: string,
@@ -41,7 +41,7 @@ export type ServerToolCallsInputPort = {
 	) => Promise<void>;
 	fillTextToElement: (
 		tabKey: string,
-		selector: string,
+		readablePath: string,
 		value: string,
 	) => Promise<void>;
 	getContext: () => Promise<Context>;
@@ -53,7 +53,7 @@ export type ServerToolCallsInputPort = {
 		x: number,
 		y: number,
 	) => Promise<void>;
-	hitEnterOnElement: (tabKey: string, selector: string) => Promise<void>;
+	hitEnterOnElement: (tabKey: string, readablePath: string) => Promise<void>;
 	invokeJsFn: (tabKey: string, fnBodyCode: string) => Promise<unknown>;
 	openTab: (
 		windowKey: string,

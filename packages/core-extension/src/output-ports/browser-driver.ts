@@ -5,6 +5,7 @@ import type {
 	ExtensionWindowInfo,
 	Screenshot,
 	Selection,
+	TabContext,
 } from "../types";
 
 export interface BrowserDriverOutputPort {
@@ -20,7 +21,7 @@ export interface BrowserDriverOutputPort {
 		tabId: string;
 		windowId: string;
 	}>;
-	loadTabContext(tabId: string): Promise<void>;
+	loadTabContext(tabId: string): Promise<TabContext>;
 	closeTab(tabId: string): Promise<void>;
 	captureTab(tabId: string): Promise<Screenshot>;
 	getSelection(tabId: string): Promise<Selection>;
@@ -28,13 +29,19 @@ export interface BrowserDriverOutputPort {
 	focusOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
 	fillTextToFocusedElement(tabId: string, value: string): Promise<void>;
 	hitEnterOnFocusedElement(tabId: string): Promise<void>;
-	clickOnElementBySelector(tabId: string, selector: string): Promise<void>;
+	clickOnElementBySelector(
+		tabId: string,
+		readableTreePath: string,
+	): Promise<void>;
 	fillTextToElementBySelector(
 		tabId: string,
-		selector: string,
+		readableTreePath: string,
 		value: string,
 	): Promise<void>;
-	hitEnterOnElementBySelector(tabId: string, selector: string): Promise<void>;
+	hitEnterOnElementBySelector(
+		tabId: string,
+		readableTreePath: string,
+	): Promise<void>;
 	invokeJsFn(tabId: string, fnBodyCode: string): Promise<unknown>;
 }
 

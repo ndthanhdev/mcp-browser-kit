@@ -5,13 +5,10 @@ import {
 } from "@mcp-browser-kit/core-extension";
 import type { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
 import { container } from "./helpers/container";
-import { createMessageChannelRpcServer } from "./helpers/create-message-channel-rpc-server";
 
 const deferLogger = container
 	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
 	.create("trp", "defer");
-
-const _serverChannel = createMessageChannelRpcServer();
 
 // Set up ServerProvider for automated server discovery and connection
 const serverProvider = container.get<ServerChannelProviderOutputPort>(

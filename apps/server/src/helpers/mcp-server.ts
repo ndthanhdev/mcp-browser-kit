@@ -379,21 +379,23 @@ const createServer = async () => {
 		toolDescriptionsInputPort.clickOnReadableElementInstruction(),
 		{
 			tabId: z.string().describe("Tab ID to target"),
-			index: z.number().describe("Element index from getReadableElements"),
+			readablePath: z
+				.string()
+				.describe("Element path from getReadableElements"),
 		},
-		async ({ tabId, index }) => {
+		async ({ tabId, readablePath }) => {
 			logger.info("Executing clickOnReadableElement", {
 				tabId,
-				index,
+				readablePath,
 			});
 			const overClick = await over(() =>
-				toolsInputPort.clickOnElement(tabId, index),
+				toolsInputPort.clickOnElement(tabId, readablePath),
 			);
 
 			if (!overClick.ok) {
 				logger.error("Failed to click on readable element", {
 					tabId,
-					index,
+					readablePath,
 					reason: overClick.reason,
 				});
 				return {
@@ -408,7 +410,7 @@ const createServer = async () => {
 
 			logger.verbose("Clicked on readable element", {
 				tabId,
-				index,
+				readablePath,
 			});
 			return {
 				content: [
@@ -427,22 +429,24 @@ const createServer = async () => {
 		toolDescriptionsInputPort.fillTextToReadableElementInstruction(),
 		{
 			tabId: z.string().describe("Tab ID to target"),
-			index: z.number().describe("Element index from getReadableElements"),
+			readablePath: z
+				.string()
+				.describe("Element path from getReadableElements"),
 			value: z.string().describe("Text to enter into the input field"),
 		},
-		async ({ tabId, index, value }) => {
+		async ({ tabId, readablePath, value }) => {
 			logger.info("Executing fillTextToReadableElement", {
 				tabId,
-				index,
+				readablePath,
 			});
 			const overFill = await over(() =>
-				toolsInputPort.fillTextToElement(tabId, index, value),
+				toolsInputPort.fillTextToElement(tabId, readablePath, value),
 			);
 
 			if (!overFill.ok) {
 				logger.error("Failed to fill text to readable element", {
 					tabId,
-					index,
+					readablePath,
 					reason: overFill.reason,
 				});
 				return {
@@ -457,7 +461,7 @@ const createServer = async () => {
 
 			logger.verbose("Filled text to readable element", {
 				tabId,
-				index,
+				readablePath,
 				valueLength: value.length,
 			});
 			return {
@@ -477,21 +481,23 @@ const createServer = async () => {
 		toolDescriptionsInputPort.hitEnterOnReadableElementInstruction(),
 		{
 			tabId: z.string().describe("Tab ID to target"),
-			index: z.number().describe("Element index from getReadableElements"),
+			readablePath: z
+				.string()
+				.describe("Element path from getReadableElements"),
 		},
-		async ({ tabId, index }) => {
+		async ({ tabId, readablePath }) => {
 			logger.info("Executing hitEnterOnReadableElement", {
 				tabId,
-				index,
+				readablePath,
 			});
 			const overEnter = await over(() =>
-				toolsInputPort.hitEnterOnElement(tabId, index),
+				toolsInputPort.hitEnterOnElement(tabId, readablePath),
 			);
 
 			if (!overEnter.ok) {
 				logger.error("Failed to hit enter on readable element", {
 					tabId,
-					index,
+					readablePath,
 					reason: overEnter.reason,
 				});
 				return {
@@ -506,7 +512,7 @@ const createServer = async () => {
 
 			logger.verbose("Hit enter on readable element", {
 				tabId,
-				index,
+				readablePath,
 			});
 			return {
 				content: [

@@ -12,7 +12,7 @@ import {
 } from "@mcp-browser-kit/utils";
 import { inject, injectable } from "inversify";
 import browser from "webextension-polyfill";
-import type { TabTools } from "../utils";
+import type { TabTools } from "./tab-tools";
 
 @injectable()
 export class TabRpcService {
