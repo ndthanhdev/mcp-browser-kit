@@ -46,13 +46,7 @@
 			"path": "packages/core-server"
 		},
 		{
-			"path": "packages/driven-browser-driver"
-		},
-		{
-			"path": "packages/driven-extension-driver"
-		},
-		{
-			"path": "packages/driven-extension-driver-provider"
+			"path": "packages/extension-driven-browser-driver"
 		},
 		{
 			"path": "packages/driven-logger-factory"

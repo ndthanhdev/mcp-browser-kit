@@ -18,10 +18,10 @@
 				"../../packages/core-extension/src/*"
 			],
 			"@mcp-browser-kit/extension-driven-browser-driver": [
-				"../../packages/driven-browser-driver/src/index.ts"
+				"../../packages/extension-driven-browser-driver/src/index.ts"
 			],
 			"@mcp-browser-kit/extension-driven-browser-driver/*": [
-				"../../packages/driven-browser-driver/src/*"
+				"../../packages/extension-driven-browser-driver/src/*"
 			],
 			"@mcp-browser-kit/core-server": [
 				"../../packages/core-server/src/index.ts"
@@ -40,12 +40,6 @@
 			],
 			"@mcp-browser-kit/extension-driven-server-channel-provider/*": [
 				"../../packages/extension-driven-server-channel-provider/src/*"
-			],
-			"@mcp-browser-kit/driven-browser-driver": [
-				"../../packages/driven-browser-driver/src/index.ts"
-			],
-			"@mcp-browser-kit/driven-browser-driver/*": [
-				"../../packages/driven-browser-driver/src/*"
 			],
 			"@mcp-browser-kit/driven-logger-factory": [
 				"../../packages/driven-logger-factory/src/index.ts"
@@ -67,7 +61,7 @@
 		"../server/src/**/*",
 		"../../packages/rpc/src/**/*",
 		"../../../packages/core-extension/src/**/*",
-		"../../../packages/driven-browser-driver/src/**/*"
+		"../../../packages/extension-driven-browser-driver/src/**/*"
 	],
 	"references": [
 		{
@@ -77,7 +71,7 @@
 			"path": "../../packages/core-server"
 		},
 		{
-			"path": "../../packages/driven-browser-driver"
+			"path": "../../packages/extension-driven-browser-driver"
 		},
 		{
 			"path": "../../packages/driven-logger-factory"

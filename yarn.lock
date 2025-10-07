@@ -626,27 +626,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mcp-browser-kit/driven-browser-driver@workspace:packages/driven-browser-driver":
-  version: 0.0.0-use.local
-  resolution: "@mcp-browser-kit/driven-browser-driver@workspace:packages/driven-browser-driver"
-  languageName: unknown
-  linkType: soft
-
-"@mcp-browser-kit/driven-extension-driver-provider@workspace:packages/driven-extension-driver-provider":
-  version: 0.0.0-use.local
-  resolution: "@mcp-browser-kit/driven-extension-driver-provider@workspace:packages/driven-extension-driver-provider"
-  languageName: unknown
-  linkType: soft
-
-"@mcp-browser-kit/driven-extension-driver@workspace:packages/driven-extension-driver":
-  version: 0.0.0-use.local
-  resolution: "@mcp-browser-kit/driven-extension-driver@workspace:packages/driven-extension-driver"
-  languageName: unknown
-  linkType: soft
-
 "@mcp-browser-kit/driven-logger-factory@workspace:packages/driven-logger-factory":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/driven-logger-factory@workspace:packages/driven-logger-factory"
+  languageName: unknown
+  linkType: soft
+
+"@mcp-browser-kit/extension-driven-browser-driver@workspace:packages/extension-driven-browser-driver":
+  version: 0.0.0-use.local
+  resolution: "@mcp-browser-kit/extension-driven-browser-driver@workspace:packages/extension-driven-browser-driver"
   languageName: unknown
   linkType: soft
 

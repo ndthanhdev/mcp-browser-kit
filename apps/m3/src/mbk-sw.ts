@@ -2,7 +2,7 @@ import {
 	BrowserDriverOutputPort,
 	ServerChannelProviderOutputPort,
 } from "@mcp-browser-kit/core-extension";
-import type { DrivenBrowserDriverM3 } from "@mcp-browser-kit/driven-browser-driver";
+import type { DrivenBrowserDriverM3 } from "@mcp-browser-kit/extension-driven-browser-driver";
 import type { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
 import { ExtensionDrivingTrpcController } from "@mcp-browser-kit/extension-driving-trpc-controller";
 import { container } from "./helpers/container";

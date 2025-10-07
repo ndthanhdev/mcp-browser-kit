@@ -3,11 +3,11 @@ import {
 	createCoreExtensionContainer,
 	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-extension";
+import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
 import {
 	DrivenBrowserDriverM3,
 	TabRpcService,
-} from "@mcp-browser-kit/driven-browser-driver";
-import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
+} from "@mcp-browser-kit/extension-driven-browser-driver";
 import { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
 import { ExtensionDrivingTrpcController } from "@mcp-browser-kit/extension-driving-trpc-controller";
 

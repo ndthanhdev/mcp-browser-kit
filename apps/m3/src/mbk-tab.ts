@@ -1,9 +1,9 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension";
+import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
 import {
 	DrivenBrowserDriverM3,
 	TabToolsSetup,
-} from "@mcp-browser-kit/driven-browser-driver";
-import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
+} from "@mcp-browser-kit/extension-driven-browser-driver";
 import { Container } from "inversify";
 import { startKeepAlive } from "./helpers/keep-alive";
 

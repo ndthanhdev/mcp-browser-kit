@@ -18,7 +18,7 @@ tasks:
 dependsOn:
   - core-extension
   - core-server
-  - driven-browser-driver
+  - extension-driven-browser-driver
   - driven-logger-factory
   - extension-driven-server-channel-provider
   - extension-driving-trpc-controller

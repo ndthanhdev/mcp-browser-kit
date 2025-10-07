@@ -14,7 +14,6 @@ tasks:
 dependsOn:
   - core-server
   - core-utils
-  - driven-extension-driver
   - driven-logger-factory
   - server-driven-extension-channel-provider
   - server-driving-trpc-controller

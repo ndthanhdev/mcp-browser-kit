@@ -1,7 +1,7 @@
 import {
 	DrivenBrowserDriverM2,
 	TabToolsSetup,
-} from "@mcp-browser-kit/driven-browser-driver";
+} from "@mcp-browser-kit/extension-driven-browser-driver";
 import { Container } from "inversify";
 import { startKeepAlive } from "./helpers/keep-alive";
 
