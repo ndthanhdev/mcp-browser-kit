@@ -53,11 +53,11 @@
 			"@mcp-browser-kit/driven-logger-factory/*": [
 				"../../packages/driven-logger-factory/src/*"
 			],
-			"@mcp-browser-kit/utils": [
-				"../../packages/utils/src/index.ts"
+			"@mcp-browser-kit/core-utils": [
+				"../../packages/core-utils/src/index.ts"
 			],
-			"@mcp-browser-kit/utils/*": [
-				"../../packages/utils/src/*"
+			"@mcp-browser-kit/core-utils/*": [
+				"../../packages/core-utils/src/*"
 			]
 		},
 		"outDir": "../../.moon/cache/types/apps/m2"
@@ -86,7 +86,7 @@
 			"path": "../../packages/extension-driven-server-channel-provider"
 		},
 		{
-			"path": "../../packages/utils"
+			"path": "../../packages/core-utils"
 		},
 		{
 			"path": "../server"

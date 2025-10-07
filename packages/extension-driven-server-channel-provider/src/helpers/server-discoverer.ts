@@ -1,5 +1,9 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension";
-import { createPrefixId, MAX_PORT, MIN_PORT } from "@mcp-browser-kit/utils";
+import {
+	createPrefixId,
+	MAX_PORT,
+	MIN_PORT,
+} from "@mcp-browser-kit/core-utils";
 import Emittery from "emittery";
 import { inject, injectable } from "inversify";
 

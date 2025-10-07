@@ -22,4 +22,4 @@ dependsOn:
   - driven-logger-factory
   - extension-driven-server-channel-provider
   - extension-driving-trpc-controller
-  - utils
+  - core-utils

@@ -35,11 +35,11 @@
 			"@mcp-browser-kit/extension-driven-logger-factory/*": [
 				"../../packages/driven-logger-factory/src/*"
 			],
-			"@mcp-browser-kit/utils": [
-				"../../packages/utils/src/index.ts"
+			"@mcp-browser-kit/core-utils": [
+				"../../packages/core-utils/src/index.ts"
 			],
-			"@mcp-browser-kit/utils/*": [
-				"../../packages/utils/src/*"
+			"@mcp-browser-kit/core-utils/*": [
+				"../../packages/core-utils/src/*"
 			],
 			"@mcp-browser-kit/extension-driven-server-channel-provider": [
 				"../../packages/extension-driven-server-channel-provider/src/index.ts"
@@ -95,7 +95,7 @@
 			"path": "../../packages/extension-driving-trpc-controller"
 		},
 		{
-			"path": "../../packages/utils"
+			"path": "../../packages/core-utils"
 		},
 		{
 			"path": "../server"

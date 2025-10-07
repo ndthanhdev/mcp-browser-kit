@@ -3,4 +3,4 @@ language: typescript
 dependsOn:
   - types
   - core-extension
-  - utils
+  - core-utils

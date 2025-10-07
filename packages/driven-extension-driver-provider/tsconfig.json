@@ -17,7 +17,7 @@
 			"path": "../types"
 		},
 		{
-			"path": "../utils"
+			"path": "../core-utils"
 		}
 	],
 	"compilerOptions": {
@@ -40,11 +40,11 @@
 			"@mcp-browser-kit/types/*": [
 				"../types/src/*"
 			],
-			"@mcp-browser-kit/utils": [
-				"../utils/src/index.ts"
+			"@mcp-browser-kit/core-utils": [
+				"../core-utils/src/index.ts"
 			],
-			"@mcp-browser-kit/utils/*": [
-				"../utils/src/*"
+			"@mcp-browser-kit/core-utils/*": [
+				"../core-utils/src/*"
 			],
 			"@mcp-browser-kit/server-driven-extension-driver": [
 				"../driven-extension-driver/src/index.ts"

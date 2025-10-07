@@ -6,7 +6,10 @@ import type {
 	ReadableElementRecord,
 	Screenshot,
 } from "@mcp-browser-kit/core-extension";
-import type { MessageChannelRpcClient, TreeNode } from "@mcp-browser-kit/utils";
+import type {
+	MessageChannelRpcClient,
+	TreeNode,
+} from "@mcp-browser-kit/core-utils";
 import { Readability } from "@mozilla/readability";
 import { inject, injectable } from "inversify";
 import type { JSDOM } from "jsdom";

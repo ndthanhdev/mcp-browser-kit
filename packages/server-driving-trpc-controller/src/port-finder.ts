@@ -1,6 +1,6 @@
 import { createServer } from "node:net";
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
-import { MAX_PORT, MIN_PORT } from "@mcp-browser-kit/utils";
+import { MAX_PORT, MIN_PORT } from "@mcp-browser-kit/core-utils";
 import { inject, injectable } from "inversify";
 
 @injectable()

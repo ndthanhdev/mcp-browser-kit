@@ -5,4 +5,4 @@ dependsOn:
   - core-extension
   - core-server
   - driven-browser-driver
-  - utils
+  - core-utils

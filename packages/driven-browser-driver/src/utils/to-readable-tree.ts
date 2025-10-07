@@ -1,5 +1,5 @@
-import type { TreeNode } from "@mcp-browser-kit/utils/tree";
-import { conditionalPrune } from "@mcp-browser-kit/utils/tree";
+import type { TreeNode } from "@mcp-browser-kit/core-utils/tree";
+import { conditionalPrune } from "@mcp-browser-kit/core-utils/tree";
 import { isReadable } from "./is-readable";
 
 /**

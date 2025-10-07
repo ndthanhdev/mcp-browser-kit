@@ -18,11 +18,11 @@
 			"@mcp-browser-kit/extension-driven-server-channel-provider/*": [
 				"../extension-driven-server-channel-provider/src/*"
 			],
-			"@mcp-browser-kit/utils": [
-				"../utils/src/index.ts"
+			"@mcp-browser-kit/core-utils": [
+				"../core-utils/src/index.ts"
 			],
-			"@mcp-browser-kit/utils/*": [
-				"../utils/src/*"
+			"@mcp-browser-kit/core-utils/*": [
+				"../core-utils/src/*"
 			]
 		}
 	},
@@ -34,7 +34,7 @@
 			"path": "../extension-driven-server-channel-provider"
 		},
 		{
-			"path": "../utils"
+			"path": "../core-utils"
 		}
 	]
 }

@@ -1,8 +1,8 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
 import { ExtensionChannelProviderOutputPort } from "@mcp-browser-kit/core-server/output-ports/extension-channel-provider";
+import type { DeferMessage, ResolveMessage } from "@mcp-browser-kit/core-utils";
+import { createPrefixId } from "@mcp-browser-kit/core-utils";
 import type { ServerDrivenExtensionChannelProvider } from "@mcp-browser-kit/server-driven-extension-channel-provider";
-import type { DeferMessage, ResolveMessage } from "@mcp-browser-kit/utils";
-import { createPrefixId } from "@mcp-browser-kit/utils";
 import { container } from "src/helpers/container";
 import { z } from "zod";
 import { publicProcedure, router } from "../helpers/trpc";

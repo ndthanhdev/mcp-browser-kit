@@ -620,6 +620,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mcp-browser-kit/core-utils@workspace:packages/core-utils":
+  version: 0.0.0-use.local
+  resolution: "@mcp-browser-kit/core-utils@workspace:packages/core-utils"
+  languageName: unknown
+  linkType: soft
+
 "@mcp-browser-kit/driven-browser-driver@workspace:packages/driven-browser-driver":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/driven-browser-driver@workspace:packages/driven-browser-driver"
@@ -695,6 +701,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mcp-browser-kit/server-driving-trpc-controller@workspace:packages/server-driving-trpc-controller":
+  version: 0.0.0-use.local
+  resolution: "@mcp-browser-kit/server-driving-trpc-controller@workspace:packages/server-driving-trpc-controller"
+  languageName: unknown
+  linkType: soft
+
 "@mcp-browser-kit/server@workspace:apps/server":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/server@workspace:apps/server"
@@ -714,12 +726,6 @@ __metadata:
 "@mcp-browser-kit/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/types@workspace:packages/types"
-  languageName: unknown
-  linkType: soft
-
-"@mcp-browser-kit/utils@workspace:packages/utils":
-  version: 0.0.0-use.local
-  resolution: "@mcp-browser-kit/utils@workspace:packages/utils"
   languageName: unknown
   linkType: soft
 

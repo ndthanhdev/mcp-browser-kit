@@ -6,10 +6,13 @@ import {
 	LoggerFactoryOutputPort,
 	ServerChannelProviderOutputPort,
 } from "@mcp-browser-kit/core-extension";
+import type { MessageChannelForRpcServer } from "@mcp-browser-kit/core-utils";
+import {
+	createPrefixId,
+	EmitteryMessageChannel,
+} from "@mcp-browser-kit/core-utils";
 import type { RootRouter } from "@mcp-browser-kit/server/routers/root";
 import type { MessageChannel } from "@mcp-browser-kit/types";
-import type { MessageChannelForRpcServer } from "@mcp-browser-kit/utils";
-import { createPrefixId, EmitteryMessageChannel } from "@mcp-browser-kit/utils";
 import {
 	createTRPCClient,
 	createWSClient,

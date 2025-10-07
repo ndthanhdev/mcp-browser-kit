@@ -1,5 +1,5 @@
-import type { TreeNode } from "@mcp-browser-kit/utils/tree";
-import { treeToPathValueArray } from "@mcp-browser-kit/utils/tree";
+import type { TreeNode } from "@mcp-browser-kit/core-utils/tree";
+import { treeToPathValueArray } from "@mcp-browser-kit/core-utils/tree";
 import type { ReadableElementRecord } from "../types";
 
 /**

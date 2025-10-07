@@ -73,7 +73,7 @@
 			"path": "packages/types"
 		},
 		{
-			"path": "packages/utils"
+			"path": "packages/core-utils"
 		}
 	]
 }

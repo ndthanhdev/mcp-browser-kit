@@ -14,7 +14,7 @@
 			"path": "../types"
 		},
 		{
-			"path": "../utils"
+			"path": "../core-utils"
 		},
 		{
 			"path": "../../apps/server"
@@ -46,11 +46,11 @@
 			"@mcp-browser-kit/core-extension/*": [
 				"../core-extension/src/*"
 			],
-			"@mcp-browser-kit/utils": [
-				"../utils/src/index.ts"
+			"@mcp-browser-kit/core-utils": [
+				"../core-utils/src/index.ts"
 			],
-			"@mcp-browser-kit/utils/*": [
-				"../utils/src/*"
+			"@mcp-browser-kit/core-utils/*": [
+				"../core-utils/src/*"
 			],
 			"@mcp-browser-kit/server/*": [
 				"../../apps/server/src/*"

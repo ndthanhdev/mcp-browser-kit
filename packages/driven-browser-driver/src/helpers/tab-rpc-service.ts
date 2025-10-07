@@ -1,15 +1,15 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
-import type { Func } from "@mcp-browser-kit/types";
 import type {
 	DeferData,
 	DeferMessage,
 	ResolveData,
 	ResolveMessage,
-} from "@mcp-browser-kit/utils";
+} from "@mcp-browser-kit/core-utils";
 import {
 	EmitteryMessageChannel,
 	MessageChannelRpcClient,
-} from "@mcp-browser-kit/utils";
+} from "@mcp-browser-kit/core-utils";
+import type { Func } from "@mcp-browser-kit/types";
 import { inject, injectable } from "inversify";
 import browser from "webextension-polyfill";
 import type { TabTools } from "./tab-tools";

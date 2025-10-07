@@ -1,5 +1,5 @@
 import type { InternalTabContext } from "@mcp-browser-kit/core-extension";
-import { findNodeByPath } from "@mcp-browser-kit/utils/tree";
+import { findNodeByPath } from "@mcp-browser-kit/core-utils/tree";
 import { injectable } from "inversify";
 
 @injectable()

@@ -13,7 +13,7 @@ tasks:
 
 dependsOn:
   - core-server
-  - utils
+  - core-utils
   - driven-extension-driver
   - driven-logger-factory
   - server-driven-extension-channel-provider

@@ -1,5 +1,5 @@
 import type { ExtensionToolCallInputPort } from "@mcp-browser-kit/core-extension";
-import { MessageChannelRpcClient } from "@mcp-browser-kit/utils";
+import { MessageChannelRpcClient } from "@mcp-browser-kit/core-utils";
 import { inject, injectable } from "inversify";
 import { LoggerFactoryOutputPort } from "../output-ports";
 import {

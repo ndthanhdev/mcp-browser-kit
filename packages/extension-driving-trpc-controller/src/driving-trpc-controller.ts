@@ -3,8 +3,8 @@ import {
 	ExtensionToolCallInputPort,
 	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-extension";
+import { MessageChannelRpcServer } from "@mcp-browser-kit/core-utils";
 import type { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
-import { MessageChannelRpcServer } from "@mcp-browser-kit/utils";
 import { inject, injectable } from "inversify";
 
 @injectable()

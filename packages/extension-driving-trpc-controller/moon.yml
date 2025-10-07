@@ -3,4 +3,4 @@ language: typescript
 dependsOn:
   - extension-driven-server-channel-provider
   - core-extension
-  - utils
+  - core-utils

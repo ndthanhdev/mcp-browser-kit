@@ -1,5 +1,5 @@
 import type { ReadableElementRecord } from "@mcp-browser-kit/core-extension";
-import type { TreeNode } from "@mcp-browser-kit/utils/tree";
+import type { TreeNode } from "@mcp-browser-kit/core-utils/tree";
 
 /**
  * Converts a tree of DOM elements to an array of ReadableElementRecords

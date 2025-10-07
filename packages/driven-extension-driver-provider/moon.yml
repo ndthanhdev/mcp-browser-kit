@@ -4,5 +4,5 @@ dependsOn:
   - types
   - core-extension
   - core-server
-  - utils
+  - core-utils
   - driven-extension-driver

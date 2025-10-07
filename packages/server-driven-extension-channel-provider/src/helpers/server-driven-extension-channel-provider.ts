@@ -8,8 +8,11 @@ import type {
 	DeferData,
 	MessageChannelForRpcClient,
 	ResolveData,
-} from "@mcp-browser-kit/utils";
-import { createPrefixId, EmitteryMessageChannel } from "@mcp-browser-kit/utils";
+} from "@mcp-browser-kit/core-utils";
+import {
+	createPrefixId,
+	EmitteryMessageChannel,
+} from "@mcp-browser-kit/core-utils";
 import Emittery from "emittery";
 import { inject, injectable } from "inversify";
 

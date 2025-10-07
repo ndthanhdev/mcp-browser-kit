@@ -4,4 +4,4 @@ dependsOn:
   - types
   - core-server
   - core-extension
-  - utils
+  - core-utils

@@ -1,4 +1,4 @@
-import type { TreeNode } from "@mcp-browser-kit/utils";
+import type { TreeNode } from "@mcp-browser-kit/core-utils";
 import type { ReadableElementRecord } from "./readable-element-record";
 
 export interface TabContext {

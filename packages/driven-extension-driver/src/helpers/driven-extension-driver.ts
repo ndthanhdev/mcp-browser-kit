@@ -13,7 +13,7 @@ import {
 	EmitteryMessageChannel,
 	MessageChannelRpcClient,
 	type ResolveData,
-} from "@mcp-browser-kit/utils";
+} from "@mcp-browser-kit/core-utils";
 import { injectable } from "inversify";
 @injectable()
 export class DrivenExtensionDriver implements ExtensionDriverOutputPort {

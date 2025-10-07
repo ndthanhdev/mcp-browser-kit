@@ -1,5 +1,4 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
-import type { Func, Logger, LoggerFactory } from "@mcp-browser-kit/types";
 import {
 	type DeferData,
 	type DeferMessage,
@@ -7,7 +6,8 @@ import {
 	MessageChannelRpcServer,
 	type ResolveData,
 	type ResolveMessage,
-} from "@mcp-browser-kit/utils";
+} from "@mcp-browser-kit/core-utils";
+import type { Func, Logger, LoggerFactory } from "@mcp-browser-kit/types";
 import { inject, injectable } from "inversify";
 import type { Get, Paths } from "type-fest";
 import browser, { type Runtime } from "webextension-polyfill";

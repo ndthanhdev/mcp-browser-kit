@@ -4,7 +4,7 @@ import type {
 	ExtensionTabInfo,
 	ExtensionWindowInfo,
 } from "@mcp-browser-kit/core-extension/types";
-import { createPrefixId } from "@mcp-browser-kit/utils";
+import { createPrefixId } from "@mcp-browser-kit/core-utils";
 import parseDataUrl from "data-urls";
 import { imageDimensionsFromData } from "image-dimensions";
 import { Base64 } from "js-base64";
