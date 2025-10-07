@@ -58,10 +58,10 @@
 			"path": "packages/extension-driving-trpc-controller"
 		},
 		{
-			"path": "packages/server-driven-extension-channel-provider"
+			"path": "packages/helper-base-extension-channel-provider"
 		},
 		{
-			"path": "packages/server-driving-trpc-controller"
+			"path": "packages/server-driven-trpc-channel-provider"
 		},
 		{
 			"path": "packages/types"

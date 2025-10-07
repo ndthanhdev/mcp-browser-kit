@@ -13,11 +13,11 @@
 			"@mcp-browser-kit/core-server/*": [
 				"../../packages/core-server/src/*"
 			],
-			"@mcp-browser-kit/server-driven-extension-channel-provider": [
-				"../../packages/server-driven-extension-channel-provider/src/index.ts"
+			"@mcp-browser-kit/helper-base-extension-channel-provider": [
+				"../../packages/helper-base-extension-channel-provider/src/index.ts"
 			],
-			"@mcp-browser-kit/server-driven-extension-channel-provider/*": [
-				"../../packages/server-driven-extension-channel-provider/src/*"
+			"@mcp-browser-kit/helper-base-extension-channel-provider/*": [
+				"../../packages/helper-base-extension-channel-provider/src/*"
 			],
 			"@mcp-browser-kit/driven-logger-factory": [
 				"../../packages/driven-logger-factory/src/index.ts"
@@ -31,11 +31,11 @@
 			"@mcp-browser-kit/core-utils/*": [
 				"../../packages/core-utils/src/*"
 			],
-			"@mcp-browser-kit/server-driving-trpc-controller": [
-				"../../packages/server-driving-trpc-controller/src/index.ts"
+			"@mcp-browser-kit/server-driven-trpc-channel-provider": [
+				"../../packages/server-driven-trpc-channel-provider/src/index.ts"
 			],
-			"@mcp-browser-kit/server-driving-trpc-controller/*": [
-				"../../packages/server-driving-trpc-controller/src/*"
+			"@mcp-browser-kit/server-driven-trpc-channel-provider/*": [
+				"../../packages/server-driven-trpc-channel-provider/src/*"
 			]
 		},
 		"outDir": "../../.moon/cache/types/apps/server"
@@ -44,8 +44,8 @@
 		"src/**/*.ts",
 		"../../packages/rpc/src/**/*",
 		"../../packages/core-server/src/**/*",
-		"../../packages/server-driven-extension-channel-provider/src/**/*",
-		"../../packages/server-driving-trpc-controller/src/**/*"
+		"../../packages/helper-base-extension-channel-provider/src/**/*",
+		"../../packages/server-driven-trpc-channel-provider/src/**/*"
 	],
 	"references": [
 		{
@@ -55,13 +55,13 @@
 			"path": "../../packages/driven-logger-factory"
 		},
 		{
-			"path": "../../packages/server-driven-extension-channel-provider"
+			"path": "../../packages/helper-base-extension-channel-provider"
 		},
 		{
 			"path": "../../packages/core-utils"
 		},
 		{
-			"path": "../../packages/server-driving-trpc-controller"
+			"path": "../../packages/server-driven-trpc-channel-provider"
 		}
 	]
 }

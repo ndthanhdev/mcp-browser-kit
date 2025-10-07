@@ -75,10 +75,10 @@ flowchart TD
 
 ```mermaid
 ---
-title: Server Architecture
+title: Server Architecture (Level 0)
 ---
 flowchart TD
-  ServerTrpcController
+  McpServerController
   subgraph ServerDriving["Driving"]
     ServerToolCalls
   end
@@ -86,9 +86,11 @@ flowchart TD
 
   end
   subgraph ServerDriven["Driven"]
-    ExtensionChannelProviderOutputPort
+    subgraph ExtensionChannelProviderOutputPort
+      ServerTrpcChannelProvider
+    end
   end
-  subgraph CoreServer["CoreServer"]
+  subgraph CoreServer
     ServerDriving
     ServerCore
     ServerDriven
@@ -99,8 +101,8 @@ flowchart TD
   %% From Core
   ServerCore --> ServerDriven
   %% From Controller
-  ServerTrpcController --> ServerToolCalls
-  ServerTrpcController --> ExtensionChannelProviderOutputPort
+  McpServerController --> ServerToolCalls
+  McpServerController --> ExtensionChannelProviderOutputPort
 ```
 
 # Extension Core Architecture (Level 0)

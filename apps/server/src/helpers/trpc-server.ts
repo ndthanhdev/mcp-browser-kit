@@ -1,5 +1,5 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
-import { PortFinder } from "@mcp-browser-kit/server-driving-trpc-controller";
+import { PortFinder } from "@mcp-browser-kit/server-driven-trpc-channel-provider";
 import { applyWSSHandler } from "@trpc/server/adapters/ws";
 import { createServer } from "http";
 import { WebSocketServer } from "ws";

@@ -15,5 +15,4 @@ dependsOn:
   - core-server
   - core-utils
   - driven-logger-factory
-  - server-driven-extension-channel-provider
-  - server-driving-trpc-controller
+  - server-driven-trpc-channel-provider

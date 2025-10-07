@@ -3,3 +3,4 @@ language: typescript
 dependsOn:
   - core-server
   - core-utils
+  - helper-base-extension-channel-provider

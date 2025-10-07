@@ -18,7 +18,7 @@
 		}
 	],
 	"compilerOptions": {
-		"outDir": "../../.moon/cache/types/packages/server-driven-extension-channel-provider",
+		"outDir": "../../.moon/cache/types/packages/helper-base-extension-channel-provider",
 		"lib": [
 			"dom",
 			"ESNext",

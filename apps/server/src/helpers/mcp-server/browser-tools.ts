@@ -10,8 +10,8 @@ import {
 	createErrorResponse,
 	createImageResponse,
 	createTextResponse,
-} from "../tool-helpers";
-import { invokeJsFnSchema } from "../tool-schemas";
+} from "./tool-helpers";
+import { invokeJsFnSchema } from "./tool-schemas";
 
 const logger = container
 	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)

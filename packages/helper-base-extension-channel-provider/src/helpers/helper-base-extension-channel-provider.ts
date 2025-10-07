@@ -19,7 +19,7 @@ import { inject, injectable } from "inversify";
 const channelId = createPrefixId("channel");
 
 @injectable()
-export class ServerDrivenExtensionChannelProvider
+export class HelperBaseExtensionChannelProvider
 	implements ExtensionChannelProviderOutputPort
 {
 	private readonly eventEmitter: ExtensionDriverProviderEventEmitter;
@@ -36,7 +36,7 @@ export class ServerDrivenExtensionChannelProvider
 		private readonly loggerFactory: LoggerFactoryOutputPort,
 	) {
 		this.logger = this.loggerFactory.create(
-			"ServerDrivenExtensionChannelProvider",
+			"HelperBaseExtensionChannelProvider",
 		);
 
 		this.eventEmitter = new Emittery<{
@@ -47,7 +47,7 @@ export class ServerDrivenExtensionChannelProvider
 		// Bind the on method after eventEmitter is initialized
 		this.on = this.eventEmitter.on.bind(this.eventEmitter);
 
-		this.logger.verbose("Initialized ServerDrivenExtensionChannelProvider");
+		this.logger.verbose("Initialized HelperBaseExtensionChannelProvider");
 	}
 
 	getMessageChannel = (channelId: string): MessageChannelForRpcClient => {

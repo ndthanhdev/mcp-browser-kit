@@ -650,6 +650,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mcp-browser-kit/helper-base-extension-channel-provider@workspace:packages/helper-base-extension-channel-provider":
+  version: 0.0.0-use.local
+  resolution: "@mcp-browser-kit/helper-base-extension-channel-provider@workspace:packages/helper-base-extension-channel-provider"
+  languageName: unknown
+  linkType: soft
+
 "@mcp-browser-kit/m2@workspace:apps/m2":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/m2@workspace:apps/m2"
@@ -683,15 +689,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mcp-browser-kit/server-driven-extension-channel-provider@workspace:packages/server-driven-extension-channel-provider":
+"@mcp-browser-kit/server-driven-trpc-channel-provider@workspace:packages/server-driven-trpc-channel-provider":
   version: 0.0.0-use.local
-  resolution: "@mcp-browser-kit/server-driven-extension-channel-provider@workspace:packages/server-driven-extension-channel-provider"
-  languageName: unknown
-  linkType: soft
-
-"@mcp-browser-kit/server-driving-trpc-controller@workspace:packages/server-driving-trpc-controller":
-  version: 0.0.0-use.local
-  resolution: "@mcp-browser-kit/server-driving-trpc-controller@workspace:packages/server-driving-trpc-controller"
+  resolution: "@mcp-browser-kit/server-driven-trpc-channel-provider@workspace:packages/server-driven-trpc-channel-provider"
   languageName: unknown
   linkType: soft
 

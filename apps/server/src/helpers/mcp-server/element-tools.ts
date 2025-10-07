@@ -6,8 +6,8 @@ import type {
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { over } from "ok-value-error-reason";
 import { container } from "../container";
-import { createErrorResponse, createTextResponse } from "../tool-helpers";
-import { tabIdSchema } from "../tool-schemas";
+import { createErrorResponse, createTextResponse } from "./tool-helpers";
+import { tabIdSchema } from "./tool-schemas";
 
 const logger = container
 	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)

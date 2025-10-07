@@ -2,7 +2,7 @@ import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
 import { ExtensionChannelProviderOutputPort } from "@mcp-browser-kit/core-server/output-ports/extension-channel-provider";
 import type { DeferMessage, ResolveMessage } from "@mcp-browser-kit/core-utils";
 import { createPrefixId } from "@mcp-browser-kit/core-utils";
-import type { ServerDrivenExtensionChannelProvider } from "@mcp-browser-kit/server-driven-extension-channel-provider";
+import type { ServerDrivenTrpcChannelProvider } from "@mcp-browser-kit/server-driven-trpc-channel-provider";
 import { container } from "src/helpers/container";
 import { z } from "zod";
 import { publicProcedure, router } from "../helpers/trpc";
@@ -36,7 +36,7 @@ export const defer = router({
 			const extensionChannelProvider =
 				container.get<ExtensionChannelProviderOutputPort>(
 					ExtensionChannelProviderOutputPort,
-				) as ServerDrivenExtensionChannelProvider;
+				) as ServerDrivenTrpcChannelProvider;
 
 			const channel = extensionChannelProvider.openChannel(channelId);
 			logger.verbose(`Channel opened: ${channelId}`);
@@ -93,7 +93,7 @@ export const defer = router({
 			const extensionChannelProvider =
 				container.get<ExtensionChannelProviderOutputPort>(
 					ExtensionChannelProviderOutputPort,
-				) as ServerDrivenExtensionChannelProvider;
+				) as ServerDrivenTrpcChannelProvider;
 
 			const channel = extensionChannelProvider.getMessageChannel(channelId);
 

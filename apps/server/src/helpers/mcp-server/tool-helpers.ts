@@ -1,6 +1,6 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
 import { over } from "ok-value-error-reason";
-import { container } from "./container";
+import { container } from "../container";
 
 const logger = container
 	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
