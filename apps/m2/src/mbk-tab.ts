@@ -3,7 +3,7 @@ import {
 	TabToolsSetup,
 } from "@mcp-browser-kit/extension-driven-browser-driver";
 import { Container } from "inversify";
-import { startKeepAlive } from "./helpers/keep-alive";
+import { startKeepAlive } from "./services/keep-alive";
 
 // Create and configure the dependency injection container
 const container = new Container({

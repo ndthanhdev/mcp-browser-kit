@@ -3,14 +3,28 @@ import {
 	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-server";
 import { HelperBaseExtensionChannelProvider } from "@mcp-browser-kit/helper-base-extension-channel-provider";
+import { initTRPC } from "@trpc/server";
 import { applyWSSHandler } from "@trpc/server/adapters/ws";
 import { createServer } from "http";
 import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import { WebSocketServer } from "ws";
 import { createRootRouter } from "../routers/root";
-import { createContext } from "./create-context";
+import { type Context, createContext } from "./create-context";
 import { PortFinder } from "./port-finder";
+
+/**
+ * Initialization of tRPC backend
+ * Should be done only once per backend!
+ */
+const t = initTRPC.context<Context>().create();
+
+/**
+ * Export reusable router and procedure helpers
+ * that can be used throughout the router
+ */
+export const router = t.router;
+export const publicProcedure = t.procedure;
 
 @injectable()
 export class ServerDrivenTrpcChannelProvider

@@ -3,7 +3,7 @@ import {
 	type GetTool,
 	type ToolKeys,
 	tabToolsIdentifier,
-} from "../helpers/tab-tools-setup";
+} from "../services/tab-tools-setup";
 
 export const getExecuteScriptResult = async <T = void>(results: unknown[]) => {
 	if (!Array.isArray(results)) {

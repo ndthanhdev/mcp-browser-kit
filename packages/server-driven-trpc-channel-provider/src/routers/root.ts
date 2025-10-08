@@ -1,5 +1,5 @@
 import type { Container } from "inversify";
-import { router } from "../helpers/trpc";
+import { router } from "../services/server-driven-trpc-channel-provider";
 import { createDeferRouter } from "./defer";
 
 // Create a factory function that accepts the container

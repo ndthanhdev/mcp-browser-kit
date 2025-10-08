@@ -4,7 +4,7 @@ import {
 	ServerChannelProviderOutputPort,
 } from "@mcp-browser-kit/core-extension";
 import type { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
-import { container } from "./helpers/container";
+import { container } from "./services/container";
 
 const deferLogger = container
 	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)

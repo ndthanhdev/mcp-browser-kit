@@ -4,8 +4,11 @@ import type { DeferMessage, ResolveMessage } from "@mcp-browser-kit/core-utils";
 import { createPrefixId } from "@mcp-browser-kit/core-utils";
 import type { Container } from "inversify";
 import { z } from "zod";
-import type { ServerDrivenTrpcChannelProvider } from "../helpers/server-driven-trpc-channel-provider";
-import { publicProcedure, router } from "../helpers/trpc";
+import {
+	publicProcedure,
+	router,
+	type ServerDrivenTrpcChannelProvider,
+} from "../services/server-driven-trpc-channel-provider";
 
 // Create channel ID prefix utility
 const channelId = createPrefixId("channel");
