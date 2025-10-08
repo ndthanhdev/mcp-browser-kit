@@ -52,6 +52,7 @@ export class DrivenBrowserDriverM2 implements BrowserDriverOutputPort {
 	constructor(
 		@inject(LoggerFactoryOutputPortSymbol)
 		private readonly loggerFactory: LoggerFactoryOutputPort,
+		@inject(TabRpcServiceClass)
 		private readonly tabRpcService: TabRpcService,
 	) {
 		this.logger = this.loggerFactory.create("DrivenBrowserDriverM2");

@@ -24,14 +24,14 @@
 				"<all_urls>"
 			],
 			"js": [
-				"mbk-tab.js"
+				"bootstrap-mbk-tab.js"
 			]
 		}
 	],
 	"background": {
 		"scripts": [
 			"vendors/webextension-polyfill/browser-polyfill.min.js",
-			"mbk-background.js"
+			"bootstrap-mbk-bg.js"
 		],
 		"persistent": true
 	}

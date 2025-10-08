@@ -10,7 +10,7 @@ import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import { WebSocketServer } from "ws";
 import { createRootRouter } from "../routers/root";
-import { type Context, createContext } from "./create-context";
+import { type Context, createContext } from "../utils/create-context";
 import { PortFinder } from "./port-finder";
 
 /**
@@ -32,6 +32,7 @@ export class ServerDrivenTrpcChannelProvider
 {
 	public readonly on: ExtensionChannelProviderOutputPort["on"];
 	private container: Container;
+	private logger: ReturnType<LoggerFactoryOutputPort["create"]>;
 
 	constructor(
 		@inject(LoggerFactoryOutputPort)
@@ -45,6 +46,7 @@ export class ServerDrivenTrpcChannelProvider
 	) {
 		this.on = this.baseExtensionChannelProvider.on;
 		this.container = container;
+		this.logger = this.loggerFactory.create("trpcServer");
 	}
 
 	getMessageChannel = (channelId: string) => {
@@ -56,52 +58,75 @@ export class ServerDrivenTrpcChannelProvider
 	};
 
 	public async start() {
-		const logger = this.loggerFactory.create("trpcServer");
+		this.logger.verbose("Starting HTTP Server");
+		const httpServer = this.createHttpServer();
 
-		logger.verbose("Starting HTTP Server");
-		// Create HTTP server for health checks and WebSocket upgrade
-		const httpServer = createServer((req, res) => {
-			// Set CORS headers for all requests
-			res.setHeader("Access-Control-Allow-Origin", "*");
-			res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-			res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+		this.logger.verbose("Starting WebSocket Server");
+		const wss = this.createWebSocketServer(httpServer);
 
-			// Handle OPTIONS preflight
+		this.logger.verbose("Applying WebSocket Handler");
+		const handler = this.createTrpcHandler(wss);
+
+		this.setupConnectionLogging(wss);
+
+		const port = await this.findPort();
+
+		this.startServer(httpServer, port);
+
+		this.setupShutdownHandlers(httpServer, wss, handler);
+	}
+
+	private createHttpServer() {
+		return createServer((req, res) => {
+			this.setCorsHeaders(res);
+
 			if (req.method === "OPTIONS") {
-				res.writeHead(204);
-				res.end();
-				return;
+				return this.handleOptionsRequest(res);
 			}
 
-			// Handle health check / discovery requests
 			if (req.method === "GET") {
-				res.writeHead(200, {
-					"Content-Type": "application/json",
-				});
-				res.end(
-					JSON.stringify({
-						status: "ok",
-						service: "mcp-browser-kit",
-					}),
-				);
-				return;
+				return this.handleHealthCheckRequest(res);
 			}
 
 			res.writeHead(404);
 			res.end();
 		});
+	}
 
-		logger.verbose("Starting WebSocket Server");
-		const wss = new WebSocketServer({
+	private setCorsHeaders(res: import("http").ServerResponse) {
+		res.setHeader("Access-Control-Allow-Origin", "*");
+		res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+		res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+	}
+
+	private handleOptionsRequest(res: import("http").ServerResponse) {
+		res.writeHead(204);
+		res.end();
+	}
+
+	private handleHealthCheckRequest(res: import("http").ServerResponse) {
+		res.writeHead(200, {
+			"Content-Type": "application/json",
+		});
+		res.end(
+			JSON.stringify({
+				status: "ok",
+				service: "mcp-browser-kit",
+			}),
+		);
+	}
+
+	private createWebSocketServer(httpServer: import("http").Server) {
+		return new WebSocketServer({
 			server: httpServer,
 			verifyClient: () => true, // Allow CORS from any origin
 		});
+	}
 
-		// Create the router with the container
+	private createTrpcHandler(wss: WebSocketServer) {
 		const rootRouter = createRootRouter(this.container);
 
-		logger.verbose("Applying WebSocket Handler");
-		const handler = applyWSSHandler({
+		return applyWSSHandler({
 			wss,
 			router: rootRouter,
 			createContext,
@@ -111,57 +136,68 @@ export class ServerDrivenTrpcChannelProvider
 				pongWaitMs: 5000,
 			},
 		});
+	}
 
+	private setupConnectionLogging(wss: WebSocketServer) {
 		wss.on("connection", (ws) => {
-			logger.info(
+			this.logger.info(
 				`New connection established (${wss.clients.size} total connections)`,
 			);
 			ws.once("close", () => {
-				logger.info(
+				this.logger.info(
 					`Connection closed (${wss.clients.size} total connections)`,
 				);
 			});
 		});
+	}
 
-		// Find an available port
+	private async findPort() {
 		const port = await this.portFinder.findAvailablePort();
 		if (port === null) {
-			logger.error("No available ports found in the configured range");
+			this.logger.error("No available ports found in the configured range");
 			throw new Error("No available ports found");
 		}
+		return port;
+	}
 
-		// Start the HTTP server
+	private startServer(httpServer: import("http").Server, port: number) {
 		httpServer.listen(port, () => {
-			logger.info(`HTTP Server started on http://localhost:${port}`);
-			logger.info(
+			this.logger.info(`HTTP Server started on http://localhost:${port}`);
+			this.logger.info(
 				`WebSocket Server started and listening on ws://localhost:${port}`,
 			);
 		});
+	}
 
+	private setupShutdownHandlers(
+		httpServer: import("http").Server,
+		wss: WebSocketServer,
+		handler: ReturnType<typeof applyWSSHandler>,
+	) {
 		const shutdown = () => {
-			logger.info("Server shutdown initiated");
+			this.logger.info("Server shutdown initiated");
 			handler.broadcastReconnectNotification();
 			wss.close(() => {
-				logger.info("WebSocket Server successfully closed");
+				this.logger.info("WebSocket Server successfully closed");
 				httpServer.close(() => {
-					logger.info("HTTP Server successfully closed");
+					this.logger.info("HTTP Server successfully closed");
 					process.exit(0);
 				});
 			});
 		};
 
 		process.on("SIGTERM", () => {
-			logger.info("SIGTERM received");
+			this.logger.info("SIGTERM received");
 			shutdown();
 		});
 
 		process.on("SIGINT", () => {
-			logger.info("SIGINT received");
+			this.logger.info("SIGINT received");
 			shutdown();
 		});
 
 		process.stdin.on("close", () => {
-			logger.info("stdin closed");
+			this.logger.info("stdin closed");
 			shutdown();
 		});
 	}

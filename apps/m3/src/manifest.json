@@ -24,12 +24,12 @@
 				"<all_urls>"
 			],
 			"js": [
-				"mbk-tab.js"
+				"bootstrap-mbk-tab.js"
 			]
 		}
 	],
 	"background": {
-		"service_worker": "mbk-sw.js",
+		"service_worker": "bootstrap-mbk-sw.js",
 		"type": "module"
 	}
 }

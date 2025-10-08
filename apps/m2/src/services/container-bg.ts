@@ -4,24 +4,22 @@ import {
 	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-extension";
 import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
-import { DrivenBrowserDriverM3 } from "@mcp-browser-kit/extension-driven-browser-driver";
+import { DrivenBrowserDriverM2 } from "@mcp-browser-kit/extension-driven-browser-driver";
 import { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
-import { ExtensionDrivingTrpcController } from "@mcp-browser-kit/extension-driving-trpc-controller";
+import { MbkBg } from "./mbk-bg";
 
-export const container = createCoreExtensionContainer();
+export const containerBg = createCoreExtensionContainer();
 
-container
+containerBg
 	.bind<BrowserDriverOutputPort>(BrowserDriverOutputPort)
-	.to(DrivenBrowserDriverM3);
+	.to(DrivenBrowserDriverM2);
 
-container
+containerBg
 	.bind<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
 	.to(DrivenLoggerFactoryConsolaBrowser);
 
 // Setup server channel provider with discoverer
-ExtensionDrivenServerChannelProvider.setupContainer(container);
+ExtensionDrivenServerChannelProvider.setupContainer(containerBg);
 
-// Setup extension driving TRPC controller
-container
-	.bind<ExtensionDrivingTrpcController>(ExtensionDrivingTrpcController)
-	.to(ExtensionDrivingTrpcController);
+// Register MbkBg service
+containerBg.bind<MbkBg>(MbkBg).to(MbkBg);

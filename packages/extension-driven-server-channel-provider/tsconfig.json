@@ -17,6 +17,9 @@
 			"path": "../core-utils"
 		},
 		{
+			"path": "../server-driven-trpc-channel-provider"
+		},
+		{
 			"path": "../../apps/server"
 		}
 	],
@@ -51,6 +54,12 @@
 			],
 			"@mcp-browser-kit/core-utils/*": [
 				"../core-utils/src/*"
+			],
+			"@mcp-browser-kit/server-driven-trpc-channel-provider": [
+				"../server-driven-trpc-channel-provider/src/index.ts"
+			],
+			"@mcp-browser-kit/server-driven-trpc-channel-provider/*": [
+				"../server-driven-trpc-channel-provider/src/*"
 			],
 			"@mcp-browser-kit/server/*": [
 				"../../apps/server/src/*"
