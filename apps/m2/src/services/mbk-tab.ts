@@ -5,7 +5,7 @@ import {
 } from "@mcp-browser-kit/extension-driven-browser-driver";
 import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
-import { startKeepAlive } from "./keep-alive";
+import { KeepAlive } from "./keep-alive";
 
 @injectable()
 export class MbkTab {
@@ -14,6 +14,8 @@ export class MbkTab {
 	constructor(
 		@inject(TabToolsSetup)
 		private readonly tabToolsSetup: TabToolsSetup,
+		@inject(KeepAlive)
+		private readonly keepAlive: KeepAlive,
 		@inject(LoggerFactoryOutputPort)
 		loggerFactory: LoggerFactoryOutputPort,
 	) {
@@ -23,6 +25,9 @@ export class MbkTab {
 	static setupContainer(container: Container): void {
 		// Setup M2 container with required services
 		DrivenBrowserDriverM2.setupContainer(container);
+
+		// Register KeepAlive service
+		container.bind<KeepAlive>(KeepAlive).to(KeepAlive);
 
 		// Register MbkTab service
 		container.bind<MbkTab>(MbkTab).to(MbkTab);
@@ -38,7 +43,7 @@ export class MbkTab {
 		this.tabToolsSetup.startListen();
 
 		// Start keep-alive mechanism
-		startKeepAlive();
+		this.keepAlive.startSending();
 
 		this.logger.info("MbkTab bootstrap complete");
 	}

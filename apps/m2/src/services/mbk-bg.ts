@@ -6,7 +6,7 @@ import {
 import type { DrivenBrowserDriverM2 } from "@mcp-browser-kit/extension-driven-browser-driver";
 import type { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
 import { inject, injectable } from "inversify";
-import { startListenKeepAlive } from "./keep-alive";
+import { KeepAlive } from "./keep-alive";
 
 @injectable()
 export class MbkBg {
@@ -17,6 +17,8 @@ export class MbkBg {
 		private readonly driverM2: BrowserDriverOutputPort,
 		@inject(ServerChannelProviderOutputPort)
 		private readonly serverProvider: ServerChannelProviderOutputPort,
+		@inject(KeepAlive)
+		private readonly keepAlive: KeepAlive,
 		@inject(LoggerFactoryOutputPort)
 		loggerFactory: LoggerFactoryOutputPort,
 	) {
@@ -30,7 +32,7 @@ export class MbkBg {
 		(this.driverM2 as DrivenBrowserDriverM2).linkRpc();
 
 		// Start keep-alive listening
-		startListenKeepAlive();
+		this.keepAlive.startListening();
 
 		// Initial discovery call
 		(this.serverProvider as ExtensionDrivenServerChannelProvider)
