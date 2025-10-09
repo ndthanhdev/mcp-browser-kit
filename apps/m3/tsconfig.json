@@ -58,6 +58,12 @@
 			],
 			"@mcp-browser-kit/driven-logger-factory/*": [
 				"../../packages/driven-logger-factory/src/*"
+			],
+			"@mcp-browser-kit/helper-extension-keep-alive": [
+				"../../packages/helper-extension-keep-alive/src/index.ts"
+			],
+			"@mcp-browser-kit/helper-extension-keep-alive/*": [
+				"../../packages/helper-extension-keep-alive/src/*"
 			]
 		},
 		"outDir": "../../.moon/cache/types/apps/m3"
@@ -90,6 +96,9 @@
 		},
 		{
 			"path": "../../packages/core-utils"
+		},
+		{
+			"path": "../../packages/helper-extension-keep-alive"
 		},
 		{
 			"path": "../server"

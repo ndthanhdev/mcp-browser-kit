@@ -7,7 +7,7 @@ import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logge
 import { DrivenBrowserDriverM3 } from "@mcp-browser-kit/extension-driven-browser-driver";
 import { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
 import { ExtensionDrivingTrpcController } from "@mcp-browser-kit/extension-driving-trpc-controller";
-import { KeepAlive } from "./keep-alive";
+import { KeepAlive } from "@mcp-browser-kit/helper-extension-keep-alive";
 
 export const container = createCoreExtensionContainer();
 

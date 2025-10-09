@@ -5,8 +5,8 @@ import {
 } from "@mcp-browser-kit/core-extension";
 import type { DrivenBrowserDriverM2 } from "@mcp-browser-kit/extension-driven-browser-driver";
 import type { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
+import { KeepAlive } from "@mcp-browser-kit/helper-extension-keep-alive";
 import { inject, injectable } from "inversify";
-import { KeepAlive } from "./keep-alive";
 
 @injectable()
 export class MbkBg {

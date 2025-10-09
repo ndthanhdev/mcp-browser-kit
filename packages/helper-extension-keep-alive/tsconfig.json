@@ -1,0 +1,22 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"include": [
+		"**/*"
+	],
+	"references": [
+		{
+			"path": "../core-extension"
+		}
+	],
+	"compilerOptions": {
+		"outDir": "../../.moon/cache/types/packages/helper-extension-keep-alive",
+		"paths": {
+			"@mcp-browser-kit/core-extension": [
+				"../core-extension/src/index.ts"
+			],
+			"@mcp-browser-kit/core-extension/*": [
+				"../core-extension/src/*"
+			]
+		}
+	}
+}

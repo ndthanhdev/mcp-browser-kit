@@ -6,7 +6,7 @@ import {
 import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
 import { DrivenBrowserDriverM2 } from "@mcp-browser-kit/extension-driven-browser-driver";
 import { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
-import { KeepAlive } from "./keep-alive";
+import { KeepAlive } from "@mcp-browser-kit/helper-extension-keep-alive";
 import { MbkBg } from "./mbk-bg";
 
 export const containerBg = createCoreExtensionContainer();

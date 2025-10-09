@@ -3,9 +3,9 @@ import {
 	DrivenBrowserDriverM3,
 	TabToolsSetup,
 } from "@mcp-browser-kit/extension-driven-browser-driver";
+import { KeepAlive } from "@mcp-browser-kit/helper-extension-keep-alive";
 import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
-import { KeepAlive } from "./keep-alive";
 
 @injectable()
 export class MbkTab {
