@@ -46,10 +46,13 @@
 			"path": "packages/core-server"
 		},
 		{
-			"path": "packages/extension-driven-browser-driver"
+			"path": "packages/core-utils"
 		},
 		{
 			"path": "packages/driven-logger-factory"
+		},
+		{
+			"path": "packages/extension-driven-browser-driver"
 		},
 		{
 			"path": "packages/extension-driven-server-channel-provider"
@@ -61,13 +64,13 @@
 			"path": "packages/helper-base-extension-channel-provider"
 		},
 		{
+			"path": "packages/helper-extension-keep-alive"
+		},
+		{
 			"path": "packages/server-driven-trpc-channel-provider"
 		},
 		{
 			"path": "packages/types"
-		},
-		{
-			"path": "packages/core-utils"
 		}
 	]
 }

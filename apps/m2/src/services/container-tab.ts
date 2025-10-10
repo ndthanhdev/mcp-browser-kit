@@ -17,5 +17,5 @@ containerTab
 	.bind<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
 	.to(DrivenLoggerFactoryConsolaBrowser);
 
-// Register MbkTab service
-containerTab.bind<MbkTab>(MbkTab).to(MbkTab);
+// Register MbkTab and its dependencies
+MbkTab.setupContainer(containerTab);

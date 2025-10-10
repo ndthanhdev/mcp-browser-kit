@@ -32,8 +32,8 @@ swContainer
 	.bind<ExtensionDrivingTrpcController>(ExtensionDrivingTrpcController)
 	.to(ExtensionDrivingTrpcController);
 
-// Register MbkSw service
-swContainer.bind<MbkSw>(MbkSw).to(MbkSw);
+// Register MbkSw and its dependencies
+MbkSw.setupContainer(swContainer);
 
 // Resolve and bootstrap MbkSw service
 const mbkSw = swContainer.get<MbkSw>(MbkSw);

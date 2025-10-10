@@ -6,6 +6,7 @@ import {
 import type { DrivenBrowserDriverM2 } from "@mcp-browser-kit/extension-driven-browser-driver";
 import type { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
 import { KeepAlive } from "@mcp-browser-kit/helper-extension-keep-alive";
+import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 
 @injectable()
@@ -23,6 +24,14 @@ export class MbkBg {
 		loggerFactory: LoggerFactoryOutputPort,
 	) {
 		this.logger = loggerFactory.create("MbkBg");
+	}
+
+	static setupContainer(container: Container): void {
+		// Register KeepAlive service
+		container.bind<KeepAlive>(KeepAlive).to(KeepAlive);
+
+		// Register MbkBg service
+		container.bind<MbkBg>(MbkBg).to(MbkBg);
 	}
 
 	bootstrap(): void {
