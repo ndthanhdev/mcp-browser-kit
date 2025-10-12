@@ -7,7 +7,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { over } from "ok-value-error-reason";
 import { container } from "../container";
 import { createErrorResponse, createTextResponse } from "./tool-helpers";
-import { tabIdSchema } from "./tool-schemas";
+import { tabKeySchema } from "./tool-schemas";
 
 const logger = container
 	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
@@ -26,18 +26,18 @@ export const registerElementTools = (
 	server.tool(
 		"getReadableText",
 		toolDescriptionsInputPort.getReadableTextInstruction(),
-		tabIdSchema,
-		async ({ tabId }) => {
+		tabKeySchema,
+		async ({ tabKey }) => {
 			logger.info("Executing getReadableText", {
-				tabId,
+				tabKey,
 			});
 			const overInnerText = await over(() =>
-				toolsInputPort.getReadableText(tabId),
+				toolsInputPort.getReadableText(tabKey),
 			);
 
 			if (!overInnerText.ok) {
 				logger.error("Failed to get inner text", {
-					tabId,
+					tabKey,
 					reason: overInnerText.reason,
 				});
 				return createErrorResponse(
@@ -48,7 +48,7 @@ export const registerElementTools = (
 
 			const innerText = overInnerText.value;
 			logger.verbose("Retrieved innerText", {
-				tabId,
+				tabKey,
 				textLength: innerText?.length,
 			});
 			return createTextResponse(`InnerText: ${JSON.stringify(innerText)}`);
@@ -60,18 +60,18 @@ export const registerElementTools = (
 	server.tool(
 		"getReadableElements",
 		toolDescriptionsInputPort.getReadableElementsInstruction(),
-		tabIdSchema,
-		async ({ tabId }) => {
+		tabKeySchema,
+		async ({ tabKey }) => {
 			logger.info("Executing getReadableElements", {
-				tabId,
+				tabKey,
 			});
 			const overElements = await over(() =>
-				toolsInputPort.getReadableElements(tabId),
+				toolsInputPort.getReadableElements(tabKey),
 			);
 
 			if (!overElements.ok) {
 				logger.error("Failed to get readable elements", {
-					tabId,
+					tabKey,
 					reason: overElements.reason,
 				});
 				return createErrorResponse(
@@ -82,7 +82,7 @@ export const registerElementTools = (
 
 			const elements = overElements.value;
 			logger.verbose("Retrieved readable elements", {
-				tabId,
+				tabKey,
 				elementCount: elements.length,
 			});
 			return createTextResponse(JSON.stringify(elements));

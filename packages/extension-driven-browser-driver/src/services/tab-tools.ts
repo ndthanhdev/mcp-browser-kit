@@ -38,7 +38,7 @@ export class TabTools {
 
 		// 4. Convert readable tree to element records
 		const readableElementRecords = readableTree
-			? toElementRecords(readableTree)
+			? toElementRecords(readableTree).slice(1)
 			: [];
 
 		// Get HTML string

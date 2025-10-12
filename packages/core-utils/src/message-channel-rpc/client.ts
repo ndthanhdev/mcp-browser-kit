@@ -43,8 +43,8 @@ export class MessageChannelRpcClient<
 	};
 
 	private createId = (method: string): string => {
-		const id = this.id;
 		this.id++;
+		const id = this.id;
 		return `${id}_${method}`;
 	};
 
@@ -82,6 +82,3 @@ export class MessageChannelRpcClient<
 		}
 	};
 }
-
-
-

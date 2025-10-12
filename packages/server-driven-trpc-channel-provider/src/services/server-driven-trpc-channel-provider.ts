@@ -1,5 +1,5 @@
 import {
-	type ExtensionChannelProviderOutputPort,
+	ExtensionChannelProviderOutputPort,
 	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-server";
 import { HelperBaseExtensionChannelProvider } from "@mcp-browser-kit/helper-base-extension-channel-provider";
@@ -231,6 +231,13 @@ export class ServerDrivenTrpcChannelProvider
 		// Bind ServerDrivenTrpcChannelProvider
 		container
 			.bind<ServerDrivenTrpcChannelProvider>(ServerDrivenTrpcChannelProvider)
+			.to(ServerDrivenTrpcChannelProvider);
+
+		// Bind ExtensionChannelProviderOutputPort to the same instance
+		container
+			.bind<ExtensionChannelProviderOutputPort>(
+				ExtensionChannelProviderOutputPort,
+			)
 			.to(ServerDrivenTrpcChannelProvider);
 	}
 }

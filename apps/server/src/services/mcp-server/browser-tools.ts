@@ -91,17 +91,17 @@ export const registerBrowserTools = (
 		"invokeJsFn",
 		toolDescriptionsInputPort.invokeJsFnInstruction(),
 		invokeJsFnSchema,
-		async ({ tabId, fnBodyCode }) => {
+		async ({ tabKey, fnBodyCode }) => {
 			logger.info("Executing invokeJsFn", {
-				tabId,
+				tabKey,
 			});
 			const overResult = await over(() =>
-				toolsInputPort.invokeJsFn(tabId, fnBodyCode),
+				toolsInputPort.invokeJsFn(tabKey, fnBodyCode),
 			);
 
 			if (!overResult.ok) {
 				logger.error("Failed to invoke JavaScript function", {
-					tabId,
+					tabKey,
 					reason: overResult.reason,
 				});
 				return createErrorResponse(
@@ -112,7 +112,7 @@ export const registerBrowserTools = (
 
 			const result = overResult.value;
 			logger.verbose("JavaScript function executed", {
-				tabId,
+				tabKey,
 				hasResult: result !== undefined,
 			});
 			return createTextResponse(JSON.stringify(result) ?? "undefined");

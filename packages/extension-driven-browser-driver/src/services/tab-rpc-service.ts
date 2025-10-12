@@ -14,6 +14,12 @@ import { inject, injectable } from "inversify";
 import browser from "webextension-polyfill";
 import type { TabTools } from "./tab-tools";
 
+type DeferMessageWithTabId = DeferMessage & {
+	extraArgs?: {
+		tabId: string;
+	};
+};
+
 @injectable()
 export class TabRpcService {
 	private readonly logger;
@@ -41,41 +47,42 @@ export class TabRpcService {
 	linkRpc = () => {
 		this.unlinkRpc();
 
-		// Handle outgoing messages by sending them via browser.tabs.sendMessage
 		const outgoingUnsubscribe = this._messageChannel.outgoing.on(
 			"defer",
-			async (message: DeferMessage) => {
-				const deferMessage = message as DeferMessage & {
-					extraArgs?: {
-						tabId: string;
-					};
-				};
-				if (deferMessage.extraArgs?.tabId) {
-					try {
-						const response = await browser.tabs.sendMessage(
-							+deferMessage.extraArgs.tabId,
-							deferMessage,
-						);
-						this.handleTabMessage(response as ResolveMessage);
-					} catch (error) {
-						this.logger.error("Failed to send message to tab:", error);
-					}
-				}
-			},
+			this.handleOutgoingMessage,
 		);
 
-		// Bind the channel to the rpcClient
 		this._rpcChannelUnlink = this.tabRpcClient.bindChannel(
 			this._messageChannel,
 		);
 
-		// Store the cleanup function
-		this._unlink = () => {
+		this._unlink = this.createCleanupFunction(outgoingUnsubscribe);
+
+		return this._unlink;
+	};
+
+	private handleOutgoingMessage = async (message: DeferMessage) => {
+		const deferMessage = message as DeferMessageWithTabId;
+		const tabId = deferMessage.extraArgs?.tabId;
+
+		if (!tabId) {
+			this.logger.warn("Message missing tabId, skipping:", message.id);
+			return;
+		}
+
+		try {
+			const response = await browser.tabs.sendMessage(+tabId, deferMessage);
+			this.handleTabMessage(response as ResolveMessage);
+		} catch (error) {
+			this.logger.error(`Failed to send message to tab ${tabId}:`, error);
+		}
+	};
+
+	private createCleanupFunction = (outgoingUnsubscribe: Func): Func => {
+		return () => {
 			outgoingUnsubscribe();
 			this._rpcChannelUnlink?.();
 		};
-
-		return this._unlink;
 	};
 
 	unlinkRpc = () => {

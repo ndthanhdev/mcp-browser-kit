@@ -34,19 +34,19 @@ export const registerInteractionTools = (
 		"clickOnViewableElement",
 		toolDescriptionsInputPort.clickOnViewableElementInstruction(),
 		coordinateSchema,
-		async ({ tabId, x, y }) => {
+		async ({ tabKey, x, y }) => {
 			logger.info("Executing clickOnViewableElement", {
-				tabId,
+				tabKey,
 				x,
 				y,
 			});
 			const overClick = await over(() =>
-				toolsInputPort.clickOnCoordinates(tabId, x, y),
+				toolsInputPort.clickOnCoordinates(tabKey, x, y),
 			);
 
 			if (!overClick.ok) {
 				logger.error("Failed to click on viewable element", {
-					tabId,
+					tabKey,
 					x,
 					y,
 					reason: overClick.reason,
@@ -58,7 +58,7 @@ export const registerInteractionTools = (
 			}
 
 			logger.verbose("Clicked on viewable element", {
-				tabId,
+				tabKey,
 				x,
 				y,
 			});
@@ -72,19 +72,19 @@ export const registerInteractionTools = (
 		"fillTextToViewableElement",
 		toolDescriptionsInputPort.fillTextToViewableElementInstruction(),
 		coordinateTextInputSchema,
-		async ({ tabId, x, y, value }) => {
+		async ({ tabKey, x, y, value }) => {
 			logger.info("Executing fillTextToViewableElement", {
-				tabId,
+				tabKey,
 				x,
 				y,
 			});
 			const overFill = await over(() =>
-				toolsInputPort.fillTextToCoordinates(tabId, x, y, value),
+				toolsInputPort.fillTextToCoordinates(tabKey, x, y, value),
 			);
 
 			if (!overFill.ok) {
 				logger.error("Failed to fill text to viewable element", {
-					tabId,
+					tabKey,
 					x,
 					y,
 					reason: overFill.reason,
@@ -96,7 +96,7 @@ export const registerInteractionTools = (
 			}
 
 			logger.verbose("Filled text to viewable element", {
-				tabId,
+				tabKey,
 				x,
 				y,
 				valueLength: value.length,
@@ -111,19 +111,19 @@ export const registerInteractionTools = (
 		"hitEnterOnViewableElement",
 		toolDescriptionsInputPort.hitEnterOnViewableElementInstruction(),
 		coordinateSchema,
-		async ({ tabId, x, y }) => {
+		async ({ tabKey, x, y }) => {
 			logger.info("Executing hitEnterOnViewableElement", {
-				tabId,
+				tabKey,
 				x,
 				y,
 			});
 			const overEnter = await over(() =>
-				toolsInputPort.hitEnterOnCoordinates(tabId, x, y),
+				toolsInputPort.hitEnterOnCoordinates(tabKey, x, y),
 			);
 
 			if (!overEnter.ok) {
 				logger.error("Failed to hit enter on viewable element", {
-					tabId,
+					tabKey,
 					x,
 					y,
 					reason: overEnter.reason,
@@ -135,7 +135,7 @@ export const registerInteractionTools = (
 			}
 
 			logger.verbose("Hit enter on viewable element", {
-				tabId,
+				tabKey,
 				x,
 				y,
 			});
@@ -151,18 +151,18 @@ export const registerInteractionTools = (
 		"clickOnReadableElement",
 		toolDescriptionsInputPort.clickOnReadableElementInstruction(),
 		readableElementSchema,
-		async ({ tabId, readablePath }) => {
+		async ({ tabKey, readablePath }) => {
 			logger.info("Executing clickOnReadableElement", {
-				tabId,
+				tabKey,
 				readablePath,
 			});
 			const overClick = await over(() =>
-				toolsInputPort.clickOnElement(tabId, readablePath),
+				toolsInputPort.clickOnElement(tabKey, readablePath),
 			);
 
 			if (!overClick.ok) {
 				logger.error("Failed to click on readable element", {
-					tabId,
+					tabKey,
 					readablePath,
 					reason: overClick.reason,
 				});
@@ -173,7 +173,7 @@ export const registerInteractionTools = (
 			}
 
 			logger.verbose("Clicked on readable element", {
-				tabId,
+				tabKey,
 				readablePath,
 			});
 			return createTextResponse("Done");
@@ -186,18 +186,18 @@ export const registerInteractionTools = (
 		"fillTextToReadableElement",
 		toolDescriptionsInputPort.fillTextToReadableElementInstruction(),
 		readableElementTextInputSchema,
-		async ({ tabId, readablePath, value }) => {
+		async ({ tabKey, readablePath, value }) => {
 			logger.info("Executing fillTextToReadableElement", {
-				tabId,
+				tabKey,
 				readablePath,
 			});
 			const overFill = await over(() =>
-				toolsInputPort.fillTextToElement(tabId, readablePath, value),
+				toolsInputPort.fillTextToElement(tabKey, readablePath, value),
 			);
 
 			if (!overFill.ok) {
 				logger.error("Failed to fill text to readable element", {
-					tabId,
+					tabKey,
 					readablePath,
 					reason: overFill.reason,
 				});
@@ -208,7 +208,7 @@ export const registerInteractionTools = (
 			}
 
 			logger.verbose("Filled text to readable element", {
-				tabId,
+				tabKey,
 				readablePath,
 				valueLength: value.length,
 			});
@@ -222,18 +222,18 @@ export const registerInteractionTools = (
 		"hitEnterOnReadableElement",
 		toolDescriptionsInputPort.hitEnterOnReadableElementInstruction(),
 		readableElementSchema,
-		async ({ tabId, readablePath }) => {
+		async ({ tabKey, readablePath }) => {
 			logger.info("Executing hitEnterOnReadableElement", {
-				tabId,
+				tabKey,
 				readablePath,
 			});
 			const overEnter = await over(() =>
-				toolsInputPort.hitEnterOnElement(tabId, readablePath),
+				toolsInputPort.hitEnterOnElement(tabKey, readablePath),
 			);
 
 			if (!overEnter.ok) {
 				logger.error("Failed to hit enter on readable element", {
-					tabId,
+					tabKey,
 					readablePath,
 					reason: overEnter.reason,
 				});
@@ -244,7 +244,7 @@ export const registerInteractionTools = (
 			}
 
 			logger.verbose("Hit enter on readable element", {
-				tabId,
+				tabKey,
 				readablePath,
 			});
 			return createTextResponse("Done");

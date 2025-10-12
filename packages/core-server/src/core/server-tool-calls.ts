@@ -10,7 +10,6 @@ import type {
 	MessageChannelRpcClient,
 	TreeNode,
 } from "@mcp-browser-kit/core-utils";
-import { Readability } from "@mozilla/readability";
 import { inject, injectable } from "inversify";
 import type { JSDOM } from "jsdom";
 import Lru from "quick-lru";
@@ -31,7 +30,6 @@ import type {
 } from "../input-ports";
 import { LoggerFactoryOutputPort } from "../output-ports";
 import { TabKey, WindowKey } from "../types";
-import { toElementRecords } from "../utils/to-element-records";
 import { ExtensionChannelManager } from "./extension-channel-manager";
 
 @injectable()
@@ -89,6 +87,9 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			const rpcClient = rpcClients[i];
 
 			try {
+				this.logger.verbose("Getting extension context from RPC client", {
+					rpcClient,
+				});
 				const extensionContext = await rpcClient.call({
 					method: "getExtensionContext",
 					args: [],
@@ -164,7 +165,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 	private createWindowKey = (instanceId: string, windowId: string): string => {
 		return WindowKey.from({
-			browserId: instanceId,
+			extensionId: instanceId,
 			windowId,
 		}).toString();
 	};
@@ -175,7 +176,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		tab: ExtensionTabInfo,
 	): BrowserTabContext => {
 		const tabKey = TabKey.from({
-			browserId: instanceId,
+			extensionId: instanceId,
 			windowId,
 			tabId: tab.id,
 		}).toString();
@@ -212,7 +213,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 			// Get the RPC client for this browser instance
 			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
-				windowData.browserId,
+				windowData.extensionId,
 			);
 
 			const result = await rpcClient.call({
@@ -228,7 +229,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 			// Create tab key from the result
 			const tabKey = TabKey.from({
-				browserId: windowData.browserId,
+				extensionId: windowData.extensionId,
 				windowId: result.windowId,
 				tabId: result.tabId,
 			}).toString();
@@ -247,26 +248,24 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		this.logger.info(`Getting readable text from tab: ${tabKey}`);
 
 		try {
-			// Load tab context (with JSDOM)
-			const tabContext = await this.loadTabContext(tabKey);
+			// Parse the tabKey to get tabId and instanceId
+			const tabData = TabKey.parse(tabKey);
 
-			// Use Mozilla's Readability to extract readable content
-			const reader = new Readability(tabContext.jsdom.window.document);
-			const article = reader.parse();
+			// Get the RPC client for this browser instance
+			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
+				tabData.extensionId,
+			);
 
-			if (!article || !article.textContent) {
-				this.logger.warn(
-					"Readability could not parse the page, falling back to text content",
-				);
-				// Fallback to basic text extraction if Readability fails
-				return tabContext.jsdom.window.document.body.textContent?.trim() ?? "";
-			}
-
-			// Return the text content from the article
-			const textContent = article.textContent.trim();
+			const readableText = await rpcClient.call({
+				method: "getReadableText",
+				args: [
+					tabKey,
+				],
+				extraArgs: {},
+			});
 
 			this.logger.info("Retrieved readable text successfully");
-			return textContent;
+			return readableText;
 		} catch (error) {
 			this.logger.error("Failed to get readable text", error);
 			throw error;
@@ -279,17 +278,21 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		this.logger.info(`Getting readable elements from tab: ${tabKey}`);
 
 		try {
-			// Load tab context with HTML, JSDOM, domTree, and readableTree
-			const tabContext = await this.loadTabContext(tabKey);
+			// Parse the tabKey to get tabId and instanceId
+			const tabData = TabKey.parse(tabKey);
 
-			// If no readable tree is available, return empty array
-			if (!tabContext.readableTree) {
-				this.logger.warn("No readable tree available for tab");
-				return [];
-			}
+			// Get the RPC client for this browser instance
+			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
+				tabData.extensionId,
+			);
 
-			// Convert readable tree to element records
-			const elementRecords = toElementRecords(tabContext.readableTree);
+			const elementRecords = await rpcClient.call({
+				method: "getReadableElements",
+				args: [
+					tabData.tabId,
+				],
+				extraArgs: {},
+			});
 
 			this.logger.info(`Retrieved ${elementRecords.length} readable elements`);
 			return elementRecords;
@@ -311,7 +314,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 			// Get the RPC client for this browser instance
 			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
-				tabData.browserId,
+				tabData.extensionId,
 			);
 
 			await rpcClient.call({
@@ -345,7 +348,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 			// Get the RPC client for this browser instance
 			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
-				tabData.browserId,
+				tabData.extensionId,
 			);
 
 			await rpcClient.call({
@@ -374,7 +377,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 			// Get the RPC client for this browser instance
 			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
-				tabData.browserId,
+				tabData.extensionId,
 			);
 
 			const screenshot = await rpcClient.call({
@@ -406,7 +409,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 			// Get the RPC client for this browser instance
 			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
-				tabData.browserId,
+				tabData.extensionId,
 			);
 
 			await rpcClient.call({
@@ -435,7 +438,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 			// Get the RPC client for this browser instance
 			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
-				tabData.browserId,
+				tabData.extensionId,
 			);
 
 			await rpcClient.call({
@@ -472,7 +475,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 			// Get the RPC client for this browser instance
 			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
-				tabData.browserId,
+				tabData.extensionId,
 			);
 
 			await rpcClient.call({
@@ -493,12 +496,6 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		}
 	};
 
-	private loadTabContext = async (tabKey: string): Promise<TabContext> => {
-		this.logger.info(`Loading tab context for: ${tabKey}`);
-		this.logger.error("loadTabContext is not supported without getHtml");
-		throw new Error("loadTabContext is not supported without getHtml");
-	};
-
 	getSelection = async (
 		tabKey: string,
 	): Promise<import("@mcp-browser-kit/core-extension").Selection> => {
@@ -510,7 +507,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 			// Get the RPC client for this browser instance
 			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
-				tabData.browserId,
+				tabData.extensionId,
 			);
 
 			const selection = await rpcClient.call({
@@ -544,7 +541,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 			// Get the RPC client for this browser instance
 			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
-				tabData.browserId,
+				tabData.extensionId,
 			);
 
 			await rpcClient.call({
@@ -578,7 +575,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 			// Get the RPC client for this browser instance
 			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
-				tabData.browserId,
+				tabData.extensionId,
 			);
 
 			await rpcClient.call({
@@ -606,7 +603,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 			// Get the RPC client for this browser instance
 			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
-				tabData.browserId,
+				tabData.extensionId,
 			);
 
 			const result = await rpcClient.call({

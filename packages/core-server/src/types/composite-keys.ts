@@ -1,12 +1,19 @@
 import { toCompositeKey } from "@mcp-browser-kit/core-utils";
 
 export const WindowKey = toCompositeKey<{
-	browserId: string;
+	extensionId: string;
 	windowId: string;
-}>(":");
+}>([
+	"extensionId",
+	"windowId",
+]);
 
 export const TabKey = toCompositeKey<{
-	browserId: string;
+	extensionId: string;
 	windowId: string;
 	tabId: string;
-}>(":");
+}>([
+	"extensionId",
+	"windowId",
+	"tabId",
+]);

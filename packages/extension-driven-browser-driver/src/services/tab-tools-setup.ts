@@ -1,4 +1,4 @@
-import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
+import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension";
 import {
 	type DeferData,
 	type DeferMessage,
@@ -121,9 +121,10 @@ export class TabToolsSetup {
 	private handleBrowserMessage = (
 		request: unknown,
 		_sender: Runtime.MessageSender,
-		sendResponse: (response?: ResolveMessage) => void,
-	): true => {
+	) => {
 		this.logger.verbose("Received browser runtime message:", request);
+
+		const responseDeferred = Promise.withResolvers<ResolveMessage>();
 
 		try {
 			const deferMessage = request as DeferMessage;
@@ -132,7 +133,7 @@ export class TabToolsSetup {
 			const responseHandler = (resolveMessage: ResolveMessage) => {
 				if (resolveMessage.id === deferMessage.id) {
 					this.logger.verbose("Sending response:", resolveMessage);
-					sendResponse(resolveMessage);
+					responseDeferred.resolve(resolveMessage);
 					// Remove this specific listener
 					unsubscribe();
 				}
@@ -146,14 +147,14 @@ export class TabToolsSetup {
 			this.channel.incoming.emit("defer", deferMessage);
 		} catch (error) {
 			this.logger.error("Error handling browser runtime message:", error);
-			sendResponse({
+			responseDeferred.resolve({
 				id: (request as DeferMessage)?.id || "unknown",
 				isOk: false,
 				result: error instanceof Error ? error.message : "Unknown error",
 			});
 		}
 
-		return true as const; // Keep the message channel open for sendResponse
+		return responseDeferred.promise;
 	};
 
 	/**

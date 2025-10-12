@@ -40,6 +40,7 @@ export function isReadable(element: globalThis.Element): boolean {
 	// If not in always readable list, check if it's a leaf node with inner text
 	const isLeafNode = element.children.length === 0;
 	const hasInnerText = (element.textContent?.trim() ?? "") !== "";
+	const isVisible = element.checkVisibility();
 
-	return isLeafNode && hasInnerText;
+	return isLeafNode && hasInnerText && isVisible;
 }

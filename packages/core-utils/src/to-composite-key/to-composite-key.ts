@@ -15,29 +15,24 @@ export interface CompositeKeyStatic<T extends Record<string, string | number>> {
 
 /**
  * Mixin function that adds composite key functionality to a class
- * @param Base - The base class to extend
- * @param separator - The separator to use for the composite key (default: ':')
+ * @param propertyNames - Array of property names in the order they should appear in the composite key
+ * @param separator - The separator to use for the composite key (default: '::')
  * @returns A new class with composite key functionality
  *
  * @example
  * ```typescript
- * class Person {
- *   constructor(public name: string, public age: number) {}
- * }
+ * const PersonKey = toCompositeKey<{ name: string; age: number }>(["name", "age"], "::");
  *
- * const PersonWithKey = toCompositeKey(Person);
- * const person = new PersonWithKey("John", 30);
- * console.log(person.toString()); // "John:30"
+ * const person = PersonKey.from({ name: "John", age: 30 });
+ * console.log(person.toString()); // "John::30"
  *
- * const parsed = PersonWithKey.parse("Jane:25");
+ * const parsed = PersonKey.parse("Jane::25");
  * console.log(parsed.name, parsed.age); // "Jane" 25
- *
- * const fromMap = PersonWithKey.from({ name: "Bob", age: 35 });
- * console.log(fromMap.name, fromMap.age); // "Bob" 35
  * ```
  */
 export function toCompositeKey<Base extends Record<string, string | number>>(
-	separator = ":",
+	propertyNames: (keyof Base)[],
+	separator = "::",
 ) {
 	return class implements CompositeKeyMixin {
 		private constructor() {}
@@ -49,19 +44,16 @@ export function toCompositeKey<Base extends Record<string, string | number>>(
 		toString(): string {
 			const values = [];
 
-			// Get all enumerable properties of the instance
-			for (const key in this) {
-				if (Object.hasOwn(this, key)) {
-					const value = this[key];
-					// Convert value to string, handling null/undefined
-					const stringValue =
-						value === null
-							? "null"
-							: value === undefined
-								? "undefined"
-								: String(value);
-					values.push(stringValue);
-				}
+			for (const key of propertyNames) {
+				const value = (this as Record<string, unknown>)[key as string];
+				// Convert value to string, handling null/undefined
+				const stringValue =
+					value === null
+						? "null"
+						: value === undefined
+							? "undefined"
+							: String(value);
+				values.push(stringValue);
 			}
 
 			return values.join(separator);
@@ -73,39 +65,31 @@ export function toCompositeKey<Base extends Record<string, string | number>>(
 		 * @returns A new instance of the class with parsed values
 		 */
 		static parse(this: new () => Base, key: string): Base {
-			const usedSeparator = separator;
-			const values = key.split(usedSeparator);
+			const values = key.split(separator);
 
 			// Create a new instance
 			// biome-ignore lint/complexity/noThisInStatic: used for constructor type
 			const instance = new this();
 
-			// Get the property names from a temporary instance to maintain order
-			const propertyNames = [];
-			for (const prop in instance) {
-				if (Object.hasOwn(instance, prop)) {
-					propertyNames.push(prop);
-				}
-			}
-
 			// Assign parsed values to properties
 			propertyNames.forEach((prop, index) => {
 				if (index < values.length) {
 					const value = values[index];
+					const propKey = prop as string;
 
 					// Handle special string values
 					if (value === "null") {
-						(instance as Record<string, unknown>)[prop] = null;
+						(instance as Record<string, unknown>)[propKey] = null;
 					} else if (value === "undefined") {
-						(instance as Record<string, unknown>)[prop] = undefined;
+						(instance as Record<string, unknown>)[propKey] = undefined;
 					} else {
 						// Try to parse as number if it looks like a number
 						const numValue = Number(value);
 						if (!Number.isNaN(numValue) && value.trim() !== "") {
-							(instance as Record<string, unknown>)[prop] = numValue;
+							(instance as Record<string, unknown>)[propKey] = numValue;
 						} else {
 							// Keep as string
-							(instance as Record<string, unknown>)[prop] = value;
+							(instance as Record<string, unknown>)[propKey] = value;
 						}
 					}
 				}
@@ -126,9 +110,7 @@ export function toCompositeKey<Base extends Record<string, string | number>>(
 
 			// Set properties from the data map
 			for (const [key, value] of Object.entries(data)) {
-				if (Object.hasOwn(instance, key)) {
-					(instance as Record<string, unknown>)[key] = value;
-				}
+				(instance as Record<string, unknown>)[key] = value;
 			}
 
 			return instance as Base;

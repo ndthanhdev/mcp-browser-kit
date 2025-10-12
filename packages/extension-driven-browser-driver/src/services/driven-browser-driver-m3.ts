@@ -55,6 +55,7 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 	}
 
 	loadTabContext = (tabId: string): Promise<TabContext> => {
+		this.logger.verbose(`Loading tab context for tab: ${tabId}`);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "loadTabContext",
 			args: [],
