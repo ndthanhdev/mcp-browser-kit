@@ -8,17 +8,17 @@
 			"path": "../types"
 		},
 		{
-			"path": "../utils"
+			"path": "../core-utils"
 		}
 	],
 	"compilerOptions": {
 		"outDir": "../../.moon/cache/types/packages/core-extension",
 		"paths": {
-			"@mcp-browser-kit/utils/*": [
-				"../utils/src/*"
+			"@mcp-browser-kit/core-utils/*": [
+				"../core-utils/src/*"
 			],
-			"@mcp-browser-kit/utils": [
-				"../utils/src/index.ts"
+			"@mcp-browser-kit/core-utils": [
+				"../core-utils/src/index.ts"
 			],
 			"@mcp-browser-kit/types": [
 				"../types/src/index.ts"

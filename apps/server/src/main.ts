@@ -1,6 +1,10 @@
 #!/usr/bin/env node
-import { startMcpServer } from "./helpers/mcp-server";
-import { startTrpcServer } from "./helpers/trpc-server";
+import { ServerDrivenTrpcChannelProvider } from "@mcp-browser-kit/server-driven-trpc-channel-provider";
+import { container } from "./services/container";
+import { startMcpServer } from "./services/mcp-server";
 
-startTrpcServer();
+const trpcServer = container.get<ServerDrivenTrpcChannelProvider>(
+	ServerDrivenTrpcChannelProvider,
+);
+await trpcServer.start();
 startMcpServer();

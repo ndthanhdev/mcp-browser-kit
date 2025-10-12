@@ -1,9 +1,9 @@
 #!/usr/bin/env -S yarn dlx tsx
 import "zx/globals";
+import path from "node:path";
 import { pipeOutput } from "@mcp-browser-kit/scripts/utils/pipe-output";
 import { workDirs } from "@mcp-browser-kit/scripts/utils/work-dirs";
 import fse from "fs-extra";
-import path from "node:path";
 
 $.verbose = true;
 cd(workDirs.path);
@@ -16,7 +16,14 @@ await fse.emptyDir(workDirs.target.path);
 await fse.emptyDir(workDirs.target.release.path);
 
 // Find all built apps and process them
-const targetDirs = await glob(["apps/*/target"], { onlyFiles: false });
+const targetDirs = await glob(
+	[
+		"apps/*/target",
+	],
+	{
+		onlyFiles: false,
+	},
+);
 
 await Promise.all(
 	targetDirs.map(async (buildDir) => {
@@ -29,7 +36,9 @@ await Promise.all(
 	}),
 );
 
-const extensionZips = await glob(["target/apps/**/extension/dist/*.zip"]);
+const extensionZips = await glob([
+	"target/apps/**/extension/dist/*.zip",
+]);
 
 await Promise.all(
 	extensionZips.map(async (zipPath) => {

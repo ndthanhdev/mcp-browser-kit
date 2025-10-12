@@ -1,0 +1,69 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"include": [
+		"**/*"
+	],
+	"references": [
+		{
+			"path": "../core-extension"
+		},
+		{
+			"path": "../core-server"
+		},
+		{
+			"path": "../types"
+		},
+		{
+			"path": "../core-utils"
+		},
+		{
+			"path": "../server-driven-trpc-channel-provider"
+		},
+		{
+			"path": "../../apps/server"
+		}
+	],
+	"compilerOptions": {
+		"outDir": "../../.moon/cache/types/packages/extension-driven-server-channel-provider",
+		"lib": [
+			"dom",
+			"ESNext",
+			"ES2024.ArrayBuffer"
+		],
+		"paths": {
+			"@mcp-browser-kit/core-server": [
+				"../core-server/src/index.ts"
+			],
+			"@mcp-browser-kit/core-server/*": [
+				"../core-server/src/*"
+			],
+			"@mcp-browser-kit/types": [
+				"../types/src/index.ts"
+			],
+			"@mcp-browser-kit/types/*": [
+				"../types/src/*"
+			],
+			"@mcp-browser-kit/core-extension": [
+				"../core-extension/src/index.ts"
+			],
+			"@mcp-browser-kit/core-extension/*": [
+				"../core-extension/src/*"
+			],
+			"@mcp-browser-kit/core-utils": [
+				"../core-utils/src/index.ts"
+			],
+			"@mcp-browser-kit/core-utils/*": [
+				"../core-utils/src/*"
+			],
+			"@mcp-browser-kit/server-driven-trpc-channel-provider": [
+				"../server-driven-trpc-channel-provider/src/index.ts"
+			],
+			"@mcp-browser-kit/server-driven-trpc-channel-provider/*": [
+				"../server-driven-trpc-channel-provider/src/*"
+			],
+			"@mcp-browser-kit/server/*": [
+				"../../apps/server/src/*"
+			]
+		}
+	}
+}

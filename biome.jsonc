@@ -10,14 +10,17 @@
 		"includes": [
 			"**",
 			"!**/target",
-			"!**/cache"
+			"!**/cache",
+			"!**/etc/submodules"
 		]
 	},
 	"formatter": {
 		"enabled": true,
-		"indentStyle": "tab"
+		"indentStyle": "tab",
+		"expand": "always"
 	},
 	"assist": {
+		"enabled": true,
 		"actions": {
 			"source": {
 				"organizeImports": "on"
@@ -27,7 +30,6 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true,
 			"correctness": {
 				"noUnusedImports": "error"
 			},
@@ -41,22 +43,39 @@
 				"noUnusedTemplateLiteral": "error",
 				"useNumberNamespace": "error",
 				"noInferrableTypes": "error",
-				"noUselessElse": "error"
+				"noUselessElse": "error",
+				"useNamingConvention": "error"
 			}
 		}
 	},
 	"javascript": {
 		"formatter": {
-			"quoteStyle": "double"
+			"quoteStyle": "double",
+			"trailingCommas": "all"
 		},
 		"parser": {
 			"unsafeParameterDecoratorsEnabled": true
 		}
 	},
+	"overrides": [
+		{
+			"includes": [
+				"**/*.ts",
+				"**/*.tsx"
+			],
+			"javascript": {
+				"parser": {
+					"unsafeParameterDecoratorsEnabled": true
+				}
+			}
+		}
+	],
+
 	"json": {
 		"formatter": {
 			// force newline
-			"lineWidth": 1
+			"lineWidth": 1,
+			"trailingCommas": "none"
 		}
 	}
 }

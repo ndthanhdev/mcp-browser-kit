@@ -1,27 +1,47 @@
-import type { ElementRecord, Screenshot } from "../entities";
-import type { Tab } from "../entities/tab";
+import type {
+	BrowserInfo,
+	ExtensionInfo,
+	ExtensionTabInfo,
+	ExtensionWindowInfo,
+	Screenshot,
+	Selection,
+	TabContext,
+} from "../types";
 
 export interface BrowserDriverOutputPort {
-	getTabs(): Promise<Tab[]>;
-	getManifestVersion(): Promise<number>;
-	captureActiveTab(): Promise<Screenshot>;
-	getInnerText(tabId: string): Promise<string>;
-	getReadableElements(tabId: string): Promise<ElementRecord[]>;
-	clickOnViewableElement(tabId: string, x: number, y: number): Promise<void>;
-	fillTextToViewableElement(
+	getTabs(): Promise<ExtensionTabInfo[]>;
+	getWindows(): Promise<ExtensionWindowInfo[]>;
+	getBrowserInfo(): Promise<BrowserInfo>;
+	getExtensionInfo(): Promise<ExtensionInfo>;
+	getBrowserId(): Promise<string>;
+	openTab(
+		url: string,
+		windowId: string,
+	): Promise<{
+		tabId: string;
+		windowId: string;
+	}>;
+	loadTabContext(tabId: string): Promise<TabContext>;
+	closeTab(tabId: string): Promise<void>;
+	captureTab(tabId: string): Promise<Screenshot>;
+	getSelection(tabId: string): Promise<Selection>;
+	clickOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
+	focusOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
+	fillTextToFocusedElement(tabId: string, value: string): Promise<void>;
+	hitEnterOnFocusedElement(tabId: string): Promise<void>;
+	clickOnElementBySelector(
 		tabId: string,
-		x: number,
-		y: number,
+		readableTreePath: string,
+	): Promise<void>;
+	fillTextToElementBySelector(
+		tabId: string,
+		readableTreePath: string,
 		value: string,
 	): Promise<void>;
-	hitEnterOnViewableElement(tabId: string, x: number, y: number): Promise<void>;
-	clickOnReadableElement(tabId: string, index: number): Promise<void>;
-	fillTextToReadableElement(
+	hitEnterOnElementBySelector(
 		tabId: string,
-		index: number,
-		value: string,
+		readableTreePath: string,
 	): Promise<void>;
-	hitEnterOnReadableElement(tabId: string, index: number): Promise<void>;
 	invokeJsFn(tabId: string, fnBodyCode: string): Promise<unknown>;
 }
 

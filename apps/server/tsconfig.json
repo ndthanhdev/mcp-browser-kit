@@ -7,29 +7,35 @@
 			"@mcp-browser-kit/extension/*": [
 				"../extension/src/*"
 			],
-			"@mcp-browser-kit/rpc": [
-				"../../packages/rpc/src/index.ts"
-			],
-			"@mcp-browser-kit/rpc/*": [
-				"../../packages/rpc/src/*"
-			],
 			"@mcp-browser-kit/core-server": [
 				"../../packages/core-server/src/index.ts"
 			],
 			"@mcp-browser-kit/core-server/*": [
 				"../../packages/core-server/src/*"
 			],
-			"@mcp-browser-kit/driven-extension-driver": [
-				"../../packages/driven-extension-driver/src/index.ts"
+			"@mcp-browser-kit/helper-base-extension-channel-provider": [
+				"../../packages/helper-base-extension-channel-provider/src/index.ts"
 			],
-			"@mcp-browser-kit/driven-extension-driver/*": [
-				"../../packages/driven-extension-driver/src/*"
+			"@mcp-browser-kit/helper-base-extension-channel-provider/*": [
+				"../../packages/helper-base-extension-channel-provider/src/*"
 			],
 			"@mcp-browser-kit/driven-logger-factory": [
 				"../../packages/driven-logger-factory/src/index.ts"
 			],
 			"@mcp-browser-kit/driven-logger-factory/*": [
 				"../../packages/driven-logger-factory/src/*"
+			],
+			"@mcp-browser-kit/core-utils": [
+				"../../packages/core-utils/src/index.ts"
+			],
+			"@mcp-browser-kit/core-utils/*": [
+				"../../packages/core-utils/src/*"
+			],
+			"@mcp-browser-kit/server-driven-trpc-channel-provider": [
+				"../../packages/server-driven-trpc-channel-provider/src/index.ts"
+			],
+			"@mcp-browser-kit/server-driven-trpc-channel-provider/*": [
+				"../../packages/server-driven-trpc-channel-provider/src/*"
 			]
 		},
 		"outDir": "../../.moon/cache/types/apps/server"
@@ -38,20 +44,24 @@
 		"src/**/*.ts",
 		"../../packages/rpc/src/**/*",
 		"../../packages/core-server/src/**/*",
-		"../../packages/driven-extension-driver/src/**/*"
+		"../../packages/helper-base-extension-channel-provider/src/**/*",
+		"../../packages/server-driven-trpc-channel-provider/src/**/*"
 	],
 	"references": [
 		{
 			"path": "../../packages/core-server"
 		},
 		{
-			"path": "../../packages/driven-extension-driver"
-		},
-		{
 			"path": "../../packages/driven-logger-factory"
 		},
 		{
-			"path": "../../packages/rpc"
+			"path": "../../packages/helper-base-extension-channel-provider"
+		},
+		{
+			"path": "../../packages/core-utils"
+		},
+		{
+			"path": "../../packages/server-driven-trpc-channel-provider"
 		}
 	]
 }

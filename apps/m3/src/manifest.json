@@ -8,11 +8,14 @@
 		"tabs",
 		"activeTab",
 		"scripting",
-		"alarms"
+		"alarms",
+		"storage"
 	],
 	"host_permissions": [
 		"http://*/*",
-		"https://*/*"
+		"https://*/*",
+		"*://localhost:*/*",
+		"*://127.0.0.1:*/*"
 	],
 	"content_security_policy": {},
 	"content_scripts": [
@@ -21,12 +24,12 @@
 				"<all_urls>"
 			],
 			"js": [
-				"mbk-content.js"
+				"bootstrap-mbk-tab.js"
 			]
 		}
 	],
 	"background": {
-		"service_worker": "mbk-sw.js",
+		"service_worker": "bootstrap-mbk-sw.js",
 		"type": "module"
 	}
 }

@@ -1,5 +1,5 @@
 # yaml-language-server: $schema: 'https://moonrepo.dev/docs/config/workspace.json'
-$schema: './cache/schemas/workspace.json'
+$schema: "./cache/schemas/workspace.json"
 
 # Require a specific version of moon while running commands, otherwise fail.
 # versionConstraint: '>=1.0.0'
@@ -12,9 +12,9 @@ $schema: './cache/schemas/workspace.json'
 # path to the project folder as the map value. File pathsFile paths are relative from the workspace root,
 # and cannot reference projects located outside the workspace boundary.
 projects:
-  - 'packages/*'
-  - 'apps/*'
-  - 'etc/*'
+  - "packages/*"
+  - "apps/*"
+  - "etc/*"
 
 vcs:
   manager: git

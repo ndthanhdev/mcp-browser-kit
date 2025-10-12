@@ -4,9 +4,9 @@
 [![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-60a5fa?style=flat&logo=biome)](https://biomejs.dev)
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/ndthanhdev/mcp-browser-kit)](https://archestra.ai/mcp-catalog/ndthanhdev__mcp-browser-kit)
 
-An MCP Server that enables AI assistants to interact with your local browsers.
+> 🚀 **On the `main` branch?** You're viewing the bleeding-edge dev docs! For other versions, check out the `release/*` branches.
 
-> **Note**: Consider using a separate browser profile or dedicated browser instance with this MCP to prevent sensitive data from being unintentionally exposed to AI model providers.
+An MCP Server that enables AI assistants to interact with your local browsers.
 
 https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
 
@@ -42,6 +42,8 @@ https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
    Use browser-kit, star the last open GitHub repo on my browser
    ```
 
+7. Optional, check [User Notes](#user-notes) for more information.
+
 ## Compatibility table
 
 > The M2 build supports more functionalities than the M3 build.
@@ -75,3 +77,9 @@ https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
   2.  Click `+` and select `Add Extension`
   3.  Select the unpacked extension folder
   4.  Click `Install` to install the extension
+
+# User Notes
+
+> **Note for Alpha stage**: Consider using a separate browser profile or dedicated browser instance with this MCP to prevent sensitive data from being unintentionally exposed to AI model providers.
+
+> **Security**: BrowserKit currently lacks authentication for incoming requests. Keep ports 59089 and 2769-2799 on your device network only.

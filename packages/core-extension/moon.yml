@@ -2,5 +2,5 @@ $schema: "https://moonrepo.dev/schemas/project.json"
 language: typescript
 
 dependsOn:
-  - utils
+  - core-utils
   - types

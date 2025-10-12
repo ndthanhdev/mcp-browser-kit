@@ -1,0 +1,40 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"include": [
+		"**/*"
+	],
+	"compilerOptions": {
+		"outDir": "../../.moon/cache/types/packages/server-driven-trpc-channel-provider",
+		"paths": {
+			"@mcp-browser-kit/core-server": [
+				"../core-server/src/index.ts"
+			],
+			"@mcp-browser-kit/core-server/*": [
+				"../core-server/src/*"
+			],
+			"@mcp-browser-kit/core-utils": [
+				"../core-utils/src/index.ts"
+			],
+			"@mcp-browser-kit/core-utils/*": [
+				"../core-utils/src/*"
+			],
+			"@mcp-browser-kit/helper-base-extension-channel-provider": [
+				"../helper-base-extension-channel-provider/src/index.ts"
+			],
+			"@mcp-browser-kit/helper-base-extension-channel-provider/*": [
+				"../helper-base-extension-channel-provider/src/*"
+			]
+		}
+	},
+	"references": [
+		{
+			"path": "../core-server"
+		},
+		{
+			"path": "../core-utils"
+		},
+		{
+			"path": "../helper-base-extension-channel-provider"
+		}
+	]
+}

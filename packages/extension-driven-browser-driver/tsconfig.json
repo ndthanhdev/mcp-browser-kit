@@ -1,0 +1,54 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"include": [
+		"**/*"
+	],
+	"references": [
+		{
+			"path": "../core-extension"
+		},
+		{
+			"path": "../core-server"
+		},
+		{
+			"path": "../types"
+		},
+		{
+			"path": "../core-utils"
+		}
+	],
+	"compilerOptions": {
+		"outDir": "../../.moon/cache/types/packages/extension-driven-browser-driver",
+		"lib": [
+			"dom",
+			"ESNext",
+			"ES2024.ArrayBuffer"
+		],
+		"paths": {
+			"@mcp-browser-kit/core-server": [
+				"../core-server/src/index.ts"
+			],
+			"@mcp-browser-kit/core-server/*": [
+				"../core-server/src/*"
+			],
+			"@mcp-browser-kit/types": [
+				"../types/src/index.ts"
+			],
+			"@mcp-browser-kit/types/*": [
+				"../types/src/*"
+			],
+			"@mcp-browser-kit/core-extension": [
+				"../core-extension/src/index.ts"
+			],
+			"@mcp-browser-kit/core-extension/*": [
+				"../core-extension/src/*"
+			],
+			"@mcp-browser-kit/core-utils": [
+				"../core-utils/src/index.ts"
+			],
+			"@mcp-browser-kit/core-utils/*": [
+				"../core-utils/src/*"
+			]
+		}
+	}
+}

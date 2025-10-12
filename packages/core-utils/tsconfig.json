@@ -1,0 +1,22 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"include": [
+		"**/*"
+	],
+	"references": [
+		{
+			"path": "../types"
+		}
+	],
+	"compilerOptions": {
+		"outDir": "../../.moon/cache/types/packages/core-utils",
+		"paths": {
+			"@mcp-browser-kit/types": [
+				"../types/src/index.ts"
+			],
+			"@mcp-browser-kit/types/*": [
+				"../types/src/*"
+			]
+		}
+	}
+}

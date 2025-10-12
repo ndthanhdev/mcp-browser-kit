@@ -10,18 +10,6 @@
 			"@mcp-browser-kit/m2/*": [
 				"apps/m2/src/*"
 			],
-			"@mcp-browser-kit/rpc": [
-				"packages/rpc/src/index.ts"
-			],
-			"@mcp-browser-kit/rpc/*": [
-				"packages/rpc/src/*"
-			],
-			"@mcp-browser-kit/core-browser-driver": [
-				"packages/core-browser-driver/src/index.ts"
-			],
-			"@mcp-browser-kit/core-browser-driver/*": [
-				"packages/core-browser-driver/src/*"
-			],
 			"@mcp-browser-kit/core-server": [
 				"packages/core-server/src/index.ts"
 			],
@@ -58,22 +46,31 @@
 			"path": "packages/core-server"
 		},
 		{
-			"path": "packages/driven-browser-driver"
-		},
-		{
-			"path": "packages/driven-extension-driver"
+			"path": "packages/core-utils"
 		},
 		{
 			"path": "packages/driven-logger-factory"
 		},
 		{
-			"path": "packages/rpc"
+			"path": "packages/extension-driven-browser-driver"
+		},
+		{
+			"path": "packages/extension-driven-server-channel-provider"
+		},
+		{
+			"path": "packages/extension-driving-trpc-controller"
+		},
+		{
+			"path": "packages/helper-base-extension-channel-provider"
+		},
+		{
+			"path": "packages/helper-extension-keep-alive"
+		},
+		{
+			"path": "packages/server-driven-trpc-channel-provider"
 		},
 		{
 			"path": "packages/types"
-		},
-		{
-			"path": "packages/utils"
 		}
 	]
 }

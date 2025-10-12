@@ -9,7 +9,10 @@
 		"tabs",
 		"activeTab",
 		"scripting",
-		"<all_urls>"
+		"storage",
+		"<all_urls>",
+		"*://localhost:*/*",
+		"*://127.0.0.1:*/*"
 	],
 	"icons": {
 		"48": "assets/images/border-48.png"
@@ -21,14 +24,14 @@
 				"<all_urls>"
 			],
 			"js": [
-				"mbk-content.js"
+				"bootstrap-mbk-tab.js"
 			]
 		}
 	],
 	"background": {
 		"scripts": [
 			"vendors/webextension-polyfill/browser-polyfill.min.js",
-			"mbk-background.js"
+			"bootstrap-mbk-bg.js"
 		],
 		"persistent": true
 	}

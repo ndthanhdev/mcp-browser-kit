@@ -16,8 +16,11 @@ tasks:
       runDepsInParallel: false
 
 dependsOn:
-  - rpc
   - core-extension
-  - driven-browser-driver
   - core-server
+  - extension-driven-browser-driver
   - driven-logger-factory
+  - extension-driven-server-channel-provider
+  - extension-driving-trpc-controller
+  - core-utils
+  - helper-extension-keep-alive

@@ -1,2 +1,2 @@
-export * from "./tool-calls";
+export * from "./server-tool-calls";
 export * from "./tool-descriptions";
