@@ -1,4 +1,5 @@
 import type { TabContext } from "@mcp-browser-kit/core-extension";
+import { Readability } from "@mozilla/readability";
 import { inject, injectable } from "inversify";
 import { toDomTree } from "../utils/to-dom-tree";
 import { toElementRecords } from "../utils/to-element-records";
@@ -44,6 +45,24 @@ export class TabTools {
 		// Get HTML string
 		const html = document.documentElement.outerHTML;
 
+		// 5. Extract readable text content using Mozilla Readability
+		let textContent = "";
+		try {
+			const doc = document.cloneNode(true) as Document;
+			const reader = new Readability(doc);
+			const article = reader.parse();
+
+			if (article?.textContent) {
+				textContent = article.textContent.trim();
+			} else {
+				// Fallback to basic text extraction if Readability fails
+				textContent = document.body.textContent?.trim() ?? "";
+			}
+		} catch {
+			// Fallback to basic text extraction on error
+			textContent = document.body.textContent?.trim() ?? "";
+		}
+
 		// Store the internal context (only if readableTree exists)
 		if (readableTree) {
 			this.contextStore.setLatestCapturedTabContext({
@@ -51,6 +70,7 @@ export class TabTools {
 				readableElementRecords,
 				domTree,
 				readableTree,
+				textContent,
 			});
 		}
 
@@ -58,6 +78,7 @@ export class TabTools {
 		return {
 			html,
 			readableElementRecords,
+			textContent,
 		};
 	};
 }

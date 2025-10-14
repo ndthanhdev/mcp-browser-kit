@@ -1,4 +1,3 @@
-import { Readability } from "@mozilla/readability";
 import { inject, injectable } from "inversify";
 import type { ExtensionToolCallInputPort } from "../input-ports";
 import {
@@ -146,28 +145,8 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 
 		try {
 			const tabContext = await this.browserDriver.loadTabContext(tabId);
-
-			// Parse HTML into a Document using DOMParser
-			const parser = new DOMParser();
-			const doc = parser.parseFromString(tabContext.html, "text/html");
-
-			// Use Mozilla's Readability to extract readable content
-			const reader = new Readability(doc);
-			const article = reader.parse();
-
-			if (!article || !article.textContent) {
-				this.logger.warn(
-					"Readability could not parse the page, falling back to text content",
-				);
-				// Fallback to basic text extraction if Readability fails
-				return doc.body.textContent?.trim() ?? "";
-			}
-
-			// Return the text content from the article
-			const textContent = article.textContent.trim();
-
 			this.logger.info("Retrieved readable text successfully");
-			return textContent;
+			return tabContext.textContent;
 		} catch (error) {
 			this.logger.error("Failed to get readable text", error);
 			throw error;

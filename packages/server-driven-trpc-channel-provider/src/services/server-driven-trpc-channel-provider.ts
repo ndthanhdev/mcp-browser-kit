@@ -174,31 +174,35 @@ export class ServerDrivenTrpcChannelProvider
 		wss: WebSocketServer,
 		handler: ReturnType<typeof applyWSSHandler>,
 	) {
-		const shutdown = () => {
-			this.logger.info("Server shutdown initiated");
-			handler.broadcastReconnectNotification();
-			wss.close(() => {
-				this.logger.info("WebSocket Server successfully closed");
-				httpServer.close(() => {
-					this.logger.info("HTTP Server successfully closed");
-					process.exit(0);
-				});
-			});
-		};
-
 		process.on("SIGTERM", () => {
 			this.logger.info("SIGTERM received");
-			shutdown();
+			this.shutdown(httpServer, wss, handler);
 		});
 
 		process.on("SIGINT", () => {
 			this.logger.info("SIGINT received");
-			shutdown();
+			this.shutdown(httpServer, wss, handler);
 		});
 
 		process.stdin.on("close", () => {
 			this.logger.info("stdin closed");
-			shutdown();
+			this.shutdown(httpServer, wss, handler);
+		});
+	}
+
+	private shutdown(
+		httpServer: import("http").Server,
+		wss: WebSocketServer,
+		handler: ReturnType<typeof applyWSSHandler>,
+	) {
+		this.logger.info("Server shutdown initiated");
+		handler.broadcastReconnectNotification();
+		wss.close(() => {
+			this.logger.info("WebSocket Server successfully closed");
+			httpServer.close(() => {
+				this.logger.info("HTTP Server successfully closed");
+				process.exit(0);
+			});
 		});
 	}
 
