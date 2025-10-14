@@ -1,91 +1,118 @@
-import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
-import type {
+import {
+	LoggerFactoryOutputPort,
+	type LoggerFactoryOutputPort as LoggerFactoryOutputPortInterface,
+} from "@mcp-browser-kit/core-server";
+import {
 	ServerToolCallsInputPort,
+	type ServerToolCallsInputPort as ServerToolCallsInputPortInterface,
 	ToolDescriptionsInputPort,
+	type ToolDescriptionsInputPort as ToolDescriptionsInputPortInterface,
 } from "@mcp-browser-kit/core-server/input-ports";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
-import { container } from "../container";
 import { createErrorResponse, createTextResponse } from "./tool-helpers";
 import { tabKeySchema } from "./tool-schemas";
-
-const logger = container
-	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
-	.create("elementTools");
 
 /**
  * Registers tools for reading element information
  */
-export const registerElementTools = (
-	server: McpServer,
-	toolsInputPort: ServerToolCallsInputPort,
-	toolDescriptionsInputPort: ToolDescriptionsInputPort,
-) => {
-	// Get Readable Text
-	logger.verbose("Registering tool: getReadableText");
-	server.tool(
-		"getReadableText",
-		toolDescriptionsInputPort.getReadableTextInstruction(),
-		tabKeySchema,
-		async ({ tabKey }) => {
-			logger.info("Executing getReadableText", {
-				tabKey,
-			});
-			const overInnerText = await over(() =>
-				toolsInputPort.getReadableText(tabKey),
-			);
+@injectable()
+export class ElementTools {
+	private readonly logger;
 
-			if (!overInnerText.ok) {
-				logger.error("Failed to get inner text", {
+	constructor(
+		@inject(LoggerFactoryOutputPort)
+		loggerFactory: LoggerFactoryOutputPortInterface,
+		@inject(ServerToolCallsInputPort)
+		private readonly toolsInputPort: ServerToolCallsInputPortInterface,
+		@inject(ToolDescriptionsInputPort)
+		private readonly toolDescriptionsInputPort: ToolDescriptionsInputPortInterface,
+	) {
+		this.logger = loggerFactory.create("elementTools");
+	}
+
+	/**
+	 * Registers all element-related tools with the MCP server
+	 */
+	register(server: McpServer): void {
+		this.registerGetReadableText(server);
+		this.registerGetReadableElements(server);
+	}
+
+	/**
+	 * Registers the getReadableText tool
+	 */
+	private registerGetReadableText(server: McpServer): void {
+		this.logger.verbose("Registering tool: getReadableText");
+		server.tool(
+			"getReadableText",
+			this.toolDescriptionsInputPort.getReadableTextInstruction(),
+			tabKeySchema,
+			async ({ tabKey }) => {
+				this.logger.info("Executing getReadableText", {
 					tabKey,
-					reason: overInnerText.reason,
 				});
-				return createErrorResponse(
-					"Error getting inner text",
-					String(overInnerText.reason),
+				const overInnerText = await over(() =>
+					this.toolsInputPort.getReadableText(tabKey),
 				);
-			}
 
-			const innerText = overInnerText.value;
-			logger.verbose("Retrieved innerText", {
-				tabKey,
-				textLength: innerText?.length,
-			});
-			return createTextResponse(`InnerText: ${JSON.stringify(innerText)}`);
-		},
-	);
+				if (!overInnerText.ok) {
+					this.logger.error("Failed to get inner text", {
+						tabKey,
+						reason: overInnerText.reason,
+					});
+					return createErrorResponse(
+						"Error getting inner text",
+						String(overInnerText.reason),
+					);
+				}
 
-	// Get Readable Elements
-	logger.verbose("Registering tool: getReadableElements");
-	server.tool(
-		"getReadableElements",
-		toolDescriptionsInputPort.getReadableElementsInstruction(),
-		tabKeySchema,
-		async ({ tabKey }) => {
-			logger.info("Executing getReadableElements", {
-				tabKey,
-			});
-			const overElements = await over(() =>
-				toolsInputPort.getReadableElements(tabKey),
-			);
-
-			if (!overElements.ok) {
-				logger.error("Failed to get readable elements", {
+				const innerText = overInnerText.value;
+				this.logger.verbose("Retrieved innerText", {
 					tabKey,
-					reason: overElements.reason,
+					textLength: innerText?.length,
 				});
-				return createErrorResponse(
-					"Error getting readable elements",
-					String(overElements.reason),
-				);
-			}
+				return createTextResponse(`InnerText: ${JSON.stringify(innerText)}`);
+			},
+		);
+	}
 
-			const elements = overElements.value;
-			logger.verbose("Retrieved readable elements", {
-				tabKey,
-				elementCount: elements.length,
-			});
-			return createTextResponse(JSON.stringify(elements));
-		},
-	);
-};
+	/**
+	 * Registers the getReadableElements tool
+	 */
+	private registerGetReadableElements(server: McpServer): void {
+		this.logger.verbose("Registering tool: getReadableElements");
+		server.tool(
+			"getReadableElements",
+			this.toolDescriptionsInputPort.getReadableElementsInstruction(),
+			tabKeySchema,
+			async ({ tabKey }) => {
+				this.logger.info("Executing getReadableElements", {
+					tabKey,
+				});
+				const overElements = await over(() =>
+					this.toolsInputPort.getReadableElements(tabKey),
+				);
+
+				if (!overElements.ok) {
+					this.logger.error("Failed to get readable elements", {
+						tabKey,
+						reason: overElements.reason,
+					});
+					return createErrorResponse(
+						"Error getting readable elements",
+						String(overElements.reason),
+					);
+				}
+
+				const elements = overElements.value;
+				this.logger.verbose("Retrieved readable elements", {
+					tabKey,
+					elementCount: elements.length,
+				});
+				return createTextResponse(JSON.stringify(elements));
+			},
+		);
+	}
+}

@@ -1,11 +1,16 @@
-import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
-import type {
+import {
+	LoggerFactoryOutputPort,
+	type LoggerFactoryOutputPort as LoggerFactoryOutputPortInterface,
+} from "@mcp-browser-kit/core-server";
+import {
 	ServerToolCallsInputPort,
+	type ServerToolCallsInputPort as ServerToolCallsInputPortInterface,
 	ToolDescriptionsInputPort,
+	type ToolDescriptionsInputPort as ToolDescriptionsInputPortInterface,
 } from "@mcp-browser-kit/core-server/input-ports";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
-import { container } from "../container";
 import {
 	createErrorResponse,
 	createImageResponse,
@@ -13,109 +18,136 @@ import {
 } from "./tool-helpers";
 import { invokeJsFnSchema } from "./tool-schemas";
 
-const logger = container
-	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
-	.create("browserTools");
-
 /**
  * Registers browser context and screenshot tools
  */
-export const registerBrowserTools = (
-	server: McpServer,
-	toolsInputPort: ServerToolCallsInputPort,
-	toolDescriptionsInputPort: ToolDescriptionsInputPort,
-) => {
-	// Get Basic Browser Context
-	logger.verbose("Registering tool: getBasicBrowserContext");
-	server.tool(
-		"getBasicBrowserContext",
-		toolDescriptionsInputPort.getBasicBrowserContextInstruction(),
-		{},
-		async () => {
-			logger.verbose("Executing getBasicBrowserContext");
-			const overCtx = await over(toolsInputPort.getContext);
+@injectable()
+export class BrowserTools {
+	private readonly logger;
 
-			if (!overCtx.ok) {
-				logger.error("Failed to get basic browser context", {
-					reason: overCtx.reason,
+	constructor(
+		@inject(LoggerFactoryOutputPort)
+		loggerFactory: LoggerFactoryOutputPortInterface,
+		@inject(ServerToolCallsInputPort)
+		private readonly toolsInputPort: ServerToolCallsInputPortInterface,
+		@inject(ToolDescriptionsInputPort)
+		private readonly toolDescriptionsInputPort: ToolDescriptionsInputPortInterface,
+	) {
+		this.logger = loggerFactory.create("browserTools");
+	}
+
+	/**
+	 * Registers all browser-related tools with the MCP server
+	 */
+	register(server: McpServer): void {
+		this.registerGetBasicBrowserContext(server);
+		this.registerCaptureActiveTab(server);
+		this.registerInvokeJsFn(server);
+	}
+
+	/**
+	 * Registers the getBasicBrowserContext tool
+	 */
+	private registerGetBasicBrowserContext(server: McpServer): void {
+		this.logger.verbose("Registering tool: getBasicBrowserContext");
+		server.tool(
+			"getBasicBrowserContext",
+			this.toolDescriptionsInputPort.getBasicBrowserContextInstruction(),
+			{},
+			async () => {
+				this.logger.verbose("Executing getBasicBrowserContext");
+				const overCtx = await over(this.toolsInputPort.getContext);
+
+				if (!overCtx.ok) {
+					this.logger.error("Failed to get basic browser context", {
+						reason: overCtx.reason,
+					});
+					return createErrorResponse(
+						"Error getting browser context",
+						String(overCtx.reason),
+					);
+				}
+
+				const ctx = overCtx.value;
+				this.logger.verbose("Retrieved browser context", {
+					tabs: ctx,
 				});
-				return createErrorResponse(
-					"Error getting browser context",
-					String(overCtx.reason),
-				);
-			}
+				return createTextResponse(JSON.stringify(ctx));
+			},
+		);
+	}
 
-			const ctx = overCtx.value;
-			logger.verbose("Retrieved browser context", {
-				tabs: ctx,
-			});
-			return createTextResponse(JSON.stringify(ctx));
-		},
-	);
+	/**
+	 * Registers the captureActiveTab tool
+	 */
+	private registerCaptureActiveTab(server: McpServer): void {
+		this.logger.verbose("Registering tool: captureActiveTab");
+		server.tool(
+			"captureActiveTab",
+			this.toolDescriptionsInputPort.captureActiveTabInstruction(),
+			{},
+			async () => {
+				this.logger.info("Executing captureActiveTab");
+				const overScreenshot = await over(this.toolsInputPort.captureTab);
 
-	// Capture Active Tab
-	logger.verbose("Registering tool: captureActiveTab");
-	server.tool(
-		"captureActiveTab",
-		toolDescriptionsInputPort.captureActiveTabInstruction(),
-		{},
-		async () => {
-			logger.info("Executing captureActiveTab");
-			const overScreenshot = await over(toolsInputPort.captureTab);
+				if (!overScreenshot.ok) {
+					this.logger.error("Failed to capture active tab screenshot", {
+						reason: overScreenshot.reason,
+					});
+					return createErrorResponse(
+						"Error capturing screenshot",
+						String(overScreenshot.reason),
+					);
+				}
 
-			if (!overScreenshot.ok) {
-				logger.error("Failed to capture active tab screenshot", {
-					reason: overScreenshot.reason,
+				const screenshot = overScreenshot.value;
+				this.logger.verbose("Screenshot captured", {
+					width: screenshot.width,
+					height: screenshot.height,
 				});
-				return createErrorResponse(
-					"Error capturing screenshot",
-					String(overScreenshot.reason),
+				return createImageResponse(
+					screenshot,
+					`Screenshot size [${screenshot.width}x${screenshot.height}] - Use these dimensions to calculate exact pixel coordinates for clicking and text entry`,
 				);
-			}
+			},
+		);
+	}
 
-			const screenshot = overScreenshot.value;
-			logger.verbose("Screenshot captured", {
-				width: screenshot.width,
-				height: screenshot.height,
-			});
-			return createImageResponse(
-				screenshot,
-				`Screenshot size [${screenshot.width}x${screenshot.height}] - Use these dimensions to calculate exact pixel coordinates for clicking and text entry`,
-			);
-		},
-	);
-
-	// Invoke JavaScript Function
-	logger.verbose("Registering tool: invokeJsFn");
-	server.tool(
-		"invokeJsFn",
-		toolDescriptionsInputPort.invokeJsFnInstruction(),
-		invokeJsFnSchema,
-		async ({ tabKey, fnBodyCode }) => {
-			logger.info("Executing invokeJsFn", {
-				tabKey,
-			});
-			const overResult = await over(() =>
-				toolsInputPort.invokeJsFn(tabKey, fnBodyCode),
-			);
-
-			if (!overResult.ok) {
-				logger.error("Failed to invoke JavaScript function", {
+	/**
+	 * Registers the invokeJsFn tool
+	 */
+	private registerInvokeJsFn(server: McpServer): void {
+		this.logger.verbose("Registering tool: invokeJsFn");
+		server.tool(
+			"invokeJsFn",
+			this.toolDescriptionsInputPort.invokeJsFnInstruction(),
+			invokeJsFnSchema,
+			async ({ tabKey, fnBodyCode }) => {
+				this.logger.info("Executing invokeJsFn", {
 					tabKey,
-					reason: overResult.reason,
 				});
-				return createErrorResponse(
-					"Error invoking JavaScript",
-					String(overResult.reason),
+				const overResult = await over(() =>
+					this.toolsInputPort.invokeJsFn(tabKey, fnBodyCode),
 				);
-			}
 
-			const result = overResult.value;
-			logger.verbose("JavaScript function executed", {
-				tabKey,
-				hasResult: result !== undefined,
-			});
-			return createTextResponse(JSON.stringify(result) ?? "undefined");
-		},
-	);
-};
+				if (!overResult.ok) {
+					this.logger.error("Failed to invoke JavaScript function", {
+						tabKey,
+						reason: overResult.reason,
+					});
+					return createErrorResponse(
+						"Error invoking JavaScript",
+						String(overResult.reason),
+					);
+				}
+
+				const result = overResult.value;
+				this.logger.verbose("JavaScript function executed", {
+					tabKey,
+					hasResult: result !== undefined,
+				});
+				return createTextResponse(JSON.stringify(result) ?? "undefined");
+			},
+		);
+	}
+}

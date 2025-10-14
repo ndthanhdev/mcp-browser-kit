@@ -1,11 +1,16 @@
-import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-server";
-import type {
+import {
+	LoggerFactoryOutputPort,
+	type LoggerFactoryOutputPort as LoggerFactoryOutputPortInterface,
+} from "@mcp-browser-kit/core-server";
+import {
 	ServerToolCallsInputPort,
+	type ServerToolCallsInputPort as ServerToolCallsInputPortInterface,
 	ToolDescriptionsInputPort,
+	type ToolDescriptionsInputPort as ToolDescriptionsInputPortInterface,
 } from "@mcp-browser-kit/core-server/input-ports";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
-import { container } from "../container";
 import { createErrorResponse, createTextResponse } from "./tool-helpers";
 import {
 	coordinateSchema,
@@ -14,240 +19,285 @@ import {
 	readableElementTextInputSchema,
 } from "./tool-schemas";
 
-const logger = container
-	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
-	.create("interactionTools");
-
 /**
  * Registers tools for interacting with page elements (clicking, typing, etc.)
  */
-export const registerInteractionTools = (
-	server: McpServer,
-	toolsInputPort: ServerToolCallsInputPort,
-	toolDescriptionsInputPort: ToolDescriptionsInputPort,
-) => {
+@injectable()
+export class InteractionTools {
+	private readonly logger;
+
+	constructor(
+		@inject(LoggerFactoryOutputPort)
+		loggerFactory: LoggerFactoryOutputPortInterface,
+		@inject(ServerToolCallsInputPort)
+		private readonly toolsInputPort: ServerToolCallsInputPortInterface,
+		@inject(ToolDescriptionsInputPort)
+		private readonly toolDescriptionsInputPort: ToolDescriptionsInputPortInterface,
+	) {
+		this.logger = loggerFactory.create("interactionTools");
+	}
+
+	/**
+	 * Registers all interaction-related tools with the MCP server
+	 */
+	register(server: McpServer): void {
+		// Coordinate-based interactions
+		this.registerClickOnViewableElement(server);
+		this.registerFillTextToViewableElement(server);
+		this.registerHitEnterOnViewableElement(server);
+
+		// Readable element path-based interactions
+		this.registerClickOnReadableElement(server);
+		this.registerFillTextToReadableElement(server);
+		this.registerHitEnterOnReadableElement(server);
+	}
+
 	// ========== Coordinate-based interactions ==========
 
-	// Click on Viewable Element (by coordinates)
-	logger.verbose("Registering tool: clickOnViewableElement");
-	server.tool(
-		"clickOnViewableElement",
-		toolDescriptionsInputPort.clickOnViewableElementInstruction(),
-		coordinateSchema,
-		async ({ tabKey, x, y }) => {
-			logger.info("Executing clickOnViewableElement", {
-				tabKey,
-				x,
-				y,
-			});
-			const overClick = await over(() =>
-				toolsInputPort.clickOnCoordinates(tabKey, x, y),
-			);
-
-			if (!overClick.ok) {
-				logger.error("Failed to click on viewable element", {
+	/**
+	 * Registers the clickOnViewableElement tool
+	 */
+	private registerClickOnViewableElement(server: McpServer): void {
+		this.logger.verbose("Registering tool: clickOnViewableElement");
+		server.tool(
+			"clickOnViewableElement",
+			this.toolDescriptionsInputPort.clickOnViewableElementInstruction(),
+			coordinateSchema,
+			async ({ tabKey, x, y }) => {
+				this.logger.info("Executing clickOnViewableElement", {
 					tabKey,
 					x,
 					y,
-					reason: overClick.reason,
 				});
-				return createErrorResponse(
-					"Error clicking on element",
-					String(overClick.reason),
+				const overClick = await over(() =>
+					this.toolsInputPort.clickOnCoordinates(tabKey, x, y),
 				);
-			}
 
-			logger.verbose("Clicked on viewable element", {
-				tabKey,
-				x,
-				y,
-			});
-			return createTextResponse("Done");
-		},
-	);
+				if (!overClick.ok) {
+					this.logger.error("Failed to click on viewable element", {
+						tabKey,
+						x,
+						y,
+						reason: overClick.reason,
+					});
+					return createErrorResponse(
+						"Error clicking on element",
+						String(overClick.reason),
+					);
+				}
 
-	// Fill Text to Viewable Element (by coordinates)
-	logger.verbose("Registering tool: fillTextToViewableElement");
-	server.tool(
-		"fillTextToViewableElement",
-		toolDescriptionsInputPort.fillTextToViewableElementInstruction(),
-		coordinateTextInputSchema,
-		async ({ tabKey, x, y, value }) => {
-			logger.info("Executing fillTextToViewableElement", {
-				tabKey,
-				x,
-				y,
-			});
-			const overFill = await over(() =>
-				toolsInputPort.fillTextToCoordinates(tabKey, x, y, value),
-			);
-
-			if (!overFill.ok) {
-				logger.error("Failed to fill text to viewable element", {
+				this.logger.verbose("Clicked on viewable element", {
 					tabKey,
 					x,
 					y,
-					reason: overFill.reason,
 				});
-				return createErrorResponse(
-					"Error filling text",
-					String(overFill.reason),
-				);
-			}
+				return createTextResponse("Done");
+			},
+		);
+	}
 
-			logger.verbose("Filled text to viewable element", {
-				tabKey,
-				x,
-				y,
-				valueLength: value.length,
-			});
-			return createTextResponse("Done");
-		},
-	);
-
-	// Hit Enter on Viewable Element (by coordinates)
-	logger.verbose("Registering tool: hitEnterOnViewableElement");
-	server.tool(
-		"hitEnterOnViewableElement",
-		toolDescriptionsInputPort.hitEnterOnViewableElementInstruction(),
-		coordinateSchema,
-		async ({ tabKey, x, y }) => {
-			logger.info("Executing hitEnterOnViewableElement", {
-				tabKey,
-				x,
-				y,
-			});
-			const overEnter = await over(() =>
-				toolsInputPort.hitEnterOnCoordinates(tabKey, x, y),
-			);
-
-			if (!overEnter.ok) {
-				logger.error("Failed to hit enter on viewable element", {
+	/**
+	 * Registers the fillTextToViewableElement tool
+	 */
+	private registerFillTextToViewableElement(server: McpServer): void {
+		this.logger.verbose("Registering tool: fillTextToViewableElement");
+		server.tool(
+			"fillTextToViewableElement",
+			this.toolDescriptionsInputPort.fillTextToViewableElementInstruction(),
+			coordinateTextInputSchema,
+			async ({ tabKey, x, y, value }) => {
+				this.logger.info("Executing fillTextToViewableElement", {
 					tabKey,
 					x,
 					y,
-					reason: overEnter.reason,
 				});
-				return createErrorResponse(
-					"Error hitting enter",
-					String(overEnter.reason),
+				const overFill = await over(() =>
+					this.toolsInputPort.fillTextToCoordinates(tabKey, x, y, value),
 				);
-			}
 
-			logger.verbose("Hit enter on viewable element", {
-				tabKey,
-				x,
-				y,
-			});
-			return createTextResponse("Done");
-		},
-	);
+				if (!overFill.ok) {
+					this.logger.error("Failed to fill text to viewable element", {
+						tabKey,
+						x,
+						y,
+						reason: overFill.reason,
+					});
+					return createErrorResponse(
+						"Error filling text",
+						String(overFill.reason),
+					);
+				}
+
+				this.logger.verbose("Filled text to viewable element", {
+					tabKey,
+					x,
+					y,
+					valueLength: value.length,
+				});
+				return createTextResponse("Done");
+			},
+		);
+	}
+
+	/**
+	 * Registers the hitEnterOnViewableElement tool
+	 */
+	private registerHitEnterOnViewableElement(server: McpServer): void {
+		this.logger.verbose("Registering tool: hitEnterOnViewableElement");
+		server.tool(
+			"hitEnterOnViewableElement",
+			this.toolDescriptionsInputPort.hitEnterOnViewableElementInstruction(),
+			coordinateSchema,
+			async ({ tabKey, x, y }) => {
+				this.logger.info("Executing hitEnterOnViewableElement", {
+					tabKey,
+					x,
+					y,
+				});
+				const overEnter = await over(() =>
+					this.toolsInputPort.hitEnterOnCoordinates(tabKey, x, y),
+				);
+
+				if (!overEnter.ok) {
+					this.logger.error("Failed to hit enter on viewable element", {
+						tabKey,
+						x,
+						y,
+						reason: overEnter.reason,
+					});
+					return createErrorResponse(
+						"Error hitting enter",
+						String(overEnter.reason),
+					);
+				}
+
+				this.logger.verbose("Hit enter on viewable element", {
+					tabKey,
+					x,
+					y,
+				});
+				return createTextResponse("Done");
+			},
+		);
+	}
 
 	// ========== Readable element path-based interactions ==========
 
-	// Click on Readable Element (by path)
-	logger.verbose("Registering tool: clickOnReadableElement");
-	server.tool(
-		"clickOnReadableElement",
-		toolDescriptionsInputPort.clickOnReadableElementInstruction(),
-		readableElementSchema,
-		async ({ tabKey, readablePath }) => {
-			logger.info("Executing clickOnReadableElement", {
-				tabKey,
-				readablePath,
-			});
-			const overClick = await over(() =>
-				toolsInputPort.clickOnElement(tabKey, readablePath),
-			);
-
-			if (!overClick.ok) {
-				logger.error("Failed to click on readable element", {
+	/**
+	 * Registers the clickOnReadableElement tool
+	 */
+	private registerClickOnReadableElement(server: McpServer): void {
+		this.logger.verbose("Registering tool: clickOnReadableElement");
+		server.tool(
+			"clickOnReadableElement",
+			this.toolDescriptionsInputPort.clickOnReadableElementInstruction(),
+			readableElementSchema,
+			async ({ tabKey, readablePath }) => {
+				this.logger.info("Executing clickOnReadableElement", {
 					tabKey,
 					readablePath,
-					reason: overClick.reason,
 				});
-				return createErrorResponse(
-					"Error clicking on element",
-					String(overClick.reason),
+				const overClick = await over(() =>
+					this.toolsInputPort.clickOnElement(tabKey, readablePath),
 				);
-			}
 
-			logger.verbose("Clicked on readable element", {
-				tabKey,
-				readablePath,
-			});
-			return createTextResponse("Done");
-		},
-	);
+				if (!overClick.ok) {
+					this.logger.error("Failed to click on readable element", {
+						tabKey,
+						readablePath,
+						reason: overClick.reason,
+					});
+					return createErrorResponse(
+						"Error clicking on element",
+						String(overClick.reason),
+					);
+				}
 
-	// Fill Text to Readable Element (by path)
-	logger.verbose("Registering tool: fillTextToReadableElement");
-	server.tool(
-		"fillTextToReadableElement",
-		toolDescriptionsInputPort.fillTextToReadableElementInstruction(),
-		readableElementTextInputSchema,
-		async ({ tabKey, readablePath, value }) => {
-			logger.info("Executing fillTextToReadableElement", {
-				tabKey,
-				readablePath,
-			});
-			const overFill = await over(() =>
-				toolsInputPort.fillTextToElement(tabKey, readablePath, value),
-			);
-
-			if (!overFill.ok) {
-				logger.error("Failed to fill text to readable element", {
+				this.logger.verbose("Clicked on readable element", {
 					tabKey,
 					readablePath,
-					reason: overFill.reason,
 				});
-				return createErrorResponse(
-					"Error filling text",
-					String(overFill.reason),
-				);
-			}
+				return createTextResponse("Done");
+			},
+		);
+	}
 
-			logger.verbose("Filled text to readable element", {
-				tabKey,
-				readablePath,
-				valueLength: value.length,
-			});
-			return createTextResponse("Done");
-		},
-	);
-
-	// Hit Enter on Readable Element (by path)
-	logger.verbose("Registering tool: hitEnterOnReadableElement");
-	server.tool(
-		"hitEnterOnReadableElement",
-		toolDescriptionsInputPort.hitEnterOnReadableElementInstruction(),
-		readableElementSchema,
-		async ({ tabKey, readablePath }) => {
-			logger.info("Executing hitEnterOnReadableElement", {
-				tabKey,
-				readablePath,
-			});
-			const overEnter = await over(() =>
-				toolsInputPort.hitEnterOnElement(tabKey, readablePath),
-			);
-
-			if (!overEnter.ok) {
-				logger.error("Failed to hit enter on readable element", {
+	/**
+	 * Registers the fillTextToReadableElement tool
+	 */
+	private registerFillTextToReadableElement(server: McpServer): void {
+		this.logger.verbose("Registering tool: fillTextToReadableElement");
+		server.tool(
+			"fillTextToReadableElement",
+			this.toolDescriptionsInputPort.fillTextToReadableElementInstruction(),
+			readableElementTextInputSchema,
+			async ({ tabKey, readablePath, value }) => {
+				this.logger.info("Executing fillTextToReadableElement", {
 					tabKey,
 					readablePath,
-					reason: overEnter.reason,
 				});
-				return createErrorResponse(
-					"Error hitting enter",
-					String(overEnter.reason),
+				const overFill = await over(() =>
+					this.toolsInputPort.fillTextToElement(tabKey, readablePath, value),
 				);
-			}
 
-			logger.verbose("Hit enter on readable element", {
-				tabKey,
-				readablePath,
-			});
-			return createTextResponse("Done");
-		},
-	);
-};
+				if (!overFill.ok) {
+					this.logger.error("Failed to fill text to readable element", {
+						tabKey,
+						readablePath,
+						reason: overFill.reason,
+					});
+					return createErrorResponse(
+						"Error filling text",
+						String(overFill.reason),
+					);
+				}
+
+				this.logger.verbose("Filled text to readable element", {
+					tabKey,
+					readablePath,
+					valueLength: value.length,
+				});
+				return createTextResponse("Done");
+			},
+		);
+	}
+
+	/**
+	 * Registers the hitEnterOnReadableElement tool
+	 */
+	private registerHitEnterOnReadableElement(server: McpServer): void {
+		this.logger.verbose("Registering tool: hitEnterOnReadableElement");
+		server.tool(
+			"hitEnterOnReadableElement",
+			this.toolDescriptionsInputPort.hitEnterOnReadableElementInstruction(),
+			readableElementSchema,
+			async ({ tabKey, readablePath }) => {
+				this.logger.info("Executing hitEnterOnReadableElement", {
+					tabKey,
+					readablePath,
+				});
+				const overEnter = await over(() =>
+					this.toolsInputPort.hitEnterOnElement(tabKey, readablePath),
+				);
+
+				if (!overEnter.ok) {
+					this.logger.error("Failed to hit enter on readable element", {
+						tabKey,
+						readablePath,
+						reason: overEnter.reason,
+					});
+					return createErrorResponse(
+						"Error hitting enter",
+						String(overEnter.reason),
+					);
+				}
+
+				this.logger.verbose("Hit enter on readable element", {
+					tabKey,
+					readablePath,
+				});
+				return createTextResponse("Done");
+			},
+		);
+	}
+}

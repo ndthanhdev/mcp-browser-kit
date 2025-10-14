@@ -136,16 +136,16 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 		return this.browserDriver.loadTabContext(tabId);
 	};
 
-	getReadableElements = async (tabKey: string) => {
-		const tabContext = await this.browserDriver.loadTabContext(tabKey);
+	getReadableElements = async (tabId: string) => {
+		const tabContext = await this.browserDriver.loadTabContext(tabId);
 		return tabContext.readableElementRecords;
 	};
 
-	getReadableText = async (tabKey: string) => {
-		this.logger.info(`Getting readable text from tab: ${tabKey}`);
+	getReadableText = async (tabId: string) => {
+		this.logger.info(`Getting readable text from tab: ${tabId}`);
 
 		try {
-			const tabContext = await this.browserDriver.loadTabContext(tabKey);
+			const tabContext = await this.browserDriver.loadTabContext(tabId);
 
 			// Parse HTML into a Document using DOMParser
 			const parser = new DOMParser();
