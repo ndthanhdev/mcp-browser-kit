@@ -259,7 +259,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			const readableText = await rpcClient.call({
 				method: "getReadableText",
 				args: [
-					tabKey,
+					tabData.tabId,
 				],
 				extraArgs: {},
 			});

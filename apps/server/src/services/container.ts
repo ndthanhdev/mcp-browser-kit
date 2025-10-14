@@ -4,8 +4,9 @@ import {
 } from "@mcp-browser-kit/core-server";
 import { DrivenLoggerFactoryConsolaError } from "@mcp-browser-kit/driven-logger-factory";
 import { ServerDrivenTrpcChannelProvider } from "@mcp-browser-kit/server-driven-trpc-channel-provider";
+import { McpServerService } from "./mcp-server";
 
-const container = createCoreServerContainer();
+export const container = createCoreServerContainer();
 
 container
 	.bind<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
@@ -14,4 +15,5 @@ container
 // Setup ServerDrivenTrpcChannelProvider and its dependencies
 ServerDrivenTrpcChannelProvider.setupContainer(container);
 
-export { container };
+// Setup McpServerService
+McpServerService.setupContainer(container);
