@@ -29,7 +29,7 @@ import type {
 	ServerToolCallsInputPort,
 } from "../input-ports";
 import { LoggerFactoryOutputPort } from "../output-ports";
-import { TabKey, WindowKey } from "../types";
+import { TabKey, WindowKey } from "../utils";
 import { ExtensionChannelManager } from "./extension-channel-manager";
 
 @injectable()

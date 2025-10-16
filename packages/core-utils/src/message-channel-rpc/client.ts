@@ -5,10 +5,24 @@ import type {
 	RpcClient,
 } from "@mcp-browser-kit/types";
 import type { Paths } from "type-fest";
+import { createPrefixId } from "../create-prefix-id/create-prefix-id";
+import { toCompositeKey } from "../to-composite-key/to-composite-key";
 import type {
 	MessageChannelForRpcClient as MessageChannelRpcClientType,
 	ResolveMessage,
 } from "./types/message-channel-rpc";
+
+const rpcClientId = createPrefixId("rpcClient");
+
+const RpcCallKey = toCompositeKey<{
+	clientId: string;
+	method: string;
+	index: number;
+}>([
+	"clientId",
+	"method",
+	"index",
+]);
 
 export class MessageChannelRpcClient<
 	T extends {},
@@ -16,8 +30,13 @@ export class MessageChannelRpcClient<
 	U extends ExtractProcedures<T> = ExtractProcedures<T>,
 > implements RpcClient<T, ExtraArgs, U>
 {
-	private id = 0;
+	private readonly clientId: string;
+	private index = 0;
 	private pending: Map<string, PromiseWithResolvers<unknown>> = new Map();
+
+	constructor() {
+		this.clientId = rpcClientId.generate();
+	}
 
 	private messageChannel?: MessageChannelRpcClientType;
 	private messageChannelUnsubscribe?: () => void;
@@ -43,9 +62,13 @@ export class MessageChannelRpcClient<
 	};
 
 	private createId = (method: string): string => {
-		this.id++;
-		const id = this.id;
-		return `${id}_${method}`;
+		this.index++;
+		const key = RpcCallKey.from({
+			clientId: this.clientId,
+			method,
+			index: this.index,
+		});
+		return key.toString();
 	};
 
 	public call = <K extends Paths<U>>({

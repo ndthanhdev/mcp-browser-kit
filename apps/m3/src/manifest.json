@@ -25,7 +25,8 @@
 			],
 			"js": [
 				"bootstrap-mbk-tab.js"
-			]
+			],
+			"run_at": "document_start"
 		}
 	],
 	"background": {
