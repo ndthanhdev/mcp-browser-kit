@@ -29,16 +29,16 @@ export interface BrowserDriverOutputPort {
 	focusOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
 	fillTextToFocusedElement(tabId: string, value: string): Promise<void>;
 	hitEnterOnFocusedElement(tabId: string): Promise<void>;
-	clickOnElementBySelector(
+	clickOnElementByReadablePath(
 		tabId: string,
 		readableTreePath: string,
 	): Promise<void>;
-	fillTextToElementBySelector(
+	fillTextToElementByReadablePath(
 		tabId: string,
 		readableTreePath: string,
 		value: string,
 	): Promise<void>;
-	hitEnterOnElementBySelector(
+	hitEnterOnElementByReadablePath(
 		tabId: string,
 		readableTreePath: string,
 	): Promise<void>;

@@ -1,17 +1,10 @@
-import {
-	createCoreExtensionContainer,
-	LoggerFactoryOutputPort,
-} from "@mcp-browser-kit/core-extension";
-import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
+import { Container } from "inversify";
 import { MbkTab } from "./services/mbk-tab";
 
-// Create and configure container
-const tabContainer = createCoreExtensionContainer();
-
-// driven services
-tabContainer
-	.bind<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
-	.to(DrivenLoggerFactoryConsolaBrowser);
+// Create and configure the dependency injection container for tab context
+const tabContainer = new Container({
+	defaultScope: "Singleton",
+});
 
 // Setup MbkTab service (includes browser driver setup)
 MbkTab.setupContainer(tabContainer);

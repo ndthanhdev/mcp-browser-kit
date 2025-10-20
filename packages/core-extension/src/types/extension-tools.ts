@@ -4,7 +4,7 @@ import type { Screenshot } from "./screenshot";
 import type { Selection } from "./selection";
 import type { TabContext } from "./tab-context";
 
-export interface ExtensionTools {
+export interface TabSpecificTool {
 	captureTab(tabId: string): Promise<Screenshot>;
 	clickOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
 	clickOnElement(tabId: string, readablePath: string): Promise<void>;
@@ -20,14 +20,17 @@ export interface ExtensionTools {
 		readablePath: string,
 		value: string,
 	): Promise<void>;
-	getExtensionContext(): Promise<ExtensionContext>;
 	loadTabContext(tabId: string): Promise<TabContext>;
-	getReadableElements: (tabKey: string) => Promise<ReadableElementRecord[]>;
-	getReadableText: (tabKey: string) => Promise<string>;
+	getReadableElements: (tabId: string) => Promise<ReadableElementRecord[]>;
+	getReadableText: (tabId: string) => Promise<string>;
 	getSelection(tabId: string): Promise<Selection>;
 	hitEnterOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
 	hitEnterOnElement(tabId: string, readablePath: string): Promise<void>;
 	invokeJsFn(tabId: string, fnBodyCode: string): Promise<unknown>;
+}
+
+export interface ExtensionTools extends TabSpecificTool {
+	getExtensionContext(): Promise<ExtensionContext>;
 	openTab(
 		url: string,
 		windowId: string,

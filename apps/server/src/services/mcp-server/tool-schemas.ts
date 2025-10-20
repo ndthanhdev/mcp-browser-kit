@@ -49,3 +49,11 @@ export const invokeJsFnSchema = {
 		.string()
 		.describe("Function body code to execute in page context"),
 };
+
+/**
+ * Schema for opening a new tab
+ */
+export const openTabSchema = {
+	windowKey: z.string().describe("Window key where the new tab should open"),
+	url: z.string().describe("URL to open in the new tab"),
+};

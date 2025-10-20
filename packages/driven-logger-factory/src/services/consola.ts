@@ -167,44 +167,49 @@ const formatStack = (stack: string, message: string): string => {
 		.join(`\n${indent}`)}`;
 };
 
+// Format log object into a formatted string
+const formatLogOutput = (logObj: LogObject): string => {
+	const [message, ...additional] = formatArgs(logObj.args).split("\n");
+
+	const date = formatDate(logObj.date);
+	const coloredDate = date && colors.gray(date);
+
+	const isBadge = logObj.level < 2;
+	const type = formatType(logObj, isBadge);
+
+	const tag = logObj.tag ? colors.gray(logObj.tag) : "";
+
+	const left = [
+		type,
+		characterFormat(message),
+	]
+		.filter(Boolean)
+		.join(" ");
+	const right = [
+		tag,
+		coloredDate,
+	]
+		.filter(Boolean)
+		.join(" ");
+
+	let line = right ? `${colors.gray(`[${right}]`)} ${left}` : left;
+
+	line += characterFormat(
+		additional.length > 0 ? `\n${additional.join("\n")}` : "",
+	);
+
+	if (logObj.type === "trace") {
+		const _err = new Error(`Trace: ${message}`);
+		line += formatStack(_err.stack || "", _err.message);
+	}
+
+	return isBadge ? `\n${line}\n` : line;
+};
+
 // Enhanced reporter with fancy formatting for browser console
 class FancyBrowserReporter implements ConsolaReporter {
 	log(logObj: LogObject) {
-		const [message, ...additional] = formatArgs(logObj.args).split("\n");
-
-		const date = formatDate(logObj.date);
-		const coloredDate = date && colors.gray(date);
-
-		const isBadge = logObj.level < 2;
-		const type = formatType(logObj, isBadge);
-
-		const tag = logObj.tag ? colors.gray(logObj.tag) : "";
-
-		const left = [
-			type,
-			characterFormat(message),
-		]
-			.filter(Boolean)
-			.join(" ");
-		const right = [
-			tag,
-			coloredDate,
-		]
-			.filter(Boolean)
-			.join(" ");
-
-		let line = right ? `${colors.gray(`[${right}]`)} ${left}` : left;
-
-		line += characterFormat(
-			additional.length > 0 ? `\n${additional.join("\n")}` : "",
-		);
-
-		if (logObj.type === "trace") {
-			const _err = new Error(`Trace: ${message}`);
-			line += formatStack(_err.stack || "", _err.message);
-		}
-
-		const output = isBadge ? `\n${line}\n` : line;
+		const output = formatLogOutput(logObj);
 
 		// Use appropriate console method based on log level/type
 		switch (logObj.type) {
@@ -223,6 +228,7 @@ class FancyBrowserReporter implements ConsolaReporter {
 				break;
 			case "debug":
 			case "trace":
+			case "verbose":
 				console.debug(output);
 				break;
 			default:
@@ -234,81 +240,40 @@ class FancyBrowserReporter implements ConsolaReporter {
 // Enhanced reporter with fancy formatting for error output only
 class FancyErrorReporter implements ConsolaReporter {
 	log(logObj: LogObject) {
-		const [message, ...additional] = formatArgs(logObj.args).split("\n");
-
-		const date = formatDate(logObj.date);
-		const coloredDate = date && colors.gray(date);
-
-		const isBadge = logObj.level < 2;
-		const type = formatType(logObj, isBadge);
-
-		const tag = logObj.tag ? colors.gray(logObj.tag) : "";
-
-		const left = [
-			type,
-			characterFormat(message),
-		]
-			.filter(Boolean)
-			.join(" ");
-		const right = [
-			tag,
-			coloredDate,
-		]
-			.filter(Boolean)
-			.join(" ");
-
-		let line = right ? `${colors.gray(`[${right}]`)} ${left}` : left;
-
-		line += characterFormat(
-			additional.length > 0 ? `\n${additional.join("\n")}` : "",
-		);
-
-		if (logObj.type === "trace") {
-			const _err = new Error(`Trace: ${message}`);
-			line += formatStack(_err.stack || "", _err.message);
-		}
-
-		const output = isBadge ? `\n${line}\n` : line;
+		const output = formatLogOutput(logObj);
 		console.error(output);
 	}
 }
 
-@injectable()
-export class DrivenLoggerFactoryConsolaBrowser implements LoggerFactory {
-	private readonly instance;
-	constructor() {
+// Base logger factory class
+abstract class BaseLoggerFactory implements LoggerFactory {
+	protected readonly instance;
+
+	constructor(reporter: ConsolaReporter) {
 		this.instance = defaultInstance.create({
 			reporters: [
-				new FancyBrowserReporter(),
+				reporter,
 			],
 		});
 	}
 
 	create = (...components: string[]): Logger => {
 		const id = createLoggerId(...components);
-
 		const logger = this.instance.withTag(id);
-
 		return logger as Logger;
 	};
 }
 
 @injectable()
-export class DrivenLoggerFactoryConsolaError implements LoggerFactory {
-	private readonly instance;
+export class DrivenLoggerFactoryConsolaBrowser extends BaseLoggerFactory {
 	constructor() {
-		this.instance = defaultInstance.create({
-			reporters: [
-				new FancyErrorReporter(),
-			],
-		});
+		super(new FancyBrowserReporter());
 	}
+}
 
-	create = (...components: string[]): Logger => {
-		const id = createLoggerId(...components);
-
-		const logger = this.instance.withTag(id);
-
-		return logger as Logger;
-	};
+@injectable()
+export class DrivenLoggerFactoryConsolaError extends BaseLoggerFactory {
+	constructor() {
+		super(new FancyErrorReporter());
+	}
 }

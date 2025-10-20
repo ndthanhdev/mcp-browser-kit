@@ -8,7 +8,7 @@ export const clickOnCoordinates = (x: number, y: number) => {
 	}
 };
 
-export const clickOnElementBySelector = async (element: HTMLElement) => {
+export const clickOnElementByReadablePath = async (element: HTMLElement) => {
 	if (element) {
 		playClickAnimationOnElement(element);
 		element.click();
@@ -30,7 +30,7 @@ export const dispatchEnter = async (element: HTMLElement) => {
 	element.dispatchEvent(new KeyboardEvent("keyup", dict));
 };
 
-export const fillTextToElementBySelector = (
+export const fillTextToElementByReadablePath = (
 	element: HTMLElement,
 	value: string,
 ) => {
@@ -64,7 +64,7 @@ export const getInnerText = () => {
 	return document.body.innerText;
 };
 
-export const hitEnterOnElementBySelector = async (element: HTMLElement) => {
+export const hitEnterOnElementByReadablePath = async (element: HTMLElement) => {
 	if (element) {
 		playClickAnimationOnElement(element);
 		await dispatchEnter(element);
@@ -76,4 +76,11 @@ export const hitEnterOnFocusedElement = async () => {
 	if (element && element instanceof HTMLElement) {
 		await dispatchEnter(element);
 	}
+};
+
+export const getSerializableSelection = () => {
+	const selection = globalThis.getSelection();
+	return {
+		selectedText: selection?.toString() ?? "",
+	};
 };

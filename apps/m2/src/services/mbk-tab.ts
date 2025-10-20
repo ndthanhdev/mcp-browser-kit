@@ -1,4 +1,5 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension";
+import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
 import {
 	DrivenBrowserDriverM2,
 	TabToolsSetup,
@@ -23,6 +24,11 @@ export class MbkTab {
 	}
 
 	static setupContainer(container: Container): void {
+		// Bind logger factory
+		container
+			.bind<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
+			.to(DrivenLoggerFactoryConsolaBrowser);
+
 		// Setup M2 container with required services
 		DrivenBrowserDriverM2.setupContainer(container);
 

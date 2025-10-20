@@ -34,6 +34,15 @@ export interface ToolDescriptionsInputPort {
 
 	// InvokeJsFn
 	invokeJsFnInstruction(): string;
+
+	// CloseTab
+	closeTabInstruction(): string;
+
+	// GetSelection
+	getSelectionInstruction(): string;
+
+	// OpenTab
+	openTabInstruction(): string;
 }
 
 export const ToolDescriptionsInputPort = Symbol.for(

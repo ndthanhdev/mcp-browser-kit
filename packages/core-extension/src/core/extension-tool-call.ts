@@ -32,7 +32,10 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 		return this.browserDriver.hitEnterOnFocusedElement(tabId);
 	};
 	hitEnterOnElement = (tabId: string, readablePath: string): Promise<void> => {
-		return this.browserDriver.hitEnterOnElementBySelector(tabId, readablePath);
+		return this.browserDriver.hitEnterOnElementByReadablePath(
+			tabId,
+			readablePath,
+		);
 	};
 
 	getExtensionContext = async (): Promise<ExtensionContext> => {
@@ -112,7 +115,7 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 	};
 
 	clickOnElement = (tabId: string, readablePath: string): Promise<void> => {
-		return this.browserDriver.clickOnElementBySelector(tabId, readablePath);
+		return this.browserDriver.clickOnElementByReadablePath(tabId, readablePath);
 	};
 
 	fillTextToElement = (
@@ -120,7 +123,7 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 		readablePath: string,
 		value: string,
 	): Promise<void> => {
-		return this.browserDriver.fillTextToElementBySelector(
+		return this.browserDriver.fillTextToElementByReadablePath(
 			tabId,
 			readablePath,
 			value,

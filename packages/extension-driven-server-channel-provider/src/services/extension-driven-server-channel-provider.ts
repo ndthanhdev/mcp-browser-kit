@@ -152,8 +152,8 @@ export class ExtensionDrivenServerChannelProvider
 				// biome-ignore lint/style/useNamingConvention: it's a library attribute name
 				WebSocket: WebSocket,
 				onError: (error) => {
-					this.logger.verbose(
-						`[${this.instanceId}] Connection attempt to server at ${serverUrl} failed:`,
+					this.logger.info(
+						`[${this.instanceId}] Connection to server at ${serverUrl} failed:`,
 						error,
 					);
 				},

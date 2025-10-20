@@ -16,7 +16,7 @@ import {
 	createImageResponse,
 	createTextResponse,
 } from "./tool-helpers";
-import { invokeJsFnSchema } from "./tool-schemas";
+import { invokeJsFnSchema, openTabSchema, tabKeySchema } from "./tool-schemas";
 
 /**
  * Registers browser context and screenshot tools
@@ -43,6 +43,9 @@ export class BrowserTools {
 		this.registerGetBasicBrowserContext(server);
 		this.registerCaptureActiveTab(server);
 		this.registerInvokeJsFn(server);
+		this.registerOpenTab(server);
+		this.registerCloseTab(server);
+		this.registerGetSelection(server);
 	}
 
 	/**
@@ -147,6 +150,122 @@ export class BrowserTools {
 					hasResult: result !== undefined,
 				});
 				return createTextResponse(JSON.stringify(result) ?? "undefined");
+			},
+		);
+	}
+
+	/**
+	 * Registers the openTab tool
+	 */
+	private registerOpenTab(server: McpServer): void {
+		this.logger.verbose("Registering tool: openTab");
+		server.tool(
+			"openTab",
+			this.toolDescriptionsInputPort.openTabInstruction(),
+			openTabSchema,
+			async ({ windowKey, url }) => {
+				this.logger.info("Executing openTab", {
+					windowKey,
+					url,
+				});
+				const overResult = await over(() =>
+					this.toolsInputPort.openTab(windowKey, url),
+				);
+
+				if (!overResult.ok) {
+					this.logger.error("Failed to open tab", {
+						windowKey,
+						url,
+						reason: overResult.reason,
+					});
+					return createErrorResponse(
+						"Error opening tab",
+						String(overResult.reason),
+					);
+				}
+
+				const result = overResult.value;
+				this.logger.verbose("Tab opened successfully", {
+					tabKey: result.tabKey,
+					windowKey: result.windowKey,
+				});
+				return createTextResponse(
+					`Tab opened successfully. tabKey: ${result.tabKey}, windowKey: ${result.windowKey}`,
+				);
+			},
+		);
+	}
+
+	/**
+	 * Registers the closeTab tool
+	 */
+	private registerCloseTab(server: McpServer): void {
+		this.logger.verbose("Registering tool: closeTab");
+		server.tool(
+			"closeTab",
+			this.toolDescriptionsInputPort.closeTabInstruction(),
+			tabKeySchema,
+			async ({ tabKey }) => {
+				this.logger.info("Executing closeTab", {
+					tabKey,
+				});
+				const overResult = await over(() =>
+					this.toolsInputPort.closeTab(tabKey),
+				);
+
+				if (!overResult.ok) {
+					this.logger.error("Failed to close tab", {
+						tabKey,
+						reason: overResult.reason,
+					});
+					return createErrorResponse(
+						"Error closing tab",
+						String(overResult.reason),
+					);
+				}
+
+				this.logger.verbose("Tab closed successfully", {
+					tabKey,
+				});
+				return createTextResponse("Tab closed successfully");
+			},
+		);
+	}
+
+	/**
+	 * Registers the getSelection tool
+	 */
+	private registerGetSelection(server: McpServer): void {
+		this.logger.verbose("Registering tool: getSelection");
+		server.tool(
+			"getSelection",
+			this.toolDescriptionsInputPort.getSelectionInstruction(),
+			tabKeySchema,
+			async ({ tabKey }) => {
+				this.logger.info("Executing getSelection", {
+					tabKey,
+				});
+				const overResult = await over(() =>
+					this.toolsInputPort.getSelection(tabKey),
+				);
+
+				if (!overResult.ok) {
+					this.logger.error("Failed to get selection", {
+						tabKey,
+						reason: overResult.reason,
+					});
+					return createErrorResponse(
+						"Error getting selection",
+						String(overResult.reason),
+					);
+				}
+
+				const selection = overResult.value;
+				this.logger.verbose("Selection retrieved successfully", {
+					tabKey,
+					hasSelection: selection !== undefined,
+				});
+				return createTextResponse(JSON.stringify(selection));
 			},
 		);
 	}

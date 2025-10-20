@@ -56,6 +56,7 @@ export const createDeferRouter = (container: Container) => {
 							message,
 						);
 						defer.resolve(message);
+						defer = Promise.withResolvers<DeferMessage>();
 					},
 				);
 
@@ -63,13 +64,13 @@ export const createDeferRouter = (container: Container) => {
 				if (signal) {
 					signal.onabort = () => {
 						logger.info(`Subscription aborted for channel: ${channelId}`);
-						unsubscribe();
 						stopped = true;
+						defer.reject(new Error("Client closed subscription"));
+						unsubscribe();
 					};
 				}
 				while (!stopped) {
 					yield await defer.promise;
-					defer = Promise.withResolvers<DeferMessage>();
 				}
 				logger.info(`Subscription ended for channel: ${channelId}`);
 			}),

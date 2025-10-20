@@ -1,6 +1,7 @@
 export * from "./constants";
 export * from "./create-prefix-id";
 export { EmitteryMessageChannel } from "./emittery-message-channel/emittery-message-channel";
+export * from "./is-browser-internal-url";
 export * from "./message-channel-rpc";
 export {
 	toCompositeKey,
