@@ -143,4 +143,39 @@ export class ToolDescriptionsUseCases implements ToolDescriptionsInputPort {
 			"* NOTE: This feature is only available in browsers supporting Manifest Version 2",
 		].join("\n");
 	};
+
+	closeTabInstruction = (): string => {
+		return [
+			"🗑️ Closes a specific browser tab",
+			"* Use this to close a tab when you're done with it or need to clean up",
+			"* Requires tabKey from getBasicBrowserContext",
+			"* The tab will be permanently closed and cannot be recovered",
+			"* Be careful not to close the tab you're currently working with",
+			"* Parameters: tabKey",
+		].join("\n");
+	};
+
+	getSelectionInstruction = (): string => {
+		return [
+			"📋 Gets the current text selection in the browser tab",
+			"* Use this to retrieve text that the user has selected on the page",
+			"* Requires tabKey from getBasicBrowserContext",
+			"* Returns information about the selected text including the text content itself",
+			"* Useful for capturing user selections or verifying what text is highlighted",
+			"* Returns empty selection if nothing is currently selected",
+			"* Parameters: tabKey",
+		].join("\n");
+	};
+
+	openTabInstruction = (): string => {
+		return [
+			"🌐 Opens a new browser tab with the specified URL",
+			"* Use this to navigate to a new page in a new tab",
+			"* Requires windowKey from getBasicBrowserContext and the URL to open",
+			"* Returns the tabKey of the newly created tab which you can use for further operations",
+			"* The new tab will be created in the specified browser window",
+			"* After opening, you may need to wait a moment for the page to load",
+			"* Parameters: windowKey, url",
+		].join("\n");
+	};
 }

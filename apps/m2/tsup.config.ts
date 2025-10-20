@@ -6,7 +6,7 @@ export default defineConfig({
 		"src/bootstrap-mbk-background.ts",
 	],
 	splitting: false,
-	sourcemap: true,
+	sourcemap: "inline",
 	clean: true,
 	format: [
 		"esm",

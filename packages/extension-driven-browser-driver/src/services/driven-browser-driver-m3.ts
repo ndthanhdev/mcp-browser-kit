@@ -111,8 +111,14 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 	};
 
 	// DOM Query Methods
-	getSelection = (_tabId: string): Promise<Selection> => {
-		return Promise.reject("getSelection is not supported in M3 driver");
+	getSelection = (tabId: string): Promise<Selection> => {
+		return this.tabRpcService.tabRpcClient.call({
+			method: "dom.getSelection",
+			args: [],
+			extraArgs: {
+				tabId,
+			},
+		});
 	};
 
 	// Interaction Methods (Click/Focus)
@@ -129,12 +135,12 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 		});
 	};
 
-	clickOnElementBySelector = (
+	clickOnElementByReadablePath = (
 		tabId: string,
 		readableTreePath: string,
 	): Promise<void> => {
 		return this.tabRpcService.tabRpcClient.call({
-			method: "dom.clickOnElementBySelector",
+			method: "dom.clickOnElementByReadablePath",
 			args: [
 				readableTreePath,
 			],
@@ -158,13 +164,13 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 	};
 
 	// Input Methods
-	fillTextToElementBySelector = (
+	fillTextToElementByReadablePath = (
 		tabId: string,
 		readableTreePath: string,
 		value: string,
 	): Promise<void> => {
 		return this.tabRpcService.tabRpcClient.call({
-			method: "dom.fillTextToElementBySelector",
+			method: "dom.fillTextToElementByReadablePath",
 			args: [
 				readableTreePath,
 				value,
@@ -187,12 +193,12 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 		});
 	};
 
-	hitEnterOnElementBySelector = (
+	hitEnterOnElementByReadablePath = (
 		tabId: string,
 		readableTreePath: string,
 	): Promise<void> => {
 		return this.tabRpcService.tabRpcClient.call({
-			method: "dom.hitEnterOnElementBySelector",
+			method: "dom.hitEnterOnElementByReadablePath",
 			args: [
 				readableTreePath,
 			],
@@ -214,7 +220,7 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 
 	// JavaScript Execution Methods
 	invokeJsFn = (_tabId: string, _fnBodyCode: string): Promise<unknown> => {
-		return Promise.reject("invokeJsFn is not supported");
+		return Promise.reject("invokeJsFn is not supported in M3 driver");
 	};
 
 	// RPC Communication Methods

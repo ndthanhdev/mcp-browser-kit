@@ -58,8 +58,15 @@ export class DrivenBrowserDriverM2 implements BrowserDriverOutputPort {
 		this.logger = this.loggerFactory.create("DrivenBrowserDriverM2");
 	}
 
-	loadTabContext = (_tabId: string): Promise<TabContext> => {
-		return Promise.reject("loadTabContext is not supported in M2 driver");
+	loadTabContext = (tabId: string): Promise<TabContext> => {
+		this.logger.verbose(`Loading tab context for tab: ${tabId}`);
+		return this.tabRpcService.tabRpcClient.call({
+			method: "loadTabContext",
+			args: [],
+			extraArgs: {
+				tabId,
+			},
+		});
 	};
 
 	// Browser and Extension Info Methods
@@ -108,8 +115,14 @@ export class DrivenBrowserDriverM2 implements BrowserDriverOutputPort {
 	};
 
 	// DOM Query Methods
-	getSelection = (_tabId: string): Promise<Selection> => {
-		return Promise.reject("getSelection is not supported in M2 driver");
+	getSelection = (tabId: string): Promise<Selection> => {
+		return this.tabRpcService.tabRpcClient.call({
+			method: "dom.getSelection",
+			args: [],
+			extraArgs: {
+				tabId,
+			},
+		});
 	};
 
 	// Interaction Methods (Click/Focus)
@@ -126,12 +139,12 @@ export class DrivenBrowserDriverM2 implements BrowserDriverOutputPort {
 		});
 	};
 
-	clickOnElementBySelector = (
+	clickOnElementByReadablePath = (
 		tabId: string,
 		readablePath: string,
 	): Promise<void> => {
 		return this.tabRpcService.tabRpcClient.call({
-			method: "dom.clickOnElementBySelector",
+			method: "dom.clickOnElementByReadablePath",
 			args: [
 				readablePath,
 			],
@@ -155,13 +168,13 @@ export class DrivenBrowserDriverM2 implements BrowserDriverOutputPort {
 	};
 
 	// Input Methods
-	fillTextToElementBySelector = (
+	fillTextToElementByReadablePath = (
 		tabId: string,
 		readablePath: string,
 		value: string,
 	): Promise<void> => {
 		return this.tabRpcService.tabRpcClient.call({
-			method: "dom.fillTextToElementBySelector",
+			method: "dom.fillTextToElementByReadablePath",
 			args: [
 				readablePath,
 				value,
@@ -184,12 +197,12 @@ export class DrivenBrowserDriverM2 implements BrowserDriverOutputPort {
 		});
 	};
 
-	hitEnterOnElementBySelector = (
+	hitEnterOnElementByReadablePath = (
 		tabId: string,
 		readablePath: string,
 	): Promise<void> => {
 		return this.tabRpcService.tabRpcClient.call({
-			method: "dom.hitEnterOnElementBySelector",
+			method: "dom.hitEnterOnElementByReadablePath",
 			args: [
 				readablePath,
 			],
