@@ -1,8 +1,7 @@
-import type {
+import {
 	BrowserDriverOutputPort,
 	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-extension/output-ports";
-import { LoggerFactoryOutputPort as LoggerFactoryOutputPortSymbol } from "@mcp-browser-kit/core-extension/output-ports";
 import type {
 	BrowserInfo,
 	ExtensionInfo,
@@ -39,14 +38,14 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 		// M3 browser driver services
 		container.bind<TabRpcService>(TabRpcService).to(TabRpcService);
 		container
-			.bind<DrivenBrowserDriverM3>(DrivenBrowserDriverM3)
+			.bind<BrowserDriverOutputPort>(BrowserDriverOutputPort)
 			.to(DrivenBrowserDriverM3);
 	}
 
 	private readonly logger;
 
 	constructor(
-		@inject(LoggerFactoryOutputPortSymbol)
+		@inject(LoggerFactoryOutputPort)
 		private readonly loggerFactory: LoggerFactoryOutputPort,
 		@inject(TabRpcService)
 		private readonly tabRpcService: TabRpcService,
@@ -67,23 +66,28 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 
 	// Browser and Extension Info Methods
 	getBrowserInfo = (): Promise<BrowserInfo> => {
+		this.logger.verbose("Getting browser info");
 		return backgroundToolsM3.getBrowserInfo();
 	};
 
 	getExtensionInfo = (): Promise<ExtensionInfo> => {
+		this.logger.verbose("Getting extension info");
 		return backgroundToolsM3.getExtensionInfo();
 	};
 
 	getBrowserId = (): Promise<string> => {
+		this.logger.verbose("Getting browser ID");
 		return backgroundToolsM3.getBrowserId();
 	};
 
 	// Tab Management Methods
 	getTabs = (): Promise<ExtensionTabInfo[]> => {
+		this.logger.verbose("Getting tabs");
 		return backgroundToolsM3.getTabs();
 	};
 
 	getWindows = async (): Promise<ExtensionWindowInfo[]> => {
+		this.logger.verbose("Getting windows");
 		return backgroundToolsM3.getWindows();
 	};
 
@@ -107,11 +111,13 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 	};
 
 	captureTab = (tabId: string): Promise<Screenshot> => {
+		this.logger.verbose(`Capturing tab: ${tabId}`);
 		return backgroundToolsM3.captureTab(tabId);
 	};
 
 	// DOM Query Methods
 	getSelection = (tabId: string): Promise<Selection> => {
+		this.logger.verbose(`Getting selection for tab: ${tabId}`);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.getSelection",
 			args: [],
@@ -123,6 +129,9 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 
 	// Interaction Methods (Click/Focus)
 	clickOnCoordinates = (tabId: string, x: number, y: number): Promise<void> => {
+		this.logger.verbose(
+			`Clicking on coordinates (${x}, ${y}) in tab: ${tabId}`,
+		);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.clickOnCoordinates",
 			args: [
@@ -139,6 +148,9 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 		tabId: string,
 		readableTreePath: string,
 	): Promise<void> => {
+		this.logger.verbose(
+			`Clicking on element by readable path: ${readableTreePath} in tab: ${tabId}`,
+		);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.clickOnElementByReadablePath",
 			args: [
@@ -151,6 +163,9 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 	};
 
 	focusOnCoordinates = (tabId: string, x: number, y: number): Promise<void> => {
+		this.logger.verbose(
+			`Focusing on coordinates (${x}, ${y}) in tab: ${tabId}`,
+		);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.focusOnCoordinates",
 			args: [
@@ -169,6 +184,9 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 		readableTreePath: string,
 		value: string,
 	): Promise<void> => {
+		this.logger.verbose(
+			`Filling text to element by readable path: ${readableTreePath} in tab: ${tabId}`,
+		);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.fillTextToElementByReadablePath",
 			args: [
@@ -182,6 +200,7 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 	};
 
 	fillTextToFocusedElement = (tabId: string, value: string): Promise<void> => {
+		this.logger.verbose(`Filling text to focused element in tab: ${tabId}`);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.fillTextToFocusedElement",
 			args: [
@@ -197,6 +216,9 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 		tabId: string,
 		readableTreePath: string,
 	): Promise<void> => {
+		this.logger.verbose(
+			`Hitting enter on element by readable path: ${readableTreePath} in tab: ${tabId}`,
+		);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.hitEnterOnElementByReadablePath",
 			args: [
@@ -209,6 +231,7 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 	};
 
 	hitEnterOnFocusedElement = (tabId: string): Promise<void> => {
+		this.logger.verbose(`Hitting enter on focused element in tab: ${tabId}`);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.hitEnterOnFocusedElement",
 			args: [],
@@ -220,6 +243,7 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 
 	// JavaScript Execution Methods
 	invokeJsFn = (_tabId: string, _fnBodyCode: string): Promise<unknown> => {
+		this.logger.verbose("invokeJsFn called (not supported in M3 driver)");
 		return Promise.reject("invokeJsFn is not supported in M3 driver");
 	};
 

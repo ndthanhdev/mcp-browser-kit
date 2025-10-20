@@ -22,3 +22,4 @@ dependsOn:
   - extension-driven-server-channel-provider
   - core-utils
   - helper-extension-keep-alive
+  - extension-driving-trpc-controller

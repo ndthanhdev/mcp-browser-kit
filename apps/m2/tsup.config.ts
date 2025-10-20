@@ -3,7 +3,7 @@ import { defineConfig } from "tsup";
 export default defineConfig({
 	entry: [
 		"src/bootstrap-mbk-tab.ts",
-		"src/bootstrap-mbk-background.ts",
+		"src/bootstrap-mbk-bg.ts",
 	],
 	splitting: false,
 	sourcemap: "inline",

@@ -3,8 +3,15 @@ import {
 	LoggerFactoryOutputPort,
 	ServerChannelProviderOutputPort,
 } from "@mcp-browser-kit/core-extension";
-import type { DrivenBrowserDriverM3 } from "@mcp-browser-kit/extension-driven-browser-driver";
-import type { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
+import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
+import {
+	DrivenBrowserDriverM3,
+	type DrivenBrowserDriverM3 as DrivenBrowserDriverM3Type,
+} from "@mcp-browser-kit/extension-driven-browser-driver";
+import {
+	ExtensionDrivenServerChannelProvider,
+	type ExtensionDrivenServerChannelProvider as ExtensionDrivenServerChannelProviderType,
+} from "@mcp-browser-kit/extension-driven-server-channel-provider";
 import { ExtensionDrivingTrpcController } from "@mcp-browser-kit/extension-driving-trpc-controller";
 import { KeepAlive } from "@mcp-browser-kit/helper-extension-keep-alive";
 import type { Container } from "inversify";
@@ -30,6 +37,22 @@ export class MbkSw {
 	}
 
 	static setupContainer(container: Container): void {
+		// Bind logger factory
+		container
+			.bind<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
+			.to(DrivenLoggerFactoryConsolaBrowser);
+
+		// Setup browser driver
+		DrivenBrowserDriverM3.setupContainer(container);
+
+		// Setup server channel provider with discoverer
+		ExtensionDrivenServerChannelProvider.setupContainer(container);
+
+		// Setup TRPC controller
+		container
+			.bind<ExtensionDrivingTrpcController>(ExtensionDrivingTrpcController)
+			.to(ExtensionDrivingTrpcController);
+
 		// Register KeepAlive service
 		container.bind<KeepAlive>(KeepAlive).to(KeepAlive);
 
@@ -41,13 +64,13 @@ export class MbkSw {
 		this.logger.info("Bootstrapping MbkSw...");
 
 		// Link RPC for browser driver
-		(this.driverM3 as DrivenBrowserDriverM3).linkRpc();
+		(this.driverM3 as DrivenBrowserDriverM3Type).linkRpc();
 
 		// Start keep-alive listening
 		this.keepAlive.startListening();
 
 		// Initial discovery call
-		(this.serverProvider as ExtensionDrivenServerChannelProvider)
+		(this.serverProvider as ExtensionDrivenServerChannelProviderType)
 			.startServersDiscovering()
 			.catch((error) => {
 				this.logger.error(
@@ -58,7 +81,7 @@ export class MbkSw {
 
 		// Listen to server channel events
 		this.drivingTrpcController.listenToServerChannelEvents(
-			this.serverProvider as ExtensionDrivenServerChannelProvider,
+			this.serverProvider as ExtensionDrivenServerChannelProviderType,
 		);
 
 		this.logger.info("MbkSw bootstrap complete");

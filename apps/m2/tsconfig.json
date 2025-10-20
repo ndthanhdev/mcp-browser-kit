@@ -58,6 +58,12 @@
 			],
 			"@mcp-browser-kit/helper-extension-keep-alive/*": [
 				"../../packages/helper-extension-keep-alive/src/*"
+			],
+			"@mcp-browser-kit/extension-driving-trpc-controller": [
+				"../../packages/extension-driving-trpc-controller/src/index.ts"
+			],
+			"@mcp-browser-kit/extension-driving-trpc-controller/*": [
+				"../../packages/extension-driving-trpc-controller/src/*"
 			]
 		},
 		"outDir": "../../.moon/cache/types/apps/m2"
@@ -90,6 +96,9 @@
 		},
 		{
 			"path": "../../packages/helper-extension-keep-alive"
+		},
+		{
+			"path": "../../packages/extension-driving-trpc-controller"
 		},
 		{
 			"path": "../server"
