@@ -19,7 +19,7 @@ https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
    	"mcpServers": {
    		"browser-kit": {
    			"command": "npx",
-   			"args": ["@mcp-browser-kit/server"]
+   			"args": ["@mcp-browser-kit/server@latest"]
    		}
    	}
    }
