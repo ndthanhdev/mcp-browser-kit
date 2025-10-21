@@ -18,7 +18,7 @@ export class ToolDescriptionsUseCases implements ToolDescriptionsInputPort {
 			"  1) getBasicBrowserContext → get browser state and tabKey",
 			"  2) Analyze page content based on your goal and manifest version:",
 			"     - If interaction is required (clicking, filling forms, etc.):",
-			"       · For Manifest Version 2: Use captureActiveTab for visual context or getReadableElements for element identification",
+			"       · For Manifest Version 2: Use captureTab for visual context or getReadableElements for element identification",
 			"       · For other Manifest Versions: Use only getReadableElements for element identification",
 			"     - If no interaction is required (just reading page content):",
 			"       · Use getReadableText to extract all visible text from the page",
@@ -26,14 +26,15 @@ export class ToolDescriptionsUseCases implements ToolDescriptionsInputPort {
 		].join("\n");
 	};
 
-	captureActiveTabInstruction = (): string => {
+	captureTabInstruction = (): string => {
 		return [
-			"📷 Captures a screenshot of the active browser tab",
-			"* Use this tool after calling getBasicBrowserContext to obtain visual context of the current page",
+			"📷 Captures a screenshot of a browser tab",
+			"* Use this tool after calling getBasicBrowserContext to obtain visual context of the page",
 			"* The screenshot helps you see what the browser is displaying to the user",
-			"* No parameters are needed as it automatically captures the active tab",
+			"* Requires tabKey from getBasicBrowserContext",
 			"* Returns an image with width, height, and data in base64 format",
-			"* Workflow: 1) getBasicBrowserContext → 2) captureActiveTab → 3) interact with elements",
+			"* Workflow: 1) getBasicBrowserContext → 2) captureTab → 3) interact with elements",
+			"* Parameters: tabKey",
 			"* NOTE: This feature is only available in browsers supporting Manifest Version 2",
 		].join("\n");
 	};
@@ -65,7 +66,7 @@ export class ToolDescriptionsUseCases implements ToolDescriptionsInputPort {
 			"👆 Clicks on an element at specific X,Y coordinates",
 			"* Use this to click on elements by their position on the screen",
 			"* Requires tabKey from getBasicBrowserContext and x,y coordinates from the screenshot",
-			"* Coordinates are based on the captureActiveTab screenshot dimensions",
+			"* Coordinates are based on the captureTab screenshot dimensions",
 			"* Useful when you know the visual position of an element",
 			"* Parameters: tabKey, x, y",
 		].join("\n");
@@ -76,7 +77,7 @@ export class ToolDescriptionsUseCases implements ToolDescriptionsInputPort {
 			"⌨️ Types text into an input field at specific X,Y coordinates",
 			"* Use this to enter text into form fields by their position",
 			"* Requires tabKey from getBasicBrowserContext, x,y coordinates, and the text to enter",
-			"* Coordinates are based on the captureActiveTab screenshot dimensions",
+			"* Coordinates are based on the captureTab screenshot dimensions",
 			"* First clicks at the specified position, then types the provided text",
 			"* After filling text, check for associated submit-like buttons (submit, search, send, etc.)",
 			"* If submit button is visible, use clickOnViewableElement with that button",
@@ -90,7 +91,7 @@ export class ToolDescriptionsUseCases implements ToolDescriptionsInputPort {
 			"↵ Hits the Enter key on an element at specific X,Y coordinates",
 			"* Use this to trigger actions like form submission or button clicks",
 			"* Requires tabKey from getBasicBrowserContext and x,y coordinates from the screenshot",
-			"* Coordinates are based on the captureActiveTab screenshot dimensions",
+			"* Coordinates are based on the captureTab screenshot dimensions",
 			"* Parameters: tabKey, x, y",
 		].join("\n");
 	};

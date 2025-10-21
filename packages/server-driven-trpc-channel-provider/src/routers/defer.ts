@@ -65,8 +65,9 @@ export const createDeferRouter = (container: Container) => {
 					signal.onabort = () => {
 						logger.info(`Subscription aborted for channel: ${channelId}`);
 						stopped = true;
-						defer.reject(new Error("Client closed subscription"));
 						unsubscribe();
+						defer.reject(new Error("Client closed subscription"));
+						extensionChannelProvider.closeChannel(channelId);
 					};
 				}
 				while (!stopped) {

@@ -5,8 +5,8 @@ export interface ToolDescriptionsInputPort {
 	// GetTabs
 	getBasicBrowserContextInstruction(): string;
 
-	// CaptureActiveTab
-	captureActiveTabInstruction(): string;
+	// CaptureTab
+	captureTabInstruction(): string;
 
 	// GetReadableText
 	getReadableTextInstruction(): string;
