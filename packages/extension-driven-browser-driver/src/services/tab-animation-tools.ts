@@ -17,26 +17,38 @@ export class TabAnimationTools {
 		this.logger = this.loggerFactory.create("TabAnimationTools");
 	}
 
-	playClickAnimationAdvance = (
+	playClickAnimationAdvance = async (
 		x: number,
 		y: number,
 		options: ClickAnimationOptions = {},
-	): void => {
+	): Promise<void> => {
 		this.logger.info(
 			`Playing advanced click animation at (${x}, ${y})`,
 			options,
 		);
-		animation.playClickAnimationAdvance(x, y, options);
+		await animation.playClickAnimationAdvance(x, y, options);
 		this.logger.verbose("Advanced click animation completed");
 	};
 
-	playClickAnimation = (x: number, y: number): void => {
+	playClickAnimation = async (x: number, y: number): Promise<void> => {
 		this.logger.info(`Playing click animation at (${x}, ${y})`);
-		animation.playClickAnimation(x, y);
+		await animation.playClickAnimation(x, y);
 		this.logger.verbose("Click animation completed");
 	};
 
-	playClickAnimationOnElementByReadablePath = (readablePath: string): void => {
+	playClickAnimationOnElement = async (element: Element): Promise<void> => {
+		this.logger.info("Playing click animation on element");
+		if (element instanceof HTMLElement) {
+			await animation.playClickAnimationOnElement(element);
+			this.logger.verbose("Click animation on element completed");
+		} else {
+			this.logger.warn("Element is not an HTMLElement, animation skipped");
+		}
+	};
+
+	playClickAnimationOnElementByReadablePath = async (
+		readablePath: string,
+	): Promise<void> => {
 		this.logger.info(
 			`Playing click animation on element at path: ${readablePath}`,
 		);
@@ -47,7 +59,12 @@ export class TabAnimationTools {
 			);
 			return;
 		}
-		animation.playClickAnimationOnElement(element);
-		this.logger.verbose("Click animation on element completed");
+		await this.playClickAnimationOnElement(element);
+	};
+
+	playScanAnimation = async (): Promise<void> => {
+		this.logger.info("Playing scan animation");
+		await animation.playScanAnimation();
+		this.logger.verbose("Scan animation completed");
 	};
 }

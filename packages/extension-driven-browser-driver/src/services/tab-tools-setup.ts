@@ -8,9 +8,13 @@ import {
 	type ResolveMessage,
 } from "@mcp-browser-kit/core-utils";
 import type { Func, Logger, LoggerFactory } from "@mcp-browser-kit/types";
+import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import type { Get, Paths } from "type-fest";
 import browser, { type Runtime } from "webextension-polyfill";
+import { TabAnimationTools } from "./tab-animation-tools";
+import { TabContextStore } from "./tab-context-store";
+import { TabDomTools } from "./tab-dom-tools";
 import { TabTools } from "./tab-tools";
 
 export type ToolKeys = Paths<
@@ -51,6 +55,18 @@ export interface CallToolArgs<T extends ToolKeys> {
  */
 @injectable()
 export class TabToolsSetup {
+	/**
+	 * Setup container bindings for TabToolsSetup and its dependencies
+	 */
+	static setupContainer(container: Container): void {
+		// Tab service dependencies
+		container.bind<TabDomTools>(TabDomTools).to(TabDomTools);
+		container.bind<TabAnimationTools>(TabAnimationTools).to(TabAnimationTools);
+		container.bind<TabContextStore>(TabContextStore).to(TabContextStore);
+		container.bind<TabTools>(TabTools).to(TabTools);
+		container.bind<TabToolsSetup>(TabToolsSetup).to(TabToolsSetup);
+	}
+
 	private readonly logger: Logger;
 	private readonly channel: EmitteryMessageChannel<DeferData, ResolveData>;
 	private readonly rpcServer: MessageChannelRpcServer<TabTools>;

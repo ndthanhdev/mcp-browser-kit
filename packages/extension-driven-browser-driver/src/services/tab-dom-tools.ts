@@ -3,6 +3,7 @@ import type { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/ou
 import { LoggerFactoryOutputPort as LoggerFactoryOutputPortSymbol } from "@mcp-browser-kit/core-extension/output-ports";
 import { inject, injectable } from "inversify";
 import * as dom from "../utils/dom-tools";
+import { TabAnimationTools } from "./tab-animation-tools";
 import { TabContextStore } from "./tab-context-store";
 
 @injectable()
@@ -13,12 +14,14 @@ export class TabDomTools {
 		@inject(LoggerFactoryOutputPortSymbol)
 		private readonly loggerFactory: LoggerFactoryOutputPort,
 		@inject(TabContextStore) private readonly contextStore: TabContextStore,
+		@inject(TabAnimationTools) private readonly animation: TabAnimationTools,
 	) {
 		this.logger = this.loggerFactory.create("TabDomTools");
 	}
 
-	clickOnCoordinates = (x: number, y: number) => {
+	clickOnCoordinates = async (x: number, y: number) => {
 		this.logger.info(`Clicking on coordinates (${x}, ${y})`);
+		await this.animation.playClickAnimation(x, y);
 		const result = dom.clickOnCoordinates(x, y);
 		this.logger.verbose("Click on coordinates completed");
 		return result;
@@ -26,6 +29,9 @@ export class TabDomTools {
 
 	clickOnElementByReadablePath = async (readablePath: string) => {
 		this.logger.info(`Clicking on element at path: ${readablePath}`);
+		await this.animation.playClickAnimationOnElementByReadablePath(
+			readablePath,
+		);
 		const element = this.contextStore.getElementFromPath(readablePath);
 		if (!element) {
 			this.logger.warn(`Element not found at path: ${readablePath}`);
@@ -36,31 +42,45 @@ export class TabDomTools {
 		return result;
 	};
 
-	fillTextToElementByReadablePath = (readablePath: string, value: string) => {
+	fillTextToElementByReadablePath = async (
+		readablePath: string,
+		value: string,
+	) => {
 		this.logger.info(
 			`Filling text to element at path: ${readablePath}, value length: ${value.length}`,
+		);
+		await this.animation.playClickAnimationOnElementByReadablePath(
+			readablePath,
 		);
 		const element = this.contextStore.getElementFromPath(readablePath);
 		if (!element) {
 			this.logger.warn(`Element not found at path: ${readablePath}`);
 			return;
 		}
-		const result = dom.fillTextToElementByReadablePath(element, value);
+		const result = await dom.fillTextToElementByReadablePath(element, value);
 		this.logger.verbose("Fill text completed");
 		return result;
 	};
 
-	fillTextToFocusedElement = (value: string) => {
+	fillTextToFocusedElement = async (value: string) => {
 		this.logger.info(
 			`Filling text to focused element, value length: ${value.length}`,
 		);
+		// Play animation on the currently focused element
+		const focusedElement = document.activeElement;
+		if (focusedElement) {
+			await this.animation.playClickAnimationOnElement(focusedElement);
+		}
 		const result = dom.fillTextToFocusedElement(value);
 		this.logger.verbose("Fill text to focused element completed");
 		return result;
 	};
 
-	focusOnElement = (readablePath: string) => {
+	focusOnElement = async (readablePath: string) => {
 		this.logger.info(`Focusing on element at path: ${readablePath}`);
+		await this.animation.playClickAnimationOnElementByReadablePath(
+			readablePath,
+		);
 		const element = this.contextStore.getElementFromPath(readablePath);
 		if (!element) {
 			this.logger.warn(`Element not found at path: ${readablePath}`);
@@ -71,15 +91,17 @@ export class TabDomTools {
 		return result;
 	};
 
-	focusOnCoordinates = (x: number, y: number) => {
+	focusOnCoordinates = async (x: number, y: number) => {
 		this.logger.info(`Focusing on coordinates (${x}, ${y})`);
+		await this.animation.playClickAnimation(x, y);
 		const result = dom.focusOnCoordinates(x, y);
 		this.logger.verbose("Focus on coordinates completed");
 		return result;
 	};
 
-	getInnerText = () => {
+	getInnerText = async () => {
 		this.logger.verbose("Getting inner text");
+		await this.animation.playScanAnimation();
 		const result = dom.getInnerText();
 		this.logger.verbose(`Retrieved inner text (${result.length} characters)`);
 		return result;
@@ -87,6 +109,9 @@ export class TabDomTools {
 
 	hitEnterOnElementByReadablePath = async (readablePath: string) => {
 		this.logger.info(`Hitting enter on element at path: ${readablePath}`);
+		await this.animation.playClickAnimationOnElementByReadablePath(
+			readablePath,
+		);
 		const element = this.contextStore.getElementFromPath(readablePath);
 		if (!element) {
 			this.logger.warn(`Element not found at path: ${readablePath}`);
@@ -99,13 +124,19 @@ export class TabDomTools {
 
 	hitEnterOnFocusedElement = async () => {
 		this.logger.info("Hitting enter on focused element");
+		// Play animation on the currently focused element
+		const focusedElement = document.activeElement;
+		if (focusedElement) {
+			await this.animation.playClickAnimationOnElement(focusedElement);
+		}
 		const result = await dom.hitEnterOnFocusedElement();
 		this.logger.verbose("Hit enter on focused element completed");
 		return result;
 	};
 
-	getSelection = (): Selection => {
+	getSelection = async (): Promise<Selection> => {
 		this.logger.verbose("Getting text selection");
+		await this.animation.playScanAnimation();
 		const result = dom.getSerializableSelection();
 		this.logger.verbose(
 			`Retrieved selection: ${result.selectedText ? `"${result.selectedText.substring(0, 50)}..."` : "none"}`,

@@ -15,31 +15,26 @@ import type { Func } from "@mcp-browser-kit/types";
 import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import * as backgroundToolsM3 from "../utils/background-tools-m3";
-import { TabAnimationTools } from "./tab-animation-tools";
-import { TabContextStore } from "./tab-context-store";
-import { TabDomTools } from "./tab-dom-tools";
 import { TabRpcService } from "./tab-rpc-service";
-import { TabTools } from "./tab-tools";
 import { TabToolsSetup } from "./tab-tools-setup";
 
 @injectable()
 export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 	/**
-	 * Setup container bindings for M3 environment - includes tab services and M3 driver
+	 * Setup container bindings for M3 environment
 	 */
 	static setupContainer(container: Container): void {
-		// Tab services
-		container.bind<TabTools>(TabTools).to(TabTools);
-		container.bind<TabDomTools>(TabDomTools).to(TabDomTools);
-		container.bind<TabAnimationTools>(TabAnimationTools).to(TabAnimationTools);
-		container.bind<TabContextStore>(TabContextStore).to(TabContextStore);
-		container.bind<TabToolsSetup>(TabToolsSetup).to(TabToolsSetup);
-
-		// M3 browser driver services
+		// Setup TabRpcService and its dependencies
 		container.bind<TabRpcService>(TabRpcService).to(TabRpcService);
+
+		// M3 browser driver
 		container
 			.bind<BrowserDriverOutputPort>(BrowserDriverOutputPort)
 			.to(DrivenBrowserDriverM3);
+	}
+
+	static setupTabContainer(container: Container): void {
+		TabToolsSetup.setupContainer(container);
 	}
 
 	private readonly logger;
@@ -110,9 +105,9 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 		this.logger.info(`Tab closed: ${tabId}`);
 	};
 
-	captureTab = (tabId: string): Promise<Screenshot> => {
-		this.logger.verbose(`Capturing tab: ${tabId}`);
-		return backgroundToolsM3.captureTab(tabId);
+	captureTab = (_tabId: string): Promise<Screenshot> => {
+		this.logger.verbose("captureTab called (not supported in M3 driver)");
+		return Promise.reject("captureTab is not supported in M3 driver");
 	};
 
 	// DOM Query Methods

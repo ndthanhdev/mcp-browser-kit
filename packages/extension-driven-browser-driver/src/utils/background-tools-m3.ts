@@ -5,36 +5,11 @@ import type {
 	ExtensionWindowInfo,
 } from "@mcp-browser-kit/core-extension/types";
 import { createPrefixId } from "@mcp-browser-kit/core-utils";
-import parseDataUrl from "data-urls";
-import { imageDimensionsFromData } from "image-dimensions";
-import { Base64 } from "js-base64";
 import browser from "webextension-polyfill";
 import { getBrowserInfoPolyfill } from "./browser-info-polyfill";
 import { LocalStorageKeys } from "./storage-keys";
 
 const extensionInstanceId = createPrefixId("extension");
-
-export const captureTab = async (_tabId: string) => {
-	const dataUrl = await browser.tabs.captureVisibleTab();
-	const parsed = parseDataUrl(dataUrl);
-
-	if (!parsed?.body) {
-		throw new Error("Failed to parse data URL or body is undefined.");
-	}
-
-	const dimensions = await imageDimensionsFromData(parsed.body);
-
-	if (!dimensions) {
-		throw new Error("Failed to retrieve image dimensions.");
-	}
-
-	return {
-		data: Base64.fromUint8Array(parsed.body),
-		mimeType: parsed.mimeType.toString(),
-		width: dimensions.width,
-		height: dimensions.height,
-	};
-};
 
 export const closeTab = async (tabId: string): Promise<void> => {
 	await browser.tabs.remove(Number.parseInt(tabId));
