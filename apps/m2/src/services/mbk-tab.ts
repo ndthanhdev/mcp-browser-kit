@@ -30,7 +30,7 @@ export class MbkTab {
 			.to(DrivenLoggerFactoryConsolaBrowser);
 
 		// Setup M2 container with required services
-		DrivenBrowserDriverM2.setupContainer(container);
+		DrivenBrowserDriverM2.setupTabContainer(container);
 
 		// Register KeepAlive service
 		container.bind<KeepAlive>(KeepAlive).to(KeepAlive);

@@ -10,7 +10,7 @@ export const clickOnCoordinates = (x: number, y: number) => {
 
 export const clickOnElementByReadablePath = async (element: HTMLElement) => {
 	if (element) {
-		playClickAnimationOnElement(element);
+		await playClickAnimationOnElement(element);
 		element.click();
 	}
 };
@@ -30,12 +30,12 @@ export const dispatchEnter = async (element: HTMLElement) => {
 	element.dispatchEvent(new KeyboardEvent("keyup", dict));
 };
 
-export const fillTextToElementByReadablePath = (
+export const fillTextToElementByReadablePath = async (
 	element: HTMLElement,
 	value: string,
 ) => {
 	if (element) {
-		playClickAnimationOnElement(element);
+		await playClickAnimationOnElement(element);
 		(element as HTMLInputElement).value = value;
 	}
 };
@@ -66,7 +66,7 @@ export const getInnerText = () => {
 
 export const hitEnterOnElementByReadablePath = async (element: HTMLElement) => {
 	if (element) {
-		playClickAnimationOnElement(element);
+		await playClickAnimationOnElement(element);
 		await dispatchEnter(element);
 	}
 };

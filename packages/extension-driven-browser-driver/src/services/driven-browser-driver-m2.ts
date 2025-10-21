@@ -16,31 +16,26 @@ import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import * as backgroundToolsM2 from "../utils/background-tools-m2";
 import * as backgroundToolsM3 from "../utils/background-tools-m3";
-import { TabAnimationTools } from "./tab-animation-tools";
-import { TabContextStore } from "./tab-context-store";
-import { TabDomTools } from "./tab-dom-tools";
 import { TabRpcService } from "./tab-rpc-service";
-import { TabTools } from "./tab-tools";
 import { TabToolsSetup } from "./tab-tools-setup";
 
 @injectable()
 export class DrivenBrowserDriverM2 implements BrowserDriverOutputPort {
 	/**
-	 * Setup container bindings for M2 environment - includes tab services and M2 driver
+	 * Setup container bindings for M2 environment
 	 */
 	static setupContainer(container: Container): void {
-		// Tab services
-		container.bind<TabTools>(TabTools).to(TabTools);
-		container.bind<TabDomTools>(TabDomTools).to(TabDomTools);
-		container.bind<TabAnimationTools>(TabAnimationTools).to(TabAnimationTools);
-		container.bind<TabContextStore>(TabContextStore).to(TabContextStore);
-		container.bind<TabToolsSetup>(TabToolsSetup).to(TabToolsSetup);
+		// Setup TabRpcService and its dependencies
+		container.bind<TabRpcService>(TabRpcService).to(TabRpcService);
 
 		// M2 browser driver
-		container.bind<TabRpcService>(TabRpcService).to(TabRpcService);
 		container
 			.bind<BrowserDriverOutputPort>(BrowserDriverOutputPort)
 			.to(DrivenBrowserDriverM2);
+	}
+
+	static setupTabContainer(container: Container): void {
+		TabToolsSetup.setupContainer(container);
 	}
 
 	private readonly logger;
@@ -113,7 +108,7 @@ export class DrivenBrowserDriverM2 implements BrowserDriverOutputPort {
 
 	captureTab = (tabId: string): Promise<Screenshot> => {
 		this.logger.verbose(`Capturing tab: ${tabId}`);
-		return backgroundToolsM3.captureTab(tabId);
+		return backgroundToolsM2.captureTab(tabId);
 	};
 
 	// DOM Query Methods

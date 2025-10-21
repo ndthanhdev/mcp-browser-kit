@@ -7,6 +7,7 @@
 	"permissions": [
 		"tabs",
 		"activeTab",
+		"tabCapture",
 		"scripting",
 		"alarms",
 		"storage"

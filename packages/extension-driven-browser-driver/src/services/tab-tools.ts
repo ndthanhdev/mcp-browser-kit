@@ -15,22 +15,16 @@ import { TabDomTools } from "./tab-dom-tools";
  */
 @injectable()
 export class TabTools {
-	public readonly animation: TabAnimationTools;
-	public readonly dom: TabDomTools;
-	private readonly contextStore: TabContextStore;
 	private readonly logger;
 
 	constructor(
 		@inject(LoggerFactoryOutputPortSymbol)
 		private readonly loggerFactory: LoggerFactoryOutputPort,
-		@inject(TabDomTools) dom: TabDomTools,
-		@inject(TabAnimationTools) animation: TabAnimationTools,
-		@inject(TabContextStore) contextStore: TabContextStore,
+		@inject(TabDomTools) public readonly dom: TabDomTools,
+		@inject(TabAnimationTools) public readonly animation: TabAnimationTools,
+		@inject(TabContextStore) private readonly contextStore: TabContextStore,
 	) {
 		this.logger = this.loggerFactory.create("TabTools");
-		this.dom = dom;
-		this.animation = animation;
-		this.contextStore = contextStore;
 	}
 
 	loadTabContext = async (): Promise<TabContext> => {
@@ -104,6 +98,9 @@ export class TabTools {
 				"Tab context loaded but not stored (no readable tree available)",
 			);
 		}
+
+		// Play scan animation to indicate completion
+		await this.animation.playScanAnimation();
 
 		// Return the public context
 		return {
