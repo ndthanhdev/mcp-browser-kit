@@ -41,7 +41,7 @@ export class BrowserTools {
 	 */
 	register(server: McpServer): void {
 		this.registerGetBasicBrowserContext(server);
-		this.registerCaptureActiveTab(server);
+		this.registerCaptureTab(server);
 		this.registerInvokeJsFn(server);
 		this.registerOpenTab(server);
 		this.registerCloseTab(server);
@@ -81,20 +81,25 @@ export class BrowserTools {
 	}
 
 	/**
-	 * Registers the captureActiveTab tool
+	 * Registers the captureTab tool
 	 */
-	private registerCaptureActiveTab(server: McpServer): void {
-		this.logger.verbose("Registering tool: captureActiveTab");
+	private registerCaptureTab(server: McpServer): void {
+		this.logger.verbose("Registering tool: captureTab");
 		server.tool(
-			"captureActiveTab",
-			this.toolDescriptionsInputPort.captureActiveTabInstruction(),
-			{},
-			async () => {
-				this.logger.info("Executing captureActiveTab");
-				const overScreenshot = await over(this.toolsInputPort.captureTab);
+			"captureTab",
+			this.toolDescriptionsInputPort.captureTabInstruction(),
+			tabKeySchema,
+			async ({ tabKey }) => {
+				this.logger.info("Executing captureTab", {
+					tabKey,
+				});
+				const overScreenshot = await over(() =>
+					this.toolsInputPort.captureTab(tabKey),
+				);
 
 				if (!overScreenshot.ok) {
-					this.logger.error("Failed to capture active tab screenshot", {
+					this.logger.error("Failed to capture tab screenshot", {
+						tabKey,
 						reason: overScreenshot.reason,
 					});
 					return createErrorResponse(
@@ -105,6 +110,7 @@ export class BrowserTools {
 
 				const screenshot = overScreenshot.value;
 				this.logger.verbose("Screenshot captured", {
+					tabKey,
 					width: screenshot.width,
 					height: screenshot.height,
 				});

@@ -52,7 +52,6 @@ flowchart TD
   end
 
   subgraph ServerDriven["Driven"]
-    ExtensionDriver
     ConfigProvider["ConfigProvider"]
     ExtensionChannelProvider
     LoggerProvider["LoggerProvider"]
@@ -63,7 +62,6 @@ flowchart TD
   ToolDescriptions --> ToolDescriptionUseCases
   ManageChannels --> ManageChannelUseCases
   %% From Core
-  ServerToolCallUseCases --"x"--> ExtensionDriver
   ServerToolCallUseCases--> ExtensionChannelManager
   ManageChannelUseCases --> ExtensionChannelManager
   ExtensionChannelManager --> ExtensionChannelProvider

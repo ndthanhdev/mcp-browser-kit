@@ -57,6 +57,10 @@ export class ServerDrivenTrpcChannelProvider
 		return this.baseExtensionChannelProvider.openChannel(id);
 	};
 
+	closeChannel = (id: string) => {
+		return this.baseExtensionChannelProvider.closeChannel(id);
+	};
+
 	public async start() {
 		this.logger.verbose("Starting HTTP Server");
 		const httpServer = this.createHttpServer();
