@@ -2307,6 +2307,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"envalid@npm:^8.1.1":
+  version: 8.1.1
+  resolution: "envalid@npm:8.1.1"
+  dependencies:
+    tslib: "npm:2.8.1"
+  checksum: 10c0/065c8586487688b4ae554eb7e05d279d505a210f662cb72fab44dc8bc0d81fb0e62efd9163a1b38eeb962aea1d60fd118d85a155c85c50e079b5acf6c522c93c
+  languageName: node
+  linkType: hard
+
 "err-code@npm:^2.0.2":
   version: 2.0.3
   resolution: "err-code@npm:2.0.3"
@@ -4971,6 +4980,7 @@ __metadata:
     delay: "npm:^6.0.0"
     dompurify: "npm:^3.2.5"
     emittery: "npm:^1.1.0"
+    envalid: "npm:^8.1.1"
     image-dimensions: "npm:^2.3.0"
     inversify: "npm:^7.5.1"
     js-base64: "npm:^3.7.7"
@@ -5716,6 +5726,13 @@ __metadata:
   version: 1.4.1
   resolution: "tsconfig-moon@npm:1.4.1"
   checksum: 10c0/4e4305544496f2551f87d90d699f0eda5996bcd39e60af533a14dfdbad08a3138051e0ce8fceac8f0414fc7d9ca67e8fadbc99f5d694142d7b786dc5ca701ef1
+  languageName: node
+  linkType: hard
+
+"tslib@npm:2.8.1":
+  version: 2.8.1
+  resolution: "tslib@npm:2.8.1"
+  checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62
   languageName: node
   linkType: hard
 

@@ -51,3 +51,17 @@ tasks:
       - '@group(extension-vendors)'
     outputs:
       - '@group(extension-dist)'
+  extension-build-firefox:
+    toolchain: node
+    script: >-
+      $workspaceRoot/etc/scripts/actions/build-firefox.ts
+    env:
+      SOURCE_DIR: $projectRoot/target/extension/tmp
+      ARTIFACTS_DIR: $projectRoot/target/extension/dist
+    inputs:
+      - '@group(tsup-dist)'
+      - '@group(extension-assets)'
+      - '@group(extension-manifest)'
+      - '@group(extension-vendors)'
+    outputs:
+      - '@group(extension-dist)'
