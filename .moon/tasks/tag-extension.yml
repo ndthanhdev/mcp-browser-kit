@@ -8,11 +8,11 @@ fileGroups:
   tsup-dist:
     - target/tsup/dist/**/*
   extension-assets:
-    - target/extension/tmp/assets/**/*
+    - target/extension/tmp/extension/assets/**/*
   extension-manifest:
-    - target/extension/tmp/manifest.json
+    - target/extension/tmp/extension/manifest.json
   extension-vendors:
-    - target/extension/tmp/vendors/**/*
+    - target/extension/tmp/extension/vendors/**/*
   extension-dist:
     - target/extension/dist/**/*
 
@@ -20,14 +20,11 @@ tasks:
   extension-copy-assets:
     deps:
       - ~:tsup-build
-    script: |
-      #!/usr/bin/env bash
-      rm -rf ./target/extension/
-      mkdir -p ./target/extension/tmp/vendors/
-      cp -r target/tsup/dist/* ./target/extension/tmp/
-      cp -r ./src/manifest.json ./target/extension/tmp/manifest.json
-      cp -r ./assets/ ./target/extension/tmp/assets/
-      cp -r $workspaceRoot/node_modules/webextension-polyfill/dist ./target/extension/tmp/vendors/webextension-polyfill
+    script: >-
+      $workspaceRoot/etc/scripts/actions/extension-copy-assets.ts
+    env:
+      PROJECT_ROOT: $projectRoot
+      WORKSPACE_ROOT: $workspaceRoot
     inputs: 
       - '@group(assets)'
       - '@group(sources)'
@@ -42,8 +39,20 @@ tasks:
     deps:
       - extension-copy-assets
     toolchain: node
-    script: |
-      web-ext build -o --source-dir=$projectRoot/target/extension/tmp -a=$projectRoot/target/extension/dist
+    script: >-
+      web-ext build -o --source-dir=$projectRoot/target/extension/tmp/extension --artifacts-dir=$projectRoot/target/extension/dist
+    inputs:
+      - '@group(assets)'
+      - '@group(sources)'
+      - '@group(tsup-dist)'
+    outputs:
+      - '@group(extension-dist)'
+  extension-build-firefox:
+    toolchain: node
+    script: >-
+      $workspaceRoot/etc/scripts/actions/extension-build-firefox.ts
+    env:
+      PROJECT_ROOT: $projectRoot
     inputs:
       - '@group(tsup-dist)'
       - '@group(extension-assets)'

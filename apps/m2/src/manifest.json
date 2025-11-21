@@ -2,7 +2,7 @@
 	"$schema": "https://json.schemastore.org/webextension.json",
 	"manifest_version": 2,
 	"name": "MCP Browser Kit M2",
-	"version": "6.0.0",
+	"version": "6.0.1",
 
 	"description": "Allow MCP Browser Kit to interact with the browser.",
 	"permissions": [
@@ -35,5 +35,10 @@
 			"bootstrap-mbk-bg.js"
 		],
 		"persistent": true
+	},
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "{264f8236-2b24-4051-bb27-17f26fe2f260}"
+		}
 	}
 }
