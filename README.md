@@ -30,7 +30,7 @@ https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
    - Check the [Compatibility table](#compatibility-table) below to see which build (M2 or M3) is compatible with your browser
    - Note that M2 builds offer more functionality than M3 builds, so prefer M2 if your browser supports both
 
-3. Download and unzip the latest compatible build from [The Latest Release](https://github.com/ndthanhdev/mcp-browser-kit/releases/latest).
+3. Download the latest compatible build from [The Latest Release](https://github.com/ndthanhdev/mcp-browser-kit/releases/latest).
 
 4. [Load the extension](#load-extension) into a compatible browser and enable it.
 
@@ -47,11 +47,11 @@ https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
 ## Compatibility table
 
 > The M2 build supports more functionalities than the M3 build.
-
 > Extension file name patterns:
->
-> - M2 build: `mcp_browser_kit_m2-[version].zip` (e.g., `mcp_browser_kit_m2-5.0.0.zip`)
-> - M3 build: `mcp_browser_kit_m3-[version].zip` (e.g., `mcp_browser_kit_m3-5.0.0.zip`)
+> - M2 build:
+>   - Chromium: `mcp_browser_kit_m2-<version>.zip` (e.g., `mcp_browser_kit_m2-5.0.0.zip`)
+>   - Firefox: `mcp_browser_kit_m2-<version>.xpi` (e.g., `mcp_browser_kit_m2-5.0.0.xpi`)
+> - M3 build: `mcp_browser_kit_m3-<version>.zip` (e.g., `mcp_browser_kit_m3-5.0.0.zip`)
 
 | Browser | M2 build | M3 build |
 | ------- | -------- | -------- |
@@ -64,19 +64,21 @@ https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
 ## Load Extension
 
 - Chromium-based browsers (Chrome, Brave, Edge)
-  1.  Open [chrome://extensions/](chrome://extensions/)
-  2.  Enable `Developer mode`
-  3.  Click `Load unpacked`
-  4.  Select the unpacked extension folder
+  1.  Unzip the downloaded `.zip` file
+  2.  Open [chrome://extensions/](chrome://extensions/)
+  3.  Enable `Developer mode`
+  4.  Click `Load unpacked`
+  5.  Select the unpacked extension folder
 - Firefox
-  1.  Open [about:debugging#/runtime/this-firefox](about:debugging#/runtime/this-firefox)
-  2.  Click `Load Temporary Add-on`
-  3.  Select the `manifest.json` file in the unpacked extension folder
+  1.  Open [about:addons](about:addons)
+  2.  Click the gear icon and select `Install Add-on From File`
+  3.  Select the downloaded `.xpi` file
 - Safari
-  1.  Open `Develop > Show Extension Builder`
-  2.  Click `+` and select `Add Extension`
-  3.  Select the unpacked extension folder
-  4.  Click `Install` to install the extension
+  1.  Unzip the downloaded `.zip` file
+  2.  Open `Develop > Show Extension Builder`
+  3.  Click `+` and select `Add Extension`
+  4.  Select the unpacked extension folder
+  5.  Click `Install` to install the extension
 
 # User Notes
 
