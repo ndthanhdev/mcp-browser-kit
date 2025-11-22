@@ -35,10 +35,6 @@ export class McpServerService {
 		return new McpServer({
 			name: "MCP Browser Kit",
 			version: "1.0.0",
-			capabilities: {
-				resources: {},
-				tools: {},
-			},
 		});
 	}
 
