@@ -14,9 +14,18 @@ import { over } from "ok-value-error-reason";
 import {
 	createErrorResponse,
 	createImageResponse,
+	createStructuredResponse,
 	createTextResponse,
 } from "./tool-helpers";
-import { invokeJsFnSchema, openTabSchema, tabKeySchema } from "./tool-schemas";
+import {
+	browserContextOutputSchema,
+	invokeJsFnOutputSchema,
+	invokeJsFnSchema,
+	openTabOutputSchema,
+	openTabSchema,
+	selectionOutputSchema,
+	tabKeySchema,
+} from "./tool-schemas";
 
 /**
  * Registers browser context and screenshot tools
@@ -53,10 +62,14 @@ export class BrowserTools {
 	 */
 	private registerGetBasicBrowserContext(server: McpServer): void {
 		this.logger.verbose("Registering tool: getBasicBrowserContext");
-		server.tool(
+		server.registerTool(
 			"getBasicBrowserContext",
-			this.toolDescriptionsInputPort.getBasicBrowserContextInstruction(),
-			{},
+			{
+				description:
+					this.toolDescriptionsInputPort.getBasicBrowserContextInstruction(),
+				inputSchema: {},
+				outputSchema: browserContextOutputSchema,
+			},
 			async () => {
 				this.logger.verbose("Executing getBasicBrowserContext");
 				const overCtx = await over(this.toolsInputPort.getContext);
@@ -75,7 +88,7 @@ export class BrowserTools {
 				this.logger.verbose("Retrieved browser context", {
 					tabs: ctx,
 				});
-				return createTextResponse(JSON.stringify(ctx));
+				return createStructuredResponse({ tabs: ctx });
 			},
 		);
 	}
@@ -85,10 +98,12 @@ export class BrowserTools {
 	 */
 	private registerCaptureTab(server: McpServer): void {
 		this.logger.verbose("Registering tool: captureTab");
-		server.tool(
+		server.registerTool(
 			"captureTab",
-			this.toolDescriptionsInputPort.captureTabInstruction(),
-			tabKeySchema,
+			{
+				description: this.toolDescriptionsInputPort.captureTabInstruction(),
+				inputSchema: tabKeySchema,
+			},
 			async ({ tabKey }) => {
 				this.logger.info("Executing captureTab", {
 					tabKey,
@@ -127,10 +142,13 @@ export class BrowserTools {
 	 */
 	private registerInvokeJsFn(server: McpServer): void {
 		this.logger.verbose("Registering tool: invokeJsFn");
-		server.tool(
+		server.registerTool(
 			"invokeJsFn",
-			this.toolDescriptionsInputPort.invokeJsFnInstruction(),
-			invokeJsFnSchema,
+			{
+				description: this.toolDescriptionsInputPort.invokeJsFnInstruction(),
+				inputSchema: invokeJsFnSchema,
+				outputSchema: invokeJsFnOutputSchema,
+			},
 			async ({ tabKey, fnBodyCode }) => {
 				this.logger.info("Executing invokeJsFn", {
 					tabKey,
@@ -155,7 +173,7 @@ export class BrowserTools {
 					tabKey,
 					hasResult: result !== undefined,
 				});
-				return createTextResponse(JSON.stringify(result) ?? "undefined");
+				return createStructuredResponse({ result });
 			},
 		);
 	}
@@ -165,10 +183,13 @@ export class BrowserTools {
 	 */
 	private registerOpenTab(server: McpServer): void {
 		this.logger.verbose("Registering tool: openTab");
-		server.tool(
+		server.registerTool(
 			"openTab",
-			this.toolDescriptionsInputPort.openTabInstruction(),
-			openTabSchema,
+			{
+				description: this.toolDescriptionsInputPort.openTabInstruction(),
+				inputSchema: openTabSchema,
+				outputSchema: openTabOutputSchema,
+			},
 			async ({ windowKey, url }) => {
 				this.logger.info("Executing openTab", {
 					windowKey,
@@ -195,7 +216,8 @@ export class BrowserTools {
 					tabKey: result.tabKey,
 					windowKey: result.windowKey,
 				});
-				return createTextResponse(
+				return createStructuredResponse(
+					{ tabKey: result.tabKey, windowKey: result.windowKey },
 					`Tab opened successfully. tabKey: ${result.tabKey}, windowKey: ${result.windowKey}`,
 				);
 			},
@@ -207,10 +229,12 @@ export class BrowserTools {
 	 */
 	private registerCloseTab(server: McpServer): void {
 		this.logger.verbose("Registering tool: closeTab");
-		server.tool(
+		server.registerTool(
 			"closeTab",
-			this.toolDescriptionsInputPort.closeTabInstruction(),
-			tabKeySchema,
+			{
+				description: this.toolDescriptionsInputPort.closeTabInstruction(),
+				inputSchema: tabKeySchema,
+			},
 			async ({ tabKey }) => {
 				this.logger.info("Executing closeTab", {
 					tabKey,
@@ -243,10 +267,13 @@ export class BrowserTools {
 	 */
 	private registerGetSelection(server: McpServer): void {
 		this.logger.verbose("Registering tool: getSelection");
-		server.tool(
+		server.registerTool(
 			"getSelection",
-			this.toolDescriptionsInputPort.getSelectionInstruction(),
-			tabKeySchema,
+			{
+				description: this.toolDescriptionsInputPort.getSelectionInstruction(),
+				inputSchema: tabKeySchema,
+				outputSchema: selectionOutputSchema,
+			},
 			async ({ tabKey }) => {
 				this.logger.info("Executing getSelection", {
 					tabKey,
@@ -271,7 +298,7 @@ export class BrowserTools {
 					tabKey,
 					hasSelection: selection !== undefined,
 				});
-				return createTextResponse(JSON.stringify(selection));
+				return createStructuredResponse({ selection: selection ?? null });
 			},
 		);
 	}

@@ -59,10 +59,13 @@ export class InteractionTools {
 	 */
 	private registerClickOnViewableElement(server: McpServer): void {
 		this.logger.verbose("Registering tool: clickOnViewableElement");
-		server.tool(
+		server.registerTool(
 			"clickOnViewableElement",
-			this.toolDescriptionsInputPort.clickOnViewableElementInstruction(),
-			coordinateSchema,
+			{
+				description:
+					this.toolDescriptionsInputPort.clickOnViewableElementInstruction(),
+				inputSchema: coordinateSchema,
+			},
 			async ({ tabKey, x, y }) => {
 				this.logger.info("Executing clickOnViewableElement", {
 					tabKey,
@@ -101,10 +104,13 @@ export class InteractionTools {
 	 */
 	private registerFillTextToViewableElement(server: McpServer): void {
 		this.logger.verbose("Registering tool: fillTextToViewableElement");
-		server.tool(
+		server.registerTool(
 			"fillTextToViewableElement",
-			this.toolDescriptionsInputPort.fillTextToViewableElementInstruction(),
-			coordinateTextInputSchema,
+			{
+				description:
+					this.toolDescriptionsInputPort.fillTextToViewableElementInstruction(),
+				inputSchema: coordinateTextInputSchema,
+			},
 			async ({ tabKey, x, y, value }) => {
 				this.logger.info("Executing fillTextToViewableElement", {
 					tabKey,
@@ -144,10 +150,13 @@ export class InteractionTools {
 	 */
 	private registerHitEnterOnViewableElement(server: McpServer): void {
 		this.logger.verbose("Registering tool: hitEnterOnViewableElement");
-		server.tool(
+		server.registerTool(
 			"hitEnterOnViewableElement",
-			this.toolDescriptionsInputPort.hitEnterOnViewableElementInstruction(),
-			coordinateSchema,
+			{
+				description:
+					this.toolDescriptionsInputPort.hitEnterOnViewableElementInstruction(),
+				inputSchema: coordinateSchema,
+			},
 			async ({ tabKey, x, y }) => {
 				this.logger.info("Executing hitEnterOnViewableElement", {
 					tabKey,
@@ -188,10 +197,13 @@ export class InteractionTools {
 	 */
 	private registerClickOnReadableElement(server: McpServer): void {
 		this.logger.verbose("Registering tool: clickOnReadableElement");
-		server.tool(
+		server.registerTool(
 			"clickOnReadableElement",
-			this.toolDescriptionsInputPort.clickOnReadableElementInstruction(),
-			readableElementSchema,
+			{
+				description:
+					this.toolDescriptionsInputPort.clickOnReadableElementInstruction(),
+				inputSchema: readableElementSchema,
+			},
 			async ({ tabKey, readablePath }) => {
 				this.logger.info("Executing clickOnReadableElement", {
 					tabKey,
@@ -227,10 +239,13 @@ export class InteractionTools {
 	 */
 	private registerFillTextToReadableElement(server: McpServer): void {
 		this.logger.verbose("Registering tool: fillTextToReadableElement");
-		server.tool(
+		server.registerTool(
 			"fillTextToReadableElement",
-			this.toolDescriptionsInputPort.fillTextToReadableElementInstruction(),
-			readableElementTextInputSchema,
+			{
+				description:
+					this.toolDescriptionsInputPort.fillTextToReadableElementInstruction(),
+				inputSchema: readableElementTextInputSchema,
+			},
 			async ({ tabKey, readablePath, value }) => {
 				this.logger.info("Executing fillTextToReadableElement", {
 					tabKey,
@@ -267,10 +282,13 @@ export class InteractionTools {
 	 */
 	private registerHitEnterOnReadableElement(server: McpServer): void {
 		this.logger.verbose("Registering tool: hitEnterOnReadableElement");
-		server.tool(
+		server.registerTool(
 			"hitEnterOnReadableElement",
-			this.toolDescriptionsInputPort.hitEnterOnReadableElementInstruction(),
-			readableElementSchema,
+			{
+				description:
+					this.toolDescriptionsInputPort.hitEnterOnReadableElementInstruction(),
+				inputSchema: readableElementSchema,
+			},
 			async ({ tabKey, readablePath }) => {
 				this.logger.info("Executing hitEnterOnReadableElement", {
 					tabKey,

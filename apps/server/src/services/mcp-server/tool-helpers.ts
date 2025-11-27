@@ -50,3 +50,19 @@ export const createImageResponse = (
 		},
 	],
 });
+
+/**
+ * Creates a structured response with both content and structuredContent for MCP tools with output schemas
+ */
+export const createStructuredResponse = <T>(
+	structuredContent: T,
+	textContent?: string,
+) => ({
+	content: [
+		{
+			type: "text" as const,
+			text: textContent ?? JSON.stringify(structuredContent),
+		},
+	],
+	structuredContent,
+});
