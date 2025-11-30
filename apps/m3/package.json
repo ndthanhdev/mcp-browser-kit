@@ -3,7 +3,7 @@
 	"type": "module",
 	"packageManager": "yarn@4.8.0",
 	"devDependencies": {
-		"@modelcontextprotocol/sdk": "^1.22.0",
+		"@modelcontextprotocol/sdk": "^1.23.0",
 		"typescript": "^5.9.3",
 		"web-ext": "^9.2.0"
 	}

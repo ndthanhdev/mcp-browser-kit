@@ -11,8 +11,15 @@ import {
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
-import { createErrorResponse, createTextResponse } from "./tool-helpers";
-import { tabKeySchema } from "./tool-schemas";
+import {
+	createErrorResponse,
+	createStructuredResponse,
+} from "./tool-helpers";
+import {
+	readableElementOutputSchema,
+	readableTextOutputSchema,
+	tabKeySchema,
+} from "./tool-schemas";
 
 /**
  * Registers tools for reading element information
@@ -45,10 +52,14 @@ export class ElementTools {
 	 */
 	private registerGetReadableText(server: McpServer): void {
 		this.logger.verbose("Registering tool: getReadableText");
-		server.tool(
+		server.registerTool(
 			"getReadableText",
-			this.toolDescriptionsInputPort.getReadableTextInstruction(),
-			tabKeySchema,
+			{
+				description:
+					this.toolDescriptionsInputPort.getReadableTextInstruction(),
+				inputSchema: tabKeySchema,
+				outputSchema: readableTextOutputSchema,
+			},
 			async ({ tabKey }) => {
 				this.logger.info("Executing getReadableText", {
 					tabKey,
@@ -73,7 +84,10 @@ export class ElementTools {
 					tabKey,
 					textLength: innerText?.length,
 				});
-				return createTextResponse(`InnerText: ${JSON.stringify(innerText)}`);
+				return createStructuredResponse(
+					{ innerText: innerText ?? null },
+					`InnerText: ${JSON.stringify(innerText)}`,
+				);
 			},
 		);
 	}
@@ -83,10 +97,14 @@ export class ElementTools {
 	 */
 	private registerGetReadableElements(server: McpServer): void {
 		this.logger.verbose("Registering tool: getReadableElements");
-		server.tool(
+		server.registerTool(
 			"getReadableElements",
-			this.toolDescriptionsInputPort.getReadableElementsInstruction(),
-			tabKeySchema,
+			{
+				description:
+					this.toolDescriptionsInputPort.getReadableElementsInstruction(),
+				inputSchema: tabKeySchema,
+				outputSchema: readableElementOutputSchema,
+			},
 			async ({ tabKey }) => {
 				this.logger.info("Executing getReadableElements", {
 					tabKey,
@@ -111,7 +129,7 @@ export class ElementTools {
 					tabKey,
 					elementCount: elements.length,
 				});
-				return createTextResponse(JSON.stringify(elements));
+				return createStructuredResponse({ elements });
 			},
 		);
 	}
