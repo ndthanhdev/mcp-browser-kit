@@ -14,16 +14,13 @@ import { over } from "ok-value-error-reason";
 import {
 	createErrorResponse,
 	createStructuredResponse,
-} from "./tool-helpers";
+} from "../utils/tool-helpers";
 import {
 	readableElementOutputSchema,
 	readableTextOutputSchema,
 	tabKeySchema,
-} from "./tool-schemas";
+} from "../utils/tool-schemas";
 
-/**
- * Registers tools for reading element information
- */
 @injectable()
 export class ElementTools {
 	private readonly logger;
@@ -39,17 +36,11 @@ export class ElementTools {
 		this.logger = loggerFactory.create("elementTools");
 	}
 
-	/**
-	 * Registers all element-related tools with the MCP server
-	 */
 	register(server: McpServer): void {
 		this.registerGetReadableText(server);
 		this.registerGetReadableElements(server);
 	}
 
-	/**
-	 * Registers the getReadableText tool
-	 */
 	private registerGetReadableText(server: McpServer): void {
 		this.logger.verbose("Registering tool: getReadableText");
 		server.registerTool(
@@ -92,9 +83,6 @@ export class ElementTools {
 		);
 	}
 
-	/**
-	 * Registers the getReadableElements tool
-	 */
 	private registerGetReadableElements(server: McpServer): void {
 		this.logger.verbose("Registering tool: getReadableElements");
 		server.registerTool(
@@ -134,3 +122,4 @@ export class ElementTools {
 		);
 	}
 }
+

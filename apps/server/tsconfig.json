@@ -36,6 +36,12 @@
 			],
 			"@mcp-browser-kit/server-driven-trpc-channel-provider/*": [
 				"../../packages/server-driven-trpc-channel-provider/src/*"
+			],
+			"@mcp-browser-kit/server-driving-mcp-server": [
+				"../../packages/server-driving-mcp-server/src/index.ts"
+			],
+			"@mcp-browser-kit/server-driving-mcp-server/*": [
+				"../../packages/server-driving-mcp-server/src/*"
 			]
 		},
 		"outDir": "../../.moon/cache/types/apps/server"
@@ -45,7 +51,8 @@
 		"../../packages/rpc/src/**/*",
 		"../../packages/core-server/src/**/*",
 		"../../packages/helper-base-extension-channel-provider/src/**/*",
-		"../../packages/server-driven-trpc-channel-provider/src/**/*"
+		"../../packages/server-driven-trpc-channel-provider/src/**/*",
+		"../../packages/server-driving-mcp-server/src/**/*"
 	],
 	"references": [
 		{
@@ -62,6 +69,9 @@
 		},
 		{
 			"path": "../../packages/server-driven-trpc-channel-provider"
+		},
+		{
+			"path": "../../packages/server-driving-mcp-server"
 		}
 	]
 }

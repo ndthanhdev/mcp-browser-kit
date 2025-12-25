@@ -11,17 +11,14 @@ import {
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
-import { createErrorResponse, createTextResponse } from "./tool-helpers";
+import { createErrorResponse, createTextResponse } from "../utils/tool-helpers";
 import {
 	coordinateSchema,
 	coordinateTextInputSchema,
 	readableElementSchema,
 	readableElementTextInputSchema,
-} from "./tool-schemas";
+} from "../utils/tool-schemas";
 
-/**
- * Registers tools for interacting with page elements (clicking, typing, etc.)
- */
 @injectable()
 export class InteractionTools {
 	private readonly logger;
@@ -37,26 +34,16 @@ export class InteractionTools {
 		this.logger = loggerFactory.create("interactionTools");
 	}
 
-	/**
-	 * Registers all interaction-related tools with the MCP server
-	 */
 	register(server: McpServer): void {
-		// Coordinate-based interactions
 		this.registerClickOnViewableElement(server);
 		this.registerFillTextToViewableElement(server);
 		this.registerHitEnterOnViewableElement(server);
 
-		// Readable element path-based interactions
 		this.registerClickOnReadableElement(server);
 		this.registerFillTextToReadableElement(server);
 		this.registerHitEnterOnReadableElement(server);
 	}
 
-	// ========== Coordinate-based interactions ==========
-
-	/**
-	 * Registers the clickOnViewableElement tool
-	 */
 	private registerClickOnViewableElement(server: McpServer): void {
 		this.logger.verbose("Registering tool: clickOnViewableElement");
 		server.registerTool(
@@ -99,9 +86,6 @@ export class InteractionTools {
 		);
 	}
 
-	/**
-	 * Registers the fillTextToViewableElement tool
-	 */
 	private registerFillTextToViewableElement(server: McpServer): void {
 		this.logger.verbose("Registering tool: fillTextToViewableElement");
 		server.registerTool(
@@ -145,9 +129,6 @@ export class InteractionTools {
 		);
 	}
 
-	/**
-	 * Registers the hitEnterOnViewableElement tool
-	 */
 	private registerHitEnterOnViewableElement(server: McpServer): void {
 		this.logger.verbose("Registering tool: hitEnterOnViewableElement");
 		server.registerTool(
@@ -190,11 +171,6 @@ export class InteractionTools {
 		);
 	}
 
-	// ========== Readable element path-based interactions ==========
-
-	/**
-	 * Registers the clickOnReadableElement tool
-	 */
 	private registerClickOnReadableElement(server: McpServer): void {
 		this.logger.verbose("Registering tool: clickOnReadableElement");
 		server.registerTool(
@@ -234,9 +210,6 @@ export class InteractionTools {
 		);
 	}
 
-	/**
-	 * Registers the fillTextToReadableElement tool
-	 */
 	private registerFillTextToReadableElement(server: McpServer): void {
 		this.logger.verbose("Registering tool: fillTextToReadableElement");
 		server.registerTool(
@@ -277,9 +250,6 @@ export class InteractionTools {
 		);
 	}
 
-	/**
-	 * Registers the hitEnterOnReadableElement tool
-	 */
 	private registerHitEnterOnReadableElement(server: McpServer): void {
 		this.logger.verbose("Registering tool: hitEnterOnReadableElement");
 		server.registerTool(
@@ -319,3 +289,4 @@ export class InteractionTools {
 		);
 	}
 }
+

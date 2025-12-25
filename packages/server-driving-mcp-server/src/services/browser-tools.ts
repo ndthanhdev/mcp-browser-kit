@@ -16,7 +16,7 @@ import {
 	createImageResponse,
 	createStructuredResponse,
 	createTextResponse,
-} from "./tool-helpers";
+} from "../utils/tool-helpers";
 import {
 	browserContextOutputSchema,
 	invokeJsFnOutputSchema,
@@ -25,11 +25,8 @@ import {
 	openTabSchema,
 	selectionOutputSchema,
 	tabKeySchema,
-} from "./tool-schemas";
+} from "../utils/tool-schemas";
 
-/**
- * Registers browser context and screenshot tools
- */
 @injectable()
 export class BrowserTools {
 	private readonly logger;
@@ -45,9 +42,6 @@ export class BrowserTools {
 		this.logger = loggerFactory.create("browserTools");
 	}
 
-	/**
-	 * Registers all browser-related tools with the MCP server
-	 */
 	register(server: McpServer): void {
 		this.registerGetBasicBrowserContext(server);
 		this.registerCaptureTab(server);
@@ -57,9 +51,6 @@ export class BrowserTools {
 		this.registerGetSelection(server);
 	}
 
-	/**
-	 * Registers the getBasicBrowserContext tool
-	 */
 	private registerGetBasicBrowserContext(server: McpServer): void {
 		this.logger.verbose("Registering tool: getBasicBrowserContext");
 		server.registerTool(
@@ -93,9 +84,6 @@ export class BrowserTools {
 		);
 	}
 
-	/**
-	 * Registers the captureTab tool
-	 */
 	private registerCaptureTab(server: McpServer): void {
 		this.logger.verbose("Registering tool: captureTab");
 		server.registerTool(
@@ -137,9 +125,6 @@ export class BrowserTools {
 		);
 	}
 
-	/**
-	 * Registers the invokeJsFn tool
-	 */
 	private registerInvokeJsFn(server: McpServer): void {
 		this.logger.verbose("Registering tool: invokeJsFn");
 		server.registerTool(
@@ -178,9 +163,6 @@ export class BrowserTools {
 		);
 	}
 
-	/**
-	 * Registers the openTab tool
-	 */
 	private registerOpenTab(server: McpServer): void {
 		this.logger.verbose("Registering tool: openTab");
 		server.registerTool(
@@ -224,9 +206,6 @@ export class BrowserTools {
 		);
 	}
 
-	/**
-	 * Registers the closeTab tool
-	 */
 	private registerCloseTab(server: McpServer): void {
 		this.logger.verbose("Registering tool: closeTab");
 		server.registerTool(
@@ -262,9 +241,6 @@ export class BrowserTools {
 		);
 	}
 
-	/**
-	 * Registers the getSelection tool
-	 */
 	private registerGetSelection(server: McpServer): void {
 		this.logger.verbose("Registering tool: getSelection");
 		server.registerTool(
@@ -303,3 +279,4 @@ export class BrowserTools {
 		);
 	}
 }
+

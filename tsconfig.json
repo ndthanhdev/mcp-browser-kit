@@ -73,6 +73,9 @@
 			"path": "packages/server-driven-trpc-channel-provider"
 		},
 		{
+			"path": "packages/server-driving-mcp-server"
+		},
+		{
 			"path": "packages/types"
 		}
 	]
