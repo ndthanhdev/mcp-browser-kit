@@ -973,6 +973,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mcp-browser-kit/server-driving-mcp-server@workspace:packages/server-driving-mcp-server":
+  version: 0.0.0-use.local
+  resolution: "@mcp-browser-kit/server-driving-mcp-server@workspace:packages/server-driving-mcp-server"
+  languageName: unknown
+  linkType: soft
+
 "@mcp-browser-kit/server@workspace:apps/server":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/server@workspace:apps/server"

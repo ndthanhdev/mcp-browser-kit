@@ -11,7 +11,7 @@ import { ElementTools } from "./element-tools";
 import { InteractionTools } from "./interaction-tools";
 
 @injectable()
-export class McpServerService {
+export class ServerDrivingMcpServer {
 	private logger;
 
 	constructor(
@@ -24,12 +24,9 @@ export class McpServerService {
 		@inject(InteractionTools)
 		private readonly interactionTools: InteractionTools,
 	) {
-		this.logger = this.loggerFactory.create("mcpServerService");
+		this.logger = this.loggerFactory.create("mcpServer");
 	}
 
-	/**
-	 * Initializes the MCP server instance
-	 */
 	private initializeServer(): McpServer {
 		this.logger.verbose("Creating MCP server instance");
 		return new McpServer({
@@ -38,26 +35,18 @@ export class McpServerService {
 		});
 	}
 
-	/**
-	 * Sets up global event handlers for the process
-	 */
 	private setupEventHandlers(): void {
 		process.on("unhandledRejection", (reason, promise) => {
 			this.logger.error("Unhandled Rejection at:", promise, "reason:", reason);
 		});
 	}
 
-	/**
-	 * Creates and configures the MCP server with all tools registered
-	 */
 	private async createServer(): Promise<McpServer> {
 		try {
 			this.logger.info("Initializing MCP Browser Kit Server");
 
-			// Initialize server
 			const server = this.initializeServer();
 
-			// Register all tools by category
 			this.logger.verbose("Registering browser tools");
 			this.browserTools.register(server);
 
@@ -67,7 +56,6 @@ export class McpServerService {
 			this.logger.verbose("Registering interaction tools");
 			this.interactionTools.register(server);
 
-			// Setup event handlers
 			this.setupEventHandlers();
 
 			this.logger.info("All MCP server tools registered successfully");
@@ -81,9 +69,6 @@ export class McpServerService {
 		}
 	}
 
-	/**
-	 * Starts the MCP server with STDIO transport
-	 */
 	async start(): Promise<void> {
 		try {
 			this.logger.verbose("Creating MCP server instance");
@@ -99,16 +84,11 @@ export class McpServerService {
 		}
 	}
 
-	/**
-	 * Setup container bindings for McpServerService
-	 */
 	static setupContainer(container: Container): void {
-		// Bind tool classes
 		container.bind<BrowserTools>(BrowserTools).toSelf();
 		container.bind<ElementTools>(ElementTools).toSelf();
 		container.bind<InteractionTools>(InteractionTools).toSelf();
 
-		// Bind McpServerService to itself
-		container.bind<McpServerService>(McpServerService).toSelf();
+		container.bind<ServerDrivingMcpServer>(ServerDrivingMcpServer).toSelf();
 	}
 }

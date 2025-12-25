@@ -16,3 +16,4 @@ dependsOn:
   - core-utils
   - driven-logger-factory
   - server-driven-trpc-channel-provider
+  - server-driving-mcp-server
