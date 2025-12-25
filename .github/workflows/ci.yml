@@ -1,4 +1,4 @@
-name: Build and Test
+name: CI Workflow
 
 on:
   pull_request:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   ci:
-    name: CI
+    name: CI Job
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v6
