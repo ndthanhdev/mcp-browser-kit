@@ -3,6 +3,7 @@
 		"@biomejs/biome": "2.3.7",
 		"@medv/finder": "^4.0.2",
 		"@mozilla/readability": "^0.6.0",
+		"@playwright/test": "^1.57.0",
 		"@trpc/client": "^11.7.2",
 		"@trpc/server": "^11.7.2",
 		"@types/data-urls": "^3.0.4",

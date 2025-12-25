@@ -1,0 +1,27 @@
+$schema: "https://moonrepo.dev/schemas/tasks.json"
+
+fileGroups:
+  playwright-tests:
+    - tests/**/*
+  playwright-configs:
+    - playwright.config.ts
+  playwright-browsers:
+    - $workspaceRoot/.tmp/playwright/browsers/**/*
+
+tasks:
+  playwright-test:
+    toolchain: node
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/playwright/browsers
+    script: >-
+      playwright test
+    inputs:
+      - "@group(playwright-tests)"
+      - "@group(playwright-configs)"
+  playwright-show-report:
+    toolchain: node
+    preset: server
+    script: >-
+      playwright show-report
+    inputs:
+      - ./target/playwright/test-results/**/*

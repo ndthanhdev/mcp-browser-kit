@@ -22,13 +22,11 @@ await $`${[
 	"dev",
 	"with-action",
 	"--action",
-	"test",
-	"with-action",
-	"--action",
-	"build",
+	"ci",
 	"container",
 	"directory",
-	`--path=${workDirs.target.release.relativePath}`,
+	`--path=${workDirs.target.relativePath}`,
 	"export",
-	`--path=${workDirs.target.release.path}`,
+	`--path=${workDirs.target.path}`,
 ]}`;
+

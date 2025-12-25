@@ -22,3 +22,10 @@ target/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+.tmp/
+
+# playwright
+playwright-report/
+test-results/
+playwright/.cache/

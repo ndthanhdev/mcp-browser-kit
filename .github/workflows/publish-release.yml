@@ -14,11 +14,13 @@ jobs:
       contents: write  # Required for creating releases and uploading assets
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Dagger
         uses: dagger/dagger-for-github@8.0.0
         with:
-          version: 0.18.9
+          version: 0.19.8
           verb: functions
           workdir: ./etc/workflow-runtime
 
@@ -28,7 +30,7 @@ jobs:
           node-version: 22
 
       - run: "yarn install"
-      - run: "./etc/scripts/workflows/build-test.ts"
+      - run: "./etc/scripts/workflows/ci.ts"
 
       - name: Upload extensions to GitHub Release
         uses: svenstaro/upload-release-action@v2

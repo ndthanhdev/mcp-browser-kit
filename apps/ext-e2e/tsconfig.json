@@ -1,0 +1,37 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"compilerOptions": {
+		"emitDeclarationOnly": true,
+		"lib": [
+			"DOM",
+			"ESNext"
+		],
+		"baseUrl": ".",
+		"paths": {
+			"@mcp-browser-kit/core-utils": [
+				"../../packages/core-utils/src/index.ts"
+			],
+			"@mcp-browser-kit/core-utils/*": [
+				"../../packages/core-utils/src/*"
+			],
+			"@mcp-browser-kit/core-server": [
+				"../../packages/core-server/src/index.ts"
+			],
+			"@mcp-browser-kit/core-server/*": [
+				"../../packages/core-server/src/*"
+			]
+		},
+		"outDir": "../../.moon/cache/types/apps/ext-e2e"
+	},
+	"include": [
+		"src/**/*"
+	],
+	"references": [
+		{
+			"path": "../../packages/core-server"
+		},
+		{
+			"path": "../../packages/core-utils"
+		}
+	]
+}

@@ -6,3 +6,12 @@ type: tool
 project:
   name: "@mcp-browser-kit/scripts"
   description: scripts
+
+tasks:
+  playwright-install:
+    toolchain: node
+    local: true
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/playwright/browsers
+    script: >-
+      playwright install --with-deps

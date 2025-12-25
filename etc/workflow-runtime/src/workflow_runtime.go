@@ -15,14 +15,18 @@ type WorkflowRuntime struct {
 func (m *WorkflowRuntime) BuildBaseEnv(ctx context.Context) *WorkflowRuntime {
 	m.Con = dag.
 		Container().
-		From("ubuntu:plucky").
-		// apt-get update && apt-get install -y curl git unzip gzip xz-utils
+		From("ubuntu:noble").
+		WithEnvVariable("DEBIAN_FRONTEND", "noninteractive"). // playwright throws error if distribution is not officially supported
+		WithEnvVariable("SYSTEMD_TMPFILES_ENABLED", "0").     // playwright throws error if systemd is not available
 		WithExec([]string{"apt-get", "update"}).
-		WithExec([]string{"apt-get", "install", "-y", "build-essential", "curl", "git", "unzip", "bash", "gzip", "xz-utils", "pkg-config", "libssl-dev"}).
+		// apt-get update && apt-get install -y curl git unzip gzip xz-utils
+		WithExec([]string{"apt-get", "install", "-y", "apt-utils", "build-essential", "curl", "git", "unzip", "bash", "gzip", "xz-utils", "pkg-config", "libssl-dev"}).
 		// curl -fsSL https://moonrepo.dev/install/proto.sh | bash -s 0.35.3 --yes
-		WithExec([]string{"bash", "-l", "-c", "curl -fsSL https://moonrepo.dev/install/proto.sh | bash -s 0.51.4 --yes"}).
+		WithExec([]string{"bash", "-l", "-c", "curl -fsSL https://moonrepo.dev/install/proto.sh | bash -s 0.54.1 --yes"}).
 		WithEnvVariable("PROTO_HOME", "/root/.proto", dagger.ContainerWithEnvVariableOpts{Expand: true}).
-		WithEnvVariable("PATH", "$PATH:$PROTO_HOME/shims:$PROTO_HOME/bin", dagger.ContainerWithEnvVariableOpts{Expand: true})
+		WithEnvVariable("PATH", "$PATH:$PROTO_HOME/shims:$PROTO_HOME/bin", dagger.ContainerWithEnvVariableOpts{Expand: true}).
+		WithExec([]string{"proto", "setup"}).
+		WithExec([]string{"bash", "-l", "-c", "proto setup"})
 
 	return m
 }
@@ -38,9 +42,8 @@ func (m *WorkflowRuntime) BuildEnv(ctx context.Context) *WorkflowRuntime {
 		WithFile("/workspace/.prototools", m.Dir.File(".prototools")).
 		// proto use
 		WithExec([]string{"proto", "use"}).
-		// rm .prototools
-		WithoutFile("/workspace/.prototools").
 		WithMountedDirectory("/workspace", source).
+		WithMountedDirectory("/workspace/.git", m.Dir.Directory(".git")).
 		// moon setup
 		WithExec([]string{"moon", "setup"}).
 		// yarn install --immutable
