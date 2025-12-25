@@ -27,7 +27,6 @@ export interface Context {
 	browsers: BrowserContext[];
 }
 
-// ToolsInputPort - Combined interface for all RPC calls
 export type ServerToolCallsInputPort = {
 	captureTab: (tabKey: string) => Promise<Screenshot>;
 	clickOnCoordinates: (tabKey: string, x: number, y: number) => Promise<void>;
@@ -64,3 +63,28 @@ export type ServerToolCallsInputPort = {
 	}>;
 };
 export const ServerToolCallsInputPort = Symbol.for("ServerToolCallsInputPort");
+
+export type ServerToolName = keyof ServerToolCallsInputPort;
+
+export type ServerToolArgsMap = {
+	captureTab: { tabKey: string };
+	clickOnCoordinates: { tabKey: string; x: number; y: number };
+	clickOnElement: { tabKey: string; readablePath: string };
+	closeTab: { tabKey: string };
+	fillTextToCoordinates: { tabKey: string; x: number; y: number; value: string };
+	fillTextToElement: { tabKey: string; readablePath: string; value: string };
+	getContext: Record<string, never>;
+	getReadableElements: { tabKey: string };
+	getReadableText: { tabKey: string };
+	getSelection: { tabKey: string };
+	hitEnterOnCoordinates: { tabKey: string; x: number; y: number };
+	hitEnterOnElement: { tabKey: string; readablePath: string };
+	invokeJsFn: { tabKey: string; fnBodyCode: string };
+	openTab: { windowKey: string; url: string };
+};
+
+export type ServerToolArgs<T extends ServerToolName> = ServerToolArgsMap[T];
+
+export type ServerToolResult<T extends ServerToolName> = Awaited<
+	ReturnType<ServerToolCallsInputPort[T]>
+>;

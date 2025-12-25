@@ -1,0 +1,11 @@
+$schema: "https://moonrepo.dev/schemas/project.json"
+language: typescript
+toolchain:
+  default: node
+
+tags:
+  - playwright
+
+dependsOn:
+  - core-utils
+  - core-server

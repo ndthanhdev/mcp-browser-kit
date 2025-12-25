@@ -18,6 +18,7 @@ const release = path.resolve(target, "release");
 export const workDirs = {
 	target: {
 		path: target,
+		relativePath: path.relative(root, target),
 		apps: {
 			path: path.resolve(target, "apps"),
 		},

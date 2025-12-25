@@ -28,6 +28,9 @@
 	],
 	"references": [
 		{
+			"path": "apps/ext-e2e"
+		},
+		{
 			"path": "apps/m2"
 		},
 		{
