@@ -36,9 +36,9 @@ jobs:
       - run: "yarn install"
       - run: "./etc/scripts/workflows/ci.ts"
 
-      - name: Upload artifacts
+      - name: Upload target directory
         uses: actions/upload-artifact@v6
         with:
-          name: build-artifacts
+          name: target-directory
           path: target/
           retention-days: 7
