@@ -76,7 +76,10 @@ export class ElementTools {
 					textLength: innerText?.length,
 				});
 				return createStructuredResponse(
-					{ innerText: innerText ?? null },
+					readableTextOutputSchema,
+					{
+						innerText: innerText ?? null,
+					},
 					`InnerText: ${JSON.stringify(innerText)}`,
 				);
 			},
@@ -112,14 +115,15 @@ export class ElementTools {
 					);
 				}
 
-				const elements = overElements.value;
-				this.logger.verbose("Retrieved readable elements", {
-					tabKey,
-					elementCount: elements.length,
-				});
-				return createStructuredResponse({ elements });
+			const elements = overElements.value;
+			this.logger.verbose("Retrieved readable elements", {
+				tabKey,
+				elementCount: elements.length,
+			});
+			return createStructuredResponse(readableElementOutputSchema, {
+				elements,
+			});
 			},
 		);
 	}
 }
-

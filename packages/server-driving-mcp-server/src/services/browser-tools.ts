@@ -89,7 +89,9 @@ export class BrowserTools {
 				this.logger.verbose("Retrieved browser context", {
 					tabs,
 				});
-				return createStructuredResponse({ tabs });
+				return createStructuredResponse(browserContextOutputSchema, {
+					tabs,
+				});
 			},
 		);
 	}
@@ -168,7 +170,9 @@ export class BrowserTools {
 					tabKey,
 					hasResult: result !== undefined,
 				});
-				return createStructuredResponse({ result });
+				return createStructuredResponse(invokeJsFnOutputSchema, {
+					result,
+				});
 			},
 		);
 	}
@@ -209,7 +213,11 @@ export class BrowserTools {
 					windowKey: result.windowKey,
 				});
 				return createStructuredResponse(
-					{ tabKey: result.tabKey, windowKey: result.windowKey },
+					openTabOutputSchema,
+					{
+						tabKey: result.tabKey,
+						windowKey: result.windowKey,
+					},
 					`Tab opened successfully. tabKey: ${result.tabKey}, windowKey: ${result.windowKey}`,
 				);
 			},
@@ -284,9 +292,10 @@ export class BrowserTools {
 					tabKey,
 					hasSelection: !!selection?.selectedText,
 				});
-				return createStructuredResponse({ selection: selection?.selectedText ?? null });
+				return createStructuredResponse(selectionOutputSchema, {
+					selection: selection?.selectedText ?? null,
+				});
 			},
 		);
 	}
 }
-

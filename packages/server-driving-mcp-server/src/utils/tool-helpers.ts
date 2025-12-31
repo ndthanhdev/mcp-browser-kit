@@ -1,3 +1,5 @@
+import type { z } from "zod";
+
 /**
  * Creates a standardized error response for MCP tools
  */
@@ -52,10 +54,18 @@ export const createImageResponse = (
 });
 
 /**
+ * Helper type to infer TypeScript type from schema object
+ */
+type InferSchemaType<Schema> = {
+	[K in keyof Schema]: Schema[K] extends z.ZodType<infer U> ? U : never;
+};
+
+/**
  * Creates a structured response with both content and structuredContent for MCP tools with output schemas
  */
-export const createStructuredResponse = <T>(
-	structuredContent: T,
+export const createStructuredResponse = <Schema extends Record<string, z.ZodType>>(
+	_outputSchema: Schema,
+	structuredContent: InferSchemaType<Schema>,
 	textContent?: string,
 ) => ({
 	content: [
@@ -66,4 +76,3 @@ export const createStructuredResponse = <T>(
 	],
 	structuredContent,
 });
-

@@ -56,17 +56,13 @@ export const openTabOutputSchema = {
 export const readableElementOutputSchema = {
 	elements: z
 		.array(
-			z.object({
-				readablePath: z.string().describe("Unique path to identify the element"),
-				tagName: z.string().describe("HTML tag name of the element"),
-				text: z.string().optional().describe("Text content of the element"),
-					attributes: z
-					.record(z.string(), z.string())
-					.optional()
-					.describe("HTML attributes of the element"),
-			}),
+			z.tuple([
+				z.string().describe("Unique path to identify the element"),
+				z.string().describe("Accessible role or tag name of the element"),
+				z.string().describe("Accessible text content of the element"),
+			]),
 		)
-		.describe("List of readable elements on the page"),
+		.describe("List of readable elements on the page as [path, role, text] tuples"),
 };
 
 export const selectionOutputSchema = {
