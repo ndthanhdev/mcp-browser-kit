@@ -8,9 +8,10 @@ import { ServerDrivingMcpServer } from "@mcp-browser-kit/server-driving-mcp-serv
 
 export const container = createCoreServerContainer();
 
-container
-	.bind<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
-	.to(DrivenLoggerFactoryConsolaError);
+DrivenLoggerFactoryConsolaError.setupContainer(
+	container,
+	LoggerFactoryOutputPort,
+);
 
 ServerDrivenTrpcChannelProvider.setupContainer(container);
 

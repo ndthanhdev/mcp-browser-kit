@@ -7,7 +7,7 @@ import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logge
 import {
 	DrivenBrowserDriverM3,
 	type DrivenBrowserDriverM3 as DrivenBrowserDriverM3Type,
-} from "@mcp-browser-kit/extension-driven-browser-driver";
+} from "@mcp-browser-kit/extension-driven-browser-driver/m3";
 import {
 	ExtensionDrivenServerChannelProvider,
 	type ExtensionDrivenServerChannelProvider as ExtensionDrivenServerChannelProviderType,
@@ -38,9 +38,10 @@ export class MbkSw {
 
 	static setupContainer(container: Container): void {
 		// Bind logger factory
-		container
-			.bind<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
-			.to(DrivenLoggerFactoryConsolaBrowser);
+		DrivenLoggerFactoryConsolaBrowser.setupContainer(
+			container,
+			LoggerFactoryOutputPort,
+		);
 
 		// Setup browser driver
 		DrivenBrowserDriverM3.setupContainer(container);

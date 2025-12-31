@@ -76,10 +76,20 @@ export class BrowserTools {
 				}
 
 				const ctx = overCtx.value;
+				const tabs = ctx.browsers.flatMap((browser) =>
+					browser.browserWindows.flatMap((window) =>
+						window.tabs.map((tab) => ({
+							tabKey: tab.tabKey,
+							windowKey: window.windowKey,
+							url: tab.url,
+							title: tab.title,
+						})),
+					),
+				);
 				this.logger.verbose("Retrieved browser context", {
-					tabs: ctx,
+					tabs,
 				});
-				return createStructuredResponse({ tabs: ctx });
+				return createStructuredResponse({ tabs });
 			},
 		);
 	}
@@ -272,9 +282,9 @@ export class BrowserTools {
 				const selection = overResult.value;
 				this.logger.verbose("Selection retrieved successfully", {
 					tabKey,
-					hasSelection: selection !== undefined,
+					hasSelection: !!selection?.selectedText,
 				});
-				return createStructuredResponse({ selection: selection ?? null });
+				return createStructuredResponse({ selection: selection?.selectedText ?? null });
 			},
 		);
 	}

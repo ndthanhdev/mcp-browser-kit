@@ -41,4 +41,4 @@ jobs:
         with:
           name: target-directory
           path: target/
-          retention-days: 7
+          retention-days: 1

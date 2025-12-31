@@ -1,5 +1,5 @@
 import type { Func } from "@mcp-browser-kit/types";
-import parseDataUrl from "data-urls";
+import { parse as parseDataUrl } from "@readme/data-urls";
 import { imageDimensionsFromData } from "image-dimensions";
 import { Base64 } from "js-base64";
 import browser from "webextension-polyfill";
@@ -32,19 +32,20 @@ export const captureTab = async (_tabId: string) => {
 	const dataUrl = await browser.tabs.captureVisibleTab();
 	const parsed = parseDataUrl(dataUrl);
 
-	if (!parsed?.body) {
-		throw new Error("Failed to parse data URL or body is undefined.");
+	if (!parsed) {
+		throw new Error("Failed to parse data URL.");
 	}
 
-	const dimensions = await imageDimensionsFromData(parsed.body);
+	const buffer = parsed.toBuffer();
+	const dimensions = await imageDimensionsFromData(buffer);
 
 	if (!dimensions) {
 		throw new Error("Failed to retrieve image dimensions.");
 	}
 
 	return {
-		data: Base64.fromUint8Array(parsed.body),
-		mimeType: parsed.mimeType.toString(),
+		data: Base64.fromUint8Array(new Uint8Array(buffer)),
+		mimeType: parsed.contentType || parsed.mediaType || "image/png",
 		width: dimensions.width,
 		height: dimensions.height,
 	};

@@ -1,6 +1,3 @@
-export { BasePage } from './base-page';
-export { McpClientPage } from './mcp-client-page';
-export { PlaywrightPage } from './playwright-page';
-
-
-
+export { BasePage } from "./base-page";
+export { McpClientPageObject } from "./mcp-client-page-object";
+export { PlaywrightPage } from "./playwright-page";

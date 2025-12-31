@@ -40,7 +40,7 @@ jobs:
         with:
           name: target-directory
           path: target/
-          retention-days: 7
+          retention-days: 1
 
       - name: Upload extensions to GitHub Release
         uses: svenstaro/upload-release-action@v2

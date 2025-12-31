@@ -4,10 +4,7 @@ import {
 	ServerChannelProviderOutputPort,
 } from "@mcp-browser-kit/core-extension";
 import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
-import {
-	DrivenBrowserDriverM2,
-	type DrivenBrowserDriverM2 as DrivenBrowserDriverM2Type,
-} from "@mcp-browser-kit/extension-driven-browser-driver";
+import { DrivenBrowserDriverM2 } from "@mcp-browser-kit/extension-driven-browser-driver/m2";
 import {
 	ExtensionDrivenServerChannelProvider,
 	type ExtensionDrivenServerChannelProvider as ExtensionDrivenServerChannelProviderType,
@@ -38,9 +35,10 @@ export class MbkBg {
 
 	static setupContainer(container: Container): void {
 		// Bind logger factory
-		container
-			.bind<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
-			.to(DrivenLoggerFactoryConsolaBrowser);
+		DrivenLoggerFactoryConsolaBrowser.setupContainer(
+			container,
+			LoggerFactoryOutputPort,
+		);
 
 		// Setup browser driver
 		DrivenBrowserDriverM2.setupContainer(container);
@@ -64,7 +62,7 @@ export class MbkBg {
 		this.logger.info("Bootstrapping MbkBg...");
 
 		// Link RPC for browser driver
-		(this.driverM2 as DrivenBrowserDriverM2Type).linkRpc();
+		(this.driverM2 as DrivenBrowserDriverM2).linkRpc();
 
 		// Setup TRPC controller to listen to server channel events
 		this.trpcController.listenToServerChannelEvents(

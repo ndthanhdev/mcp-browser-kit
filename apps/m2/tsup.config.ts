@@ -14,7 +14,7 @@ export default defineConfig({
 	noExternal: [
 		/.+/,
 	],
-	target: "chrome135",
+	target: "firefox145",
 	platform: "browser",
 	outDir: "target/tsup/dist",
 });

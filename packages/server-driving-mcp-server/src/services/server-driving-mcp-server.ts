@@ -13,6 +13,7 @@ import { InteractionTools } from "./interaction-tools";
 @injectable()
 export class ServerDrivingMcpServer {
 	private logger;
+	private server: McpServer | null = null;
 
 	constructor(
 		@inject(LoggerFactoryOutputPort)
@@ -27,7 +28,11 @@ export class ServerDrivingMcpServer {
 		this.logger = this.loggerFactory.create("mcpServer");
 	}
 
-	private initializeServer(): McpServer {
+	getServer(): McpServer | null {
+		return this.server;
+	}
+
+	private createMcpServerInstance(): McpServer {
 		this.logger.verbose("Creating MCP server instance");
 		return new McpServer({
 			name: "MCP Browser Kit",
@@ -41,27 +46,32 @@ export class ServerDrivingMcpServer {
 		});
 	}
 
-	private async createServer(): Promise<McpServer> {
+	async initMcpServer(): Promise<McpServer> {
+		if (this.server) {
+			this.logger.verbose("Returning existing MCP server instance");
+			return this.server;
+		}
+
 		try {
 			this.logger.info("Initializing MCP Browser Kit Server");
 
-			const server = this.initializeServer();
+			this.server = this.createMcpServerInstance();
 
 			this.logger.verbose("Registering browser tools");
-			this.browserTools.register(server);
+			this.browserTools.register(this.server);
 
 			this.logger.verbose("Registering element tools");
-			this.elementTools.register(server);
+			this.elementTools.register(this.server);
 
 			this.logger.verbose("Registering interaction tools");
-			this.interactionTools.register(server);
+			this.interactionTools.register(this.server);
 
 			this.setupEventHandlers();
 
 			this.logger.info("All MCP server tools registered successfully");
-			return server;
+			return this.server;
 		} catch (error) {
-			this.logger.error("Failed to create MCP server", {
+			this.logger.error("Failed to initialize MCP server", {
 				error: error instanceof Error ? error.message : String(error),
 				stack: error instanceof Error ? error.stack : undefined,
 			});
@@ -69,17 +79,23 @@ export class ServerDrivingMcpServer {
 		}
 	}
 
-	async start(): Promise<void> {
+	async listenOnStdio(transport?: StdioServerTransport): Promise<void> {
 		try {
-			this.logger.verbose("Creating MCP server instance");
-			const server = await this.createServer();
-			this.logger.verbose("Creating STDIO transport");
-			const transport = new StdioServerTransport();
+			if (!this.server) {
+				throw new Error("Server not initialized. Call init() first.");
+			}
+
+			const serverTransport = transport ?? new StdioServerTransport();
+			
+			if (!transport) {
+				this.logger.verbose("Creating STDIO transport");
+			}
+			
 			this.logger.verbose("Connecting MCP server to STDIO transport");
-			await server.connect(transport);
+			await this.server.connect(serverTransport);
 			this.logger.info("MCP Browser Kit Server running on stdio");
 		} catch (error) {
-			this.logger.error("Fatal error in start():", error);
+			this.logger.error("Fatal error in listen():", error);
 			process.exit(1);
 		}
 	}

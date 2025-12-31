@@ -1,9 +1,7 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension";
 import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
-import {
-	DrivenBrowserDriverM3,
-	TabToolsSetup,
-} from "@mcp-browser-kit/extension-driven-browser-driver";
+import { TabToolsSetup } from "@mcp-browser-kit/extension-driven-browser-driver";
+import { DrivenBrowserDriverM3 } from "@mcp-browser-kit/extension-driven-browser-driver/m3";
 import { KeepAlive } from "@mcp-browser-kit/helper-extension-keep-alive";
 import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
@@ -25,9 +23,10 @@ export class MbkTab {
 
 	static setupContainer(container: Container): void {
 		// Bind logger factory
-		container
-			.bind<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
-			.to(DrivenLoggerFactoryConsolaBrowser);
+		DrivenLoggerFactoryConsolaBrowser.setupContainer(
+			container,
+			LoggerFactoryOutputPort,
+		);
 
 		// Setup M3 container with required services
 		DrivenBrowserDriverM3.setupTabContainer(container);
