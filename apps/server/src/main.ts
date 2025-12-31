@@ -9,4 +9,5 @@ const trpcServer = container.get<ServerDrivenTrpcChannelProvider>(
 await trpcServer.start();
 
 const mcpServer = container.get<ServerDrivingMcpServer>(ServerDrivingMcpServer);
-await mcpServer.start();
+await mcpServer.initMcpServer();
+await mcpServer.listenOnStdio();

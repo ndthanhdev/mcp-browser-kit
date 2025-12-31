@@ -19,12 +19,31 @@
 			],
 			"@mcp-browser-kit/core-server/*": [
 				"../../packages/core-server/src/*"
+			],
+			"@mcp-browser-kit/driven-logger-factory": [
+				"../../packages/driven-logger-factory/src/index.ts"
+			],
+			"@mcp-browser-kit/driven-logger-factory/*": [
+				"../../packages/driven-logger-factory/src/*"
+			],
+			"@mcp-browser-kit/server-driven-trpc-channel-provider": [
+				"../../packages/server-driven-trpc-channel-provider/src/index.ts"
+			],
+			"@mcp-browser-kit/server-driven-trpc-channel-provider/*": [
+				"../../packages/server-driven-trpc-channel-provider/src/*"
+			],
+			"@mcp-browser-kit/server-driving-mcp-server": [
+				"../../packages/server-driving-mcp-server/src/index.ts"
+			],
+			"@mcp-browser-kit/server-driving-mcp-server/*": [
+				"../../packages/server-driving-mcp-server/src/*"
 			]
 		},
 		"outDir": "../../.moon/cache/types/apps/ext-e2e"
 	},
 	"include": [
-		"src/**/*"
+		"src/**/*",
+		"pages/**/*"
 	],
 	"references": [
 		{
@@ -32,6 +51,15 @@
 		},
 		{
 			"path": "../../packages/core-utils"
+		},
+		{
+			"path": "../../packages/driven-logger-factory"
+		},
+		{
+			"path": "../../packages/server-driven-trpc-channel-provider"
+		},
+		{
+			"path": "../../packages/server-driving-mcp-server"
 		}
 	]
 }

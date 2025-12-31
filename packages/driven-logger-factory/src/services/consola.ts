@@ -2,6 +2,7 @@ import type { Logger, LoggerFactory } from "@mcp-browser-kit/types";
 import * as changeCase from "change-case";
 import type { ConsolaReporter, LogObject } from "consola";
 import { consola, createConsola, LogLevels } from "consola";
+import type { Container } from "inversify";
 import { injectable } from "inversify";
 import * as R from "ramda";
 
@@ -269,11 +270,23 @@ export class DrivenLoggerFactoryConsolaBrowser extends BaseLoggerFactory {
 	constructor() {
 		super(new FancyBrowserReporter());
 	}
+
+	static setupContainer(container: Container, serviceIdentifier: symbol): void {
+		container
+			.bind<LoggerFactory>(serviceIdentifier)
+			.to(DrivenLoggerFactoryConsolaBrowser);
+	}
 }
 
 @injectable()
 export class DrivenLoggerFactoryConsolaError extends BaseLoggerFactory {
 	constructor() {
 		super(new FancyErrorReporter());
+	}
+
+	static setupContainer(container: Container, serviceIdentifier: symbol): void {
+		container
+			.bind<LoggerFactory>(serviceIdentifier)
+			.to(DrivenLoggerFactoryConsolaError);
 	}
 }

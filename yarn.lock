@@ -1125,6 +1125,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@readme/data-urls@npm:^3.0.0":
+  version: 3.0.1
+  resolution: "@readme/data-urls@npm:3.0.1"
+  checksum: 10c0/0b007dd721c898a74f5cc4b85d133301287074ff8a6d62f6ea76eb2f08348191d2d61a28490ee8c2509d41446dc37033bb8255826c880bddf71d75032c5befbf
+  languageName: node
+  linkType: hard
+
 "@rollup/rollup-android-arm-eabi@npm:4.52.4":
   version: 4.52.4
   resolution: "@rollup/rollup-android-arm-eabi@npm:4.52.4"
@@ -5327,6 +5334,7 @@ __metadata:
     "@medv/finder": "npm:^4.0.2"
     "@mozilla/readability": "npm:^0.6.0"
     "@playwright/test": "npm:^1.57.0"
+    "@readme/data-urls": "npm:^3.0.0"
     "@trpc/client": "npm:^11.7.2"
     "@trpc/server": "npm:^11.7.2"
     "@types/data-urls": "npm:^3.0.4"
@@ -5341,7 +5349,6 @@ __metadata:
     change-case: "npm:^5.4.4"
     consola: "npm:^3.4.2"
     core-js: "npm:^3.47.0"
-    data-urls: "npm:^6.0.0"
     delay: "npm:^7.0.0"
     dompurify: "npm:^3.3.0"
     emittery: "npm:^1.2.0"

@@ -1,12 +1,12 @@
 import { extContextTest, type ExtContextFixtures, type ExtContextOptions } from './ext-context';
 import { PlaywrightPage } from '../pages/playwright-page';
-import { McpClientPage } from '../pages/mcp-client-page';
+import { McpClientPageObject } from '../pages/mcp-client-page-object';
 
 export type { ExtContextOptions };
 
 export type ExtTestFixtures = ExtContextFixtures & ExtContextOptions & {
   playwrightPage: PlaywrightPage;
-  mcpClientPage: McpClientPage;
+  mcpClientPage: McpClientPageObject;
 };
 
 export const test = extContextTest.extend<Omit<ExtTestFixtures, keyof ExtContextFixtures>>({
@@ -17,7 +17,7 @@ export const test = extContextTest.extend<Omit<ExtTestFixtures, keyof ExtContext
   },
   // biome-ignore lint/correctness/noEmptyPattern: Playwright requires object destructuring pattern
   mcpClientPage: async ({}, use) => {
-    const mcpClientPage = new McpClientPage();
+    const mcpClientPage = new McpClientPageObject();
     await use(mcpClientPage);
   },
 });
