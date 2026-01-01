@@ -1,30 +1,33 @@
-import type { Locator, Page } from '@playwright/test';
-import { BasePage } from './base-page';
+import type { Locator, Page } from "@playwright/test";
+import { BasePage } from "./base-page";
 
 export class PlaywrightPage extends BasePage {
-  readonly url = 'https://playwright.dev/';
-  
-  readonly getStartedLink: Locator;
-  readonly installationHeading: Locator;
+	readonly url = "https://playwright.dev/";
 
-  constructor(page: Page) {
-    super(page);
-    this.getStartedLink = this.getByRole('link', { name: 'Get started' });
-    this.installationHeading = this.getByRole('heading', { name: 'Installation' });
-  }
+	readonly getStartedLink: Locator;
+	readonly installationHeading: Locator;
 
-  async navigate() {
-    await this.goto(this.url);
-  }
+	constructor(page: Page) {
+		super(page);
+		this.getStartedLink = this.getByRole("link", {
+			name: "Get started",
+		});
+		this.installationHeading = this.getByRole("heading", {
+			name: "Installation",
+		});
+	}
 
-  async clickGetStarted() {
-    await this.getStartedLink.click();
-  }
+	async navigate() {
+		await this.goto(this.url);
+	}
 
-  async verifyInstallationPageVisible() {
-    await this.installationHeading.waitFor({ state: 'visible' });
-  }
+	async clickGetStarted() {
+		await this.getStartedLink.click();
+	}
+
+	async verifyInstallationPageVisible() {
+		await this.installationHeading.waitFor({
+			state: "visible",
+		});
+	}
 }
-
-
-

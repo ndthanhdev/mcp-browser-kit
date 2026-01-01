@@ -10,7 +10,14 @@ export default defineConfig<ExtContextOptions>({
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,
 	workers: process.env.CI ? 1 : undefined,
-	reporter: [["html", { outputFolder: "target/playwright/playwright-report" }]],
+	reporter: [
+		[
+			"html",
+			{
+				outputFolder: "target/playwright/playwright-report",
+			},
+		],
+	],
 	use: {
 		trace: "on",
 		video: "on",

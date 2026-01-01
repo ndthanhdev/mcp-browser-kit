@@ -1,5 +1,5 @@
 import type { MessageChannel } from "@mcp-browser-kit/types";
-import Emittery from "emittery";
+import type Emittery from "emittery";
 
 export interface ChannelInfo {
 	channelId: string;

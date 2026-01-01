@@ -86,11 +86,11 @@ export class ServerDrivingMcpServer {
 			}
 
 			const serverTransport = transport ?? new StdioServerTransport();
-			
+
 			if (!transport) {
 				this.logger.verbose("Creating STDIO transport");
 			}
-			
+
 			this.logger.verbose("Connecting MCP server to STDIO transport");
 			await this.server.connect(serverTransport);
 			this.logger.info("MCP Browser Kit Server running on stdio");

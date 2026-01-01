@@ -79,7 +79,9 @@ export class ElementTools {
 				});
 				return createStructuredResponse(
 					readableTextOutputSchema,
-					{ innerText },
+					{
+						innerText,
+					},
 					`InnerText: ${JSON.stringify(innerText)}`,
 				);
 			},
@@ -116,14 +118,14 @@ export class ElementTools {
 					);
 				}
 
-			const elements = overElements.value;
-			this.logger.verbose("Retrieved readable elements", {
-				tabKey,
-				elementCount: elements.length,
-			});
-			return createStructuredResponse(readableElementOutputSchema, {
-				elements,
-			});
+				const elements = overElements.value;
+				this.logger.verbose("Retrieved readable elements", {
+					tabKey,
+					elementCount: elements.length,
+				});
+				return createStructuredResponse(readableElementOutputSchema, {
+					elements,
+				});
 			},
 		);
 	}

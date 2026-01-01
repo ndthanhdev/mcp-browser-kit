@@ -8,6 +8,3 @@ export type {
 	ResolveData,
 	ResolveMessage,
 } from "./types/message-channel-rpc";
-
-
-

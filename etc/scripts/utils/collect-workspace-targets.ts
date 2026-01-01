@@ -44,6 +44,3 @@ export async function collectWorkspaceTargets() {
 		}),
 	);
 }
-
-
-
