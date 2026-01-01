@@ -9,3 +9,11 @@ tags:
 dependsOn:
   - core-utils
   - core-server
+tasks:
+  test:
+    options:
+      runDepsInParallel: false
+    deps:
+      - m2:build
+      - m3:build
+      - ~:playwright-test
