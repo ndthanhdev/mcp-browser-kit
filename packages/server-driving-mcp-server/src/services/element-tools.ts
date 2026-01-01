@@ -11,6 +11,7 @@ import {
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
+import { registerTool } from "../utils/register-tool";
 import {
 	createErrorResponse,
 	createStructuredResponse,
@@ -43,7 +44,8 @@ export class ElementTools {
 
 	private registerGetReadableText(server: McpServer): void {
 		this.logger.verbose("Registering tool: getReadableText");
-		server.registerTool(
+		registerTool(
+			server,
 			"getReadableText",
 			{
 				description:
@@ -73,13 +75,11 @@ export class ElementTools {
 				const innerText = overInnerText.value;
 				this.logger.verbose("Retrieved innerText", {
 					tabKey,
-					textLength: innerText?.length,
+					textLength: innerText.length,
 				});
 				return createStructuredResponse(
 					readableTextOutputSchema,
-					{
-						innerText: innerText ?? null,
-					},
+					{ innerText },
 					`InnerText: ${JSON.stringify(innerText)}`,
 				);
 			},
@@ -88,7 +88,8 @@ export class ElementTools {
 
 	private registerGetReadableElements(server: McpServer): void {
 		this.logger.verbose("Registering tool: getReadableElements");
-		server.registerTool(
+		registerTool(
+			server,
 			"getReadableElements",
 			{
 				description:

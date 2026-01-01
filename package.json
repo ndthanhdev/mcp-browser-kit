@@ -5,6 +5,8 @@
 		"@mozilla/readability": "^0.6.0",
 		"@playwright/test": "^1.57.0",
 		"@readme/data-urls": "^3.0.0",
+		"@swc-node/register": "^1.11.1",
+		"@swc/core": "^1.15.8",
 		"@trpc/client": "^11.7.2",
 		"@trpc/server": "^11.7.2",
 		"@types/data-urls": "^3.0.4",

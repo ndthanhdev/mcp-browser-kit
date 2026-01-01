@@ -7,17 +7,20 @@ fileGroups:
     - playwright.config.ts
   playwright-browsers:
     - $workspaceRoot/.tmp/playwright/browsers/**/*
-
+  playwright-workspace-sources:
+    - $workspaceRoot/**/src/**/*
 tasks:
   playwright-test:
     toolchain: node
     env:
       PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/playwright/browsers
+      NODE_OPTIONS: "--require @swc-node/register"
     script: >-
       playwright test
     inputs:
       - "@group(playwright-tests)"
       - "@group(playwright-configs)"
+      - "@group(playwright-workspace-sources)"
   playwright-show-report:
     toolchain: node
     preset: server

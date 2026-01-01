@@ -4,7 +4,7 @@ import path from 'path';
 export type ExtTarget = 'm2' | 'm3';
 
 function getExtensionPath(target: ExtTarget): string {
-  const basePath = path.join(__dirname, '..', '..', target, 'target', 'extension', 'tmp', 'extension');
+  const basePath = path.join(__dirname, '..', '..', '..', target, 'target', 'extension', 'tmp', 'extension');
   return basePath;
 }
 
@@ -22,7 +22,7 @@ export const extContextTest = base.extend<ExtContextFixtures, ExtContextOptions>
 
   context: async ({ extTarget, launchOptions }, use) => {
     const pathToExtension = getExtensionPath(extTarget);
-    
+
     const context = await chromium.launchPersistentContext('', {
       ...launchOptions,
       channel: 'chromium',
@@ -32,11 +32,11 @@ export const extContextTest = base.extend<ExtContextFixtures, ExtContextOptions>
         `--load-extension=${pathToExtension}`,
       ],
     });
-    
+
     await use(context);
     await context.close();
   },
-  
+
   extensionId: async ({ context, extTarget }, use) => {
     if (extTarget === 'm3') {
       let [serviceWorker] = context.serviceWorkers();

@@ -37,6 +37,7 @@ jobs:
       - run: "./etc/scripts/workflows/ci.ts"
 
       - name: Upload target directory
+        if: always()
         uses: actions/upload-artifact@v6
         with:
           name: target-directory

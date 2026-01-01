@@ -4,12 +4,20 @@ import {
 	ListToolsResultSchema,
 	CallToolResultSchema,
 	ListResourcesResultSchema,
+	type CallToolResult,
 } from "@modelcontextprotocol/sdk/types.js";
 import type {
 	ServerToolName,
 	ServerToolArgs,
 	ServerToolResult,
 } from "@mcp-browser-kit/core-server";
+
+export type TypedCallToolResult<T extends ServerToolName> = Omit<
+	CallToolResult,
+	"structuredContent"
+> & {
+	structuredContent?: ServerToolResult<T>;
+};
 import {
 	createCoreServerContainer,
 	LoggerFactoryOutputPort,
@@ -97,7 +105,7 @@ export class McpClientPageObject {
 			: [
 					args: ServerToolArgs<T>,
 				]
-	): Promise<ServerToolResult<T>> {
+	): Promise<TypedCallToolResult<T>> {
 		const res = await this.client.request(
 			{
 				method: "tools/call",
@@ -108,7 +116,7 @@ export class McpClientPageObject {
 			},
 			CallToolResultSchema,
 		);
-		return res.content as ServerToolResult<T>;
+		return res as TypedCallToolResult<T>;
 	}
 
 	async listResources() {
@@ -120,5 +128,13 @@ export class McpClientPageObject {
 			ListResourcesResultSchema,
 		);
 		return res.resources;
+	}
+
+	async waitForBrowsers(timeout = 20000) {
+		const { expect } = await import("@playwright/test");
+		await expect(async () => {
+			const contextOutput = await this.callTool("getContext", {});
+			expect(contextOutput.structuredContent?.browsers?.length).toBeGreaterThan(0);
+		}).toPass({ timeout, intervals: [2000] });
 	}
 }

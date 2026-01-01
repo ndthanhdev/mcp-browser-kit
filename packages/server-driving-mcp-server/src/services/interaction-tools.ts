@@ -11,6 +11,7 @@ import {
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
+import { registerTool } from "../utils/register-tool";
 import { createErrorResponse, createTextResponse } from "../utils/tool-helpers";
 import {
 	coordinateSchema,
@@ -35,26 +36,27 @@ export class InteractionTools {
 	}
 
 	register(server: McpServer): void {
-		this.registerClickOnViewableElement(server);
-		this.registerFillTextToViewableElement(server);
-		this.registerHitEnterOnViewableElement(server);
+		this.registerClickOnCoordinates(server);
+		this.registerFillTextToCoordinates(server);
+		this.registerHitEnterOnCoordinates(server);
 
-		this.registerClickOnReadableElement(server);
-		this.registerFillTextToReadableElement(server);
-		this.registerHitEnterOnReadableElement(server);
+		this.registerClickOnElement(server);
+		this.registerFillTextToElement(server);
+		this.registerHitEnterOnElement(server);
 	}
 
-	private registerClickOnViewableElement(server: McpServer): void {
-		this.logger.verbose("Registering tool: clickOnViewableElement");
-		server.registerTool(
-			"clickOnViewableElement",
+	private registerClickOnCoordinates(server: McpServer): void {
+		this.logger.verbose("Registering tool: clickOnCoordinates");
+		registerTool(
+			server,
+			"clickOnCoordinates",
 			{
 				description:
 					this.toolDescriptionsInputPort.clickOnViewableElementInstruction(),
 				inputSchema: coordinateSchema,
 			},
 			async ({ tabKey, x, y }) => {
-				this.logger.info("Executing clickOnViewableElement", {
+				this.logger.info("Executing clickOnCoordinates", {
 					tabKey,
 					x,
 					y,
@@ -64,19 +66,19 @@ export class InteractionTools {
 				);
 
 				if (!overClick.ok) {
-					this.logger.error("Failed to click on viewable element", {
+					this.logger.error("Failed to click on coordinates", {
 						tabKey,
 						x,
 						y,
 						reason: overClick.reason,
 					});
 					return createErrorResponse(
-						"Error clicking on element",
+						"Error clicking on coordinates",
 						String(overClick.reason),
 					);
 				}
 
-				this.logger.verbose("Clicked on viewable element", {
+				this.logger.verbose("Clicked on coordinates", {
 					tabKey,
 					x,
 					y,
@@ -86,17 +88,18 @@ export class InteractionTools {
 		);
 	}
 
-	private registerFillTextToViewableElement(server: McpServer): void {
-		this.logger.verbose("Registering tool: fillTextToViewableElement");
-		server.registerTool(
-			"fillTextToViewableElement",
+	private registerFillTextToCoordinates(server: McpServer): void {
+		this.logger.verbose("Registering tool: fillTextToCoordinates");
+		registerTool(
+			server,
+			"fillTextToCoordinates",
 			{
 				description:
 					this.toolDescriptionsInputPort.fillTextToViewableElementInstruction(),
 				inputSchema: coordinateTextInputSchema,
 			},
 			async ({ tabKey, x, y, value }) => {
-				this.logger.info("Executing fillTextToViewableElement", {
+				this.logger.info("Executing fillTextToCoordinates", {
 					tabKey,
 					x,
 					y,
@@ -106,7 +109,7 @@ export class InteractionTools {
 				);
 
 				if (!overFill.ok) {
-					this.logger.error("Failed to fill text to viewable element", {
+					this.logger.error("Failed to fill text to coordinates", {
 						tabKey,
 						x,
 						y,
@@ -118,7 +121,7 @@ export class InteractionTools {
 					);
 				}
 
-				this.logger.verbose("Filled text to viewable element", {
+				this.logger.verbose("Filled text to coordinates", {
 					tabKey,
 					x,
 					y,
@@ -129,17 +132,18 @@ export class InteractionTools {
 		);
 	}
 
-	private registerHitEnterOnViewableElement(server: McpServer): void {
-		this.logger.verbose("Registering tool: hitEnterOnViewableElement");
-		server.registerTool(
-			"hitEnterOnViewableElement",
+	private registerHitEnterOnCoordinates(server: McpServer): void {
+		this.logger.verbose("Registering tool: hitEnterOnCoordinates");
+		registerTool(
+			server,
+			"hitEnterOnCoordinates",
 			{
 				description:
 					this.toolDescriptionsInputPort.hitEnterOnViewableElementInstruction(),
 				inputSchema: coordinateSchema,
 			},
 			async ({ tabKey, x, y }) => {
-				this.logger.info("Executing hitEnterOnViewableElement", {
+				this.logger.info("Executing hitEnterOnCoordinates", {
 					tabKey,
 					x,
 					y,
@@ -149,7 +153,7 @@ export class InteractionTools {
 				);
 
 				if (!overEnter.ok) {
-					this.logger.error("Failed to hit enter on viewable element", {
+					this.logger.error("Failed to hit enter on coordinates", {
 						tabKey,
 						x,
 						y,
@@ -161,7 +165,7 @@ export class InteractionTools {
 					);
 				}
 
-				this.logger.verbose("Hit enter on viewable element", {
+				this.logger.verbose("Hit enter on coordinates", {
 					tabKey,
 					x,
 					y,
@@ -171,17 +175,18 @@ export class InteractionTools {
 		);
 	}
 
-	private registerClickOnReadableElement(server: McpServer): void {
-		this.logger.verbose("Registering tool: clickOnReadableElement");
-		server.registerTool(
-			"clickOnReadableElement",
+	private registerClickOnElement(server: McpServer): void {
+		this.logger.verbose("Registering tool: clickOnElement");
+		registerTool(
+			server,
+			"clickOnElement",
 			{
 				description:
 					this.toolDescriptionsInputPort.clickOnReadableElementInstruction(),
 				inputSchema: readableElementSchema,
 			},
 			async ({ tabKey, readablePath }) => {
-				this.logger.info("Executing clickOnReadableElement", {
+				this.logger.info("Executing clickOnElement", {
 					tabKey,
 					readablePath,
 				});
@@ -190,7 +195,7 @@ export class InteractionTools {
 				);
 
 				if (!overClick.ok) {
-					this.logger.error("Failed to click on readable element", {
+					this.logger.error("Failed to click on element", {
 						tabKey,
 						readablePath,
 						reason: overClick.reason,
@@ -201,7 +206,7 @@ export class InteractionTools {
 					);
 				}
 
-				this.logger.verbose("Clicked on readable element", {
+				this.logger.verbose("Clicked on element", {
 					tabKey,
 					readablePath,
 				});
@@ -210,17 +215,18 @@ export class InteractionTools {
 		);
 	}
 
-	private registerFillTextToReadableElement(server: McpServer): void {
-		this.logger.verbose("Registering tool: fillTextToReadableElement");
-		server.registerTool(
-			"fillTextToReadableElement",
+	private registerFillTextToElement(server: McpServer): void {
+		this.logger.verbose("Registering tool: fillTextToElement");
+		registerTool(
+			server,
+			"fillTextToElement",
 			{
 				description:
 					this.toolDescriptionsInputPort.fillTextToReadableElementInstruction(),
 				inputSchema: readableElementTextInputSchema,
 			},
 			async ({ tabKey, readablePath, value }) => {
-				this.logger.info("Executing fillTextToReadableElement", {
+				this.logger.info("Executing fillTextToElement", {
 					tabKey,
 					readablePath,
 				});
@@ -229,7 +235,7 @@ export class InteractionTools {
 				);
 
 				if (!overFill.ok) {
-					this.logger.error("Failed to fill text to readable element", {
+					this.logger.error("Failed to fill text to element", {
 						tabKey,
 						readablePath,
 						reason: overFill.reason,
@@ -240,7 +246,7 @@ export class InteractionTools {
 					);
 				}
 
-				this.logger.verbose("Filled text to readable element", {
+				this.logger.verbose("Filled text to element", {
 					tabKey,
 					readablePath,
 					valueLength: value.length,
@@ -250,17 +256,18 @@ export class InteractionTools {
 		);
 	}
 
-	private registerHitEnterOnReadableElement(server: McpServer): void {
-		this.logger.verbose("Registering tool: hitEnterOnReadableElement");
-		server.registerTool(
-			"hitEnterOnReadableElement",
+	private registerHitEnterOnElement(server: McpServer): void {
+		this.logger.verbose("Registering tool: hitEnterOnElement");
+		registerTool(
+			server,
+			"hitEnterOnElement",
 			{
 				description:
 					this.toolDescriptionsInputPort.hitEnterOnReadableElementInstruction(),
 				inputSchema: readableElementSchema,
 			},
 			async ({ tabKey, readablePath }) => {
-				this.logger.info("Executing hitEnterOnReadableElement", {
+				this.logger.info("Executing hitEnterOnElement", {
 					tabKey,
 					readablePath,
 				});
@@ -269,7 +276,7 @@ export class InteractionTools {
 				);
 
 				if (!overEnter.ok) {
-					this.logger.error("Failed to hit enter on readable element", {
+					this.logger.error("Failed to hit enter on element", {
 						tabKey,
 						readablePath,
 						reason: overEnter.reason,
@@ -280,7 +287,7 @@ export class InteractionTools {
 					);
 				}
 
-				this.logger.verbose("Hit enter on readable element", {
+				this.logger.verbose("Hit enter on element", {
 					tabKey,
 					readablePath,
 				});

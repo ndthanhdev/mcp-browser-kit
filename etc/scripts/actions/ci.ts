@@ -14,7 +14,9 @@ if (fs.existsSync(".git/shallow")) {
   await $`rm -rf .git/shallow`;
 }
 
-await pipeOutput($`moon run scripts:playwright-install`);
-await pipeOutput($`moon ci`);
-
-await collectWorkspaceTargets();
+try {
+  await pipeOutput($`moon run scripts:playwright-install`);
+  await pipeOutput($`moon ci`);
+} finally {
+  await collectWorkspaceTargets();
+}
