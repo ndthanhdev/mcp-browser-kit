@@ -14,6 +14,7 @@ tasks:
     toolchain: node
     env:
       PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/playwright/browsers
+      NODE_OPTIONS: "--require @swc-node/register"
     script: >-
       playwright test
     inputs:
