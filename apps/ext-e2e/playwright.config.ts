@@ -1,8 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
-import type { ExtContextOptions } from "./fixtures/ext-context";
+import type { ExtContextOptions } from "./src/fixtures/ext-context";
+
+process.env.NODE_OPTIONS = "--require @swc-node/register";
 
 export default defineConfig<ExtContextOptions>({
-	testDir: "./tests",
+	testDir: "./src/tests",
 	outputDir: "target/playwright/test-results",
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
@@ -12,6 +14,10 @@ export default defineConfig<ExtContextOptions>({
 	use: {
 		trace: "on",
 		video: "on",
+	},
+
+	build: {
+		external: [],
 	},
 
 	projects: [

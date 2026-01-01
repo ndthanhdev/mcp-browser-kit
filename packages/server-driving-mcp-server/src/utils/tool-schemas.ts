@@ -37,15 +37,34 @@ export const openTabSchema = {
 	url: z.string().describe("URL to open in the new tab"),
 };
 
-export const tabInfoOutputSchema = {
+export const browserTabContextSchema = {
 	tabKey: z.string().describe("Unique key identifying the tab"),
-	windowKey: z.string().describe("Window key where the tab is located"),
-	url: z.string().describe("Current URL of the tab"),
+	active: z.boolean().describe("Whether the tab is currently active"),
 	title: z.string().describe("Title of the tab"),
+	url: z.string().describe("Current URL of the tab"),
 };
 
-export const browserContextOutputSchema = {
-	tabs: z.array(z.object(tabInfoOutputSchema)).describe("List of open tabs"),
+export const browserWindowContextSchema = {
+	windowKey: z.string().describe("Unique key identifying the window"),
+	tabs: z
+		.array(z.object(browserTabContextSchema))
+		.describe("List of tabs in this window"),
+};
+
+export const browserContextSchema = {
+	browserId: z.string().describe("Unique identifier for the browser"),
+	availableTools: z
+		.array(z.string())
+		.describe("List of available tool names for this browser"),
+	browserWindows: z
+		.array(z.object(browserWindowContextSchema))
+		.describe("List of browser windows"),
+};
+
+export const contextOutputSchema = {
+	browsers: z
+		.array(z.object(browserContextSchema))
+		.describe("List of connected browsers"),
 };
 
 export const openTabOutputSchema = {
@@ -66,11 +85,11 @@ export const readableElementOutputSchema = {
 };
 
 export const selectionOutputSchema = {
-	selection: z.string().nullable().describe("Selected text on the page, or null if none"),
+	selectedText: z.string().describe("Selected text on the page"),
 };
 
 export const readableTextOutputSchema = {
-	innerText: z.string().nullable().describe("Inner text content of the page"),
+	innerText: z.string().describe("Inner text content of the page"),
 };
 
 export const invokeJsFnOutputSchema = {

@@ -7,7 +7,8 @@ fileGroups:
     - playwright.config.ts
   playwright-browsers:
     - $workspaceRoot/.tmp/playwright/browsers/**/*
-
+  playwright-workspace-sources:
+    - $workspaceRoot/**/src/**/*
 tasks:
   playwright-test:
     toolchain: node
@@ -18,6 +19,7 @@ tasks:
     inputs:
       - "@group(playwright-tests)"
       - "@group(playwright-configs)"
+      - "@group(playwright-workspace-sources)"
   playwright-show-report:
     toolchain: node
     preset: server

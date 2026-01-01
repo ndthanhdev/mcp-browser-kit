@@ -11,6 +11,7 @@ import {
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
+import { registerTool } from "../utils/register-tool";
 import {
 	createErrorResponse,
 	createImageResponse,
@@ -18,7 +19,7 @@ import {
 	createTextResponse,
 } from "../utils/tool-helpers";
 import {
-	browserContextOutputSchema,
+	contextOutputSchema,
 	invokeJsFnOutputSchema,
 	invokeJsFnSchema,
 	openTabOutputSchema,
@@ -43,7 +44,7 @@ export class BrowserTools {
 	}
 
 	register(server: McpServer): void {
-		this.registerGetBasicBrowserContext(server);
+		this.registerGetContext(server);
 		this.registerCaptureTab(server);
 		this.registerInvokeJsFn(server);
 		this.registerOpenTab(server);
@@ -51,22 +52,23 @@ export class BrowserTools {
 		this.registerGetSelection(server);
 	}
 
-	private registerGetBasicBrowserContext(server: McpServer): void {
-		this.logger.verbose("Registering tool: getBasicBrowserContext");
-		server.registerTool(
-			"getBasicBrowserContext",
+	private registerGetContext(server: McpServer): void {
+		this.logger.verbose("Registering tool: getContext");
+		registerTool(
+			server,
+			"getContext",
 			{
 				description:
 					this.toolDescriptionsInputPort.getBasicBrowserContextInstruction(),
 				inputSchema: {},
-				outputSchema: browserContextOutputSchema,
+				outputSchema: contextOutputSchema,
 			},
 			async () => {
-				this.logger.verbose("Executing getBasicBrowserContext");
+				this.logger.verbose("Executing getContext");
 				const overCtx = await over(this.toolsInputPort.getContext);
 
 				if (!overCtx.ok) {
-					this.logger.error("Failed to get basic browser context", {
+					this.logger.error("Failed to get context", {
 						reason: overCtx.reason,
 					});
 					return createErrorResponse(
@@ -76,29 +78,18 @@ export class BrowserTools {
 				}
 
 				const ctx = overCtx.value;
-				const tabs = ctx.browsers.flatMap((browser) =>
-					browser.browserWindows.flatMap((window) =>
-						window.tabs.map((tab) => ({
-							tabKey: tab.tabKey,
-							windowKey: window.windowKey,
-							url: tab.url,
-							title: tab.title,
-						})),
-					),
-				);
 				this.logger.verbose("Retrieved browser context", {
-					tabs,
+					browserCount: ctx.browsers.length,
 				});
-				return createStructuredResponse(browserContextOutputSchema, {
-					tabs,
-				});
+				return createStructuredResponse(contextOutputSchema, ctx);
 			},
 		);
 	}
 
 	private registerCaptureTab(server: McpServer): void {
 		this.logger.verbose("Registering tool: captureTab");
-		server.registerTool(
+		registerTool(
+			server,
 			"captureTab",
 			{
 				description: this.toolDescriptionsInputPort.captureTabInstruction(),
@@ -139,7 +130,8 @@ export class BrowserTools {
 
 	private registerInvokeJsFn(server: McpServer): void {
 		this.logger.verbose("Registering tool: invokeJsFn");
-		server.registerTool(
+		registerTool(
+			server,
 			"invokeJsFn",
 			{
 				description: this.toolDescriptionsInputPort.invokeJsFnInstruction(),
@@ -179,7 +171,8 @@ export class BrowserTools {
 
 	private registerOpenTab(server: McpServer): void {
 		this.logger.verbose("Registering tool: openTab");
-		server.registerTool(
+		registerTool(
+			server,
 			"openTab",
 			{
 				description: this.toolDescriptionsInputPort.openTabInstruction(),
@@ -226,7 +219,8 @@ export class BrowserTools {
 
 	private registerCloseTab(server: McpServer): void {
 		this.logger.verbose("Registering tool: closeTab");
-		server.registerTool(
+		registerTool(
+			server,
 			"closeTab",
 			{
 				description: this.toolDescriptionsInputPort.closeTabInstruction(),
@@ -261,7 +255,8 @@ export class BrowserTools {
 
 	private registerGetSelection(server: McpServer): void {
 		this.logger.verbose("Registering tool: getSelection");
-		server.registerTool(
+		registerTool(
+			server,
 			"getSelection",
 			{
 				description: this.toolDescriptionsInputPort.getSelectionInstruction(),
@@ -290,11 +285,9 @@ export class BrowserTools {
 				const selection = overResult.value;
 				this.logger.verbose("Selection retrieved successfully", {
 					tabKey,
-					hasSelection: !!selection?.selectedText,
+					hasSelection: !!selection.selectedText,
 				});
-				return createStructuredResponse(selectionOutputSchema, {
-					selection: selection?.selectedText ?? null,
-				});
+				return createStructuredResponse(selectionOutputSchema, selection);
 			},
 		);
 	}

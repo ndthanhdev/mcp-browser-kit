@@ -42,8 +42,7 @@
 		"outDir": "../../.moon/cache/types/apps/ext-e2e"
 	},
 	"include": [
-		"src/**/*",
-		"pages/**/*"
+		"src/**/*"
 	],
 	"references": [
 		{
