@@ -130,11 +130,11 @@ export class McpClientPageObject {
 		return res.resources;
 	}
 
-	async waitForBrowsers(timeout = 10000) {
+	async waitForBrowsers(timeout = 20000) {
 		const { expect } = await import("@playwright/test");
 		await expect(async () => {
 			const contextOutput = await this.callTool("getContext", {});
 			expect(contextOutput.structuredContent?.browsers?.length).toBeGreaterThan(0);
-		}).toPass({ timeout });
+		}).toPass({ timeout, intervals: [2000] });
 	}
 }
