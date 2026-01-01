@@ -19,3 +19,6 @@ tasks:
     toolchain: node
     script: >-
       biome check
+  check:
+    deps:
+      - ~:biome-check
