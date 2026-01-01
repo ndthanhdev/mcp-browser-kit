@@ -12,7 +12,7 @@ import { LocalStorageKeys } from "./storage-keys";
 const extensionInstanceId = createPrefixId("extension");
 
 export const closeTab = async (tabId: string): Promise<void> => {
-	await browser.tabs.remove(Number.parseInt(tabId));
+	await browser.tabs.remove(Number.parseInt(tabId, 10));
 };
 
 export const getBrowserInfo = async (): Promise<BrowserInfo> => {
@@ -98,7 +98,7 @@ export const openTab = async (
 }> => {
 	const tab = await browser.tabs.create({
 		url,
-		windowId: Number.parseInt(windowId),
+		windowId: Number.parseInt(windowId, 10),
 	});
 
 	return {

@@ -1,5 +1,5 @@
+import path from "node:path";
 import { type BrowserContext, test as base, chromium } from "@playwright/test";
-import path from "path";
 
 export type ExtTarget = "m2" | "m3";
 
