@@ -12,6 +12,8 @@ fileGroups:
 tasks:
   playwright-test:
     toolchain: node
+    options:
+      outputStyle: stream
     env:
       PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/playwright/browsers
       NODE_OPTIONS: "--require @swc-node/register"
