@@ -1,16 +1,16 @@
+import type {
+	ServerToolArgs,
+	ServerToolName,
+	ServerToolResult,
+} from "@mcp-browser-kit/core-server";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import {
-	ListToolsResultSchema,
+	type CallToolResult,
 	CallToolResultSchema,
 	ListResourcesResultSchema,
-	type CallToolResult,
+	ListToolsResultSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import type {
-	ServerToolName,
-	ServerToolArgs,
-	ServerToolResult,
-} from "@mcp-browser-kit/core-server";
 
 export type TypedCallToolResult<T extends ServerToolName> = Omit<
 	CallToolResult,
@@ -18,6 +18,7 @@ export type TypedCallToolResult<T extends ServerToolName> = Omit<
 > & {
 	structuredContent?: ServerToolResult<T>;
 };
+
 import {
 	createCoreServerContainer,
 	LoggerFactoryOutputPort,
@@ -134,7 +135,14 @@ export class McpClientPageObject {
 		const { expect } = await import("@playwright/test");
 		await expect(async () => {
 			const contextOutput = await this.callTool("getContext", {});
-			expect(contextOutput.structuredContent?.browsers?.length).toBeGreaterThan(0);
-		}).toPass({ timeout, intervals: [2000] });
+			expect(contextOutput.structuredContent?.browsers?.length).toBeGreaterThan(
+				0,
+			);
+		}).toPass({
+			timeout,
+			intervals: [
+				2000,
+			],
+		});
 	}
 }

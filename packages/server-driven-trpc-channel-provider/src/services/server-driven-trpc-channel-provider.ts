@@ -1,3 +1,4 @@
+import { createServer } from "node:http";
 import {
 	ExtensionChannelProviderOutputPort,
 	LoggerFactoryOutputPort,
@@ -5,7 +6,6 @@ import {
 import { HelperBaseExtensionChannelProvider } from "@mcp-browser-kit/helper-base-extension-channel-provider";
 import { initTRPC } from "@trpc/server";
 import { applyWSSHandler } from "@trpc/server/adapters/ws";
-import { createServer } from "http";
 import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import { WebSocketServer } from "ws";

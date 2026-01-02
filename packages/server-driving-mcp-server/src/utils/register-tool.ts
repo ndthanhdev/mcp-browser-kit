@@ -1,5 +1,8 @@
 import type { ServerToolName } from "@mcp-browser-kit/core-server/input-ports";
-import type { McpServer, ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type {
+	McpServer,
+	ToolCallback,
+} from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { z } from "zod";
 
 type ZodObjectShape = Record<string, z.ZodType>;

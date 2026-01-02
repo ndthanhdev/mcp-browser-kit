@@ -63,7 +63,9 @@ type InferSchemaType<Schema> = {
 /**
  * Creates a structured response with both content and structuredContent for MCP tools with output schemas
  */
-export const createStructuredResponse = <Schema extends Record<string, z.ZodType>>(
+export const createStructuredResponse = <
+	Schema extends Record<string, z.ZodType>,
+>(
 	_outputSchema: Schema,
 	structuredContent: InferSchemaType<Schema>,
 	textContent?: string,

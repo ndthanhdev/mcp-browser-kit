@@ -81,7 +81,9 @@ export const readableElementOutputSchema = {
 				z.string().describe("Accessible text content of the element"),
 			]),
 		)
-		.describe("List of readable elements on the page as [path, role, text] tuples"),
+		.describe(
+			"List of readable elements on the page as [path, role, text] tuples",
+		),
 };
 
 export const selectionOutputSchema = {
@@ -95,4 +97,3 @@ export const readableTextOutputSchema = {
 export const invokeJsFnOutputSchema = {
 	result: z.unknown().describe("Result returned by the JavaScript function"),
 };
-

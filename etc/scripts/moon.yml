@@ -10,8 +10,18 @@ project:
 tasks:
   playwright-install:
     toolchain: node
-    local: true
+    options:
+      cache: false
+      runInCI: false
+      outputStyle: stream
     env:
       PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/playwright/browsers
     script: >-
       playwright install --with-deps
+  biome-check:
+    toolchain: node
+    script: >-
+      biome check
+  check:
+    deps:
+      - ~:biome-check

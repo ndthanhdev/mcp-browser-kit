@@ -49,6 +49,8 @@ tasks:
       - '@group(extension-dist)'
   extension-build-firefox:
     toolchain: node
+    options:
+      runInCI: false
     script: >-
       $workspaceRoot/etc/scripts/actions/extension-build-firefox.ts
     env:

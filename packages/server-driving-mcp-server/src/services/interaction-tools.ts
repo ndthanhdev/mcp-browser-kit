@@ -296,4 +296,3 @@ export class InteractionTools {
 		);
 	}
 }
-
