@@ -1,2 +1,2 @@
-"*.{js,jsx,ts,tsx,json,jsonc}":
+"*.{js,jsx,ts,tsx,json,jsonc,md,yml,yaml}":
   - biome check --write 

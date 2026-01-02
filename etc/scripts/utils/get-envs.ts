@@ -1,37 +1,16 @@
 import { cleanEnv, str } from "envalid";
 
-export enum ExtensionCopyAssetsEnvNames {
-	ProjectRoot = "PROJECT_ROOT",
-	WorkspaceRoot = "WORKSPACE_ROOT",
-}
-
-export const getExtensionCopyAssetsEnvs = () => {
-	return cleanEnv(process.env, {
-		[ExtensionCopyAssetsEnvNames.ProjectRoot]: str(),
-		[ExtensionCopyAssetsEnvNames.WorkspaceRoot]: str(),
+const getEnv = (name: string): string => {
+	const env = cleanEnv(process.env, {
+		[name]: str(),
 	});
+	return env[name];
 };
 
-export enum ExtensionBuildEnvNames {
-	ProjectRoot = "PROJECT_ROOT",
-}
+export const getProjectRoot = () => getEnv("PROJECT_ROOT");
 
-export const getExtensionBuildEnvs = () => {
-	return cleanEnv(process.env, {
-		[ExtensionBuildEnvNames.ProjectRoot]: str(),
-	});
-};
+export const getWorkspaceRoot = () => getEnv("WORKSPACE_ROOT");
 
-export enum FirefoxSignEnvNames {
-	ProjectRoot = "PROJECT_ROOT",
-	FirefoxApiKey = "FIREFOX_API_KEY",
-	FirefoxApiSecret = "FIREFOX_API_SECRET",
-}
+export const getFirefoxApiKey = () => getEnv("FIREFOX_API_KEY");
 
-export const getFirefoxSignEnvs = () => {
-	return cleanEnv(process.env, {
-		[FirefoxSignEnvNames.ProjectRoot]: str(),
-		[FirefoxSignEnvNames.FirefoxApiKey]: str(),
-		[FirefoxSignEnvNames.FirefoxApiSecret]: str(),
-	});
-};
+export const getFirefoxApiSecret = () => getEnv("FIREFOX_API_SECRET");

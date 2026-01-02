@@ -17,13 +17,12 @@ projects:
   - "etc/*"
 
 vcs:
-  manager: git
   defaultBranch: main
   provider: github
   syncHooks: true
   hooks:
     pre-commit:
-      - moon scripts:check
+      - yarn lint-staged
 
 generator:
   templates:

@@ -13,7 +13,9 @@ tasks:
   test:
     options:
       runDepsInParallel: false
+    script: >-
+      moon run playwright-test
     deps:
       - m2:build
       - m3:build
-      - ~:playwright-test
+      - ext-e2e-test-app:react-router-build

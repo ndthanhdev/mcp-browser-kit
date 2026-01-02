@@ -1,15 +1,10 @@
 #!/usr/bin/env -S yarn dlx tsx
 import "zx/globals";
 import fse from "fs-extra";
-import {
-	ExtensionCopyAssetsEnvNames,
-	getExtensionCopyAssetsEnvs,
-} from "../utils/get-envs";
+import { getProjectRoot, getWorkspaceRoot } from "../utils/get-envs";
 
-const env = getExtensionCopyAssetsEnvs();
-
-const projectRoot = env[ExtensionCopyAssetsEnvNames.ProjectRoot];
-const workspaceRoot = env[ExtensionCopyAssetsEnvNames.WorkspaceRoot];
+const projectRoot = getProjectRoot();
+const workspaceRoot = getWorkspaceRoot();
 
 await fse.emptyDir(`${projectRoot}/target/extension/`);
 await fse.copy(
