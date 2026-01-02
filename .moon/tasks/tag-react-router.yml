@@ -25,6 +25,7 @@ tasks:
     env:
       PROJECT_ROOT: $projectRoot
     deps:
+      - ~:react-router-typecheck
       - ~:react-router-react-router-build
     script: >-
       $workspaceRoot/etc/scripts/actions/copy-react-router-build.ts
@@ -47,3 +48,9 @@ tasks:
     options:
       runDepsInParallel: false
     command: yarn serve ./build/client
+  react-router-typecheck:
+    command: yarn typecheck
+    inputs:
+      - "@group(react-router-config)"
+      - "@group(react-router-app)"
+      - tsconfig.json
