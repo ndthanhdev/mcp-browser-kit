@@ -33,6 +33,9 @@ export class ServerDrivenTrpcChannelProvider
 	public readonly on: ExtensionChannelProviderOutputPort["on"];
 	private container: Container;
 	private logger: ReturnType<LoggerFactoryOutputPort["create"]>;
+	private httpServer: import("http").Server | null = null;
+	private wss: WebSocketServer | null = null;
+	private handler: ReturnType<typeof applyWSSHandler> | null = null;
 
 	constructor(
 		@inject(LoggerFactoryOutputPort)
@@ -63,21 +66,42 @@ export class ServerDrivenTrpcChannelProvider
 
 	public async start() {
 		this.logger.verbose("Starting HTTP Server");
-		const httpServer = this.createHttpServer();
+		this.httpServer = this.createHttpServer();
 
 		this.logger.verbose("Starting WebSocket Server");
-		const wss = this.createWebSocketServer(httpServer);
+		this.wss = this.createWebSocketServer(this.httpServer);
 
 		this.logger.verbose("Applying WebSocket Handler");
-		const handler = this.createTrpcHandler(wss);
+		this.handler = this.createTrpcHandler(this.wss);
 
-		this.setupConnectionLogging(wss);
+		this.setupConnectionLogging(this.wss);
 
 		const port = await this.findPort();
 
-		this.startServer(httpServer, port);
+		this.startServer(this.httpServer, port);
 
-		this.setupShutdownHandlers(httpServer, wss, handler);
+		this.setupShutdownHandlers(this.httpServer, this.wss, this.handler);
+	}
+
+	public async stop(): Promise<void> {
+		if (!this.httpServer || !this.wss || !this.handler) {
+			return;
+		}
+
+		return new Promise<void>((resolve) => {
+			this.logger.info("Stopping server for test cleanup");
+			this.handler?.broadcastReconnectNotification();
+			this.wss?.close(() => {
+				this.logger.info("WebSocket Server closed");
+				this.httpServer?.close(() => {
+					this.logger.info("HTTP Server closed");
+					this.httpServer = null;
+					this.wss = null;
+					this.handler = null;
+					resolve();
+				});
+			});
+		});
 	}
 
 	private createHttpServer() {

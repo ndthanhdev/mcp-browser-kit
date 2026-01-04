@@ -22,10 +22,12 @@ export const test = extContextTest.extend<
 		const playwrightPage = new PlaywrightPage(page);
 		await use(playwrightPage);
 	},
-	// biome-ignore lint/correctness/noEmptyPattern: Playwright requires object destructuring pattern
-	mcpClientPage: async ({}, use) => {
+	mcpClientPage: async ({ context }, use) => {
+		// Depend on context to ensure mcpClientPage teardown happens before context.close()
+		void context;
 		const mcpClientPage = new McpClientPageObject();
 		await use(mcpClientPage);
+		await mcpClientPage.disconnect();
 	},
 });
 

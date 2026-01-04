@@ -13,8 +13,12 @@ tasks:
   test:
     options:
       runDepsInParallel: false
-    script: >-
-      moon run playwright-test
+    deps:
+      - ~:playwright-test
+
+  playwright-test:
+    options:
+      runDepsInParallel: false
     deps:
       - m2:build
       - m3:build
