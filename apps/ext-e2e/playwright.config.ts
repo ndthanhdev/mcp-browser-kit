@@ -32,7 +32,7 @@ export default defineConfig<ExtContextOptions>({
 		{
 			command: "moon run ext-e2e-test-app:react-router-start-csr",
 			url: "http://localhost:3000",
-			timeout: 10000,
+			timeout: 30000,
 			reuseExistingServer: !process.env.CI,
 			env: {
 				// biome-ignore lint/style/useNamingConvention: The issue is that process.env.NODE_OPTIONS = "--require @swc-node/register" is inherited by the webServer child process, causing Yarn to fail.
