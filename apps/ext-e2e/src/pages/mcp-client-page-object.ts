@@ -135,6 +135,7 @@ export class McpClientPageObject {
 		const { expect } = await import("@playwright/test");
 		await expect(async () => {
 			const contextOutput = await this.callTool("getContext", {});
+			console.log("contextOutput", contextOutput);
 			expect(contextOutput.structuredContent?.browsers?.length).toBeGreaterThan(
 				0,
 			);
