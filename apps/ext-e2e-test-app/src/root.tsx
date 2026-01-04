@@ -8,6 +8,7 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
+import "./app.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
 	return (
@@ -48,11 +49,11 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 	}
 
 	return (
-		<div>
-			<div>{message}</div>
-			<div>{details}</div>
+		<div className="p-5 font-sans">
+			<div className="text-2xl font-bold mb-4">{message}</div>
+			<div className="text-lg mb-4">{details}</div>
 			{stack && (
-				<pre>
+				<pre className="bg-gray-100 p-4 rounded overflow-x-auto">
 					<code>{stack}</code>
 				</pre>
 			)}
