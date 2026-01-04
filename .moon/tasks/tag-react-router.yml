@@ -4,8 +4,8 @@ fileGroups:
   react-router-config:
     - react-router.config.ts
     - vite.config.ts
-  react-router-app:
-    - app/**/*
+  react-router-src:
+    - src/**/*
   react-router-public:
     - public/**/*
   react-router-target:
@@ -19,7 +19,7 @@ tasks:
     command: yarn dev
     inputs:
       - "@group(react-router-config)"
-      - "@group(react-router-app)"
+      - "@group(react-router-src)"
       - "@group(react-router-public)"
   react-router-build:
     env:
@@ -37,7 +37,7 @@ tasks:
     command: yarn build
     inputs:
       - "@group(react-router-config)"
-      - "@group(react-router-app)"
+      - "@group(react-router-src)"
       - "@group(react-router-public)"
     outputs:
       - "@group(react-router-build)"
@@ -47,10 +47,10 @@ tasks:
       - ~:react-router-build
     options:
       runDepsInParallel: false
-    command: yarn serve ./build/client
+    command: yarn serve -s ./build/client
   react-router-typecheck:
     command: yarn typecheck
     inputs:
       - "@group(react-router-config)"
-      - "@group(react-router-app)"
+      - "@group(react-router-src)"
       - tsconfig.json
