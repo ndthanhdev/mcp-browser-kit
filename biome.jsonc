@@ -11,7 +11,11 @@
 			"**",
 			"!**/target",
 			"!**/cache",
-			"!**/etc/submodules"
+			"!**/etc/submodules",
+			"!**/.tmp",
+			"!**/.react-router",
+			"!**/build",
+			"!**/dist"
 		]
 	},
 	"formatter": {
@@ -44,7 +48,8 @@
 				"useNumberNamespace": "error",
 				"noInferrableTypes": "error",
 				"noUselessElse": "error",
-				"useNamingConvention": "error"
+				"useNamingConvention": "error",
+				"noDefaultExport": "off"
 			}
 		}
 	},
@@ -70,7 +75,6 @@
 			}
 		}
 	],
-
 	"json": {
 		"formatter": {
 			// force newline

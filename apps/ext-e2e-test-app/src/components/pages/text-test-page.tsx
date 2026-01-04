@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+
 export function meta() {
 	return [
 		{
@@ -9,6 +11,13 @@ export function meta() {
 export default function TextTestPage() {
 	return (
 		<div className="p-5 font-sans max-w-4xl">
+			<Link
+				to="/"
+				data-testid="back-to-home"
+				className="inline-block mb-4 text-blue-600 hover:underline"
+			>
+				← Back to Home
+			</Link>
 			<h1 data-testid="page-title" className="text-3xl font-bold mb-6">
 				Text Test Page
 			</h1>
