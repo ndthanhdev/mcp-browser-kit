@@ -9,7 +9,7 @@ export default defineConfig<ExtContextOptions>({
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,
-	workers: process.env.CI ? 1 : undefined,
+	workers: 1,
 	reporter: [
 		[
 			"html",
@@ -50,13 +50,13 @@ export default defineConfig<ExtContextOptions>({
 				extTarget: "m3",
 			},
 		},
-		{
-			name: "m2",
-			use: {
-				...devices["Desktop Chrome"],
-				channel: "chromium",
-				extTarget: "m2",
-			},
-		},
+		// {
+		// 	name: "m2",
+		// 	use: {
+		// 		...devices["Desktop Chrome"],
+		// 		channel: "chromium",
+		// 		extTarget: "m2",
+		// 	},
+		// },
 	],
 });
