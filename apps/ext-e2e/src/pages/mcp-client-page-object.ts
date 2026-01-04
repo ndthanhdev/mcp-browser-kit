@@ -36,6 +36,7 @@ export class McpClientPageObject {
 		| ReturnType<typeof InMemoryTransport.createLinkedPair>[1]
 		| null = null;
 	private mcpServer: ServerDrivingMcpServer | null = null;
+	private trpcServer: ServerDrivenTrpcChannelProvider | null = null;
 
 	constructor() {
 		this.client = new Client({
@@ -54,10 +55,10 @@ export class McpClientPageObject {
 		ServerDrivenTrpcChannelProvider.setupContainer(container);
 		ServerDrivingMcpServer.setupContainer(container);
 
-		const trpcServer = container.get<ServerDrivenTrpcChannelProvider>(
+		this.trpcServer = container.get<ServerDrivenTrpcChannelProvider>(
 			ServerDrivenTrpcChannelProvider,
 		);
-		await trpcServer.start();
+		await this.trpcServer.start();
 
 		this.mcpServer = container.get<ServerDrivingMcpServer>(
 			ServerDrivingMcpServer,
@@ -135,6 +136,7 @@ export class McpClientPageObject {
 		const { expect } = await import("@playwright/test");
 		await expect(async () => {
 			const contextOutput = await this.callTool("getContext", {});
+			console.log("contextOutput", contextOutput);
 			expect(contextOutput.structuredContent?.browsers?.length).toBeGreaterThan(
 				0,
 			);

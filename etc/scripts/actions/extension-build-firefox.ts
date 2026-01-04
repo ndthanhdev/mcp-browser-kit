@@ -3,15 +3,13 @@ import "zx/globals";
 import { workDirs } from "@mcp-browser-kit/scripts/utils/work-dirs";
 import fse from "fs-extra";
 import * as R from "ramda";
-import { FirefoxSignEnvNames, getFirefoxSignEnvs } from "../utils/get-envs";
+import { getProjectRoot } from "../utils/get-envs";
 import { getExtensionName } from "../utils/get-extension-name";
 
 $.verbose = true;
 cd(workDirs.path);
 
-const env = getFirefoxSignEnvs();
-
-const projectRoot = env[FirefoxSignEnvNames.ProjectRoot];
+const projectRoot = getProjectRoot();
 
 const sourceDir = path.resolve(projectRoot, "target/extension/tmp/extension");
 const signArtifactTmpDir = path.resolve(
@@ -29,9 +27,9 @@ const command = [
 	"--artifacts-dir",
 	signArtifactTmpDir,
 	"--api-key",
-	`$${FirefoxSignEnvNames.FirefoxApiKey}`,
+	"$FIREFOX_API_KEY",
 	"--api-secret",
-	`$${FirefoxSignEnvNames.FirefoxApiSecret}`,
+	"$FIREFOX_API_SECRET",
 	"--channel",
 	"unlisted",
 ].join(" ");

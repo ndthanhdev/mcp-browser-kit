@@ -1,0 +1,56 @@
+$schema: "https://moonrepo.dev/schemas/tasks.json"
+
+fileGroups:
+  react-router-config:
+    - react-router.config.ts
+    - vite.config.ts
+  react-router-app:
+    - app/**/*
+  react-router-public:
+    - public/**/*
+  react-router-target:
+    - target/react-router/**/*
+  react-router-build:
+    - build/**/*
+
+tasks:
+  react-router-dev:
+    preset: server
+    command: yarn dev
+    inputs:
+      - "@group(react-router-config)"
+      - "@group(react-router-app)"
+      - "@group(react-router-public)"
+  react-router-build:
+    env:
+      PROJECT_ROOT: $projectRoot
+    deps:
+      - ~:react-router-typecheck
+      - ~:react-router-react-router-build
+    script: >-
+      $workspaceRoot/etc/scripts/actions/copy-react-router-build.ts
+    inputs:
+      - "@group(react-router-build)"
+    outputs:
+      - "@group(react-router-target)"
+  react-router-react-router-build:
+    command: yarn build
+    inputs:
+      - "@group(react-router-config)"
+      - "@group(react-router-app)"
+      - "@group(react-router-public)"
+    outputs:
+      - "@group(react-router-build)"
+  react-router-start-csr:
+    preset: server
+    deps:
+      - ~:react-router-build
+    options:
+      runDepsInParallel: false
+    command: yarn serve ./build/client
+  react-router-typecheck:
+    command: yarn typecheck
+    inputs:
+      - "@group(react-router-config)"
+      - "@group(react-router-app)"
+      - tsconfig.json
