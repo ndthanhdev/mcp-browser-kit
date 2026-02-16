@@ -118,7 +118,7 @@ export class ElementTools {
 					);
 				}
 
-				const elements = overElements.value;
+				const { elements } = overElements.value;
 				this.logger.verbose("Retrieved readable elements", {
 					tabKey,
 					elementCount: elements.length,

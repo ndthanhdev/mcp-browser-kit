@@ -373,7 +373,9 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 	getReadableElements = async (
 		tabKey: string,
-	): Promise<ReadableElementRecord[]> => {
+	): Promise<{
+		elements: ReadableElementRecord[];
+	}> => {
 		this.logger.info(`Getting readable elements from tab: ${tabKey}`);
 
 		try {
@@ -386,7 +388,9 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info(`Retrieved ${elementRecords.length} readable elements`);
-			return elementRecords;
+			return {
+				elements: elementRecords,
+			};
 		} catch (error) {
 			this.logger.error("Failed to get readable elements", error);
 			throw error;

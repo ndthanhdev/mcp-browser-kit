@@ -1,6 +1,6 @@
 dagger = "^0"
 moon = "^1"
-node = "^22"
+node = "^24"
 yarn = "^4"
 
 [plugins]
