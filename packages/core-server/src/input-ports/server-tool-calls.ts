@@ -44,7 +44,9 @@ export type ServerToolCallsInputPort = {
 		value: string,
 	) => Promise<void>;
 	getContext: () => Promise<Context>;
-	getReadableElements: (tabKey: string) => Promise<ReadableElementRecord[]>;
+	getReadableElements: (tabKey: string) => Promise<{
+		elements: ReadableElementRecord[];
+	}>;
 	getReadableText: (tabKey: string) => Promise<string>;
 	getSelection: (tabKey: string) => Promise<Selection>;
 	hitEnterOnCoordinates: (

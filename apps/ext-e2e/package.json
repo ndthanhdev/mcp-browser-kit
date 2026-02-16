@@ -1,3 +1,7 @@
 {
-	"name": "@mcp-browser-kit/ext-e2e"
+	"name": "@mcp-browser-kit/ext-e2e",
+	"scripts": {
+		"test": "TS_NODE_TRANSPILE_ONLY=true TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\"}' NODE_OPTIONS='--require ts-node/register --enable-source-maps' playwright test",
+		"test:debug": "TS_NODE_TRANSPILE_ONLY=true TS_NODE_COMPILER_OPTIONS='{\"module\":\"CommonJS\"}' NODE_OPTIONS='--require ts-node/register --enable-source-maps' PWDEBUG=1 playwright test --headed"
+	}
 }

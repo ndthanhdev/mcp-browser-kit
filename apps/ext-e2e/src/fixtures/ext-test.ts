@@ -1,5 +1,6 @@
 import { McpClientPageObject } from "../pages/mcp-client-page-object";
 import { PlaywrightPage } from "../pages/playwright-page";
+import { TestAppPage } from "../pages/test-app-page";
 import {
 	type ExtContextFixtures,
 	type ExtContextOptions,
@@ -12,6 +13,7 @@ export type ExtTestFixtures = ExtContextFixtures &
 	ExtContextOptions & {
 		playwrightPage: PlaywrightPage;
 		mcpClientPage: McpClientPageObject;
+		testAppPage: TestAppPage;
 	};
 
 export const test = extContextTest.extend<
@@ -28,6 +30,11 @@ export const test = extContextTest.extend<
 		const mcpClientPage = new McpClientPageObject();
 		await use(mcpClientPage);
 		await mcpClientPage.disconnect();
+	},
+	testAppPage: async ({ context }, use) => {
+		const page = await context.newPage();
+		const testAppPage = new TestAppPage(page);
+		await use(testAppPage);
 	},
 });
 

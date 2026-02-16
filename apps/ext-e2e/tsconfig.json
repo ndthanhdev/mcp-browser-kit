@@ -1,6 +1,7 @@
 {
 	"extends": "../../tsconfig.options.json",
 	"compilerOptions": {
+		"sourceMap": true,
 		"emitDeclarationOnly": true,
 		"lib": [
 			"DOM",
