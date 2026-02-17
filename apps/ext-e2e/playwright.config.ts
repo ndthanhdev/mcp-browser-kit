@@ -2,7 +2,7 @@ import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 import type { ExtContextOptions } from "./src/fixtures/ext-context";
 
-process.env.NODE_OPTIONS = "--require @swc-node/register";
+// process.env.NODE_OPTIONS = "--require @swc-node/register";
 
 // Set browser path for Playwright extension debugging
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= path.resolve(

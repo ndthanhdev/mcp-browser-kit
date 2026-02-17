@@ -1,28 +1,62 @@
 import type { z } from "zod";
 
 /**
- * Creates a standardized error response for MCP tools
+ * Extracts the value type from an OVER output schema
  */
-export const createErrorResponse = (errorMessage: string, reason: string) => ({
-	content: [
-		{
-			type: "text" as const,
-			text: `${errorMessage}: ${reason}`,
-		},
-	],
-});
+type ExtractOverValue<Schema extends Record<string, z.ZodType>> =
+	Schema extends {
+		value: z.ZodOptional<infer V extends z.ZodType>;
+	}
+		? z.infer<V>
+		: Record<string, never>;
+
+type OverResult<Schema extends Record<string, z.ZodType>> =
+	| {
+			ok: true;
+			value: ExtractOverValue<Schema>;
+	  }
+	| {
+			ok: false;
+			reason: string;
+	  };
 
 /**
- * Creates a standardized text response for MCP tools
+ * Creates an OVER-shaped structured response from a discriminated ok/fail result
  */
-export const createTextResponse = (text: string) => ({
-	content: [
-		{
-			type: "text" as const,
-			text,
+export const createOverResponse = <Schema extends Record<string, z.ZodType>>(
+	_outputSchema: Schema,
+	result: OverResult<Schema>,
+	textContent?: string,
+) => {
+	if (result.ok) {
+		return {
+			content: [
+				{
+					type: "text" as const,
+					text: textContent ?? JSON.stringify(result.value),
+				},
+			],
+			structuredContent: {
+				ok: true,
+				value: result.value,
+				reason: undefined,
+			},
+		};
+	}
+	return {
+		content: [
+			{
+				type: "text" as const,
+				text: textContent ?? result.reason,
+			},
+		],
+		structuredContent: {
+			ok: false,
+			value: undefined,
+			reason: result.reason,
 		},
-	],
-});
+	};
+};
 
 /**
  * Creates an image response with optional text prefix
@@ -51,30 +85,4 @@ export const createImageResponse = (
 			data: screenshot.data,
 		},
 	],
-});
-
-/**
- * Helper type to infer TypeScript type from schema object
- */
-type InferSchemaType<Schema> = {
-	[K in keyof Schema]: Schema[K] extends z.ZodType<infer U> ? U : never;
-};
-
-/**
- * Creates a structured response with both content and structuredContent for MCP tools with output schemas
- */
-export const createStructuredResponse = <
-	Schema extends Record<string, z.ZodType>,
->(
-	_outputSchema: Schema,
-	structuredContent: InferSchemaType<Schema>,
-	textContent?: string,
-) => ({
-	content: [
-		{
-			type: "text" as const,
-			text: textContent ?? JSON.stringify(structuredContent),
-		},
-	],
-	structuredContent,
 });

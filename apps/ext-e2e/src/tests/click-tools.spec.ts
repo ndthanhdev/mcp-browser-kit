@@ -17,7 +17,7 @@ test.describe("Click Tools", () => {
 			await testAppPage.navigateToClickTest();
 
 			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const browsers = contextResult.structuredContent?.browsers ?? [];
+			const browsers = contextResult.structuredContent?.value?.browsers ?? [];
 			const tabKey = browsers[0]?.browserWindows[0]?.tabs.find((t) =>
 				t.url.includes("click-test"),
 			)?.tabKey;
@@ -29,7 +29,7 @@ test.describe("Click Tools", () => {
 					tabKey,
 				},
 			);
-			const elements = elementsResult.structuredContent?.elements ?? [];
+			const elements = elementsResult.structuredContent?.value?.elements ?? [];
 			const primaryButtonPath = elements.find((el) =>
 				el[2]?.includes("Primary Button"),
 			)?.[0];
@@ -53,7 +53,7 @@ test.describe("Click Tools", () => {
 
 			const contextResult = await mcpClientPage.callTool("getContext", {});
 			const tabKey =
-				contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 					(t) => t.url.includes("click-test"),
 				)?.tabKey;
 			expectToBeDefined(tabKey);
@@ -65,7 +65,7 @@ test.describe("Click Tools", () => {
 				},
 			);
 			const nestedButtonPath = (
-				elementsResult.structuredContent?.elements ?? []
+				elementsResult.structuredContent?.value?.elements ?? []
 			).find((el) => el[2]?.includes("Nested Button"))?.[0];
 			expectToBeDefined(nestedButtonPath);
 
@@ -88,7 +88,7 @@ test.describe("Click Tools", () => {
 
 			const contextResult = await mcpClientPage.callTool("getContext", {});
 			const tabKey =
-				contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 					(t) => t.url.includes("click-test"),
 				)?.tabKey;
 			expectToBeDefined(tabKey);
@@ -117,7 +117,7 @@ test.describe("Click Tools", () => {
 
 			const contextResult = await mcpClientPage.callTool("getContext", {});
 			const tabKey =
-				contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 					(t) => t.url.includes("click-test"),
 				)?.tabKey;
 			expectToBeDefined(tabKey);

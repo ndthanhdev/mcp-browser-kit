@@ -1,8 +1,8 @@
 import type {
 	ServerToolArgs,
 	ServerToolName,
-	ServerToolResult,
 } from "@mcp-browser-kit/core-server";
+import type { ServerToolOverResult } from "@mcp-browser-kit/server-driving-mcp-server";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import {
@@ -16,7 +16,7 @@ export type TypedCallToolResult<T extends ServerToolName> = Omit<
 	CallToolResult,
 	"structuredContent"
 > & {
-	structuredContent?: ServerToolResult<T>;
+	structuredContent?: ServerToolOverResult<T>;
 };
 
 import {
@@ -137,9 +137,9 @@ export class McpClientPageObject {
 		await expect(async () => {
 			const contextOutput = await this.callTool("getContext", {});
 			console.log("contextOutput", contextOutput);
-			expect(contextOutput.structuredContent?.browsers?.length).toBeGreaterThan(
-				0,
-			);
+			expect(
+				contextOutput.structuredContent?.value?.browsers?.length,
+			).toBeGreaterThan(0);
 		}).toPass({
 			timeout,
 			intervals: [
