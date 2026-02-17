@@ -19,7 +19,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("form-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -31,7 +31,7 @@ test.describe
 					},
 				);
 				const usernameInputPath = (
-					elementsResult.structuredContent?.elements ?? []
+					elementsResult.structuredContent?.value?.elements ?? []
 				).find(
 					(el) =>
 						el[2]?.includes("Enter username") || el[2]?.includes("Username"),
@@ -56,7 +56,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("form-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -68,7 +68,7 @@ test.describe
 					},
 				);
 				const textareaPath = (
-					elementsResult.structuredContent?.elements ?? []
+					elementsResult.structuredContent?.value?.elements ?? []
 				).find(
 					(el) =>
 						el[2]?.includes("Enter your message") || el[2]?.includes("Message"),
@@ -96,7 +96,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("form-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -125,7 +125,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("form-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -137,7 +137,7 @@ test.describe
 					},
 				);
 				const searchInputPath = (
-					elementsResult.structuredContent?.elements ?? []
+					elementsResult.structuredContent?.value?.elements ?? []
 				).find((el) => el[2]?.includes("Search"))?.[0];
 				expectToBeDefined(searchInputPath);
 
@@ -166,7 +166,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("form-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -201,7 +201,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("form-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -212,7 +212,8 @@ test.describe
 						tabKey,
 					},
 				);
-				const elements = elementsResult.structuredContent?.elements ?? [];
+				const elements =
+					elementsResult.structuredContent?.value?.elements ?? [];
 
 				const usernameInputPath = elements.find((el) =>
 					el[2]?.includes("Enter username"),

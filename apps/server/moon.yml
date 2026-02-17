@@ -5,6 +5,7 @@ toolchain:
 
 tags:
   - tsup
+  - mcp
 
 tasks:
   build:

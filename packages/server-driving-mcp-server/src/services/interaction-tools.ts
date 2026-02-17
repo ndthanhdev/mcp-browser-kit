@@ -12,8 +12,9 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
 import { registerTool } from "../utils/register-tool";
-import { createErrorResponse, createTextResponse } from "../utils/tool-helpers";
+import { createOverResponse } from "../utils/tool-helpers";
 import {
+	actionOutputSchema,
 	coordinateSchema,
 	coordinateTextInputSchema,
 	readableElementSchema,
@@ -54,6 +55,7 @@ export class InteractionTools {
 				description:
 					this.toolDescriptionsInputPort.clickOnViewableElementInstruction(),
 				inputSchema: coordinateSchema,
+				outputSchema: actionOutputSchema,
 			},
 			async ({ tabKey, x, y }) => {
 				this.logger.info("Executing clickOnCoordinates", {
@@ -72,10 +74,10 @@ export class InteractionTools {
 						y,
 						reason: overClick.reason,
 					});
-					return createErrorResponse(
-						"Error clicking on coordinates",
-						String(overClick.reason),
-					);
+					return createOverResponse(actionOutputSchema, {
+						ok: false,
+						reason: String(overClick.reason),
+					});
 				}
 
 				this.logger.verbose("Clicked on coordinates", {
@@ -83,7 +85,14 @@ export class InteractionTools {
 					x,
 					y,
 				});
-				return createTextResponse("Done");
+				return createOverResponse(
+					actionOutputSchema,
+					{
+						ok: true,
+						value: {},
+					},
+					"Done",
+				);
 			},
 		);
 	}
@@ -97,6 +106,7 @@ export class InteractionTools {
 				description:
 					this.toolDescriptionsInputPort.fillTextToViewableElementInstruction(),
 				inputSchema: coordinateTextInputSchema,
+				outputSchema: actionOutputSchema,
 			},
 			async ({ tabKey, x, y, value }) => {
 				this.logger.info("Executing fillTextToCoordinates", {
@@ -115,10 +125,10 @@ export class InteractionTools {
 						y,
 						reason: overFill.reason,
 					});
-					return createErrorResponse(
-						"Error filling text",
-						String(overFill.reason),
-					);
+					return createOverResponse(actionOutputSchema, {
+						ok: false,
+						reason: String(overFill.reason),
+					});
 				}
 
 				this.logger.verbose("Filled text to coordinates", {
@@ -127,7 +137,14 @@ export class InteractionTools {
 					y,
 					valueLength: value.length,
 				});
-				return createTextResponse("Done");
+				return createOverResponse(
+					actionOutputSchema,
+					{
+						ok: true,
+						value: {},
+					},
+					"Done",
+				);
 			},
 		);
 	}
@@ -141,6 +158,7 @@ export class InteractionTools {
 				description:
 					this.toolDescriptionsInputPort.hitEnterOnViewableElementInstruction(),
 				inputSchema: coordinateSchema,
+				outputSchema: actionOutputSchema,
 			},
 			async ({ tabKey, x, y }) => {
 				this.logger.info("Executing hitEnterOnCoordinates", {
@@ -159,10 +177,10 @@ export class InteractionTools {
 						y,
 						reason: overEnter.reason,
 					});
-					return createErrorResponse(
-						"Error hitting enter",
-						String(overEnter.reason),
-					);
+					return createOverResponse(actionOutputSchema, {
+						ok: false,
+						reason: String(overEnter.reason),
+					});
 				}
 
 				this.logger.verbose("Hit enter on coordinates", {
@@ -170,7 +188,14 @@ export class InteractionTools {
 					x,
 					y,
 				});
-				return createTextResponse("Done");
+				return createOverResponse(
+					actionOutputSchema,
+					{
+						ok: true,
+						value: {},
+					},
+					"Done",
+				);
 			},
 		);
 	}
@@ -184,6 +209,7 @@ export class InteractionTools {
 				description:
 					this.toolDescriptionsInputPort.clickOnReadableElementInstruction(),
 				inputSchema: readableElementSchema,
+				outputSchema: actionOutputSchema,
 			},
 			async ({ tabKey, readablePath }) => {
 				this.logger.info("Executing clickOnElement", {
@@ -200,17 +226,24 @@ export class InteractionTools {
 						readablePath,
 						reason: overClick.reason,
 					});
-					return createErrorResponse(
-						"Error clicking on element",
-						String(overClick.reason),
-					);
+					return createOverResponse(actionOutputSchema, {
+						ok: false,
+						reason: String(overClick.reason),
+					});
 				}
 
 				this.logger.verbose("Clicked on element", {
 					tabKey,
 					readablePath,
 				});
-				return createTextResponse("Done");
+				return createOverResponse(
+					actionOutputSchema,
+					{
+						ok: true,
+						value: {},
+					},
+					"Done",
+				);
 			},
 		);
 	}
@@ -224,6 +257,7 @@ export class InteractionTools {
 				description:
 					this.toolDescriptionsInputPort.fillTextToReadableElementInstruction(),
 				inputSchema: readableElementTextInputSchema,
+				outputSchema: actionOutputSchema,
 			},
 			async ({ tabKey, readablePath, value }) => {
 				this.logger.info("Executing fillTextToElement", {
@@ -240,10 +274,10 @@ export class InteractionTools {
 						readablePath,
 						reason: overFill.reason,
 					});
-					return createErrorResponse(
-						"Error filling text",
-						String(overFill.reason),
-					);
+					return createOverResponse(actionOutputSchema, {
+						ok: false,
+						reason: String(overFill.reason),
+					});
 				}
 
 				this.logger.verbose("Filled text to element", {
@@ -251,7 +285,14 @@ export class InteractionTools {
 					readablePath,
 					valueLength: value.length,
 				});
-				return createTextResponse("Done");
+				return createOverResponse(
+					actionOutputSchema,
+					{
+						ok: true,
+						value: {},
+					},
+					"Done",
+				);
 			},
 		);
 	}
@@ -265,6 +306,7 @@ export class InteractionTools {
 				description:
 					this.toolDescriptionsInputPort.hitEnterOnReadableElementInstruction(),
 				inputSchema: readableElementSchema,
+				outputSchema: actionOutputSchema,
 			},
 			async ({ tabKey, readablePath }) => {
 				this.logger.info("Executing hitEnterOnElement", {
@@ -281,17 +323,24 @@ export class InteractionTools {
 						readablePath,
 						reason: overEnter.reason,
 					});
-					return createErrorResponse(
-						"Error hitting enter",
-						String(overEnter.reason),
-					);
+					return createOverResponse(actionOutputSchema, {
+						ok: false,
+						reason: String(overEnter.reason),
+					});
 				}
 
 				this.logger.verbose("Hit enter on element", {
 					tabKey,
 					readablePath,
 				});
-				return createTextResponse("Done");
+				return createOverResponse(
+					actionOutputSchema,
+					{
+						ok: true,
+						value: {},
+					},
+					"Done",
+				);
 			},
 		);
 	}

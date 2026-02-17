@@ -16,7 +16,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("javascript-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -26,7 +26,9 @@ test.describe
 					fnBodyCode: "return document.title;",
 				});
 
-				expect(result.structuredContent).toContain("JavaScript Test");
+				expect(result.structuredContent?.value?.result).toContain(
+					"JavaScript Test",
+				);
 			});
 
 			test("returns number value", async ({ testAppPage, mcpClientPage }) => {
@@ -34,7 +36,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("javascript-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -44,7 +46,7 @@ test.describe
 					fnBodyCode: "return 42;",
 				});
 
-				expect(result.structuredContent).toBe(42);
+				expect(result.structuredContent?.value?.result).toBe(42);
 			});
 
 			test("returns boolean value", async ({ testAppPage, mcpClientPage }) => {
@@ -52,7 +54,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("javascript-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -62,7 +64,7 @@ test.describe
 					fnBodyCode: "return true;",
 				});
 
-				expect(result.structuredContent).toBe(true);
+				expect(result.structuredContent?.value?.result).toBe(true);
 			});
 
 			test("returns array value", async ({ testAppPage, mcpClientPage }) => {
@@ -70,7 +72,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("javascript-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -80,7 +82,7 @@ test.describe
 					fnBodyCode: "return [1, 2, 3];",
 				});
 
-				expect(result.structuredContent).toEqual([
+				expect(result.structuredContent?.value?.result).toEqual([
 					1,
 					2,
 					3,
@@ -92,7 +94,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("javascript-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -102,7 +104,7 @@ test.describe
 					fnBodyCode: 'return { name: "test", value: 123 };',
 				});
 
-				expect(result.structuredContent).toEqual({
+				expect(result.structuredContent?.value?.result).toEqual({
 					name: "test",
 					value: 123,
 				});
@@ -113,7 +115,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("javascript-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -123,7 +125,7 @@ test.describe
 					fnBodyCode: "return null;",
 				});
 
-				expect(result.structuredContent).toBeNull();
+				expect(result.structuredContent?.value?.result).toBeNull();
 			});
 
 			test("calls window.incrementCounter function", async ({
@@ -134,7 +136,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("javascript-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -143,13 +145,13 @@ test.describe
 					tabKey,
 					fnBodyCode: "return window.incrementCounter();",
 				});
-				expect(result1.structuredContent).toBe(1);
+				expect(result1.structuredContent?.value?.result).toBe(1);
 
 				const result2 = await mcpClientPage.callTool("invokeJsFn", {
 					tabKey,
 					fnBodyCode: "return window.incrementCounter();",
 				});
-				expect(result2.structuredContent).toBe(2);
+				expect(result2.structuredContent?.value?.result).toBe(2);
 			});
 
 			test("calls window.addMessage function", async ({
@@ -160,7 +162,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("javascript-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -170,7 +172,7 @@ test.describe
 					fnBodyCode: 'return window.addMessage("Hello from test");',
 				});
 
-				expect(result.structuredContent).toEqual([
+				expect(result.structuredContent?.value?.result).toEqual([
 					"Hello from test",
 				]);
 			});
@@ -183,7 +185,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("javascript-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -193,7 +195,7 @@ test.describe
 					fnBodyCode: "return window.computeSum(10, 25);",
 				});
 
-				expect(result.structuredContent).toBe(35);
+				expect(result.structuredContent?.value?.result).toBe(35);
 			});
 
 			test("reads and modifies DOM element", async ({
@@ -204,7 +206,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("javascript-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -218,7 +220,9 @@ test.describe
 				`,
 				});
 
-				expect(result.structuredContent).toBe("Modified by test");
+				expect(result.structuredContent?.value?.result).toBe(
+					"Modified by test",
+				);
 
 				const locators = testAppPage.getJavaScriptTestLocators();
 				await expect(locators.dynamicContent).toContainText("Modified by test");
@@ -229,7 +233,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("javascript-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -246,7 +250,7 @@ test.describe
 				`,
 				});
 
-				expect(result.structuredContent).toEqual({
+				expect(result.structuredContent?.value?.result).toEqual({
 					value: "initial",
 					count: "0",
 					active: "false",
@@ -261,7 +265,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("javascript-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -290,7 +294,7 @@ test.describe
 
 				const contextResult = await mcpClientPage.callTool("getContext", {});
 				const tabKey =
-					contextResult.structuredContent?.browsers[0]?.browserWindows[0]?.tabs.find(
+					contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
 						(t) => t.url.includes("javascript-test"),
 					)?.tabKey;
 				expectToBeDefined(tabKey);
@@ -300,7 +304,7 @@ test.describe
 					fnBodyCode: "return window.getTestData();",
 				});
 
-				expect(result.structuredContent).toEqual({
+				expect(result.structuredContent?.value?.result).toEqual({
 					counter: 0,
 					messages: [],
 					lastAction: null,

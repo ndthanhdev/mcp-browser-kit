@@ -12,10 +12,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
 import { registerTool } from "../utils/register-tool";
-import {
-	createErrorResponse,
-	createStructuredResponse,
-} from "../utils/tool-helpers";
+import { createOverResponse } from "../utils/tool-helpers";
 import {
 	readableElementOutputSchema,
 	readableTextOutputSchema,
@@ -66,10 +63,10 @@ export class ElementTools {
 						tabKey,
 						reason: overInnerText.reason,
 					});
-					return createErrorResponse(
-						"Error getting inner text",
-						String(overInnerText.reason),
-					);
+					return createOverResponse(readableTextOutputSchema, {
+						ok: false,
+						reason: String(overInnerText.reason),
+					});
 				}
 
 				const innerText = overInnerText.value;
@@ -77,10 +74,13 @@ export class ElementTools {
 					tabKey,
 					textLength: innerText.length,
 				});
-				return createStructuredResponse(
+				return createOverResponse(
 					readableTextOutputSchema,
 					{
-						innerText,
+						ok: true,
+						value: {
+							innerText,
+						},
 					},
 					`InnerText: ${JSON.stringify(innerText)}`,
 				);
@@ -112,10 +112,10 @@ export class ElementTools {
 						tabKey,
 						reason: overElements.reason,
 					});
-					return createErrorResponse(
-						"Error getting readable elements",
-						String(overElements.reason),
-					);
+					return createOverResponse(readableElementOutputSchema, {
+						ok: false,
+						reason: String(overElements.reason),
+					});
 				}
 
 				const { elements } = overElements.value;
@@ -123,8 +123,11 @@ export class ElementTools {
 					tabKey,
 					elementCount: elements.length,
 				});
-				return createStructuredResponse(readableElementOutputSchema, {
-					elements,
+				return createOverResponse(readableElementOutputSchema, {
+					ok: true,
+					value: {
+						elements,
+					},
 				});
 			},
 		);

@@ -12,13 +12,10 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
 import { registerTool } from "../utils/register-tool";
+import { createImageResponse, createOverResponse } from "../utils/tool-helpers";
 import {
-	createErrorResponse,
-	createImageResponse,
-	createStructuredResponse,
-	createTextResponse,
-} from "../utils/tool-helpers";
-import {
+	actionOutputSchema,
+	captureTabOutputSchema,
 	contextOutputSchema,
 	invokeJsFnOutputSchema,
 	invokeJsFnSchema,
@@ -71,17 +68,20 @@ export class BrowserTools {
 					this.logger.error("Failed to get context", {
 						reason: overCtx.reason,
 					});
-					return createErrorResponse(
-						"Error getting browser context",
-						String(overCtx.reason),
-					);
+					return createOverResponse(contextOutputSchema, {
+						ok: false,
+						reason: String(overCtx.reason),
+					});
 				}
 
 				const ctx = overCtx.value;
 				this.logger.verbose("Retrieved browser context", {
 					browserCount: ctx.browsers.length,
 				});
-				return createStructuredResponse(contextOutputSchema, ctx);
+				return createOverResponse(contextOutputSchema, {
+					ok: true,
+					value: ctx,
+				});
 			},
 		);
 	}
@@ -94,6 +94,7 @@ export class BrowserTools {
 			{
 				description: this.toolDescriptionsInputPort.captureTabInstruction(),
 				inputSchema: tabKeySchema,
+				outputSchema: captureTabOutputSchema,
 			},
 			async ({ tabKey }) => {
 				this.logger.info("Executing captureTab", {
@@ -108,10 +109,10 @@ export class BrowserTools {
 						tabKey,
 						reason: overScreenshot.reason,
 					});
-					return createErrorResponse(
-						"Error capturing screenshot",
-						String(overScreenshot.reason),
-					);
+					return createOverResponse(captureTabOutputSchema, {
+						ok: false,
+						reason: String(overScreenshot.reason),
+					});
 				}
 
 				const screenshot = overScreenshot.value;
@@ -120,10 +121,22 @@ export class BrowserTools {
 					width: screenshot.width,
 					height: screenshot.height,
 				});
-				return createImageResponse(
+				const imageResponse = createImageResponse(
 					screenshot,
 					`Screenshot size [${screenshot.width}x${screenshot.height}] - Use these dimensions to calculate exact pixel coordinates for clicking and text entry`,
 				);
+				return {
+					...imageResponse,
+					structuredContent: {
+						ok: true,
+						value: {
+							width: screenshot.width,
+							height: screenshot.height,
+							mimeType: screenshot.mimeType,
+						},
+						reason: undefined,
+					},
+				};
 			},
 		);
 	}
@@ -151,10 +164,10 @@ export class BrowserTools {
 						tabKey,
 						reason: overResult.reason,
 					});
-					return createErrorResponse(
-						"Error invoking JavaScript",
-						String(overResult.reason),
-					);
+					return createOverResponse(invokeJsFnOutputSchema, {
+						ok: false,
+						reason: String(overResult.reason),
+					});
 				}
 
 				const result = overResult.value;
@@ -162,8 +175,11 @@ export class BrowserTools {
 					tabKey,
 					hasResult: result !== undefined,
 				});
-				return createStructuredResponse(invokeJsFnOutputSchema, {
-					result,
+				return createOverResponse(invokeJsFnOutputSchema, {
+					ok: true,
+					value: {
+						result,
+					},
 				});
 			},
 		);
@@ -194,10 +210,10 @@ export class BrowserTools {
 						url,
 						reason: overResult.reason,
 					});
-					return createErrorResponse(
-						"Error opening tab",
-						String(overResult.reason),
-					);
+					return createOverResponse(openTabOutputSchema, {
+						ok: false,
+						reason: String(overResult.reason),
+					});
 				}
 
 				const result = overResult.value;
@@ -205,11 +221,14 @@ export class BrowserTools {
 					tabKey: result.tabKey,
 					windowKey: result.windowKey,
 				});
-				return createStructuredResponse(
+				return createOverResponse(
 					openTabOutputSchema,
 					{
-						tabKey: result.tabKey,
-						windowKey: result.windowKey,
+						ok: true,
+						value: {
+							tabKey: result.tabKey,
+							windowKey: result.windowKey,
+						},
 					},
 					`Tab opened successfully. tabKey: ${result.tabKey}, windowKey: ${result.windowKey}`,
 				);
@@ -225,6 +244,7 @@ export class BrowserTools {
 			{
 				description: this.toolDescriptionsInputPort.closeTabInstruction(),
 				inputSchema: tabKeySchema,
+				outputSchema: actionOutputSchema,
 			},
 			async ({ tabKey }) => {
 				this.logger.info("Executing closeTab", {
@@ -239,16 +259,23 @@ export class BrowserTools {
 						tabKey,
 						reason: overResult.reason,
 					});
-					return createErrorResponse(
-						"Error closing tab",
-						String(overResult.reason),
-					);
+					return createOverResponse(actionOutputSchema, {
+						ok: false,
+						reason: String(overResult.reason),
+					});
 				}
 
 				this.logger.verbose("Tab closed successfully", {
 					tabKey,
 				});
-				return createTextResponse("Tab closed successfully");
+				return createOverResponse(
+					actionOutputSchema,
+					{
+						ok: true,
+						value: {},
+					},
+					"Tab closed successfully",
+				);
 			},
 		);
 	}
@@ -276,10 +303,10 @@ export class BrowserTools {
 						tabKey,
 						reason: overResult.reason,
 					});
-					return createErrorResponse(
-						"Error getting selection",
-						String(overResult.reason),
-					);
+					return createOverResponse(selectionOutputSchema, {
+						ok: false,
+						reason: String(overResult.reason),
+					});
 				}
 
 				const selection = overResult.value;
@@ -287,7 +314,10 @@ export class BrowserTools {
 					tabKey,
 					hasSelection: !!selection.selectedText,
 				});
-				return createStructuredResponse(selectionOutputSchema, selection);
+				return createOverResponse(selectionOutputSchema, {
+					ok: true,
+					value: selection,
+				});
 			},
 		);
 	}

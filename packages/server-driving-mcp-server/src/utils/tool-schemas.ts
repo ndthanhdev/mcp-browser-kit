@@ -61,18 +61,29 @@ export const browserContextSchema = {
 		.describe("List of browser windows"),
 };
 
-export const contextOutputSchema = {
+export const createOverOutputSchema = <T extends Record<string, z.ZodType>>(
+	valueSchema: T,
+) => ({
+	ok: z.boolean().describe("Whether the operation succeeded"),
+	value: z
+		.object(valueSchema)
+		.optional()
+		.describe("Result value when ok is true"),
+	reason: z.string().optional().describe("Error reason when ok is false"),
+});
+
+export const contextOutputSchema = createOverOutputSchema({
 	browsers: z
 		.array(z.object(browserContextSchema))
 		.describe("List of connected browsers"),
-};
+});
 
-export const openTabOutputSchema = {
+export const openTabOutputSchema = createOverOutputSchema({
 	tabKey: z.string().describe("Key of the newly opened tab"),
 	windowKey: z.string().describe("Window key where the tab was opened"),
-};
+});
 
-export const readableElementOutputSchema = {
+export const readableElementOutputSchema = createOverOutputSchema({
 	elements: z
 		.array(
 			z.tuple([
@@ -84,16 +95,53 @@ export const readableElementOutputSchema = {
 		.describe(
 			"List of readable elements on the page as [path, role, text] tuples",
 		),
-};
+});
 
-export const selectionOutputSchema = {
+export const selectionOutputSchema = createOverOutputSchema({
 	selectedText: z.string().describe("Selected text on the page"),
-};
+});
 
-export const readableTextOutputSchema = {
+export const readableTextOutputSchema = createOverOutputSchema({
 	innerText: z.string().describe("Inner text content of the page"),
+});
+
+export const invokeJsFnOutputSchema = createOverOutputSchema({
+	result: z.unknown().describe("Result returned by the JavaScript function"),
+});
+
+export const captureTabOutputSchema = createOverOutputSchema({
+	width: z.number().describe("Width of the captured screenshot in pixels"),
+	height: z.number().describe("Height of the captured screenshot in pixels"),
+	mimeType: z.string().describe("MIME type of the captured image"),
+});
+
+export const actionOutputSchema = createOverOutputSchema({});
+
+type InferOverValue<T> = T extends {
+	value: z.ZodOptional<infer V extends z.ZodType>;
+}
+	? z.infer<V>
+	: Record<string, never>;
+
+type ServerToolOverSchemaMap = {
+	getContext: typeof contextOutputSchema;
+	captureTab: typeof captureTabOutputSchema;
+	invokeJsFn: typeof invokeJsFnOutputSchema;
+	openTab: typeof openTabOutputSchema;
+	closeTab: typeof actionOutputSchema;
+	getSelection: typeof selectionOutputSchema;
+	getReadableText: typeof readableTextOutputSchema;
+	getReadableElements: typeof readableElementOutputSchema;
+	clickOnCoordinates: typeof actionOutputSchema;
+	fillTextToCoordinates: typeof actionOutputSchema;
+	hitEnterOnCoordinates: typeof actionOutputSchema;
+	clickOnElement: typeof actionOutputSchema;
+	fillTextToElement: typeof actionOutputSchema;
+	hitEnterOnElement: typeof actionOutputSchema;
 };
 
-export const invokeJsFnOutputSchema = {
-	result: z.unknown().describe("Result returned by the JavaScript function"),
-};
+export interface ServerToolOverResult<T extends keyof ServerToolOverSchemaMap> {
+	ok: boolean;
+	value?: InferOverValue<ServerToolOverSchemaMap[T]>;
+	reason?: string;
+}
