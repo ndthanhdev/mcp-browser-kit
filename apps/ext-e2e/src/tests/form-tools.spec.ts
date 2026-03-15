@@ -33,8 +33,7 @@ test.describe
 				const usernameInputPath = (
 					elementsResult.structuredContent?.value?.elements ?? []
 				).find(
-					(el) =>
-						el[2]?.includes("Enter username") || el[2]?.includes("Username"),
+					(el) => el[1] === "input" && el[2]?.includes("Enter username"),
 				)?.[0];
 				expectToBeDefined(usernameInputPath);
 
@@ -70,8 +69,7 @@ test.describe
 				const textareaPath = (
 					elementsResult.structuredContent?.value?.elements ?? []
 				).find(
-					(el) =>
-						el[2]?.includes("Enter your message") || el[2]?.includes("Message"),
+					(el) => el[1] === "textarea" && el[2]?.includes("Enter your message"),
 				)?.[0];
 				expectToBeDefined(textareaPath);
 
@@ -138,7 +136,7 @@ test.describe
 				);
 				const searchInputPath = (
 					elementsResult.structuredContent?.value?.elements ?? []
-				).find((el) => el[2]?.includes("Search"))?.[0];
+				).find((el) => el[1] === "input" && el[2]?.includes("Search"))?.[0];
 				expectToBeDefined(searchInputPath);
 
 				await mcpClientPage.callTool("fillTextToElement", {

@@ -15,6 +15,8 @@ export const clickOnElementByReadablePath = async (element: HTMLElement) => {
 	}
 };
 
+const humanDelay = () => delay(50 + Math.random() * 150);
+
 export const dispatchEnter = async (element: HTMLElement) => {
 	const dict = {
 		key: "Enter",
@@ -24,9 +26,8 @@ export const dispatchEnter = async (element: HTMLElement) => {
 		bubbles: true,
 		cancelable: true,
 	};
-	const humanDelay = 50 + Math.random() * 150;
 	element.dispatchEvent(new KeyboardEvent("keydown", dict));
-	await delay(humanDelay);
+	await humanDelay();
 	element.dispatchEvent(new KeyboardEvent("keyup", dict));
 };
 
@@ -66,6 +67,7 @@ export const getInnerText = () => {
 
 export const hitEnterOnElementByReadablePath = async (element: HTMLElement) => {
 	if (element) {
+		focusOnElement(element);
 		await playClickAnimationOnElement(element);
 		await dispatchEnter(element);
 	}

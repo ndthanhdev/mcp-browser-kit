@@ -12,7 +12,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
 import { registerTool } from "../utils/register-tool";
-import { createImageResponse, createOverResponse } from "../utils/tool-helpers";
+import { createOverResponse } from "../utils/tool-helpers";
 import {
 	actionOutputSchema,
 	captureTabOutputSchema,
@@ -121,22 +121,19 @@ export class BrowserTools {
 					width: screenshot.width,
 					height: screenshot.height,
 				});
-				const imageResponse = createImageResponse(
-					screenshot,
-					`Screenshot size [${screenshot.width}x${screenshot.height}] - Use these dimensions to calculate exact pixel coordinates for clicking and text entry`,
-				);
-				return {
-					...imageResponse,
-					structuredContent: {
+				return createOverResponse(
+					captureTabOutputSchema,
+					{
 						ok: true,
 						value: {
 							width: screenshot.width,
 							height: screenshot.height,
 							mimeType: screenshot.mimeType,
+							data: screenshot.data,
 						},
-						reason: undefined,
 					},
-				};
+					`Screenshot size [${screenshot.width}x${screenshot.height}] - Use these dimensions to calculate exact pixel coordinates for clicking and text entry`,
+				);
 			},
 		);
 	}

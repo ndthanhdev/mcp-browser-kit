@@ -1,5 +1,4 @@
 import { expect, test } from "../fixtures/ext-test";
-import { expectToBeDefined } from "../test-utils/assert-defined";
 
 test.describe("Text Tools", () => {
 	test.beforeEach(async ({ mcpClientPage }) => {
@@ -16,12 +15,10 @@ test.describe("Text Tools", () => {
 		}) => {
 			await testAppPage.navigateToTextTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("text-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"text-test",
+			);
 
 			const textResult = await mcpClientPage.callTool("getReadableText", {
 				tabKey,
@@ -39,12 +36,10 @@ test.describe("Text Tools", () => {
 		test("extracts text from lists", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToTextTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("text-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"text-test",
+			);
 
 			const textResult = await mcpClientPage.callTool("getReadableText", {
 				tabKey,
@@ -59,12 +54,10 @@ test.describe("Text Tools", () => {
 		test("extracts text from table", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToTextTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("text-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"text-test",
+			);
 
 			const textResult = await mcpClientPage.callTool("getReadableText", {
 				tabKey,
@@ -84,12 +77,10 @@ test.describe("Text Tools", () => {
 		}) => {
 			await testAppPage.navigateToTextTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("text-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"text-test",
+			);
 
 			const elementsResult = await mcpClientPage.callTool(
 				"getReadableElements",
@@ -98,6 +89,7 @@ test.describe("Text Tools", () => {
 				},
 			);
 			const elements = elementsResult.structuredContent?.value?.elements ?? [];
+			console.log("elements", JSON.stringify(elements, null, 2));
 
 			expect(elements.length).toBeGreaterThan(0);
 
@@ -120,12 +112,10 @@ test.describe("Text Tools", () => {
 		}) => {
 			await testAppPage.navigateToTextTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("text-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"text-test",
+			);
 
 			const elementsResult = await mcpClientPage.callTool(
 				"getReadableElements",
@@ -156,12 +146,10 @@ test.describe("Text Tools", () => {
 		}) => {
 			await testAppPage.navigateToTextTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("text-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"text-test",
+			);
 
 			const elementsResult = await mcpClientPage.callTool(
 				"getReadableElements",
@@ -187,12 +175,10 @@ test.describe("Text Tools", () => {
 		test("finds navigation links", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToTextTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("text-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"text-test",
+			);
 
 			const elementsResult = await mcpClientPage.callTool(
 				"getReadableElements",
@@ -219,12 +205,10 @@ test.describe("Text Tools", () => {
 		}) => {
 			await testAppPage.navigateToTextTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("text-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"text-test",
+			);
 
 			const selectionResult = await mcpClientPage.callTool("getSelection", {
 				tabKey,
@@ -240,12 +224,10 @@ test.describe("Text Tools", () => {
 		}) => {
 			await testAppPage.navigateToTextTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("text-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"text-test",
+			);
 
 			await testAppPage.getTextTestLocators().heading1.selectText();
 

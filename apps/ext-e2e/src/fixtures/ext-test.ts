@@ -31,9 +31,9 @@ export const test = extContextTest.extend<
 		await use(mcpClientPage);
 		await mcpClientPage.disconnect();
 	},
-	testAppPage: async ({ context }, use) => {
+	testAppPage: async ({ context, mcpClientPage }, use) => {
 		const page = await context.newPage();
-		const testAppPage = new TestAppPage(page);
+		const testAppPage = new TestAppPage(page, mcpClientPage);
 		await use(testAppPage);
 	},
 });

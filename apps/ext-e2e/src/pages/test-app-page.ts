@@ -17,29 +17,33 @@ export class TestAppPage extends BasePage {
 		this.pageTitle = this.getByTestId("page-title");
 	}
 
+	override async waitForPageLoad() {
+		await super.waitForPageLoad(this.pageTitle);
+	}
+
 	async navigateToHome() {
 		await this.goto(this.homeUrl);
-		await this.waitForPageLoad();
+		await super.waitForPageLoad(this.getByTestId("nav-click-test"));
 	}
 
 	async navigateToClickTest() {
 		await this.goto(this.clickTestUrl);
-		await this.waitForPageLoad();
+		await super.waitForPageLoad(this.getByTestId("click-count"));
 	}
 
 	async navigateToFormTest() {
 		await this.goto(this.formTestUrl);
-		await this.waitForPageLoad();
+		await super.waitForPageLoad(this.getByTestId("search-input"));
 	}
 
 	async navigateToTextTest() {
 		await this.goto(this.textTestUrl);
-		await this.waitForPageLoad();
+		await super.waitForPageLoad(this.getByTestId("heading-1"));
 	}
 
 	async navigateToJavaScriptTest() {
 		await this.goto(this.javascriptTestUrl);
-		await this.waitForPageLoad();
+		await super.waitForPageLoad(this.getByTestId("page-info"));
 	}
 
 	getClickTestLocators() {

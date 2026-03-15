@@ -11,8 +11,23 @@ export abstract class BasePage {
 		await this.page.goto(url);
 	}
 
-	async waitForPageLoad() {
+	/**
+	 * Wait for the page to be fully loaded.
+	 * For 100% reliability, subclasses should override and pass a `readyElement`
+	 * that indicates the page content has rendered.
+	 *
+	 * @param readyElement - Optional locator to wait for visibility after load states
+	 * @param timeout - Optional timeout in ms (default: 30000)
+	 */
+	async waitForPageLoad(readyElement?: Locator, timeout = 30000) {
 		await this.page.waitForLoadState("networkidle");
+		if (readyElement) {
+			await readyElement.waitFor({
+				state: "visible",
+				timeout,
+			});
+		}
+		await this.page.waitForTimeout(1500);
 	}
 
 	async getTitle(): Promise<string> {

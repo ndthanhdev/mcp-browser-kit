@@ -46,7 +46,9 @@ export const getExtensionInfo = async (): Promise<ExtensionInfo> => {
 	};
 };
 
-export const getBrowserId = async (): Promise<string> => {
+let browserIdPromise: Promise<string> | null = null;
+
+const getBrowserIdInternal = async (): Promise<string> => {
 	const storageKey = LocalStorageKeys.ExtensionInstanceId;
 
 	try {
@@ -68,6 +70,13 @@ export const getBrowserId = async (): Promise<string> => {
 		// Fallback to generating a new ID without storing it
 		return extensionInstanceId.generate();
 	}
+};
+
+export const getBrowserId = (): Promise<string> => {
+	if (!browserIdPromise) {
+		browserIdPromise = getBrowserIdInternal();
+	}
+	return browserIdPromise;
 };
 
 export const getTabs = async () => {

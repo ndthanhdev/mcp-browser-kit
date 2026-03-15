@@ -2,7 +2,16 @@ import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 import type { ExtContextOptions } from "./src/fixtures/ext-context";
 
-// process.env.NODE_OPTIONS = "--require @swc-node/register";
+// Append rather than overwrite so the VS Code debugger's --inspect flags are preserved
+const swcRequire = "--require @swc-node/register";
+if (!process.env.NODE_OPTIONS?.includes(swcRequire)) {
+	process.env.NODE_OPTIONS = [
+		process.env.NODE_OPTIONS,
+		swcRequire,
+	]
+		.filter(Boolean)
+		.join(" ");
+}
 
 // Set browser path for Playwright extension debugging
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= path.resolve(
@@ -31,10 +40,6 @@ export default defineConfig<ExtContextOptions>({
 		video: "on",
 	},
 
-	build: {
-		external: [],
-	},
-
 	webServer: [
 		{
 			command: "moon run ext-e2e-test-app:react-router-start-csr",
@@ -43,7 +48,7 @@ export default defineConfig<ExtContextOptions>({
 			timeout: 30000,
 			reuseExistingServer: !process.env.CI,
 			env: {
-				// biome-ignore lint/style/useNamingConvention: process.env.NODE_OPTIONS = "--require @swc-node/register" is inherited by the webServer child process, causing Yarn to fail.
+				// biome-ignore lint/style/useNamingConvention: prevent @swc-node/register from leaking into the webServer child process
 				NODE_OPTIONS: "",
 			},
 		},
