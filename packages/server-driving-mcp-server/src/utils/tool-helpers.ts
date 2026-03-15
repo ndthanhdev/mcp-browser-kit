@@ -57,32 +57,3 @@ export const createOverResponse = <Schema extends Record<string, z.ZodType>>(
 		},
 	};
 };
-
-/**
- * Creates an image response with optional text prefix
- */
-export const createImageResponse = (
-	screenshot: {
-		width: number;
-		height: number;
-		mimeType: string;
-		data: string;
-	},
-	textPrefix?: string,
-) => ({
-	content: [
-		...(textPrefix
-			? [
-					{
-						type: "text" as const,
-						text: textPrefix,
-					},
-				]
-			: []),
-		{
-			type: "image" as const,
-			mimeType: screenshot.mimeType,
-			data: screenshot.data,
-		},
-	],
-});

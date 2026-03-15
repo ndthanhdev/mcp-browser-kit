@@ -234,9 +234,10 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		await this.ensureNotAnInternalBrowserPage(tabKey);
 
 		const tabData = TabKey.parse(tabKey);
-		const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
-			tabData.extensionId,
-		) as MessageChannelRpcClient<TabSpecificTool>;
+		const rpcClient =
+			(await this.extensionChannelManager.getRpcClientByBrowserId(
+				tabData.extensionId,
+			)) as MessageChannelRpcClient<TabSpecificTool>;
 
 		return rpcClient.call({
 			method,
@@ -319,9 +320,10 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			const windowData = WindowKey.parse(windowKey);
 
 			// Get the RPC client for this browser instance
-			const rpcClient = this.extensionChannelManager.getRpcClientByBrowserId(
-				windowData.extensionId,
-			);
+			const rpcClient =
+				await this.extensionChannelManager.getRpcClientByBrowserId(
+					windowData.extensionId,
+				);
 
 			const result = await rpcClient.call({
 				method: "openTab",

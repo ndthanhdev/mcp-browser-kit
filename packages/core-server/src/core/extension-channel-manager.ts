@@ -152,22 +152,61 @@ export class ExtensionChannelManager {
 	};
 
 	/**
-	 * Get a specific RPC client by browser ID
+	 * Get a specific RPC client by browser ID.
+	 * Uses a fast-path lookup via the cached browserIdToChannelId map.
+	 * On a cache miss, falls back to querying all connected clients for their
+	 * current browserId, updates the map, and returns the matching client.
+	 * This self-healing behavior handles stale mappings that may occur when
+	 * concurrent getBrowserId() calls during initial connection produce
+	 * different IDs due to a race condition.
 	 * @param browserId - The browser ID to get the RPC client for
 	 * @returns The RPC client
 	 * @throws Error if no RPC client is found for the given browser ID
 	 */
-	public getRpcClientByBrowserId = (
+	public getRpcClientByBrowserId = async (
 		browserId: string,
-	): MessageChannelRpcClient<ExtensionToolCallInputPort> => {
+	): Promise<MessageChannelRpcClient<ExtensionToolCallInputPort>> => {
+		// Fast path: direct lookup
 		const channelId = this.browserIdToChannelId.get(browserId);
-		if (!channelId) {
-			throw new Error(`No channel found for browser instance: ${browserId}`);
+		if (channelId) {
+			const rpcClient = this.rpcClients.get(channelId);
+			if (rpcClient) {
+				return rpcClient;
+			}
 		}
-		const rpcClient = this.rpcClients.get(channelId);
-		if (!rpcClient) {
-			throw new Error(`No RPC client found for channel: ${channelId}`);
+
+		// Slow path: query all clients for their current browserId
+		this.logger.info("Browser ID not found in cache, querying all clients", {
+			browserId,
+			cachedMappings: Object.fromEntries(this.browserIdToChannelId),
+		});
+
+		for (const [clientChannelId, rpcClient] of this.rpcClients) {
+			try {
+				const context = await rpcClient.call({
+					method: "getExtensionContext",
+					args: [],
+					extraArgs: {},
+				});
+
+				// Update the mapping with the fresh browserId
+				this.browserIdToChannelId.set(context.browserId, clientChannelId);
+
+				if (context.browserId === browserId) {
+					this.logger.info("Found matching client via self-healing lookup", {
+						browserId,
+						channelId: clientChannelId,
+					});
+					return rpcClient;
+				}
+			} catch (error) {
+				this.logger.error("Failed to query client during self-healing lookup", {
+					channelId: clientChannelId,
+					error,
+				});
+			}
 		}
-		return rpcClient;
+
+		throw new Error(`No channel found for browser instance: ${browserId}`);
 	};
 }

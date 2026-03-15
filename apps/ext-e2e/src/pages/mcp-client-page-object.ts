@@ -11,6 +11,7 @@ import {
 	ListResourcesResultSchema,
 	ListToolsResultSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+import type { Page } from "@playwright/test";
 
 export type TypedCallToolResult<T extends ServerToolName> = Omit<
 	CallToolResult,
@@ -87,6 +88,7 @@ export class McpClientPageObject {
 
 	async disconnect() {
 		await this.client.close();
+		await this.trpcServer?.stop();
 	}
 
 	async listTools() {
@@ -146,5 +148,32 @@ export class McpClientPageObject {
 				2000,
 			],
 		});
+	}
+
+	async waitForTabByUrl(
+		page: Page,
+		urlPattern: string,
+		timeout = 10000,
+	): Promise<string> {
+		const { expect } = await import("@playwright/test");
+		await page.waitForURL(`**/*${urlPattern}*`, {
+			timeout,
+		});
+		await page.waitForLoadState("networkidle");
+		let tabKey = "";
+		await expect(async () => {
+			const contextResult = await this.callTool("getContext", {});
+			tabKey =
+				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
+					(t) => t.url.includes(urlPattern),
+				)?.tabKey ?? "";
+			expect(tabKey).not.toBe("");
+		}).toPass({
+			timeout,
+			intervals: [
+				500,
+			],
+		});
+		return tabKey;
 	}
 }

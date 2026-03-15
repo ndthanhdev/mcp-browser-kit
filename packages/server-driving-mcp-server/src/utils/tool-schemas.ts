@@ -113,6 +113,7 @@ export const captureTabOutputSchema = createOverOutputSchema({
 	width: z.number().describe("Width of the captured screenshot in pixels"),
 	height: z.number().describe("Height of the captured screenshot in pixels"),
 	mimeType: z.string().describe("MIME type of the captured image"),
+	data: z.string().describe("Base64-encoded screenshot image data"),
 });
 
 export const actionOutputSchema = createOverOutputSchema({});
