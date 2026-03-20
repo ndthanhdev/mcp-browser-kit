@@ -2,8 +2,7 @@
 	"$schema": "https://json.schemastore.org/webextension.json",
 	"manifest_version": 2,
 	"name": "MCP Browser Kit M2",
-	"version": "6.0.1",
-
+	"version": "0.0.0",
 	"description": "Allow MCP Browser Kit to interact with the browser.",
 	"permissions": [
 		"tabs",
@@ -17,7 +16,6 @@
 	"icons": {
 		"48": "assets/images/border-48.png"
 	},
-
 	"content_scripts": [
 		{
 			"matches": [

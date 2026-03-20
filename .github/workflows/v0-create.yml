@@ -1,0 +1,37 @@
+name: V0 Create Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to tag (branch, tag, or SHA)"
+        required: true
+        default: "main"
+
+jobs:
+  v0-create:
+    name: Create V0 Tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.inputs.ref }}
+
+      - name: Generate tag name
+        id: tag
+        run: |
+          # Format: v0.yyMMd.dhhmm-ss (e.g., v0.26032.00830-05)
+          DT=$(date -u +"%y%m%d%H%M%S")
+          TAG="v0.${DT:0:5}.${DT:4:5}-${DT:10:2}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push tag
+        run: |
+          git tag "${{ steps.tag.outputs.tag }}"
+          git push origin "${{ steps.tag.outputs.tag }}"
+
+      - name: Summary
+        run: |
+          echo "Created tag **${{ steps.tag.outputs.tag }}** on ref \`${{ github.event.inputs.ref }}\`" >> "$GITHUB_STEP_SUMMARY"

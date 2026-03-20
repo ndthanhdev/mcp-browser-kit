@@ -1104,6 +1104,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@kwsites/file-exists@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@kwsites/file-exists@npm:1.1.1"
+  dependencies:
+    debug: "npm:^4.1.1"
+  checksum: 10c0/39e693239a72ccd8408bb618a0200e4a8d61682057ca7ae2c87668d7e69196e8d7e2c9cde73db6b23b3b0230169a15e5f1bfe086539f4be43e767b2db68e8ee4
+  languageName: node
+  linkType: hard
+
+"@kwsites/promise-deferred@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@kwsites/promise-deferred@npm:1.1.1"
+  checksum: 10c0/ef1ad3f1f50991e3bed352b175986d8b4bc684521698514a2ed63c1d1fc9848843da4f2bc2df961c9b148c94e1c34bf33f0da8a90ba2234e452481f2cc9937b1
+  languageName: node
+  linkType: hard
+
 "@mcp-browser-kit/core-extension@workspace:packages/core-extension":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/core-extension@workspace:packages/core-extension"
@@ -3537,6 +3553,13 @@ __metadata:
   dependencies:
     htmlparser2: "npm:^8.0.0"
   checksum: 10c0/1d5ff68e07815d86a6832fba9b86f21af1824fd1080b765485688dc2777e03c22c6058ae12ba67ac3ee1aa1731f99626ed465e914ed6982bfe7c6c7144b79d45
+  languageName: node
+  linkType: hard
+
+"@types/semver@npm:^7":
+  version: 7.7.1
+  resolution: "@types/semver@npm:7.7.1"
+  checksum: 10c0/c938aef3bf79a73f0f3f6037c16e2e759ff40c54122ddf0b2583703393d8d3127130823facb880e694caa324eb6845628186aac1997ee8b31dc2d18fafe26268
   languageName: node
   linkType: hard
 
@@ -9023,6 +9046,7 @@ __metadata:
     "@types/node": "npm:^24.10.13"
     "@types/ramda": "npm:^0.31.1"
     "@types/sanitize-html": "npm:^2.16.0"
+    "@types/semver": "npm:^7"
     "@types/webextension-polyfill": "npm:^0.12.4"
     bowser: "npm:^2.14.1"
     change-case: "npm:^5.4.4"
@@ -9046,7 +9070,9 @@ __metadata:
     ramda: "npm:^0.32.0"
     reflect-metadata: "npm:^0.2.2"
     sanitize-html: "npm:^2.17.0"
+    semver: "npm:^7.7.4"
     serve: "npm:^14.2.5"
+    simple-git: "npm:^3.33.0"
     superjson: "npm:^2.2.6"
     ts-node: "npm:^10.9.2"
     tsconfig-moon: "npm:^1.4.2"
@@ -9187,6 +9213,15 @@ __metadata:
   bin:
     semver: bin/semver.js
   checksum: 10c0/e3d79b609071caa78bcb6ce2ad81c7966a46a7431d9d58b8800cfa9cb6a63699b3899a0e4bcce36167a284578212d9ae6942b6929ba4aa5015c079a67751d42d
+  languageName: node
+  linkType: hard
+
+"semver@npm:^7.7.4":
+  version: 7.7.4
+  resolution: "semver@npm:7.7.4"
+  bin:
+    semver: bin/semver.js
+  checksum: 10c0/5215ad0234e2845d4ea5bb9d836d42b03499546ddafb12075566899fc617f68794bb6f146076b6881d755de17d6c6cc73372555879ec7dce2c2feee947866ad2
   languageName: node
   linkType: hard
 
@@ -9432,6 +9467,17 @@ __metadata:
   version: 4.1.0
   resolution: "signal-exit@npm:4.1.0"
   checksum: 10c0/41602dce540e46d599edba9d9860193398d135f7ff72cab629db5171516cfae628d21e7bfccde1bbfdf11c48726bc2a6d1a8fb8701125852fbfda7cf19c6aa83
+  languageName: node
+  linkType: hard
+
+"simple-git@npm:^3.33.0":
+  version: 3.33.0
+  resolution: "simple-git@npm:3.33.0"
+  dependencies:
+    "@kwsites/file-exists": "npm:^1.1.1"
+    "@kwsites/promise-deferred": "npm:^1.1.1"
+    debug: "npm:^4.4.0"
+  checksum: 10c0/463e91f3ee04b7fc445284c64502a4ee3d607f626f18c8bcc036815a30fe178d2216976e683c6368edd7b3093801d6e534deeb8e700a4863a76ef23f881a0712
   languageName: node
   linkType: hard
 

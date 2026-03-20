@@ -5,6 +5,7 @@ enum EnvVars {
 	WorkspaceRoot = "WORKSPACE_ROOT",
 	FirefoxApiKey = "FIREFOX_API_KEY",
 	FirefoxApiSecret = "FIREFOX_API_SECRET",
+	YarnNpmAuthToken = "YARN_NPM_AUTH_TOKEN",
 }
 
 const getEnv = (name: string): string => {
@@ -21,3 +22,5 @@ export const getWorkspaceRoot = () => getEnv(EnvVars.WorkspaceRoot);
 export const getFirefoxApiKey = () => getEnv(EnvVars.FirefoxApiKey);
 
 export const getFirefoxApiSecret = () => getEnv(EnvVars.FirefoxApiSecret);
+
+export const getYarnNpmAuthToken = () => getEnv(EnvVars.YarnNpmAuthToken);
