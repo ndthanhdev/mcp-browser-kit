@@ -18,6 +18,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.inputs.ref }}
+          token: ${{ secrets.GH_PAT_TOKEN }}
 
       - name: Generate tag name
         id: tag
