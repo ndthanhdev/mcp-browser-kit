@@ -27,6 +27,11 @@ const npmAuthArgs: string[] = hasNpmToken
 	: [
 			"with-env-variable",
 			"--name",
+			"CI",
+			"--value",
+			"true",
+			"with-env-variable",
+			"--name",
 			"GITHUB_ACTIONS",
 			"--value",
 			"true",
