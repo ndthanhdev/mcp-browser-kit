@@ -1,6 +1,5 @@
 #!/usr/bin/env -S yarn dlx tsx
 import "zx/globals";
-import { getYarnNpmAuthToken } from "@mcp-browser-kit/scripts/utils/get-envs";
 import { pipeOutput } from "@mcp-browser-kit/scripts/utils/pipe-output";
 import { workDirs } from "@mcp-browser-kit/scripts/utils/work-dirs";
 import fse from "fs-extra";
@@ -8,11 +7,11 @@ import semver from "semver";
 
 $.verbose = true;
 
+// When YARN_NPM_AUTH_TOKEN is set, Yarn uses it directly for token-based auth.
+// When it is not set, we use --provenance for OIDC Trusted Publishing, which
+// requires GITHUB_ACTIONS, ACTIONS_ID_TOKEN_REQUEST_URL, and
+// ACTIONS_ID_TOKEN_REQUEST_TOKEN to be available in the environment.
 const hasToken = !!process.env.YARN_NPM_AUTH_TOKEN;
-
-if (hasToken) {
-	getYarnNpmAuthToken();
-}
 
 const packageJsonPath = path.resolve(workDirs.apps.server.path, "package.json");
 const packageJson = await fse.readJSON(packageJsonPath);
