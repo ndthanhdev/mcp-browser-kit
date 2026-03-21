@@ -32,7 +32,7 @@ if (v0Match) {
 	// V0 dev tag: v0.yyMMd.dhhmm-ss
 	// Extensions: 0.yyMMd.dhhmm.ss (4-part dotted)
 	// Server: 0.yyMMd.dhhmm-ss (semver with prerelease)
-	extensionVersion = `${v0Match[1]}.${v0Match[2]}`;
+	extensionVersion = `${v0Match[1]}.${Number(v0Match[2])}`;
 	serverVersion = `${v0Match[1]}-${v0Match[2]}`;
 } else {
 	// Release tag: standard semver (e.g., v1.2.3)
