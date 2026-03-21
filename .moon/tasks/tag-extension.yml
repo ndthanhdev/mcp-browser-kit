@@ -21,7 +21,7 @@ tasks:
     deps:
       - ~:tsup-build
     script: >-
-      $workspaceRoot/etc/scripts/actions/extension-copy-assets.ts
+      $workspaceRoot/etc/scripts/moon-tasks/extension-copy-assets.ts
     env:
       PROJECT_ROOT: $projectRoot
       WORKSPACE_ROOT: $workspaceRoot
@@ -52,7 +52,7 @@ tasks:
     options:
       runInCI: false
     script: >-
-      $workspaceRoot/etc/scripts/actions/extension-build-firefox.ts
+      $workspaceRoot/etc/scripts/moon-tasks/extension-build-firefox.ts
     env:
       PROJECT_ROOT: $projectRoot
     inputs:
