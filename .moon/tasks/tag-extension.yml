@@ -47,12 +47,14 @@ tasks:
       - '@group(tsup-dist)'
     outputs:
       - '@group(extension-dist)'
-  extension-build-firefox:
+  extension-sign-firefox:
     toolchain: node
     options:
       runInCI: false
+    deps:
+      - extension-build
     script: >-
-      $workspaceRoot/etc/scripts/moon-tasks/extension-build-firefox.ts
+      $workspaceRoot/etc/scripts/moon-tasks/extension-sign-firefox.ts
     env:
       PROJECT_ROOT: $projectRoot
     inputs:

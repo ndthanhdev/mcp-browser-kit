@@ -35,7 +35,7 @@ await $`${[
 	"env:FIREFOX_API_SECRET",
 	"with-moon-task",
 	"--task",
-	"m2:extension-build-firefox",
+	"m2:extension-sign-firefox",
 	"with-secret-variable",
 	"--name",
 	"YARN_NPM_AUTH_TOKEN",
