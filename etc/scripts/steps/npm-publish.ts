@@ -8,7 +8,11 @@ import semver from "semver";
 
 $.verbose = true;
 
-getYarnNpmAuthToken();
+const hasToken = !!process.env.YARN_NPM_AUTH_TOKEN;
+
+if (hasToken) {
+	getYarnNpmAuthToken();
+}
 
 const packageJsonPath = path.resolve(workDirs.apps.server.path, "package.json");
 const packageJson = await fse.readJSON(packageJsonPath);
@@ -30,4 +34,10 @@ console.log(
 
 cd(workDirs.apps.server.path);
 
-await pipeOutput($`yarn npm publish --tag ${tag} --access public`);
+if (hasToken) {
+	await pipeOutput($`yarn npm publish --tag ${tag} --access public`);
+} else {
+	await pipeOutput(
+		$`yarn npm publish --tag ${tag} --access public --provenance`,
+	);
+}

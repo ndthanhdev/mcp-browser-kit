@@ -28,7 +28,7 @@ tasks:
       - ~:react-router-typecheck
       - ~:react-router-react-router-build
     script: >-
-      $workspaceRoot/etc/scripts/actions/copy-react-router-build.ts
+      $workspaceRoot/etc/scripts/moon-tasks/copy-react-router-build.ts
     inputs:
       - "@group(react-router-build)"
     outputs:
