@@ -3,6 +3,11 @@
 	"version": "0.0.0",
 	"packageManager": "yarn@4.8.0",
 	"homepage": "https://github.com/ndthanhdev/mcp-browser-kit",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ndthanhdev/mcp-browser-kit",
+		"directory": "apps/server"
+	},
 	"bin": {
 		"mcp-browser-kit": "target/tsup/dist/main.js",
 		"server": "target/tsup/dist/main.js"
