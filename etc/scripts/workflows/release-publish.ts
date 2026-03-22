@@ -13,9 +13,25 @@ const hasNpmToken = !!process.env.YARN_NPM_AUTH_TOKEN;
 
 // Build the npm auth args for the Dagger pipeline.
 // If YARN_NPM_AUTH_TOKEN is available, use it directly (token-based auth).
-// Otherwise, pass through the GitHub Actions OIDC variables so that
-// `yarn npm publish --provenance` can perform an OIDC token exchange
-// with the npm registry inside the container.
+// Otherwise, pass through the GitHub Actions environment variables so that
+// `yarn npm publish --provenance` can build the SLSA provenance statement
+// and perform an OIDC token exchange with the npm registry inside the container.
+const githubEnvVars = [
+	"CI",
+	"GITHUB_ACTIONS",
+	"GITHUB_SERVER_URL",
+	"GITHUB_REPOSITORY",
+	"GITHUB_REPOSITORY_ID",
+	"GITHUB_REPOSITORY_OWNER_ID",
+	"GITHUB_REF",
+	"GITHUB_SHA",
+	"GITHUB_RUN_ID",
+	"GITHUB_RUN_ATTEMPT",
+	"GITHUB_EVENT_NAME",
+	"GITHUB_WORKFLOW_REF",
+	"RUNNER_ENVIRONMENT",
+];
+
 const npmAuthArgs: string[] = hasNpmToken
 	? [
 			"with-secret-variable",
@@ -25,16 +41,13 @@ const npmAuthArgs: string[] = hasNpmToken
 			"env:YARN_NPM_AUTH_TOKEN",
 		]
 	: [
-			"with-env-variable",
-			"--name",
-			"CI",
-			"--value",
-			"true",
-			"with-env-variable",
-			"--name",
-			"GITHUB_ACTIONS",
-			"--value",
-			"true",
+			...githubEnvVars.flatMap((name) => [
+				"with-env-variable",
+				"--name",
+				name,
+				"--value",
+				process.env[name] ?? "",
+			]),
 			"with-secret-variable",
 			"--name",
 			"ACTIONS_ID_TOKEN_REQUEST_URL",
