@@ -10,10 +10,7 @@ tags:
 tasks:
   build:
     deps:
-      - ~:tsup-build
       - ~:extension-build
-    options:
-      runDepsInParallel: false
 
 dependsOn:
   - core-extension

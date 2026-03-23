@@ -10,6 +10,12 @@ dependsOn:
   - core-utils
   - core-server
 tasks:
+  build:
+    deps:
+      - m2:build
+      - m3:build
+      - ext-e2e-test-app:build
+
   test:
     options:
       runDepsInParallel: false
@@ -20,6 +26,4 @@ tasks:
     options:
       runDepsInParallel: false
     deps:
-      - m2:build
-      - m3:build
-      - ext-e2e-test-app:react-router-build
+      - ~:build

@@ -4,3 +4,8 @@ language: typescript
 tags:
   - react-router
 
+tasks:
+  build:
+    deps:
+      - ~:react-router-build
+
