@@ -31,18 +31,18 @@ await Promise.all(
 	}),
 );
 
-const extensionZips = await glob([
-	"target/apps/**/extension/dist/*.zip",
+const extensionDistFiles = await glob([
+	"target/apps/**/extension/dist/*",
 ]);
 
 await Promise.all(
-	extensionZips.map(async (zipPath) => {
-		const targetZipPath = path.join(
+	extensionDistFiles.map(async (filePath) => {
+		const targetFilePath = path.join(
 			workDirs.target.release.path,
-			path.basename(zipPath),
+			path.basename(filePath),
 		);
 
-		await fse.copy(zipPath, targetZipPath);
-		console.log(`Copied extension zip: ${targetZipPath}`);
+		await fse.copy(filePath, targetFilePath);
+		console.log(`Copied extension artifact: ${targetFilePath}`);
 	}),
 );

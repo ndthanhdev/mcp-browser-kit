@@ -39,6 +39,12 @@ await $({
 })`${command}`;
 
 const signedFile = await glob(`${signArtifactTmpDir}/*`);
+
+if (signedFile.length === 0) {
+	console.error(`No .xpi file found in ${signArtifactTmpDir}`);
+	process.exit(1);
+}
+
 const fileExtension = path.extname(signedFile[0]);
 const signedFileName = `${extensionName}${fileExtension}`;
 
