@@ -36,6 +36,7 @@ jobs:
       - run: "yarn install"
       - run: "./etc/scripts/workflows/release-publish.ts"
         env:
+          RELEASE_TAG: ${{ github.ref_name }}
           FIREFOX_API_KEY: ${{ secrets.FIREFOX_API_KEY }}
           FIREFOX_API_SECRET: ${{ secrets.FIREFOX_API_SECRET }}
           # YARN_NPM_AUTH_TOKEN: ${{ secrets.YARN_NPM_AUTH_TOKEN }}

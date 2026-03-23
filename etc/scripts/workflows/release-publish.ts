@@ -71,6 +71,15 @@ await $`${[
 	"MODE",
 	"--value",
 	"release",
+	...(process.env.RELEASE_TAG
+		? [
+				"with-env-variable",
+				"--name",
+				"RELEASE_TAG",
+				"--value",
+				process.env.RELEASE_TAG,
+			]
+		: []),
 	"with-moon-task",
 	"--task",
 	"scripts:versions-patch",
