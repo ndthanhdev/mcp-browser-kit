@@ -24,18 +24,21 @@ tasks:
   git-shallow-remove:
     options:
       cache: false
+      runInCI: false
       outputStyle: stream
     script: >-
       $projectRoot/moon-tasks/git-shallow-remove.ts
   collect-workspace-targets:
     options:
       cache: false
+      runInCI: false
       outputStyle: stream
     script: >-
       $projectRoot/moon-tasks/collect-workspace-targets.ts
   versions-patch:
     options:
       cache: false
+      runInCI: false
       outputStyle: stream
     script: >-
       $projectRoot/moon-tasks/versions-patch.ts
