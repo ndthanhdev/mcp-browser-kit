@@ -52,12 +52,6 @@ func (m *WorkflowRuntime) BuildEnv(ctx context.Context) *WorkflowRuntime {
 	return m
 }
 
-func (m *WorkflowRuntime) WithStep(ctx context.Context, step string) *WorkflowRuntime {
-	m.Con = m.Con.WithExec([]string{"bash", "-l", "-c", fmt.Sprintf("./etc/scripts/steps/%s.ts", step)})
-
-	return m
-}
-
 func (m *WorkflowRuntime) WithMoonTask(ctx context.Context, task string) *WorkflowRuntime {
 	m.Con = m.Con.WithExec([]string{"moon", "run", task})
 
