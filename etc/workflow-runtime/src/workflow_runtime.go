@@ -64,6 +64,17 @@ func (m *WorkflowRuntime) WithMoonTask(ctx context.Context, task string) *Workfl
 	return m
 }
 
+func (m *WorkflowRuntime) WithMoonCommand(
+	ctx context.Context,
+	command string,
+	// +optional
+	args []string,
+) *WorkflowRuntime {
+	m.Con = m.Con.WithExec(append([]string{"moon", command}, args...))
+
+	return m
+}
+
 func (m *WorkflowRuntime) Container(ctx context.Context) *dagger.Container {
 	return m.Con
 }

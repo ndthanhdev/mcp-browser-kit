@@ -1,0 +1,13 @@
+$schema: "https://moonrepo.dev/schemas/tasks.json"
+
+tasks:
+  npm-publish:
+    options:
+      cache: false
+      outputStyle: stream
+    deps:
+      - ~:build
+    script: >-
+      $workspaceRoot/etc/scripts/moon-tasks/npm-publish.ts
+    env:
+      PROJECT_ROOT: $projectRoot

@@ -32,10 +32,11 @@ if (v0Match) {
 	// V0 dev tag: v0.yyMMd.dhhmm-ss
 	// Strip leading zeros from numeric segments to produce valid versions.
 	// Extensions: major.minor.patch.pre (4-part dotted, Firefox rejects leading zeros)
-	// Server: major.minor.patch-exp-pre (valid semver, no leading zeros in numeric identifiers)
+	// Server: major.minor.patch-experimental.pre (valid semver, dot-separated prerelease
+	//         so that parsed.prerelease[0] === "experimental" becomes the npm dist-tag)
 	const [major, minor, patch] = v0Match[1].split(".");
 	extensionVersion = `${major}.${minor}.${Number(patch)}.${Number(v0Match[2])}`;
-	serverVersion = `${major}.${minor}.${Number(patch)}-exp-${Number(v0Match[2])}`;
+	serverVersion = `${major}.${minor}.${Number(patch)}-experimental.${Number(v0Match[2])}`;
 } else {
 	// Release tag: standard semver (e.g., v1.2.3)
 	const parsed = semver.parse(rawTag);
