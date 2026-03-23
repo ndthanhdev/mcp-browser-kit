@@ -5,6 +5,7 @@ tasks:
     options:
       cache: false
       outputStyle: stream
+      runInCI: false
     deps:
       - ~:build
     script: >-
