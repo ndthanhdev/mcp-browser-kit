@@ -29,8 +29,6 @@ await $`${[
 	"with-moon-command",
 	"--command",
 	"ci",
-	"--args",
-	"--force",
 	"with-moon-task",
 	"--task",
 	"scripts:collect-workspace-targets",
