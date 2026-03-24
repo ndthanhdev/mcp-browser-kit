@@ -1,4 +1,4 @@
-name: CI Workflow
+name: Workspace Verify
 
 on:
   pull_request:
@@ -10,8 +10,8 @@ on:
       - release/*.*
 
 jobs:
-  ci:
-    name: CI Job
+  workspace-verify:
+    name: Workspace Verify
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v6
@@ -33,8 +33,7 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - run: "yarn install"
-      - run: "./etc/scripts/workflows/ci.ts"
+      - run: "./etc/scripts/workflows/workspace-verify.ts"
 
       - name: Upload target directory
         if: always()
