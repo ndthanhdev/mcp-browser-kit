@@ -23,7 +23,7 @@
 		"consola": "^3.4.2",
 		"core-js": "^3.48.0",
 		"delay": "^7.0.0",
-		"dompurify": "^3.3.1",
+		"dompurify": "^3.3.2",
 		"emittery": "^1.2.0",
 		"envalid": "^8.1.1",
 		"image-dimensions": "^2.5.0",
