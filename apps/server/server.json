@@ -1,0 +1,20 @@
+{
+	"$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+	"name": "io.github.ndthanhdev/mcp-browser-kit",
+	"description": "An MCP server that enables AI assistants to interact with your local browsers.",
+	"repository": {
+		"url": "https://github.com/ndthanhdev/mcp-browser-kit",
+		"source": "github"
+	},
+	"version": "0.0.0",
+	"packages": [
+		{
+			"registryType": "npm",
+			"identifier": "@mcp-browser-kit/server",
+			"version": "0.0.0",
+			"transport": {
+				"type": "stdio"
+			}
+		}
+	]
+}
