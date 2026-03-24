@@ -6299,9 +6299,9 @@ __metadata:
   linkType: hard
 
 "hono@npm:^4.11.4":
-  version: 4.11.9
-  resolution: "hono@npm:4.11.9"
-  checksum: 10c0/fe396a8e1a61755adb7afe8ce8e0935a6423a5680ec62f4fd3577c5c5a9236dec390dc28fef6b9742e067b5d9c53ddb3aa511b3359bf87dcc2105dae751f1242
+  version: 4.12.9
+  resolution: "hono@npm:4.12.9"
+  checksum: 10c0/393256552642f681e52935163508d9605e5552e186d9b99ff2caf219d4248341b83e3eb975c40a97149c86890d19d73421efc889aa465a28eb5920ccc42cff34
   languageName: node
   linkType: hard
 
