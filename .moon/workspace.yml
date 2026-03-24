@@ -10,6 +10,3 @@ vcs:
     pre-commit:
     - yarn lint-staged
   sync: true
-generator:
-  templates:
-  - file://./etc/submodules/n8v/etc/templates
