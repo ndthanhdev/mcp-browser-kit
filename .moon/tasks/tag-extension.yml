@@ -46,7 +46,7 @@ tasks:
   extension-sign-firefox:
     toolchain: node
     options:
-      runInCI: false
+      runInCI: skip
     deps:
     - extension-build
     script: $workspaceRoot/etc/scripts/moon-tasks/extension-sign-firefox.ts
