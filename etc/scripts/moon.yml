@@ -2,10 +2,7 @@ language: typescript
 tasks:
   playwright-install:
     toolchain: node
-    options:
-      cache: false
-      runInCI: false
-      outputStyle: stream
+    preset: utility
     env:
       PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/playwright/browsers
     script: playwright install --with-deps
@@ -13,22 +10,13 @@ tasks:
     toolchain: node
     script: biome check
   git-shallow-remove:
-    options:
-      cache: false
-      runInCI: false
-      outputStyle: stream
+    preset: utility
     script: $projectRoot/moon-tasks/git-shallow-remove.ts
   collect-workspace-targets:
-    options:
-      cache: false
-      runInCI: false
-      outputStyle: stream
+    preset: utility
     script: $projectRoot/moon-tasks/collect-workspace-targets.ts
   versions-patch:
-    options:
-      cache: false
-      runInCI: false
-      outputStyle: stream
+    preset: utility
     script: $projectRoot/moon-tasks/versions-patch.ts
   check:
     deps:

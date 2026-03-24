@@ -45,8 +45,7 @@ tasks:
     - '@group(extension-dist)'
   extension-sign-firefox:
     toolchain: node
-    options:
-      runInCI: false
+    preset: utility
     deps:
     - extension-build
     script: $workspaceRoot/etc/scripts/moon-tasks/extension-sign-firefox.ts
@@ -57,7 +56,5 @@ tasks:
     - '@group(extension-assets)'
     - '@group(extension-manifest)'
     - '@group(extension-vendors)'
-    outputs:
-    - '@group(extension-dist)'
 inheritedBy:
   tag: extension

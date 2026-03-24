@@ -1,10 +1,7 @@
 $schema: https://moonrepo.dev/schemas/tasks.json
 tasks:
   npm-publish:
-    options:
-      cache: false
-      outputStyle: stream
-      runInCI: false
+    preset: utility
     deps:
     - ~:build
     script: $workspaceRoot/etc/scripts/moon-tasks/npm-publish.ts
