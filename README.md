@@ -5,13 +5,13 @@
 [![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-60a5fa?style=flat&logo=biome)](https://biomejs.dev)
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/ndthanhdev/mcp-browser-kit)](https://archestra.ai/mcp-catalog/ndthanhdev__mcp-browser-kit)
 
+[![mcp-browser-kit MCP server](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit/badges/card.svg)](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit)
+
 > 🚀 **On the `main` branch?** You're viewing the bleeding-edge dev docs! For other versions, check out the `release/*` branches.
 
 An MCP Server that enables AI assistants to interact with your local browsers.
 
 https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
-
-[![mcp-browser-kit MCP server](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit/badges/card.svg)](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit)
 
 ## Usage
 
