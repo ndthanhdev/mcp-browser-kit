@@ -1,56 +1,55 @@
-$schema: "https://moonrepo.dev/schemas/tasks.json"
-
+$schema: https://moonrepo.dev/schemas/tasks.json
 fileGroups:
   react-router-config:
-    - react-router.config.ts
-    - vite.config.ts
+  - react-router.config.ts
+  - vite.config.ts
   react-router-src:
-    - src/**/*
+  - src/**/*
   react-router-public:
-    - public/**/*
+  - public/**/*
   react-router-target:
-    - target/react-router/**/*
+  - target/react-router/**/*
   react-router-build:
-    - build/**/*
-
+  - build/**/*
 tasks:
   react-router-dev:
     preset: server
     command: yarn dev
     inputs:
-      - "@group(react-router-config)"
-      - "@group(react-router-src)"
-      - "@group(react-router-public)"
+    - '@group(react-router-config)'
+    - '@group(react-router-src)'
+    - '@group(react-router-public)'
   react-router-build:
     env:
       PROJECT_ROOT: $projectRoot
     deps:
-      - ~:react-router-typecheck
-      - ~:react-router-react-router-build
-    script: >-
-      $workspaceRoot/etc/scripts/moon-tasks/copy-react-router-build.ts
+    - ~:react-router-typecheck
+    - ~:react-router-react-router-build
+    script: $workspaceRoot/etc/scripts/moon-tasks/copy-react-router-build.ts
     inputs:
-      - "@group(react-router-build)"
+    - '@group(react-router-build)'
     outputs:
-      - "@group(react-router-target)"
+    - '@group(react-router-target)'
   react-router-react-router-build:
     command: yarn build
     inputs:
-      - "@group(react-router-config)"
-      - "@group(react-router-src)"
-      - "@group(react-router-public)"
+    - '@group(react-router-config)'
+    - '@group(react-router-src)'
+    - '@group(react-router-public)'
     outputs:
-      - "@group(react-router-build)"
+    - '@group(react-router-build)'
   react-router-start-csr:
     preset: server
     deps:
-      - ~:react-router-build
+    - ~:react-router-build
     options:
       runDepsInParallel: false
     command: yarn serve -s ./build/client
   react-router-typecheck:
     command: yarn typecheck
     inputs:
-      - "@group(react-router-config)"
-      - "@group(react-router-src)"
-      - tsconfig.json
+    - '@group(react-router-config)'
+    - '@group(react-router-src)'
+    - tsconfig.json
+inheritedBy:
+  tag: react-router

@@ -1,38 +1,36 @@
-$schema: "https://moonrepo.dev/schemas/tasks.json"
-
+$schema: https://moonrepo.dev/schemas/tasks.json
 fileGroups:
   assets:
-    - assets/**/*
+  - assets/**/*
   sources:
-    - src/**/*
+  - src/**/*
   tsup-config:
-    - tsup.config.ts
+  - tsup.config.ts
   tsup-dist:
-    - ./target/tsup/dist/**/*
-
+  - ./target/tsup/dist/**/*
 tasks:
   tsup-tsc:
     toolchain: node
     script: |
       tsc --build
     inputs:
-      - "@group(assets)"
-      - "@group(sources)"
-      - "@group(tsup-config)"
-    # outputs:
-    #   - "@group(tsup-dist)"
+    - '@group(assets)'
+    - '@group(sources)'
+    - '@group(tsup-config)'
   tsup-build:
     toolchain: node
     options:
       runDepsInParallel: false
     deps:
-      - tsup-tsc
+    - tsup-tsc
     script: |
       tsup
     inputs:
-      - "@group(assets)"
-      - "@group(sources)"
-      - "@group(tsup-config)"
-      - /packages/*/src/**/*
+    - '@group(assets)'
+    - '@group(sources)'
+    - '@group(tsup-config)'
+    - /packages/*/src/**/*
     outputs:
-      - "@group(tsup-dist)"
+    - '@group(tsup-dist)'
+inheritedBy:
+  tag: tsup

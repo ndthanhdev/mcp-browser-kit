@@ -1,15 +1,13 @@
-$schema: "https://moonrepo.dev/schemas/tasks.json"
-
+$schema: https://moonrepo.dev/schemas/tasks.json
 fileGroups:
   assets:
-    - assets/**/*
+  - assets/**/*
   sources:
-    - src/**/*
+  - src/**/*
   tsup-config:
-    - tsup.config.ts
+  - tsup.config.ts
   tsup-dist:
-    - ./target/tsup/dist/**/*
-
+  - ./target/tsup/dist/**/*
 tasks:
   mcp-inspector:
     toolchain: node
@@ -17,6 +15,8 @@ tasks:
     script: |
       yarn dlx @modelcontextprotocol/inspector tsx $projectRoot/target/tsup/dist/main.js
     inputs:
-      - "@group(assets)"
-      - "@group(sources)"
-      - "@group(tsup-config)"
+    - '@group(assets)'
+    - '@group(sources)'
+    - '@group(tsup-config)'
+inheritedBy:
+  tag: mcp

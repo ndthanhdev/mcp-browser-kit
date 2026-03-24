@@ -1,29 +1,25 @@
-$schema: "https://moonrepo.dev/schemas/project.json"
+$schema: https://moonrepo.dev/schemas/project.json
 language: typescript
-toolchain:
-  default: node
-
-tags:
-  - playwright
-
-dependsOn:
-  - core-utils
-  - core-server
 tasks:
   build:
     deps:
-      - m2:build
-      - m3:build
-      - ext-e2e-test-app:build
-
+    - m2:build
+    - m3:build
+    - ext-e2e-test-app:build
   test:
     options:
       runDepsInParallel: false
     deps:
-      - ~:playwright-test
-
+    - ~:playwright-test
   playwright-test:
     options:
       runDepsInParallel: false
     deps:
-      - ~:build
+    - ~:build
+tags:
+- playwright
+dependsOn:
+- core-utils
+- core-server
+toolchains:
+  default: node

@@ -1,29 +1,15 @@
-# yaml-language-server: $schema: 'https://moonrepo.dev/docs/config/workspace.json'
-$schema: "./cache/schemas/workspace.json"
-
-# Require a specific version of moon while running commands, otherwise fail.
-# versionConstraint: '>=1.0.0'
-
-# Extend and inherit an external configuration file. Must be a valid HTTPS URL or file system path.
-# extends: './shared/workspace.yml'
-
-# REQUIRED: A map of all projects found within the workspace, or a list or file system globs.
-# When using a map, each entry requires a unique project ID as the map key, and a file system
-# path to the project folder as the map value. File pathsFile paths are relative from the workspace root,
-# and cannot reference projects located outside the workspace boundary.
+$schema: ./cache/schemas/workspace.json
 projects:
-  - "packages/*"
-  - "apps/*"
-  - "etc/*"
-
+- packages/*
+- apps/*
+- etc/*
 vcs:
   defaultBranch: main
   provider: github
-  syncHooks: true
   hooks:
     pre-commit:
-      - yarn lint-staged
-
+    - yarn lint-staged
+  sync: true
 generator:
   templates:
-    - file://./etc/submodules/n8v/etc/templates
+  - file://./etc/submodules/n8v/etc/templates

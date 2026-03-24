@@ -1,12 +1,11 @@
-$schema: "https://moonrepo.dev/schemas/toolchain.json"
-
-node:
-  packageManager: "yarn"
-  version: "^22.14.0"
-  yarn:
-    version: "4.10.3"
+$schema: https://moonrepo.dev/schemas/toolchain.json
+javascript:
+  packageManager: yarn
   syncProjectWorkspaceDependencies: false
-
+node:
+  version: ^22.14.0
+yarn:
+  version: 4.10.3
 typescript:
   syncProjectReferences: true
   syncProjectReferencesToPaths: true

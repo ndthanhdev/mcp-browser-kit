@@ -1,6 +1,5 @@
-$schema: "https://moonrepo.dev/schemas/project.json"
+$schema: https://moonrepo.dev/schemas/project.json
 language: typescript
-
 dependsOn:
-  - core-utils
-  - types
+- core-utils
+- types

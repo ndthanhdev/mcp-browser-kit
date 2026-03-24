@@ -1,23 +1,20 @@
-$schema: "https://moonrepo.dev/schemas/project.json"
+$schema: https://moonrepo.dev/schemas/project.json
 language: typescript
-toolchain:
-  default: node
-
+dependsOn:
+- core-extension
+- core-server
+- extension-driven-browser-driver
+- driven-logger-factory
+- extension-driven-server-channel-provider
+- extension-driving-trpc-controller
+- core-utils
+- helper-extension-keep-alive
 tags:
-  - tsup
-  - extension
-
+- tsup
+- extension
 tasks:
   build:
     deps:
-      - ~:extension-build
-
-dependsOn:
-  - core-extension
-  - core-server
-  - extension-driven-browser-driver
-  - driven-logger-factory
-  - extension-driven-server-channel-provider
-  - extension-driving-trpc-controller
-  - core-utils
-  - helper-extension-keep-alive
+    - ~:extension-build
+toolchains:
+  default: node
