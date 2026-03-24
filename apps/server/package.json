@@ -3,7 +3,7 @@
 	"version": "0.0.0",
 	"mcpName": "io.github.ndthanhdev/mcp-browser-kit",
 	"description": "An MCP server that enables AI assistants to interact with your local browsers.",
-	"packageManager": "yarn@4.8.0",
+	"packageManager": "yarn@4.10.3",
 	"homepage": "https://github.com/ndthanhdev/mcp-browser-kit",
 	"repository": {
 		"type": "git",
