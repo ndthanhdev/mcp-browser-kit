@@ -4,7 +4,7 @@ tasks:
     options:
       cache: false
       outputStyle: stream
-      runInCI: false
+      runInCI: skip
     deps:
     - ~:build
     script: $workspaceRoot/etc/scripts/moon-tasks/npm-publish.ts
