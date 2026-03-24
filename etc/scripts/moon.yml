@@ -1,11 +1,4 @@
-# yaml-language-server: $schema: 'https://moonrepo.dev/schemas/project.json'
 language: typescript
-platform: node
-
-project:
-  name: "@mcp-browser-kit/scripts"
-  description: scripts
-
 tasks:
   playwright-install:
     toolchain: node
@@ -15,33 +8,33 @@ tasks:
       outputStyle: stream
     env:
       PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/playwright/browsers
-    script: >-
-      playwright install --with-deps
+    script: playwright install --with-deps
   biome-check:
     toolchain: node
-    script: >-
-      biome check
+    script: biome check
   git-shallow-remove:
     options:
       cache: false
       runInCI: false
       outputStyle: stream
-    script: >-
-      $projectRoot/moon-tasks/git-shallow-remove.ts
+    script: $projectRoot/moon-tasks/git-shallow-remove.ts
   collect-workspace-targets:
     options:
       cache: false
       runInCI: false
       outputStyle: stream
-    script: >-
-      $projectRoot/moon-tasks/collect-workspace-targets.ts
+    script: $projectRoot/moon-tasks/collect-workspace-targets.ts
   versions-patch:
     options:
       cache: false
       runInCI: false
       outputStyle: stream
-    script: >-
-      $projectRoot/moon-tasks/versions-patch.ts
+    script: $projectRoot/moon-tasks/versions-patch.ts
   check:
     deps:
-      - ~:biome-check
+    - ~:biome-check
+project:
+  description: scripts
+  title: '@mcp-browser-kit/scripts'
+toolchains:
+  default: node

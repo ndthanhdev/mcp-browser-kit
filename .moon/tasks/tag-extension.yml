@@ -1,66 +1,63 @@
-$schema: "https://moonrepo.dev/schemas/tasks.json"
-
+$schema: https://moonrepo.dev/schemas/tasks.json
 fileGroups:
   assets:
-    - assets/**/*
+  - assets/**/*
   sources:
-    - src/**/*
+  - src/**/*
   tsup-dist:
-    - target/tsup/dist/**/*
+  - target/tsup/dist/**/*
   extension-assets:
-    - target/extension/tmp/extension/assets/**/*
+  - target/extension/tmp/extension/assets/**/*
   extension-manifest:
-    - target/extension/tmp/extension/manifest.json
+  - target/extension/tmp/extension/manifest.json
   extension-vendors:
-    - target/extension/tmp/extension/vendors/**/*
+  - target/extension/tmp/extension/vendors/**/*
   extension-dist:
-    - target/extension/dist/**/*
-
+  - target/extension/dist/**/*
 tasks:
   extension-copy-assets:
     deps:
-      - ~:tsup-build
-    script: >-
-      $workspaceRoot/etc/scripts/moon-tasks/extension-copy-assets.ts
+    - ~:tsup-build
+    script: $workspaceRoot/etc/scripts/moon-tasks/extension-copy-assets.ts
     env:
       PROJECT_ROOT: $projectRoot
       WORKSPACE_ROOT: $workspaceRoot
-    inputs: 
-      - '@group(assets)'
-      - '@group(sources)'
-      - '@group(tsup-dist)'
+    inputs:
+    - '@group(assets)'
+    - '@group(sources)'
+    - '@group(tsup-dist)'
     outputs:
-      - '@group(extension-vendors)'
-      - '@group(extension-assets)'
-      - '@group(extension-manifest)'
+    - '@group(extension-vendors)'
+    - '@group(extension-assets)'
+    - '@group(extension-manifest)'
   extension-build:
     options:
       runDepsInParallel: false
     deps:
-      - extension-copy-assets
+    - extension-copy-assets
     toolchain: node
-    script: >-
-      web-ext build -o --source-dir=$projectRoot/target/extension/tmp/extension --artifacts-dir=$projectRoot/target/extension/dist
+    script: web-ext build -o --source-dir=$projectRoot/target/extension/tmp/extension --artifacts-dir=$projectRoot/target/extension/dist
     inputs:
-      - '@group(assets)'
-      - '@group(sources)'
-      - '@group(tsup-dist)'
+    - '@group(assets)'
+    - '@group(sources)'
+    - '@group(tsup-dist)'
     outputs:
-      - '@group(extension-dist)'
+    - '@group(extension-dist)'
   extension-sign-firefox:
     toolchain: node
     options:
       runInCI: false
     deps:
-      - extension-build
-    script: >-
-      $workspaceRoot/etc/scripts/moon-tasks/extension-sign-firefox.ts
+    - extension-build
+    script: $workspaceRoot/etc/scripts/moon-tasks/extension-sign-firefox.ts
     env:
       PROJECT_ROOT: $projectRoot
     inputs:
-      - '@group(tsup-dist)'
-      - '@group(extension-assets)'
-      - '@group(extension-manifest)'
-      - '@group(extension-vendors)'
+    - '@group(tsup-dist)'
+    - '@group(extension-assets)'
+    - '@group(extension-manifest)'
+    - '@group(extension-vendors)'
     outputs:
-      - '@group(extension-dist)'
+    - '@group(extension-dist)'
+inheritedBy:
+  tag: extension

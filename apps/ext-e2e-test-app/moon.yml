@@ -1,11 +1,8 @@
-$schema: "https://moonrepo.dev/schemas/project.json"
+$schema: https://moonrepo.dev/schemas/project.json
 language: typescript
-
 tags:
-  - react-router
-
+- react-router
 tasks:
   build:
     deps:
-      - ~:react-router-build
-
+    - ~:react-router-build
