@@ -1,0 +1,41 @@
+name: Check Workflow
+
+on:
+  push:
+    branches:
+      - main
+      - release/*.*
+
+jobs:
+  check:
+    name: Check Job
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Dagger
+        uses: dagger/dagger-for-github@v8.2.0
+        with:
+          version: v0.20.3
+          verb: functions
+          workdir: ./etc/workflow-runtime
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: yarn install
+
+      - run: "./etc/scripts/workflows/check.ts"
+
+      - name: Upload target directory
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: check-target-directory
+          path: target/
+          retention-days: 1

@@ -33,7 +33,6 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - run: "yarn install"
       - run: "./etc/scripts/workflows/ci.ts"
 
       - name: Upload target directory
