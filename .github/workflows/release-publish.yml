@@ -1,4 +1,4 @@
-name: Release Publish Workflow
+name: Release Publish
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   release-publish:
-    name: Release Publish Job
+    name: Release Publish
     runs-on: ubuntu-latest
     permissions:
       contents: write  # Required for creating releases and uploading assets
@@ -33,7 +33,6 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - run: "yarn install"
       - run: "./etc/scripts/workflows/release-publish.ts"
         env:
           RELEASE_TAG: ${{ github.ref_name }}

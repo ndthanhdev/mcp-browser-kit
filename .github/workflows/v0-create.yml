@@ -1,4 +1,4 @@
-name: V0 Create Tag
+name: V0 Create
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   v0-create:
-    name: Create V0 Tag
+    name: V0 Create
     runs-on: ubuntu-latest
     permissions:
       contents: write
