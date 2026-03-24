@@ -29,3 +29,6 @@ target/
 playwright-report/
 test-results/
 playwright/.cache/
+
+# mcp-publisher
+.mcpregistry_*
