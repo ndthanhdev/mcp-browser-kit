@@ -53,7 +53,7 @@ func (m *WorkflowRuntime) BuildEnv(ctx context.Context) *WorkflowRuntime {
 }
 
 func (m *WorkflowRuntime) WithMoonTask(ctx context.Context, task string) *WorkflowRuntime {
-	m.Con = m.Con.WithExec([]string{"moon", "run", task})
+	m.Con = m.Con.WithExec([]string{"moon", "exec", task, "--ignore-ci-checks"})
 
 	return m
 }
