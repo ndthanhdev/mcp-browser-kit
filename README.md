@@ -13,6 +13,10 @@ An MCP Server that enables AI assistants to interact with your local browsers.
 
 https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/ndthanhdev-mcp-browser-kit).
+
 ## Usage
 
 1. Add MCP Browser Kit to your MCP Client:
