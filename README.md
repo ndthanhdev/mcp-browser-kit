@@ -88,3 +88,8 @@ https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
 > **Note for Alpha stage**: Consider using a separate browser profile or dedicated browser instance with this MCP to prevent sensitive data from being unintentionally exposed to AI model providers.
 
 > **Security**: BrowserKit currently lacks authentication for incoming requests. Keep ports 59089 and 2769-2799 on your device network only.
+
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/ndthanhdev-mcp-browser-kit).
+
