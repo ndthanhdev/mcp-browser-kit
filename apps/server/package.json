@@ -1,18 +1,11 @@
 {
 	"name": "@mcp-browser-kit/server",
 	"version": "0.0.0",
-	"mcpName": "io.github.ndthanhdev/mcp-browser-kit",
-	"description": "An MCP server that enables AI assistants to interact with your local browsers.",
+	"type": "module",
 	"packageManager": "yarn@4.10.3",
-	"homepage": "https://github.com/ndthanhdev/mcp-browser-kit",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/ndthanhdev/mcp-browser-kit",
-		"directory": "apps/server"
-	},
-	"bin": {
-		"mcp-browser-kit": "target/tsup/dist/main.js",
-		"server": "target/tsup/dist/main.js"
+	"dependencies": {
+		"data-urls": "^6.0.1",
+		"ws": "^8.19.0"
 	},
 	"devDependencies": {
 		"@modelcontextprotocol/inspector": "^0.20.0",
@@ -22,12 +15,19 @@
 		"tsx": "^4.21.0",
 		"typescript": "^5.9.3"
 	},
-	"type": "module",
+	"bin": {
+		"mcp-browser-kit": "target/tsup/dist/main.js",
+		"server": "target/tsup/dist/main.js"
+	},
+	"description": "An MCP server that enables AI assistants to interact with your local browsers.",
 	"files": [
 		"target/tsup/dist"
 	],
-	"dependencies": {
-		"data-urls": "^6.0.1",
-		"ws": "^8.19.0"
+	"homepage": "https://github.com/ndthanhdev/mcp-browser-kit",
+	"mcpName": "io.github.ndthanhdev/mcp-browser-kit",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ndthanhdev/mcp-browser-kit",
+		"directory": "apps/server"
 	}
 }

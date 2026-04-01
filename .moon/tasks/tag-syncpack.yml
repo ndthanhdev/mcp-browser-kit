@@ -1,0 +1,16 @@
+$schema: https://moonrepo.dev/schemas/tasks.json
+tasks:
+  syncpack-lint:
+    toolchain: node
+    preset: utility
+    script: syncpack lint
+  syncpack-fix:
+    toolchain: node
+    preset: utility
+    script: syncpack fix-mismatches
+  syncpack-format:
+    toolchain: node
+    preset: utility
+    script: syncpack format
+inheritedBy:
+  tag: syncpack

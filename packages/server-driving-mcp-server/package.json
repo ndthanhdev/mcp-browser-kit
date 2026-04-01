@@ -1,4 +1,4 @@
 {
 	"name": "@mcp-browser-kit/server-driving-mcp-server",
-	"packageManager": "yarn@4.8.0"
+	"packageManager": "yarn@4.10.3"
 }

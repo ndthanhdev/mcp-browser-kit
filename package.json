@@ -1,4 +1,15 @@
 {
+	"name": "root",
+	"private": true,
+	"packageManager": "yarn@4.10.3",
+	"engines": {
+		"node": "^22.14.0"
+	},
+	"workspaces": [
+		"etc/scripts",
+		"apps/*",
+		"packages/*"
+	],
 	"devDependencies": {
 		"@biomejs/biome": "2.3.7",
 		"@medv/finder": "^4.0.2",
@@ -44,6 +55,7 @@
 		"serve": "^14.2.5",
 		"simple-git": "^3.33.0",
 		"superjson": "^2.2.6",
+		"syncpack": "^14.2.1",
 		"ts-node": "^10.9.2",
 		"tsconfig-moon": "^1.4.2",
 		"tsup": "^8.5.1",
@@ -55,16 +67,5 @@
 		"winston": "^3.19.0",
 		"winston-transport-browserconsole": "^1.0.5",
 		"zod": "^4.3.6"
-	},
-	"name": "root",
-	"private": true,
-	"workspaces": [
-		"etc/scripts",
-		"apps/*",
-		"packages/*"
-	],
-	"engines": {
-		"node": "^22.14.0"
-	},
-	"packageManager": "yarn@4.10.3"
+	}
 }

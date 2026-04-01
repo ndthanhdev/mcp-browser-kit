@@ -21,6 +21,9 @@ tasks:
   check:
     deps:
     - ~:biome-check
+    - ~:syncpack-lint
+tags:
+- syncpack
 project:
   description: scripts
   title: '@mcp-browser-kit/scripts'
