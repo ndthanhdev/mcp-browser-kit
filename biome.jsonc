@@ -48,7 +48,22 @@
 				"useNumberNamespace": "error",
 				"noInferrableTypes": "error",
 				"noUselessElse": "error",
-				"useNamingConvention": "error",
+				"useNamingConvention": {
+					"level": "error",
+					"options": {
+						"conventions": [
+							{
+								"selector": {
+									"kind": "typeParameter"
+								},
+								"match": "[A-Z][A-Za-z]*",
+								"formats": [
+									"PascalCase"
+								]
+							}
+						]
+					}
+				},
 				"noDefaultExport": "off"
 			}
 		}

@@ -1,0 +1,10 @@
+$schema: https://moonrepo.dev/schemas/tasks.json
+tasks:
+  biome-check:
+    toolchain: node
+    preset: utility
+    script: biome check
+    options:
+      runFromWorkspaceRoot: true
+inheritedBy:
+  tag: biome
