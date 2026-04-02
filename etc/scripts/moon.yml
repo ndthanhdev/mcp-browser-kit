@@ -6,9 +6,6 @@ tasks:
     env:
       PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/playwright/browsers
     script: playwright install --with-deps
-  biome-check:
-    toolchain: node
-    script: biome check
   git-shallow-remove:
     preset: utility
     script: $projectRoot/moon-tasks/git-shallow-remove.ts
@@ -21,6 +18,10 @@ tasks:
   check:
     deps:
     - ~:biome-check
+    - ~:syncpack-lint
+tags:
+- biome
+- syncpack
 project:
   description: scripts
   title: '@mcp-browser-kit/scripts'

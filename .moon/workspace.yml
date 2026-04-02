@@ -9,4 +9,5 @@ vcs:
   hooks:
     pre-commit:
     - yarn lint-staged
+    - moon run scripts:syncpack-lint
   sync: true
