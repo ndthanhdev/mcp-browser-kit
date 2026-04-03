@@ -1,6 +1,7 @@
 {
 	"name": "@mcp-browser-kit/server",
 	"version": "0.0.0",
+	"license": "MIT",
 	"type": "module",
 	"packageManager": "yarn@4.10.3",
 	"dependencies": {
@@ -20,6 +21,18 @@
 		"server": "target/tsup/dist/main.js"
 	},
 	"description": "An MCP server that enables AI assistants to interact with your local browsers.",
+	"keywords": [
+		"mcp",
+		"browser",
+		"ai",
+		"model-context-protocol",
+		"automation",
+		"assistant",
+		"websocket",
+		"devtools",
+		"chrome",
+		"extension"
+	],
 	"files": [
 		"target/tsup/dist"
 	],
