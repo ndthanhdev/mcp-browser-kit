@@ -22,7 +22,7 @@ func (m *WorkflowRuntime) BuildBaseEnv(ctx context.Context) *WorkflowRuntime {
 		// apt-get update && apt-get install -y curl git unzip gzip xz-utils
 		WithExec([]string{"apt-get", "install", "-y", "apt-utils", "build-essential", "curl", "git", "unzip", "bash", "gzip", "xz-utils", "pkg-config", "libssl-dev"}).
 		// curl -fsSL https://moonrepo.dev/install/proto.sh | bash -s 0.35.3 --yes
-		WithExec([]string{"bash", "-l", "-c", "curl -fsSL https://moonrepo.dev/install/proto.sh | bash -s 0.54.1 --yes"}).
+		WithExec([]string{"bash", "-l", "-c", "curl -fsSL https://moonrepo.dev/install/proto.sh | bash -s 0.55.4 --yes"}).
 		WithEnvVariable("PROTO_HOME", "/root/.proto", dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithEnvVariable("PATH", "$PATH:$PROTO_HOME/shims:$PROTO_HOME/bin", dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithExec([]string{"proto", "setup"}).
