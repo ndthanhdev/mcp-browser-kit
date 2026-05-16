@@ -8,8 +8,14 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import {
 	type CallToolResult,
 	CallToolResultSchema,
+	EmptyResultSchema,
 	ListResourcesResultSchema,
+	ListResourceTemplatesResultSchema,
 	ListToolsResultSchema,
+	type ReadResourceResult,
+	ReadResourceResultSchema,
+	ResourceListChangedNotificationSchema,
+	ResourceUpdatedNotificationSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import type { Page } from "@playwright/test";
 
@@ -21,6 +27,7 @@ export type TypedCallToolResult<T extends ServerToolName> = Omit<
 };
 
 import {
+	BrowserStateRegistry,
 	createCoreServerContainer,
 	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-server";
@@ -38,12 +45,37 @@ export class McpClientPageObject {
 		| null = null;
 	private mcpServer: ServerDrivingMcpServer | null = null;
 	private trpcServer: ServerDrivenTrpcChannelProvider | null = null;
+	private browserStateLifecycle: BrowserStateRegistry | null = null;
+	private readonly updatedNotifications: {
+		uri: string;
+		receivedAt: number;
+	}[] = [];
+	private readonly listChangedNotifications: {
+		receivedAt: number;
+	}[] = [];
 
 	constructor() {
 		this.client = new Client({
 			name: "e2e-test-client",
 			version: "1.0.0",
 		});
+		this.client.setNotificationHandler(
+			ResourceUpdatedNotificationSchema,
+			async (notification) => {
+				this.updatedNotifications.push({
+					uri: notification.params.uri,
+					receivedAt: Date.now(),
+				});
+			},
+		);
+		this.client.setNotificationHandler(
+			ResourceListChangedNotificationSchema,
+			async () => {
+				this.listChangedNotifications.push({
+					receivedAt: Date.now(),
+				});
+			},
+		);
 	}
 
 	async startServer() {
@@ -55,6 +87,10 @@ export class McpClientPageObject {
 		);
 		ServerDrivenTrpcChannelProvider.setupContainer(container);
 		ServerDrivingMcpServer.setupContainer(container);
+
+		this.browserStateLifecycle =
+			container.get<BrowserStateRegistry>(BrowserStateRegistry);
+		this.browserStateLifecycle.start();
 
 		this.trpcServer = container.get<ServerDrivenTrpcChannelProvider>(
 			ServerDrivenTrpcChannelProvider,
@@ -89,6 +125,8 @@ export class McpClientPageObject {
 	async disconnect() {
 		await this.client.close();
 		await this.trpcServer?.stop();
+		this.browserStateLifecycle?.stop();
+		this.browserStateLifecycle = null;
 	}
 
 	async listTools() {
@@ -132,6 +170,104 @@ export class McpClientPageObject {
 			ListResourcesResultSchema,
 		);
 		return res.resources;
+	}
+
+	async listResourceTemplates() {
+		const res = await this.client.request(
+			{
+				method: "resources/templates/list",
+				params: {},
+			},
+			ListResourceTemplatesResultSchema,
+		);
+		return res.resourceTemplates;
+	}
+
+	async readResource(uri: string): Promise<{
+		result: ReadResourceResult;
+		json: unknown;
+	}> {
+		const result = await this.client.request(
+			{
+				method: "resources/read",
+				params: {
+					uri,
+				},
+			},
+			ReadResourceResultSchema,
+		);
+		const first = result.contents[0];
+		let json: unknown;
+		if (first && "text" in first && typeof first.text === "string") {
+			try {
+				json = JSON.parse(first.text);
+			} catch {
+				json = undefined;
+			}
+		}
+		return {
+			result,
+			json,
+		};
+	}
+
+	async subscribeResource(uri: string) {
+		await this.client.request(
+			{
+				method: "resources/subscribe",
+				params: {
+					uri,
+				},
+			},
+			EmptyResultSchema,
+		);
+	}
+
+	clearResourceNotifications() {
+		this.updatedNotifications.length = 0;
+		this.listChangedNotifications.length = 0;
+	}
+
+	getUpdatedNotifications() {
+		return [
+			...this.updatedNotifications,
+		];
+	}
+
+	getListChangedNotifications() {
+		return [
+			...this.listChangedNotifications,
+		];
+	}
+
+	async waitForResourceUpdated(uri: string, timeout = 10000) {
+		const { expect } = await import("@playwright/test");
+		await expect(() => {
+			expect(
+				this.updatedNotifications.some((n) => n.uri === uri),
+				`expected resources/updated notification for ${uri}`,
+			).toBe(true);
+		}).toPass({
+			timeout,
+			intervals: [
+				250,
+			],
+		});
+	}
+
+	async waitForResourceListChanged(timeout = 10000) {
+		const { expect } = await import("@playwright/test");
+		await expect(() => {
+			expect(
+				this.listChangedNotifications.length,
+				"expected a resources/list_changed notification",
+			).toBeGreaterThan(0);
+		}).toPass({
+			timeout,
+			intervals: [
+				250,
+			],
+		});
 	}
 
 	async waitForBrowsers(timeout = 20000) {

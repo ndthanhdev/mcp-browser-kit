@@ -24,6 +24,7 @@ flowchart TB
 
   AgentHost -.- McpServer
   McpServer -.-|"n-n"| Extensions
+  Extensions -->|"browser state events"| McpServer
   Extensions -.-|"1-n"| Tabs
   Extensions -.- Windows
   Windows -.-|"1-n"| Tabs
@@ -40,6 +41,7 @@ flowchart TD
     ServerToolCalls
     ManageChannels
     ToolDescriptions
+    ObserveBrowserState
   end
 
   subgraph ServerCore["Core"]
@@ -49,6 +51,7 @@ flowchart TD
       ToolDescriptionUseCases
     end
     ExtensionChannelManager
+    BrowserStateRegistry
   end
 
   subgraph ServerDriven["Driven"]
@@ -61,10 +64,12 @@ flowchart TD
   ServerToolCalls --> ServerToolCallUseCases
   ToolDescriptions --> ToolDescriptionUseCases
   ManageChannels --> ManageChannelUseCases
+  ObserveBrowserState --> BrowserStateRegistry
   %% From Core
   ServerToolCallUseCases--> ExtensionChannelManager
   ManageChannelUseCases --> ExtensionChannelManager
   ExtensionChannelManager --> ExtensionChannelProvider
+  BrowserStateRegistry --> ExtensionChannelProvider
   ToolDescriptionUseCases --> ConfigProvider
 
 ```
@@ -118,12 +123,17 @@ flowchart TD
     subgraph UseCases["Use Cases"]
       ExtensionToolCallUseCases
       ManageChannelUseCases
+      PublishBrowserStateUseCase
     end
     ServerChannelManager
   end
   subgraph Driven["Driven"]
     BrowserDriver
-    ServerChannelProvider
+    BrowserStateSource
+    subgraph ExtensionDrivenServerChannelProvider["ExtensionDrivenServerChannelProvider (adapter)"]
+      ServerChannelProvider
+      ServerEventSink
+    end
     LoggerProvider
   end
 
@@ -135,6 +145,10 @@ flowchart TD
   ExtensionToolCallUseCases --> ServerChannelManager
   ManageChannelUseCases --> ServerChannelManager
   ServerChannelManager --> ServerChannelProvider
+  %% Observability
+  BrowserStateSource --> PublishBrowserStateUseCase
+  PublishBrowserStateUseCase --> BrowserDriver
+  PublishBrowserStateUseCase --> ServerEventSink
 ```
 
 # Extension Architecture (Level 0)
@@ -151,9 +165,11 @@ flowchart TD
 
   subgraph Tab
     TabRpcServer
+    TabContentMutationObserver
   end
   subgraph BrowserDriver["BrowserDriver"]
     TabRpcClient
+    BrowserStateSource
   end
 
   subgraph ExtensionDriving["ExtensionDriving"]
@@ -177,4 +193,5 @@ flowchart TD
   ExtensionDriving --> Core
   Core --> ExtensionDriven
   TabRpcClient --> TabRpcServer
+  TabContentMutationObserver -->|"mbk.tabContent.changed"| BrowserStateSource
 ```

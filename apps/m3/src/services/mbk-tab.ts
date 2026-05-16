@@ -1,6 +1,9 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension";
 import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
-import { TabToolsSetup } from "@mcp-browser-kit/extension-driven-browser-driver";
+import {
+	TabContentMutationObserver,
+	TabToolsSetup,
+} from "@mcp-browser-kit/extension-driven-browser-driver";
 import { DrivenBrowserDriverM3 } from "@mcp-browser-kit/extension-driven-browser-driver/m3";
 import { KeepAlive } from "@mcp-browser-kit/helper-extension-keep-alive";
 import type { Container } from "inversify";
@@ -9,6 +12,7 @@ import { inject, injectable } from "inversify";
 @injectable()
 export class MbkTab {
 	private logger: ReturnType<LoggerFactoryOutputPort["create"]>;
+	private readonly mutationObserver = new TabContentMutationObserver();
 
 	constructor(
 		@inject(TabToolsSetup)
@@ -49,6 +53,9 @@ export class MbkTab {
 
 		// Start keep-alive mechanism
 		this.keepAlive.startSending();
+
+		// Start observing DOM mutations and pinging the background.
+		this.mutationObserver.start();
 
 		this.logger.info("MbkTab bootstrap complete");
 	}

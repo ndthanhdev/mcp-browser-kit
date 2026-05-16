@@ -1,13 +1,42 @@
 #!/usr/bin/env node
-import { ServerDrivenTrpcChannelProvider } from "@mcp-browser-kit/server-driven-trpc-channel-provider";
-import { ServerDrivingMcpServer } from "@mcp-browser-kit/server-driving-mcp-server";
+import {
+	LoggerFactoryOutputPort,
+	ServerLifecycleInputPort,
+} from "@mcp-browser-kit/core-server";
 import { container } from "./services/container";
 
-const trpcServer = container.get<ServerDrivenTrpcChannelProvider>(
-	ServerDrivenTrpcChannelProvider,
+const logger = container
+	.get<LoggerFactoryOutputPort>(LoggerFactoryOutputPort)
+	.create("main");
+const lifecycle = container.get<ServerLifecycleInputPort>(
+	ServerLifecycleInputPort,
 );
-await trpcServer.start();
 
-const mcpServer = container.get<ServerDrivingMcpServer>(ServerDrivingMcpServer);
-await mcpServer.initMcpServer();
-await mcpServer.listenOnStdio();
+let shuttingDown = false;
+const shutdown = async (signal: string) => {
+	if (shuttingDown) return;
+	shuttingDown = true;
+	logger.info(`Shutdown signal received: ${signal}`);
+	try {
+		await lifecycle.stop();
+		process.exit(0);
+	} catch (err) {
+		logger.error("Error during shutdown", err);
+		process.exit(1);
+	}
+};
+
+process.on("SIGTERM", () => {
+	void shutdown("SIGTERM");
+});
+process.on("SIGINT", () => {
+	void shutdown("SIGINT");
+});
+process.stdin.on("close", () => {
+	void shutdown("stdin-close");
+});
+process.on("unhandledRejection", (reason, promise) => {
+	logger.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
+await lifecycle.start();

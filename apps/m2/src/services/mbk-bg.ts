@@ -1,9 +1,11 @@
 import {
 	BrowserDriverOutputPort,
 	LoggerFactoryOutputPort,
+	PublishBrowserStateInputPort,
 	ServerChannelProviderOutputPort,
 } from "@mcp-browser-kit/core-extension";
 import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
+import { DrivenBrowserStateSource } from "@mcp-browser-kit/extension-driven-browser-driver";
 import { DrivenBrowserDriverM2 } from "@mcp-browser-kit/extension-driven-browser-driver/m2";
 import {
 	ExtensionDrivenServerChannelProvider,
@@ -27,6 +29,8 @@ export class MbkBg {
 		private readonly trpcController: ExtensionDrivingTrpcController,
 		@inject(KeepAlive)
 		private readonly keepAlive: KeepAlive,
+		@inject(PublishBrowserStateInputPort)
+		private readonly publishBrowserState: PublishBrowserStateInputPort,
 		@inject(LoggerFactoryOutputPort)
 		loggerFactory: LoggerFactoryOutputPort,
 	) {
@@ -43,7 +47,11 @@ export class MbkBg {
 		// Setup browser driver
 		DrivenBrowserDriverM2.setupContainer(container);
 
+		// Setup browser-state source (observability)
+		DrivenBrowserStateSource.setupContainer(container);
+
 		// Setup server channel provider with discoverer
+		// (also binds ServerEventSinkOutputPort to the same instance)
 		ExtensionDrivenServerChannelProvider.setupContainer(container);
 
 		// Register ExtensionDrivingTrpcController service
@@ -81,6 +89,11 @@ export class MbkBg {
 					error,
 				);
 			});
+
+		// Start observing browser state and publishing snapshots to the server.
+		this.publishBrowserState.start().catch((error) => {
+			this.logger.error("Error starting browser-state publisher:", error);
+		});
 
 		this.logger.info("MbkBg bootstrap complete");
 	}

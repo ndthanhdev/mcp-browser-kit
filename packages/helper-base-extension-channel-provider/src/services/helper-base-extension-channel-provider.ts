@@ -1,4 +1,5 @@
 import type {
+	ChannelBrowserEvent,
 	ChannelInfo,
 	ExtensionChannelProviderOutputPort,
 	ExtensionDriverProviderEventEmitter,
@@ -13,6 +14,7 @@ import {
 	createPrefixId,
 	EmitteryMessageChannel,
 } from "@mcp-browser-kit/core-utils";
+import type { BrowserEvent } from "@mcp-browser-kit/types";
 import Emittery from "emittery";
 import { inject, injectable } from "inversify";
 
@@ -30,6 +32,7 @@ export class HelperBaseExtensionChannelProvider
 	>();
 	private readonly logger;
 	public readonly on: ExtensionDriverProviderEventEmitter["on"];
+	public readonly off: ExtensionDriverProviderEventEmitter["off"];
 
 	constructor(
 		@inject(LoggerFactoryOutputPort)
@@ -42,10 +45,12 @@ export class HelperBaseExtensionChannelProvider
 		this.eventEmitter = new Emittery<{
 			connected: ChannelInfo;
 			disconnected: ChannelInfo;
+			browserEvent: ChannelBrowserEvent;
 		}>();
 
-		// Bind the on method after eventEmitter is initialized
+		// Bind the on/off methods after eventEmitter is initialized
 		this.on = this.eventEmitter.on.bind(this.eventEmitter);
+		this.off = this.eventEmitter.off.bind(this.eventEmitter);
 
 		this.logger.verbose("Initialized HelperBaseExtensionChannelProvider");
 	}
@@ -121,5 +126,18 @@ export class HelperBaseExtensionChannelProvider
 		} else {
 			this.logger.verbose(`Channel ${channelId} not found for closing`);
 		}
+	};
+
+	/**
+	 * Emit a browser event observed on the given channel to all listeners.
+	 */
+	public emitBrowserEvent = (channelId: string, event: BrowserEvent): void => {
+		this.logger.verbose(
+			`Emitting browser event on channel ${channelId}: ${event.type}`,
+		);
+		this.eventEmitter.emit("browserEvent", {
+			channelId,
+			event,
+		});
 	};
 }

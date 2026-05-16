@@ -5,6 +5,7 @@ import type {
 import {
 	LoggerFactoryOutputPort,
 	ServerChannelProviderOutputPort,
+	ServerEventSinkOutputPort,
 } from "@mcp-browser-kit/core-extension";
 import type {
 	DeferMessage,
@@ -15,7 +16,7 @@ import {
 	EmitteryMessageChannel,
 } from "@mcp-browser-kit/core-utils";
 import type { RootRouter } from "@mcp-browser-kit/server-driven-trpc-channel-provider";
-import type { MessageChannel } from "@mcp-browser-kit/types";
+import type { BrowserEvent, MessageChannel } from "@mcp-browser-kit/types";
 import {
 	createTRPCClient,
 	createWSClient,
@@ -31,7 +32,7 @@ import { ServerDiscoverer } from "./server-discoverer";
 
 @injectable()
 export class ExtensionDrivenServerChannelProvider
-	implements ServerChannelProviderOutputPort
+	implements ServerChannelProviderOutputPort, ServerEventSinkOutputPort
 {
 	private static readonly RETRY_DELAY_MS = 10000;
 	private static readonly serverChannelProviderId = createPrefixId(
@@ -48,8 +49,18 @@ export class ExtensionDrivenServerChannelProvider
 
 		// Extension-driven server channel provider (bound to output port interface)
 		container
-			.bind<ServerChannelProviderOutputPort>(ServerChannelProviderOutputPort)
+			.bind<ExtensionDrivenServerChannelProvider>(
+				ExtensionDrivenServerChannelProvider,
+			)
 			.to(ExtensionDrivenServerChannelProvider);
+
+		container
+			.bind<ServerChannelProviderOutputPort>(ServerChannelProviderOutputPort)
+			.toService(ExtensionDrivenServerChannelProvider);
+
+		container
+			.bind<ServerEventSinkOutputPort>(ServerEventSinkOutputPort)
+			.toService(ExtensionDrivenServerChannelProvider);
 	}
 
 	private readonly instanceId: string;
@@ -59,6 +70,13 @@ export class ExtensionDrivenServerChannelProvider
 	private readonly wsClients = new Map<string, TRPCWebSocketClient>();
 	private readonly trpcClients = new Map<string, TRPCClient<RootRouter>>();
 	private readonly channelsByUrl = new Map<string, string>(); // serverUrl -> channelId
+	/**
+	 * Last event passed to `publish`. Retained regardless of whether any sink
+	 * was connected at publish time, and replayed to every newly-connected
+	 * channel inside `connectToServer`. See `ServerEventSinkOutputPort` JSDoc
+	 * for the retain-and-replay contract.
+	 */
+	private lastEvent: BrowserEvent | null = null;
 	private readonly logger;
 	private monitoringSubscriptions?: Map<
 		string,
@@ -197,6 +215,27 @@ export class ExtensionDrivenServerChannelProvider
 
 			// Emit connected event
 			this.eventEmitter.emit("connected", serverChannel);
+
+			// Retain-and-replay: if a snapshot has been published before this
+			// channel connected (common at startup, since `publishBrowserState`
+			// flushes immediately while `startServersDiscovering` is still
+			// racing), send it to the newcomer. Fire-and-forget — failures are
+			// logged at verbose and tolerated because the publisher re-emits
+			// on every subsequent hint.
+			if (this.lastEvent) {
+				const retained = this.lastEvent;
+				trpcClient.events.publish
+					.mutate({
+						channelId,
+						event: retained,
+					})
+					.catch((error) => {
+						this.logger.verbose(
+							`[${this.instanceId}] Retained-event replay to ${channelId} failed:`,
+							error,
+						);
+					});
+			}
 		} catch (error) {
 			// Connection failed or timed out - cleanup
 			this.logger.verbose(
@@ -328,5 +367,48 @@ export class ExtensionDrivenServerChannelProvider
 			throw new Error(`No message channel found for channel ${channelId}`);
 		}
 		return messageChannel;
+	};
+
+	/**
+	 * Fan-out publish: sends the event to every currently-connected server
+	 * channel. Per-sink failures are logged and swallowed — since snapshots
+	 * are idempotent and last-event-wins, the next state change will
+	 * republish and naturally heal transient drops.
+	 */
+	publish = async (event: BrowserEvent): Promise<void> => {
+		// Retain the latest event unconditionally so it can be replayed to any
+		// channel that connects later — this is the fix for the startup race
+		// where the publisher's initial flush fires before any server has
+		// finished handshaking. See `ServerEventSinkOutputPort` JSDoc.
+		this.lastEvent = event;
+
+		if (this.trpcClients.size === 0) {
+			this.logger.verbose(
+				`[${this.instanceId}] No active server channels; event retained for future connects`,
+			);
+			return;
+		}
+
+		const tasks: Array<Promise<void>> = [];
+		for (const [channelId, trpcClient] of this.trpcClients) {
+			tasks.push(
+				Promise.resolve()
+					.then(() =>
+						trpcClient.events.publish.mutate({
+							channelId,
+							event,
+						}),
+					)
+					.then(() => undefined)
+					.catch((error) => {
+						this.logger.verbose(
+							`[${this.instanceId}] Failed to publish event on channel ${channelId}:`,
+							error,
+						);
+					}),
+			);
+		}
+
+		await Promise.all(tasks);
 	};
 }

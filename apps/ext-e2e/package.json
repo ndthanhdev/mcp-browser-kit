@@ -3,5 +3,6 @@
 	"scripts": {
 		"test": "NODE_OPTIONS='--require @swc-node/register --enable-source-maps' playwright test",
 		"test:debug": "NODE_OPTIONS='--require @swc-node/register --enable-source-maps' PWDEBUG=1 playwright test --headed"
-	}
+	},
+	"packageManager": "yarn@4.10.3"
 }

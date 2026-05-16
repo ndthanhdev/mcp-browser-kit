@@ -1,6 +1,7 @@
 import { createServer } from "node:http";
 import {
 	ExtensionChannelProviderOutputPort,
+	LifecycleParticipantOutputPort,
 	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-server";
 import { HelperBaseExtensionChannelProvider } from "@mcp-browser-kit/helper-base-extension-channel-provider";
@@ -28,9 +29,11 @@ export const publicProcedure = t.procedure;
 
 @injectable()
 export class ServerDrivenTrpcChannelProvider
-	implements ExtensionChannelProviderOutputPort
+	implements ExtensionChannelProviderOutputPort, LifecycleParticipantOutputPort
 {
+	readonly name = "ServerDrivenTrpcChannelProvider";
 	public readonly on: ExtensionChannelProviderOutputPort["on"];
+	public readonly off: ExtensionChannelProviderOutputPort["off"];
 	private container: Container;
 	private logger: ReturnType<LoggerFactoryOutputPort["create"]>;
 	private httpServer: import("http").Server | null = null;
@@ -48,6 +51,7 @@ export class ServerDrivenTrpcChannelProvider
 		container: Container,
 	) {
 		this.on = this.baseExtensionChannelProvider.on;
+		this.off = this.baseExtensionChannelProvider.off;
 		this.container = container;
 		this.logger = this.loggerFactory.create("trpcServer");
 	}
@@ -62,6 +66,13 @@ export class ServerDrivenTrpcChannelProvider
 
 	closeChannel = (id: string) => {
 		return this.baseExtensionChannelProvider.closeChannel(id);
+	};
+
+	emitBrowserEvent: ExtensionChannelProviderOutputPort["emitBrowserEvent"] = (
+		channelId,
+		event,
+	) => {
+		return this.baseExtensionChannelProvider.emitBrowserEvent(channelId, event);
 	};
 
 	public async start() {
@@ -79,8 +90,6 @@ export class ServerDrivenTrpcChannelProvider
 		const port = await this.findPort();
 
 		this.startServer(this.httpServer, port);
-
-		this.setupShutdownHandlers(this.httpServer, this.wss, this.handler);
 	}
 
 	public async stop(): Promise<void> {
@@ -89,7 +98,7 @@ export class ServerDrivenTrpcChannelProvider
 		}
 
 		return new Promise<void>((resolve) => {
-			this.logger.info("Stopping server for test cleanup");
+			this.logger.info("Stopping tRPC channel provider");
 			this.handler?.broadcastReconnectNotification();
 			this.wss?.close(() => {
 				this.logger.info("WebSocket Server closed");
@@ -197,43 +206,6 @@ export class ServerDrivenTrpcChannelProvider
 		});
 	}
 
-	private setupShutdownHandlers(
-		httpServer: import("http").Server,
-		wss: WebSocketServer,
-		handler: ReturnType<typeof applyWSSHandler>,
-	) {
-		process.on("SIGTERM", () => {
-			this.logger.info("SIGTERM received");
-			this.shutdown(httpServer, wss, handler);
-		});
-
-		process.on("SIGINT", () => {
-			this.logger.info("SIGINT received");
-			this.shutdown(httpServer, wss, handler);
-		});
-
-		process.stdin.on("close", () => {
-			this.logger.info("stdin closed");
-			this.shutdown(httpServer, wss, handler);
-		});
-	}
-
-	private shutdown(
-		httpServer: import("http").Server,
-		wss: WebSocketServer,
-		handler: ReturnType<typeof applyWSSHandler>,
-	) {
-		this.logger.info("Server shutdown initiated");
-		handler.broadcastReconnectNotification();
-		wss.close(() => {
-			this.logger.info("WebSocket Server successfully closed");
-			httpServer.close(() => {
-				this.logger.info("HTTP Server successfully closed");
-				process.exit(0);
-			});
-		});
-	}
-
 	private static readonly baseProvider = Symbol.for(
 		"ServerDrivenTrpcBaseExtensionChannelProvider",
 	);
@@ -271,5 +243,11 @@ export class ServerDrivenTrpcChannelProvider
 				ExtensionChannelProviderOutputPort,
 			)
 			.to(ServerDrivenTrpcChannelProvider);
+
+		// Register as a lifecycle participant so server-lifecycle orchestration
+		// owns start/stop (replaces direct signal handling in this adapter).
+		container
+			.bind<LifecycleParticipantOutputPort>(LifecycleParticipantOutputPort)
+			.toService(ServerDrivenTrpcChannelProvider);
 	}
 }

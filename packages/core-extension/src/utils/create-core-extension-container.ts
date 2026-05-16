@@ -1,8 +1,13 @@
 import { Container } from "inversify";
-import { ManageChannelUseCases, ToolCallHandlersUseCase } from "../core";
+import {
+	ManageChannelUseCases,
+	PublishBrowserStateUseCase,
+	ToolCallHandlersUseCase,
+} from "../core";
 import {
 	ExtensionToolCallInputPort,
 	ManageChannelsInputPort,
+	PublishBrowserStateInputPort,
 } from "../input-ports";
 
 export const createCoreExtensionContainer = () => {
@@ -18,6 +23,10 @@ export const createCoreExtensionContainer = () => {
 	container
 		.bind<ManageChannelsInputPort>(ManageChannelsInputPort)
 		.to(ManageChannelUseCases);
+
+	container
+		.bind<PublishBrowserStateInputPort>(PublishBrowserStateInputPort)
+		.to(PublishBrowserStateUseCase);
 
 	return container;
 };

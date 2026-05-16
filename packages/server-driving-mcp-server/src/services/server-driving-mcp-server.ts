@@ -1,4 +1,5 @@
 import {
+	LifecycleParticipantOutputPort,
 	LoggerFactoryOutputPort,
 	type LoggerFactoryOutputPort as LoggerFactoryOutputPortInterface,
 } from "@mcp-browser-kit/core-server";
@@ -6,14 +7,18 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
+import { BrowserResources } from "./browser-resources";
 import { BrowserTools } from "./browser-tools";
 import { ElementTools } from "./element-tools";
 import { InteractionTools } from "./interaction-tools";
 
 @injectable()
-export class ServerDrivingMcpServer {
+export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
+	readonly name = "ServerDrivingMcpServer";
 	private logger;
 	private server: McpServer | null = null;
+	private transport: StdioServerTransport | null = null;
+	private unsubscribeResources: (() => void) | null = null;
 
 	constructor(
 		@inject(LoggerFactoryOutputPort)
@@ -24,6 +29,8 @@ export class ServerDrivingMcpServer {
 		private readonly elementTools: ElementTools,
 		@inject(InteractionTools)
 		private readonly interactionTools: InteractionTools,
+		@inject(BrowserResources)
+		private readonly browserResources: BrowserResources,
 	) {
 		this.logger = this.loggerFactory.create("mcpServer");
 	}
@@ -66,6 +73,9 @@ export class ServerDrivingMcpServer {
 			this.logger.verbose("Registering interaction tools");
 			this.interactionTools.register(this.server);
 
+			this.logger.verbose("Registering browser resources");
+			this.unsubscribeResources = this.browserResources.register(this.server);
+
 			this.setupEventHandlers();
 
 			this.logger.info("All MCP server tools registered successfully");
@@ -86,6 +96,7 @@ export class ServerDrivingMcpServer {
 			}
 
 			const serverTransport = transport ?? new StdioServerTransport();
+			this.transport = serverTransport;
 
 			if (!transport) {
 				this.logger.verbose("Creating STDIO transport");
@@ -96,15 +107,59 @@ export class ServerDrivingMcpServer {
 			this.logger.info("MCP Browser Kit Server running on stdio");
 		} catch (error) {
 			this.logger.error("Fatal error in listen():", error);
-			process.exit(1);
+			throw error;
 		}
+	}
+
+	/** Lifecycle: initialize and begin listening on stdio. */
+	async start(): Promise<void> {
+		await this.initMcpServer();
+		await this.listenOnStdio();
+	}
+
+	/** Lifecycle: close the MCP server and its transport. */
+	async stop(): Promise<void> {
+		if (this.unsubscribeResources) {
+			try {
+				this.logger.verbose("Unsubscribing browser resources");
+				this.unsubscribeResources();
+			} catch (err) {
+				this.logger.error("Error unsubscribing browser resources", err);
+			}
+			this.unsubscribeResources = null;
+		}
+		try {
+			if (this.server) {
+				this.logger.verbose("Closing MCP server");
+				await this.server.close();
+			}
+		} catch (err) {
+			this.logger.error("Error closing MCP server", err);
+		}
+		try {
+			if (this.transport) {
+				this.logger.verbose("Closing STDIO transport");
+				await this.transport.close();
+			}
+		} catch (err) {
+			this.logger.error("Error closing STDIO transport", err);
+		}
+		this.server = null;
+		this.transport = null;
 	}
 
 	static setupContainer(container: Container): void {
 		container.bind<BrowserTools>(BrowserTools).toSelf();
 		container.bind<ElementTools>(ElementTools).toSelf();
 		container.bind<InteractionTools>(InteractionTools).toSelf();
+		container.bind<BrowserResources>(BrowserResources).toSelf();
 
 		container.bind<ServerDrivingMcpServer>(ServerDrivingMcpServer).toSelf();
+
+		// Register as a lifecycle participant so server-lifecycle orchestration
+		// owns start/stop of the MCP server and its stdio transport.
+		container
+			.bind<LifecycleParticipantOutputPort>(LifecycleParticipantOutputPort)
+			.toService(ServerDrivingMcpServer);
 	}
 }

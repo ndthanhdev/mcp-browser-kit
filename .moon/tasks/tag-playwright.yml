@@ -24,8 +24,8 @@ tasks:
   playwright-show-report:
     toolchain: node
     preset: server
-    script: playwright show-report
+    script: playwright show-report target/playwright/playwright-report
     inputs:
-    - ./target/playwright/test-results/**/*
+    - ./target/playwright/playwright-report/**/*
 inheritedBy:
   tag: playwright
