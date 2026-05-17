@@ -16,7 +16,6 @@ import { createOverResponse } from "../utils/tool-helpers";
 import {
 	actionOutputSchema,
 	captureTabOutputSchema,
-	contextOutputSchema,
 	invokeJsFnOutputSchema,
 	invokeJsFnSchema,
 	openTabOutputSchema,
@@ -41,49 +40,11 @@ export class BrowserTools {
 	}
 
 	register(server: McpServer): void {
-		this.registerGetContext(server);
 		this.registerCaptureTab(server);
 		this.registerInvokeJsFn(server);
 		this.registerOpenTab(server);
 		this.registerCloseTab(server);
 		this.registerGetSelection(server);
-	}
-
-	private registerGetContext(server: McpServer): void {
-		this.logger.verbose("Registering tool: getContext");
-		registerTool(
-			server,
-			"getContext",
-			{
-				description:
-					this.toolDescriptionsInputPort.getBasicBrowserContextInstruction(),
-				inputSchema: {},
-				outputSchema: contextOutputSchema,
-			},
-			async () => {
-				this.logger.verbose("Executing getContext");
-				const overCtx = await over(this.toolsInputPort.getContext);
-
-				if (!overCtx.ok) {
-					this.logger.error("Failed to get context", {
-						reason: overCtx.reason,
-					});
-					return createOverResponse(contextOutputSchema, {
-						ok: false,
-						reason: String(overCtx.reason),
-					});
-				}
-
-				const ctx = overCtx.value;
-				this.logger.verbose("Retrieved browser context", {
-					browserCount: ctx.browsers.length,
-				});
-				return createOverResponse(contextOutputSchema, {
-					ok: true,
-					value: ctx,
-				});
-			},
-		);
 	}
 
 	private registerCaptureTab(server: McpServer): void {

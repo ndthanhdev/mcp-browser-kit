@@ -3,29 +3,6 @@ import type { McpDescriptionsInputPort } from "../input-ports";
 
 @injectable()
 export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
-	getBasicBrowserContextInstruction = (): string => {
-		return [
-			"🌐 GET BROWSER CONTEXT - CRITICAL FIRST STEP BEFORE USING ANY OTHER TOOLS!",
-			"* This tool MUST be called first to initialize browser automation and get essential data.",
-			"* Returns data structure with:",
-			"  - tabs: Array of browser tabs with properties like id, url, title, and active status",
-			"  - manifestVersion: Version of extension manifest format supported by the browser",
-			"* Each tab includes a unique tabKey required for all other tool operations",
-			"* The active tab (marked with 'active: true') is typically your target for automation",
-			"* The manifestVersion determines which browser features and extension capabilities are available",
-			"* Different browsers support different manifest versions, affecting available tools and API access",
-			"* Standard workflow:",
-			"  1) getBasicBrowserContext → get browser state and tabKey",
-			"  2) Analyze page content based on your goal and manifest version:",
-			"     - If interaction is required (clicking, filling forms, etc.):",
-			"       · For Manifest Version 2: Use captureTab for visual context or read the readable-elements resource for element identification",
-			"       · For other Manifest Versions: Use only the readable-elements resource for element identification",
-			"     - If no interaction is required (just reading page content):",
-			"       · Read the readable-text resource to extract all visible text from the page",
-			"  3) Interact using click/fill/enter tools with the obtained tabKey",
-		].join("\n");
-	};
-
 	captureTabInstruction = (): string => {
 		return [
 			"📷 Captures a screenshot of a browser tab",
@@ -159,7 +136,25 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 	};
 
 	bkResourceTemplateDescription = (): string => {
-		return "Browser or tab resource. Browser: per-channel state snapshot. Tab: metadata for a single tab (title, url, active state, window, last content change).";
+		return [
+			"🌐 BROWSER CONTEXT - START HERE BEFORE USING ANY OTHER TOOLS!",
+			"* List available bk:// resources to discover connected browsers.",
+			"* Read a browser resource (bk:///b-<shortId>) to get the full browser snapshot:",
+			"  - tabs: array of tabs with tabKey, title, url, active status",
+			"  - windows: array of windows with windowKey",
+			"  - extensionInfo.manifestVersion: determines which tools are available",
+			"* tabKey from the snapshot is required by all interaction tools.",
+			"* Standard workflow:",
+			"  1) List resources → find bk:///b-<shortId> browser resource",
+			"  2) Read the browser resource → get tabKey, windowKey, manifestVersion",
+			"  3) Analyze page content based on your goal and manifestVersion:",
+			"     - If interaction is required (clicking, filling forms, etc.):",
+			"       · For Manifest Version 2: Use captureTab for visual context or read the readable-elements resource for element identification",
+			"       · For other Manifest Versions: Use only the readable-elements resource for element identification",
+			"     - If no interaction is required (just reading page content):",
+			"       · Read the readable-text resource to extract all visible text from the page",
+			"  4) Interact using click/fill/enter tools with the obtained tabKey",
+		].join("\n");
 	};
 
 	browserResourceDescription = (

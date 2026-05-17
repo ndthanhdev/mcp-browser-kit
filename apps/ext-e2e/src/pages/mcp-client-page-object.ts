@@ -303,6 +303,118 @@ export class McpClientPageObject {
 		});
 	}
 
+	private listTabResourceUris(
+		resources: Array<{
+			uri: string;
+		}>,
+	): string[] {
+		return resources
+			.map((r) => r.uri)
+			.filter((u) => u.includes("/t-") && !u.includes("/readable-"));
+	}
+
+	private async readTabResourceData(uri: string): Promise<{
+		extensionInfo: {
+			extensionId: string;
+		};
+		tab: {
+			id: string;
+			url: string;
+			title: string;
+			active: boolean;
+			windowId: string;
+		};
+	} | null> {
+		const { json } = await this.readResource(uri);
+		const data = json as {
+			extensionInfo?: {
+				extensionId?: string;
+			};
+			tab?: {
+				id?: string;
+				url?: string;
+				title?: string;
+				active?: boolean;
+				windowId?: string;
+			};
+		} | null;
+		if (
+			!data?.extensionInfo?.extensionId ||
+			!data?.tab?.id ||
+			!data?.tab?.windowId
+		) {
+			return null;
+		}
+		return {
+			extensionInfo: {
+				extensionId: data.extensionInfo.extensionId,
+			},
+			tab: {
+				id: data.tab.id,
+				url: data.tab.url ?? "",
+				title: data.tab.title ?? "",
+				active: data.tab.active ?? false,
+				windowId: data.tab.windowId,
+			},
+		};
+	}
+
+	private tabKeyFrom(data: {
+		extensionInfo: {
+			extensionId: string;
+		};
+		tab: {
+			id: string;
+			windowId: string;
+		};
+	}): string {
+		return `${data.extensionInfo.extensionId}::${data.tab.windowId}::${data.tab.id}`;
+	}
+
+	private windowKeyFrom(data: {
+		extensionInfo: {
+			extensionId: string;
+		};
+		tab: {
+			windowId: string;
+		};
+	}): string {
+		return `${data.extensionInfo.extensionId}::${data.tab.windowId}`;
+	}
+
+	async getFirstWindowKey(timeout = 10000): Promise<string> {
+		const { expect } = await import("@playwright/test");
+		let windowKey = "";
+		await expect(async () => {
+			const resources = await this.listResources();
+			for (const uri of this.listTabResourceUris(resources)) {
+				const data = await this.readTabResourceData(uri);
+				if (data) {
+					windowKey = this.windowKeyFrom(data);
+					return;
+				}
+			}
+			expect(windowKey).not.toBe("");
+		}).toPass({
+			timeout,
+			intervals: [
+				500,
+			],
+		});
+		return windowKey;
+	}
+
+	async findTabUriByUrl(urlPattern: string): Promise<string | null> {
+		const resources = await this.listResources();
+		for (const uri of this.listTabResourceUris(resources)) {
+			const data = await this.readTabResourceData(uri);
+			if (data?.tab.url.includes(urlPattern)) {
+				return uri;
+			}
+		}
+		return null;
+	}
+
 	async waitForTabByUrl(
 		page: Page,
 		urlPattern: string,
@@ -315,11 +427,14 @@ export class McpClientPageObject {
 		await page.waitForLoadState("networkidle");
 		let tabKey = "";
 		await expect(async () => {
-			const contextResult = await this.callTool("getContext", {});
-			tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes(urlPattern),
-				)?.tabKey ?? "";
+			const resources = await this.listResources();
+			for (const uri of this.listTabResourceUris(resources)) {
+				const data = await this.readTabResourceData(uri);
+				if (data?.tab.url.includes(urlPattern)) {
+					tabKey = this.tabKeyFrom(data);
+					return;
+				}
+			}
 			expect(tabKey).not.toBe("");
 		}).toPass({
 			timeout,

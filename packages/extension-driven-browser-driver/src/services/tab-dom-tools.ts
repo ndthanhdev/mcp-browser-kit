@@ -71,7 +71,7 @@ export class TabDomTools {
 		if (focusedElement) {
 			await this.animation.playClickAnimationOnElement(focusedElement);
 		}
-		const result = dom.fillTextToFocusedElement(value);
+		const result = await dom.fillTextToFocusedElement(value);
 		this.logger.verbose("Fill text to focused element completed");
 		return result;
 	};

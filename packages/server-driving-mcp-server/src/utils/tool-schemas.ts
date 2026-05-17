@@ -17,7 +17,9 @@ export const coordinateTextInputSchema = {
 
 export const readableElementSchema = {
 	tabKey: z.string().describe("Tab key to target"),
-	readablePath: z.string().describe("Readable path from getReadableElements"),
+	readablePath: z
+		.string()
+		.describe("Readable path from the readable-elements resource"),
 };
 
 export const readableElementTextInputSchema = {
@@ -37,30 +39,6 @@ export const openTabSchema = {
 	url: z.string().describe("URL to open in the new tab"),
 };
 
-export const browserTabContextSchema = {
-	tabKey: z.string().describe("Unique key identifying the tab"),
-	active: z.boolean().describe("Whether the tab is currently active"),
-	title: z.string().describe("Title of the tab"),
-	url: z.string().describe("Current URL of the tab"),
-};
-
-export const browserWindowContextSchema = {
-	windowKey: z.string().describe("Unique key identifying the window"),
-	tabs: z
-		.array(z.object(browserTabContextSchema))
-		.describe("List of tabs in this window"),
-};
-
-export const browserContextSchema = {
-	browserId: z.string().describe("Unique identifier for the browser"),
-	availableTools: z
-		.array(z.string())
-		.describe("List of available tool names for this browser"),
-	browserWindows: z
-		.array(z.object(browserWindowContextSchema))
-		.describe("List of browser windows"),
-};
-
 export const createOverOutputSchema = <T extends Record<string, z.ZodType>>(
 	valueSchema: T,
 ) => ({
@@ -70,12 +48,6 @@ export const createOverOutputSchema = <T extends Record<string, z.ZodType>>(
 		.optional()
 		.describe("Result value when ok is true"),
 	reason: z.string().optional().describe("Error reason when ok is false"),
-});
-
-export const contextOutputSchema = createOverOutputSchema({
-	browsers: z
-		.array(z.object(browserContextSchema))
-		.describe("List of connected browsers"),
 });
 
 export const openTabOutputSchema = createOverOutputSchema({
@@ -107,7 +79,6 @@ type InferOverValue<T> = T extends {
 	: Record<string, never>;
 
 type ServerToolOverSchemaMap = {
-	getContext: typeof contextOutputSchema;
 	captureTab: typeof captureTabOutputSchema;
 	invokeJsFn: typeof invokeJsFnOutputSchema;
 	openTab: typeof openTabOutputSchema;

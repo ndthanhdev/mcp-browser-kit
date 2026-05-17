@@ -17,6 +17,55 @@ export const clickOnElementByReadablePath = async (element: HTMLElement) => {
 
 const humanDelay = () => delay(50 + Math.random() * 150);
 
+const typingDelay = () => delay(30 + Math.random() * 70);
+
+const typeTextHumanLike = async (
+	element: HTMLInputElement | HTMLTextAreaElement,
+	value: string,
+) => {
+	element.focus();
+	const prototype =
+		element instanceof HTMLTextAreaElement
+			? HTMLTextAreaElement.prototype
+			: HTMLInputElement.prototype;
+	const nativeSetter = Object.getOwnPropertyDescriptor(prototype, "value")?.set;
+
+	for (let i = 0; i < value.length; i++) {
+		const char = value[i];
+		const newValue = value.slice(0, i + 1);
+		const keyInit: KeyboardEventInit = {
+			key: char,
+			keyCode: char.charCodeAt(0),
+			charCode: char.charCodeAt(0),
+			which: char.charCodeAt(0),
+			bubbles: true,
+			cancelable: true,
+		};
+
+		element.dispatchEvent(new KeyboardEvent("keydown", keyInit));
+		element.dispatchEvent(new KeyboardEvent("keypress", keyInit));
+
+		if (nativeSetter) {
+			nativeSetter.call(element, newValue);
+		} else {
+			element.value = newValue;
+		}
+		element.dispatchEvent(
+			new Event("input", {
+				bubbles: true,
+			}),
+		);
+		element.dispatchEvent(new KeyboardEvent("keyup", keyInit));
+
+		await typingDelay();
+	}
+	element.dispatchEvent(
+		new Event("change", {
+			bubbles: true,
+		}),
+	);
+};
+
 export const dispatchEnter = async (element: HTMLElement) => {
 	const dict = {
 		key: "Enter",
@@ -46,43 +95,26 @@ export const dispatchEnter = async (element: HTMLElement) => {
 	}
 };
 
-const setNativeValue = (element: HTMLElement, value: string) => {
-	const prototype =
-		element instanceof HTMLTextAreaElement
-			? HTMLTextAreaElement.prototype
-			: HTMLInputElement.prototype;
-	const nativeSetter = Object.getOwnPropertyDescriptor(prototype, "value")?.set;
-	if (nativeSetter) {
-		nativeSetter.call(element, value);
-	} else {
-		(element as HTMLInputElement).value = value;
-	}
-	element.dispatchEvent(
-		new Event("input", {
-			bubbles: true,
-		}),
-	);
-	element.dispatchEvent(
-		new Event("change", {
-			bubbles: true,
-		}),
-	);
-};
-
 export const fillTextToElementByReadablePath = async (
 	element: HTMLElement,
 	value: string,
 ) => {
 	if (element) {
 		await playClickAnimationOnElement(element);
-		setNativeValue(element, value);
+		await typeTextHumanLike(
+			element as HTMLInputElement | HTMLTextAreaElement,
+			value,
+		);
 	}
 };
 
-export const fillTextToFocusedElement = (value: string) => {
+export const fillTextToFocusedElement = async (value: string) => {
 	const element = document.activeElement;
 	if (element && element instanceof HTMLElement) {
-		setNativeValue(element, value);
+		await typeTextHumanLike(
+			element as HTMLInputElement | HTMLTextAreaElement,
+			value,
+		);
 	}
 };
 

@@ -1,6 +1,5 @@
 export interface McpDescriptionsInputPort {
 	// Tool descriptions
-	getBasicBrowserContextInstruction(): string;
 	captureTabInstruction(): string;
 	clickOnViewableElementInstruction(): string;
 	fillTextToViewableElementInstruction(): string;
