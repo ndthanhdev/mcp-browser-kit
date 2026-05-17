@@ -16,20 +16,21 @@ test.describe("Click Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const browsers = contextResult.structuredContent?.value?.browsers ?? [];
-			const tabKey = browsers[0]?.browserWindows[0]?.tabs.find((t) =>
-				t.url.includes("click-test"),
-			)?.tabKey;
-			expectToBeDefined(tabKey);
-
-			const elementsResult = await mcpClientPage.callTool(
-				"getReadableElements",
-				{
-					tabKey,
-				},
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"click-test",
 			);
-			const elements = elementsResult.structuredContent?.value?.elements ?? [];
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				testAppPage.page,
+				"click-test",
+			);
+			const elements = JSON.parse(
+				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
+			) as [
+				string,
+				string,
+				string,
+			][];
 			const primaryButtonPath = elements.find((el) =>
 				el[2]?.includes("Primary Button"),
 			)?.[0];
@@ -51,22 +52,24 @@ test.describe("Click Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("click-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
-
-			const elementsResult = await mcpClientPage.callTool(
-				"getReadableElements",
-				{
-					tabKey,
-				},
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"click-test",
 			);
-			const nestedButtonPath = (
-				elementsResult.structuredContent?.value?.elements ?? []
-			).find((el) => el[2]?.includes("Nested Button"))?.[0];
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				testAppPage.page,
+				"click-test",
+			);
+			const elements = JSON.parse(
+				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
+			) as [
+				string,
+				string,
+				string,
+			][];
+			const nestedButtonPath = elements.find((el) =>
+				el[2]?.includes("Nested Button"),
+			)?.[0];
 			expectToBeDefined(nestedButtonPath);
 
 			await mcpClientPage.callTool("clickOnElement", {
@@ -86,12 +89,10 @@ test.describe("Click Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("click-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"click-test",
+			);
 
 			const locators = testAppPage.getClickTestLocators();
 			const buttonBox = await locators.secondaryButton.boundingBox();
@@ -115,12 +116,10 @@ test.describe("Click Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("click-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"click-test",
+			);
 
 			const locators = testAppPage.getClickTestLocators();
 			const centerButtonBox = await locators.centerButton.boundingBox();

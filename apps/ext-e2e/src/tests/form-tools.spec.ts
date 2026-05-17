@@ -16,22 +16,22 @@ test.describe("Form Tools", () => {
 		}) => {
 			await testAppPage.navigateToFormTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("form-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
-
-			const elementsResult = await mcpClientPage.callTool(
-				"getReadableElements",
-				{
-					tabKey,
-				},
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"form-test",
 			);
-			const usernameInputPath = (
-				elementsResult.structuredContent?.value?.elements ?? []
-			).find(
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				testAppPage.page,
+				"form-test",
+			);
+			const elements = JSON.parse(
+				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
+			) as [
+				string,
+				string,
+				string,
+			][];
+			const usernameInputPath = elements.find(
 				(el) => el[1] === "input" && el[2]?.includes("Enter username"),
 			)?.[0];
 			expectToBeDefined(usernameInputPath);
@@ -52,22 +52,22 @@ test.describe("Form Tools", () => {
 		}) => {
 			await testAppPage.navigateToFormTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("form-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
-
-			const elementsResult = await mcpClientPage.callTool(
-				"getReadableElements",
-				{
-					tabKey,
-				},
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"form-test",
 			);
-			const textareaPath = (
-				elementsResult.structuredContent?.value?.elements ?? []
-			).find(
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				testAppPage.page,
+				"form-test",
+			);
+			const elements = JSON.parse(
+				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
+			) as [
+				string,
+				string,
+				string,
+			][];
+			const textareaPath = elements.find(
 				(el) => el[1] === "textarea" && el[2]?.includes("Enter your message"),
 			)?.[0];
 			expectToBeDefined(textareaPath);
@@ -91,12 +91,10 @@ test.describe("Form Tools", () => {
 		}) => {
 			await testAppPage.navigateToFormTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("form-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"form-test",
+			);
 
 			const locators = testAppPage.getFormTestLocators();
 			const emailBox = await locators.emailInput.boundingBox();
@@ -120,22 +118,24 @@ test.describe("Form Tools", () => {
 		}) => {
 			await testAppPage.navigateToFormTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("form-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
-
-			const elementsResult = await mcpClientPage.callTool(
-				"getReadableElements",
-				{
-					tabKey,
-				},
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"form-test",
 			);
-			const searchInputPath = (
-				elementsResult.structuredContent?.value?.elements ?? []
-			).find((el) => el[1] === "input" && el[2]?.includes("Search"))?.[0];
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				testAppPage.page,
+				"form-test",
+			);
+			const elements = JSON.parse(
+				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
+			) as [
+				string,
+				string,
+				string,
+			][];
+			const searchInputPath = elements.find(
+				(el) => el[1] === "input" && el[2]?.includes("Search"),
+			)?.[0];
 			expectToBeDefined(searchInputPath);
 
 			await mcpClientPage.callTool("fillTextToElement", {
@@ -161,12 +161,10 @@ test.describe("Form Tools", () => {
 		}) => {
 			await testAppPage.navigateToFormTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("form-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"form-test",
+			);
 
 			const locators = testAppPage.getFormTestLocators();
 			const searchBox = await locators.searchInput.boundingBox();
@@ -196,20 +194,21 @@ test.describe("Form Tools", () => {
 		}) => {
 			await testAppPage.navigateToFormTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("form-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
-
-			const elementsResult = await mcpClientPage.callTool(
-				"getReadableElements",
-				{
-					tabKey,
-				},
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"form-test",
 			);
-			const elements = elementsResult.structuredContent?.value?.elements ?? [];
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				testAppPage.page,
+				"form-test",
+			);
+			const elements = JSON.parse(
+				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
+			) as [
+				string,
+				string,
+				string,
+			][];
 
 			const usernameInputPath = elements.find((el) =>
 				el[2]?.includes("Enter username"),

@@ -83,26 +83,8 @@ export const openTabOutputSchema = createOverOutputSchema({
 	windowKey: z.string().describe("Window key where the tab was opened"),
 });
 
-export const readableElementOutputSchema = createOverOutputSchema({
-	elements: z
-		.array(
-			z.tuple([
-				z.string().describe("Unique path to identify the element"),
-				z.string().describe("Accessible role or tag name of the element"),
-				z.string().describe("Accessible text content of the element"),
-			]),
-		)
-		.describe(
-			"List of readable elements on the page as [path, role, text] tuples",
-		),
-});
-
 export const selectionOutputSchema = createOverOutputSchema({
 	selectedText: z.string().describe("Selected text on the page"),
-});
-
-export const readableTextOutputSchema = createOverOutputSchema({
-	innerText: z.string().describe("Inner text content of the page"),
 });
 
 export const invokeJsFnOutputSchema = createOverOutputSchema({
@@ -131,8 +113,6 @@ type ServerToolOverSchemaMap = {
 	openTab: typeof openTabOutputSchema;
 	closeTab: typeof actionOutputSchema;
 	getSelection: typeof selectionOutputSchema;
-	getReadableText: typeof readableTextOutputSchema;
-	getReadableElements: typeof readableElementOutputSchema;
 	clickOnCoordinates: typeof actionOutputSchema;
 	fillTextToCoordinates: typeof actionOutputSchema;
 	hitEnterOnCoordinates: typeof actionOutputSchema;
@@ -141,7 +121,9 @@ type ServerToolOverSchemaMap = {
 	hitEnterOnElement: typeof actionOutputSchema;
 };
 
-export interface ServerToolOverResult<T extends keyof ServerToolOverSchemaMap> {
+export type McpToolName = keyof ServerToolOverSchemaMap;
+
+export interface ServerToolOverResult<T extends McpToolName> {
 	ok: boolean;
 	value?: InferOverValue<ServerToolOverSchemaMap[T]>;
 	reason?: string;

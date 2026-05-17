@@ -3,10 +3,10 @@ import {
 	type LoggerFactoryOutputPort as LoggerFactoryOutputPortInterface,
 } from "@mcp-browser-kit/core-server";
 import {
+	McpDescriptionsInputPort,
+	type McpDescriptionsInputPort as McpDescriptionsInputPortInterface,
 	ServerToolCallsInputPort,
 	type ServerToolCallsInputPort as ServerToolCallsInputPortInterface,
-	ToolDescriptionsInputPort,
-	type ToolDescriptionsInputPort as ToolDescriptionsInputPortInterface,
 } from "@mcp-browser-kit/core-server/input-ports";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { inject, injectable } from "inversify";
@@ -30,8 +30,8 @@ export class InteractionTools {
 		loggerFactory: LoggerFactoryOutputPortInterface,
 		@inject(ServerToolCallsInputPort)
 		private readonly toolsInputPort: ServerToolCallsInputPortInterface,
-		@inject(ToolDescriptionsInputPort)
-		private readonly toolDescriptionsInputPort: ToolDescriptionsInputPortInterface,
+		@inject(McpDescriptionsInputPort)
+		private readonly toolDescriptionsInputPort: McpDescriptionsInputPortInterface,
 	) {
 		this.logger = loggerFactory.create("interactionTools");
 	}

@@ -9,65 +9,6 @@ test.describe("Tab Tools", () => {
 		await mcpClientPage.waitForBrowsers();
 	});
 
-	test.describe("getContext", () => {
-		test("returns browser context with tabs", async ({
-			testAppPage,
-			mcpClientPage,
-		}) => {
-			await testAppPage.navigateToHome();
-
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const context = contextResult.structuredContent?.value;
-
-			expect(context).toBeDefined();
-			expect(context?.browsers).toBeDefined();
-			expect(context?.browsers.length).toBeGreaterThan(0);
-		});
-
-		test("context contains browser windows", async ({
-			testAppPage,
-			mcpClientPage,
-		}) => {
-			await testAppPage.navigateToHome();
-
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const browsers = contextResult.structuredContent?.value?.browsers ?? [];
-
-			expect(browsers[0]?.browserWindows).toBeDefined();
-			expect(browsers[0]?.browserWindows.length).toBeGreaterThan(0);
-		});
-
-		test("context contains tab information", async ({
-			testAppPage,
-			mcpClientPage,
-		}) => {
-			await testAppPage.navigateToHome();
-
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const browsers = contextResult.structuredContent?.value?.browsers ?? [];
-			const tabs = browsers[0]?.browserWindows[0]?.tabs ?? [];
-
-			const homeTab = tabs.find((t) => t.url.includes("localhost"));
-			expect(homeTab).toBeDefined();
-			expect(homeTab?.tabKey).toBeDefined();
-			expect(homeTab?.title).toBeDefined();
-			expect(homeTab?.url).toBeDefined();
-		});
-
-		test("context includes available tools", async ({
-			testAppPage,
-			mcpClientPage,
-		}) => {
-			await testAppPage.navigateToHome();
-
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const browsers = contextResult.structuredContent?.value?.browsers ?? [];
-
-			expect(browsers[0]?.availableTools).toBeDefined();
-			expect(Array.isArray(browsers[0]?.availableTools)).toBe(true);
-		});
-	});
-
 	test.describe("openTab", () => {
 		test("opens new tab with specified URL", async ({
 			context,
@@ -114,22 +55,21 @@ test.describe("Tab Tools", () => {
 			expectToBeDefined(windowKey);
 
 			const newPagePromise = context.waitForEvent("page");
-			const openResult = await mcpClientPage.callTool("openTab", {
+			await mcpClientPage.callTool("openTab", {
 				windowKey,
 				url: "http://localhost:3000/form-test",
 			});
 			const newPage = await newPagePromise;
 			await newPage.waitForLoadState("networkidle");
 
-			const newTabKey = openResult.structuredContent?.value?.tabKey;
-			expectToBeDefined(newTabKey);
-
-			const textResult = await mcpClientPage.callTool("getReadableText", {
-				tabKey: newTabKey,
-			});
-			expect(textResult.structuredContent?.value?.innerText).toContain(
-				"Form Test",
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				newPage,
+				"form-test",
 			);
+			const text = await mcpClientPage.readResourceText(
+				`${tabUri}/readable-text`,
+			);
+			expect(text).toContain("Form Test");
 		});
 	});
 
@@ -291,15 +231,23 @@ test.describe("Tab Tools", () => {
 			expectToBeDefined(tab1Key);
 			expectToBeDefined(tab2Key);
 
-			const text1 = await mcpClientPage.callTool("getReadableText", {
-				tabKey: tab1Key,
-			});
-			expect(text1.structuredContent?.value?.innerText).toContain("Click Test");
+			const tabUri1 = await mcpClientPage.waitForTabUriByUrl(
+				newPage1,
+				"click-test",
+			);
+			const text1 = await mcpClientPage.readResourceText(
+				`${tabUri1}/readable-text`,
+			);
+			expect(text1).toContain("Click Test");
 
-			const text2 = await mcpClientPage.callTool("getReadableText", {
-				tabKey: tab2Key,
-			});
-			expect(text2.structuredContent?.value?.innerText).toContain("Form Test");
+			const tabUri2 = await mcpClientPage.waitForTabUriByUrl(
+				newPage2,
+				"form-test",
+			);
+			const text2 = await mcpClientPage.readResourceText(
+				`${tabUri2}/readable-text`,
+			);
+			expect(text2).toContain("Form Test");
 
 			await mcpClientPage.callTool("closeTab", {
 				tabKey: tab1Key,

@@ -353,48 +353,72 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		}
 	};
 
-	getReadableText = async (tabKey: string): Promise<string> => {
-		this.logger.info(`Getting readable text from tab: ${tabKey}`);
+	getReadableTextByChannelAndTab = async (
+		channelId: string,
+		tabId: string,
+	): Promise<string> => {
+		this.logger.info(
+			`Getting readable text from channel: ${channelId}, tab: ${tabId}`,
+		);
+
+		const rpcClient =
+			this.extensionChannelManager.getRpcClientByChannelId(channelId);
+		if (!rpcClient) {
+			throw new Error(`No active channel for: ${channelId}`);
+		}
 
 		try {
-			const readableText = await this.callRpcForTab({
+			const readableText = await rpcClient.call({
 				method: "getReadableText" as const,
 				args: [
-					tabKey,
+					tabId,
 				],
 				extraArgs: {},
 			});
-
 			this.logger.info("Retrieved readable text successfully");
 			return readableText;
 		} catch (error) {
-			this.logger.error("Failed to get readable text", error);
+			this.logger.error(
+				"Failed to get readable text by channel and tab",
+				error,
+			);
 			throw error;
 		}
 	};
 
-	getReadableElements = async (
-		tabKey: string,
+	getReadableElementsByChannelAndTab = async (
+		channelId: string,
+		tabId: string,
 	): Promise<{
 		elements: ReadableElementRecord[];
 	}> => {
-		this.logger.info(`Getting readable elements from tab: ${tabKey}`);
+		this.logger.info(
+			`Getting readable elements from channel: ${channelId}, tab: ${tabId}`,
+		);
+
+		const rpcClient =
+			this.extensionChannelManager.getRpcClientByChannelId(channelId);
+		if (!rpcClient) {
+			throw new Error(`No active channel for: ${channelId}`);
+		}
 
 		try {
-			const elementRecords = await this.callRpcForTab({
+			const elementRecords = await rpcClient.call({
 				method: "getReadableElements" as const,
 				args: [
-					tabKey,
+					tabId,
 				],
 				extraArgs: {},
 			});
-
 			this.logger.info(`Retrieved ${elementRecords.length} readable elements`);
 			return {
 				elements: elementRecords,
 			};
 		} catch (error) {
-			this.logger.error("Failed to get readable elements", error);
+			this.logger.error(
+				"Failed to get readable elements by channel and tab",
+				error,
+			);
 			throw error;
 		}
 	};

@@ -2,7 +2,18 @@ import type {
 	ServerToolArgs,
 	ServerToolName,
 } from "@mcp-browser-kit/core-server";
-import type { ServerToolOverResult } from "@mcp-browser-kit/server-driving-mcp-server";
+import {
+	BrowserStateRegistry,
+	createCoreServerContainer,
+	LoggerFactoryOutputPort,
+} from "@mcp-browser-kit/core-server";
+import { DrivenLoggerFactoryConsolaError } from "@mcp-browser-kit/driven-logger-factory";
+import { ServerDrivenTrpcChannelProvider } from "@mcp-browser-kit/server-driven-trpc-channel-provider";
+import type {
+	McpToolName,
+	ServerToolOverResult,
+} from "@mcp-browser-kit/server-driving-mcp-server";
+import { ServerDrivingMcpServer } from "@mcp-browser-kit/server-driving-mcp-server";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import {
@@ -19,21 +30,12 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import type { Page } from "@playwright/test";
 
-export type TypedCallToolResult<T extends ServerToolName> = Omit<
+export type TypedCallToolResult<T extends McpToolName> = Omit<
 	CallToolResult,
 	"structuredContent"
 > & {
 	structuredContent?: ServerToolOverResult<T>;
 };
-
-import {
-	BrowserStateRegistry,
-	createCoreServerContainer,
-	LoggerFactoryOutputPort,
-} from "@mcp-browser-kit/core-server";
-import { DrivenLoggerFactoryConsolaError } from "@mcp-browser-kit/driven-logger-factory";
-import { ServerDrivenTrpcChannelProvider } from "@mcp-browser-kit/server-driven-trpc-channel-provider";
-import { ServerDrivingMcpServer } from "@mcp-browser-kit/server-driving-mcp-server";
 
 export class McpClientPageObject {
 	private client: Client;
@@ -140,7 +142,7 @@ export class McpClientPageObject {
 		return res.tools;
 	}
 
-	async callTool<T extends ServerToolName>(
+	async callTool<T extends McpToolName & ServerToolName>(
 		name: T,
 		...args: keyof ServerToolArgs<T> extends never
 			? []
@@ -211,6 +213,20 @@ export class McpClientPageObject {
 		};
 	}
 
+	async readResourceText(uri: string): Promise<string> {
+		const result = await this.client.request(
+			{
+				method: "resources/read",
+				params: {
+					uri,
+				},
+			},
+			ReadResourceResultSchema,
+		);
+		const first = result.contents[0];
+		return first && "text" in first ? String(first.text) : "";
+	}
+
 	async subscribeResource(uri: string) {
 		await this.client.request(
 			{
@@ -273,11 +289,12 @@ export class McpClientPageObject {
 	async waitForBrowsers(timeout = 20000) {
 		const { expect } = await import("@playwright/test");
 		await expect(async () => {
-			const contextOutput = await this.callTool("getContext", {});
-			console.log("contextOutput", contextOutput);
+			const resources = await this.listResources();
 			expect(
-				contextOutput.structuredContent?.value?.browsers?.length,
-			).toBeGreaterThan(0);
+				resources.some(
+					(r) => r.uri.startsWith("bk:///b-") && !r.uri.includes("/t-"),
+				),
+			).toBe(true);
 		}).toPass({
 			timeout,
 			intervals: [
@@ -311,5 +328,45 @@ export class McpClientPageObject {
 			],
 		});
 		return tabKey;
+	}
+
+	async waitForTabUriByUrl(
+		page: Page,
+		urlPattern: string,
+		timeout = 10000,
+	): Promise<string> {
+		const { expect } = await import("@playwright/test");
+		await page.waitForURL(`**/*${urlPattern}*`, {
+			timeout,
+		});
+		await page.waitForLoadState("networkidle");
+		let tabUri = "";
+		await expect(async () => {
+			const resources = await this.listResources();
+			const tabUris = resources
+				.map((r) => r.uri)
+				.filter((u) => u.includes("/t-") && !u.includes("/readable-"));
+			for (const uri of tabUris) {
+				const { json } = await this.readResource(uri);
+				const data = json as
+					| {
+							tab?: {
+								url?: string;
+							};
+					  }
+					| undefined;
+				if (data?.tab?.url?.includes(urlPattern)) {
+					tabUri = uri;
+					return;
+				}
+			}
+			expect(tabUri).not.toBe("");
+		}).toPass({
+			timeout,
+			intervals: [
+				500,
+			],
+		});
+		return tabUri;
 	}
 }
