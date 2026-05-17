@@ -175,6 +175,7 @@ export class PublishBrowserStateUseCase
 				break;
 			default: {
 				const _exhaustive: never = hint;
+				// biome-ignore lint/complexity/noVoid: intentional exhaustive check
 				void _exhaustive;
 			}
 		}
@@ -240,18 +241,18 @@ export class PublishBrowserStateUseCase
 		if (this.debounceTimer) {
 			return;
 		}
-		this.debounceTimer = setTimeout(() => {
+		this.debounceTimer = setTimeout(async () => {
 			this.debounceTimer = null;
-			void this.publishCurrent();
+			await this.publishCurrent();
 		}, this.debounceMs);
 	};
 
-	private flushNow = (): void => {
+	private flushNow = async (): Promise<void> => {
 		if (this.debounceTimer) {
 			clearTimeout(this.debounceTimer);
 			this.debounceTimer = null;
 		}
-		void this.publishCurrent();
+		await this.publishCurrent();
 	};
 
 	private publishCurrent = async (): Promise<void> => {

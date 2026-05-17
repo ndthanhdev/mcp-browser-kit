@@ -93,7 +93,7 @@ export class ServerDrivenTrpcChannelProvider
 	}
 
 	public async stop(): Promise<void> {
-		if (!this.httpServer || !this.wss || !this.handler) {
+		if (!(this.httpServer && this.wss && this.handler)) {
 			return;
 		}
 

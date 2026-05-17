@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.3.7/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.4.15/schema.json",
 	"vcs": {
 		"enabled": false,
 		"clientKind": "git",
@@ -33,9 +33,38 @@
 	},
 	"linter": {
 		"enabled": true,
+		"domains": {
+			"playwright": "recommended",
+			"react": "recommended",
+			"test": "recommended"
+		},
 		"rules": {
+			"a11y": "off",
+			"nursery": "off",
+			"complexity": {
+				"recommended": true,
+				"useMaxParams": {
+					"level": "on",
+					"options": {
+						"max": 6
+					}
+				}
+			},
 			"correctness": {
 				"noUnusedImports": "error"
+			},
+			"performance": {
+				"recommended": true,
+				"noBarrelFile": "off",
+				"noReExportAll": "off"
+			},
+			"security": {
+				"recommended": true,
+				"noSecrets": "off"
+			},
+			"suspicious": {
+				"recommended": true,
+				"noReactSpecificProps": "off"
 			},
 			"style": {
 				"noParameterAssign": "error",
@@ -86,6 +115,19 @@
 			"javascript": {
 				"parser": {
 					"unsafeParameterDecoratorsEnabled": true
+				}
+			}
+		},
+		{
+			"includes": [
+				"apps/ext-e2e/**/*.spec.ts",
+				"apps/ext-e2e-test-app/**"
+			],
+			"linter": {
+				"rules": {
+					"complexity": {
+						"noExcessiveLinesPerFunction": "off"
+					}
 				}
 			}
 		}

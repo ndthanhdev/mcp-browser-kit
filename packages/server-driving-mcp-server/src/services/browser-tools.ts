@@ -309,7 +309,7 @@ export class BrowserTools {
 				const selection = overResult.value;
 				this.logger.verbose("Selection retrieved successfully", {
 					tabKey,
-					hasSelection: !!selection.selectedText,
+					hasSelection: Boolean(selection.selectedText),
 				});
 				return createOverResponse(selectionOutputSchema, {
 					ok: true,

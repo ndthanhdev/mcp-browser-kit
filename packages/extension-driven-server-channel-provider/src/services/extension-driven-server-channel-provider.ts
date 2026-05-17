@@ -158,92 +158,91 @@ export class ExtensionDrivenServerChannelProvider
 
 	private connectToServer = async (serverUrl: string): Promise<void> => {
 		const channelId = ExtensionDrivenServerChannelProvider.channelId.generate();
-
 		this.logger.verbose(
 			`[${this.instanceId}] Attempting to connect to server at ${serverUrl}`,
 		);
-
 		try {
-			// Create WebSocket client with connection validation
-			const wsClient = createWSClient({
-				url: serverUrl,
-				// biome-ignore lint/style/useNamingConvention: it's a library attribute name
-				WebSocket: WebSocket,
-				onError: (error) => {
-					this.logger.info(
-						`[${this.instanceId}] Connection to server at ${serverUrl} failed:`,
-						error,
-					);
-				},
-				retryDelayMs: () => ExtensionDrivenServerChannelProvider.RETRY_DELAY_MS,
-			});
+			const { wsClient, trpcClient, messageChannel } =
+				this.createClientPair(serverUrl);
 
-			// Create TRPC client
-			const trpcClient = createTRPCClient<RootRouter>({
-				links: [
-					loggerLink(),
-					wsLink({
-						client: wsClient,
-					}),
-				],
-			});
-
-			// Create message channel
-			const messageChannel = new EmitteryMessageChannel();
-
-			// Store clients
 			this.wsClients.set(channelId, wsClient);
 			this.trpcClients.set(channelId, trpcClient);
 			this.messageChannels.set(channelId, messageChannel);
 			this.channelsByUrl.set(serverUrl, channelId);
 
-			// Connection successful - set up message handling
 			this.setupMessageHandling(channelId, trpcClient, messageChannel);
-
-			// Set up connection monitoring for automatic cleanup on disconnect
 			this.setupConnectionMonitoring(channelId, serverUrl, wsClient);
 
-			// Create server channel object
 			const serverChannel: ServerChannelInfo = {
-				channelId: channelId,
+				channelId,
 			};
-
 			this.channels.set(channelId, serverChannel);
 			this.logger.verbose(
 				`[${this.instanceId}] Successfully connected to server at ${serverUrl}`,
 			);
-
-			// Emit connected event
 			this.eventEmitter.emit("connected", serverChannel);
 
-			// Retain-and-replay: if a snapshot has been published before this
-			// channel connected (common at startup, since `publishBrowserState`
-			// flushes immediately while `startServersDiscovering` is still
-			// racing), send it to the newcomer. Fire-and-forget — failures are
-			// logged at verbose and tolerated because the publisher re-emits
-			// on every subsequent hint.
-			if (this.lastEvent) {
-				const retained = this.lastEvent;
-				trpcClient.events.publish
-					.mutate({
-						channelId,
-						event: retained,
-					})
-					.catch((error) => {
-						this.logger.verbose(
-							`[${this.instanceId}] Retained-event replay to ${channelId} failed:`,
-							error,
-						);
-					});
-			}
+			this.replayLastEvent(channelId, trpcClient);
 		} catch (error) {
-			// Connection failed or timed out - cleanup
 			this.logger.verbose(
 				`[${this.instanceId}] Connection to ${serverUrl} failed or timed out, cleaning up`,
 			);
 			this.cleanupConnection(channelId, serverUrl);
 			throw error;
 		}
+	};
+
+	private createClientPair = (
+		serverUrl: string,
+	): {
+		wsClient: TRPCWebSocketClient;
+		trpcClient: TRPCClient<RootRouter>;
+		messageChannel: EmitteryMessageChannel;
+	} => {
+		const wsClient = createWSClient({
+			url: serverUrl,
+			// biome-ignore lint/style/useNamingConvention: it's a library attribute name
+			WebSocket: WebSocket,
+			onError: (error) => {
+				this.logger.info(
+					`[${this.instanceId}] Connection to server at ${serverUrl} failed:`,
+					error,
+				);
+			},
+			retryDelayMs: () => ExtensionDrivenServerChannelProvider.RETRY_DELAY_MS,
+		});
+		const trpcClient = createTRPCClient<RootRouter>({
+			links: [
+				loggerLink(),
+				wsLink({
+					client: wsClient,
+				}),
+			],
+		});
+		return {
+			wsClient,
+			trpcClient,
+			messageChannel: new EmitteryMessageChannel(),
+		};
+	};
+
+	private replayLastEvent = (
+		channelId: string,
+		trpcClient: TRPCClient<RootRouter>,
+	): void => {
+		if (!this.lastEvent) return;
+		const retained = this.lastEvent;
+		trpcClient.events.publish
+			.mutate({
+				channelId,
+				event: retained,
+			})
+			.catch((error) => {
+				this.logger.verbose(
+					`[${this.instanceId}] Retained-event replay to ${channelId} failed:`,
+					error,
+				);
+			});
 	};
 
 	private setupMessageHandling = (

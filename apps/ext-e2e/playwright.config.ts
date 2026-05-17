@@ -23,7 +23,7 @@ export default defineConfig<ExtContextOptions>({
 	testDir: "./src/tests",
 	outputDir: "target/playwright/test-results",
 	fullyParallel: true,
-	forbidOnly: !!process.env.CI,
+	forbidOnly: Boolean(process.env.CI),
 	retries: process.env.CI ? 2 : 0,
 	workers: 1,
 	reporter: [

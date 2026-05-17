@@ -72,7 +72,10 @@ export class TabRpcService {
 
 		try {
 			this.logger.verbose("Sending message to tab:", tabId, deferMessage);
-			const response = await browser.tabs.sendMessage(+tabId, deferMessage);
+			const response = await browser.tabs.sendMessage(
+				Number(tabId),
+				deferMessage,
+			);
 			this.handleTabMessage(response as ResolveMessage);
 		} catch (error) {
 			this.logger.error(`Failed to send message to tab ${tabId}:`, error);

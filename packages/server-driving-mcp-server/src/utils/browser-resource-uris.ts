@@ -72,7 +72,7 @@ export const parseBkResourceId = (
 		channelId: string;
 	}>,
 ): ParsedBkResource | undefined => {
-	if (!resourceId.startsWith("b-")) return undefined;
+	if (!resourceId.startsWith("b-")) return;
 
 	const rest = resourceId.slice(2); // strip "b-"
 	const slashT = rest.indexOf("/t-");
@@ -80,15 +80,15 @@ export const parseBkResourceId = (
 	const shortId = slashT >= 0 ? rest.slice(0, slashT) : rest;
 	const tabId = slashT >= 0 ? rest.slice(slashT + 3) : undefined;
 
-	if (!shortId) return undefined;
-	if (tabId !== undefined && !tabId) return undefined;
+	if (!shortId) return;
+	if (tabId !== undefined && !tabId) return;
 
 	// Reverse-map short ID → full channelId.
 	const channelId = listBrowsers().find(
 		(b) => shortChannelId(b.channelId) === shortId,
 	)?.channelId;
 
-	if (!channelId) return undefined;
+	if (!channelId) return;
 
 	return tabId === undefined
 		? {
@@ -203,9 +203,9 @@ export const findWindowIdForTab = (
 	tabId: string,
 ): string | undefined => {
 	const map = snapshot.activeTabIdByWindow;
-	if (!map) return undefined;
+	if (!map) return;
 	for (const [windowId, activeTabId] of Object.entries(map)) {
 		if (activeTabId === tabId) return windowId;
 	}
-	return undefined;
+	return;
 };

@@ -25,9 +25,8 @@ export type ToolKeys = Paths<
 	}
 >;
 
-export type GetTool<T extends ToolKeys> = Get<TabTools, T> extends Func
-	? Get<TabTools, T>
-	: never;
+export type GetTool<T extends ToolKeys> =
+	Get<TabTools, T> extends Func ? Get<TabTools, T> : never;
 
 export const tabToolsIdentifier = "$mcpBrowserKit";
 

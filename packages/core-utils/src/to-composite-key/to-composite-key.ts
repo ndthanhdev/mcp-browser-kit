@@ -30,6 +30,14 @@ export interface CompositeKeyStatic<T extends Record<string, string | number>> {
  * console.log(parsed.name, parsed.age); // "Jane" 25
  * ```
  */
+function parsePropertyValue(value: string): string | number | null | undefined {
+	if (value === "null") return null;
+	if (value === "undefined") return undefined;
+	const numValue = Number(value);
+	if (!Number.isNaN(numValue) && value.trim() !== "") return numValue;
+	return value;
+}
+
 export function toCompositeKey<Base extends Record<string, string | number>>(
 	propertyNames: (keyof Base)[],
 	separator = "::",
@@ -66,35 +74,13 @@ export function toCompositeKey<Base extends Record<string, string | number>>(
 		 */
 		static parse(this: new () => Base, key: string): Base {
 			const values = key.split(separator);
-
-			// Create a new instance
-			// biome-ignore lint/complexity/noThisInStatic: used for constructor type
 			const instance = new this();
-
-			// Assign parsed values to properties
 			propertyNames.forEach((prop, index) => {
 				if (index < values.length) {
-					const value = values[index];
-					const propKey = prop as string;
-
-					// Handle special string values
-					if (value === "null") {
-						(instance as Record<string, unknown>)[propKey] = null;
-					} else if (value === "undefined") {
-						(instance as Record<string, unknown>)[propKey] = undefined;
-					} else {
-						// Try to parse as number if it looks like a number
-						const numValue = Number(value);
-						if (!Number.isNaN(numValue) && value.trim() !== "") {
-							(instance as Record<string, unknown>)[propKey] = numValue;
-						} else {
-							// Keep as string
-							(instance as Record<string, unknown>)[propKey] = value;
-						}
-					}
+					(instance as Record<string, unknown>)[prop as string] =
+						parsePropertyValue(values[index]);
 				}
 			});
-
 			return instance as Base;
 		}
 
@@ -105,7 +91,6 @@ export function toCompositeKey<Base extends Record<string, string | number>>(
 		 */
 		static from(this: new () => Base, data: Base): Base {
 			// Create a new instance
-			// biome-ignore lint/complexity/noThisInStatic: used for constructor type
 			const instance = new this();
 
 			// Set properties from the data map

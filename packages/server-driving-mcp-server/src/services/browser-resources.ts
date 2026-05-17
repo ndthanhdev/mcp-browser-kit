@@ -201,62 +201,7 @@ export class BrowserResources {
 		server.registerResource(
 			"bk",
 			new ResourceTemplate(BK_TEMPLATE, {
-				list: async () => {
-					const entries = this.observeBrowserState.listBrowsers();
-
-					// Browser entries.
-					const browserResources = entries.map((entry) => ({
-						uri: browserBkUri(entry.channelId),
-						name: `b-${shortChannelId(entry.channelId)}`,
-						title: formatBrowserTitle(entry.snapshot),
-						description: formatBrowserDescription(
-							entry.channelId,
-							entry.snapshot,
-						),
-						mimeType: "application/json",
-					}));
-
-					// Tab entries — flattened, sorted active-first then by recency.
-					const flat: Array<{
-						channelId: string;
-						tab: BrowserSnapshotTabInfo;
-						snapshot: BrowserSnapshot;
-						contentChangedAt: number;
-					}> = [];
-					for (const entry of entries) {
-						for (const tab of entry.snapshot.tabs) {
-							flat.push({
-								channelId: entry.channelId,
-								tab,
-								snapshot: entry.snapshot,
-								contentChangedAt:
-									entry.snapshot.contentChangedAt?.[tab.id] ?? entry.lastSeenAt,
-							});
-						}
-					}
-					flat.sort((a, b) => {
-						if (a.tab.active !== b.tab.active) return a.tab.active ? -1 : 1;
-						if (a.contentChangedAt !== b.contentChangedAt)
-							return b.contentChangedAt - a.contentChangedAt;
-						return formatTabTitle(a.tab).localeCompare(formatTabTitle(b.tab));
-					});
-					const tabResources = flat
-						.slice(0, TAB_LIST_CAP)
-						.map(({ channelId, tab, snapshot }) => ({
-							uri: tabBkUri(channelId, tab.id),
-							name: `b-${shortChannelId(channelId)}/t-${tab.id}`,
-							title: formatTabTitle(tab),
-							description: formatTabDescription(tab, snapshot),
-							mimeType: "application/json",
-						}));
-
-					return {
-						resources: [
-							...browserResources,
-							...tabResources,
-						],
-					};
-				},
+				list: async () => this.listBkResources(),
 				complete: {
 					resourceId: (value) => this.completeResourceId(value),
 				},
@@ -266,84 +211,154 @@ export class BrowserResources {
 					"Browser or tab resource. Browser: per-channel state snapshot. Tab: metadata for a single tab (title, url, active state, window, last content change).",
 				mimeType: "application/json",
 			},
-			async (uri, variables) => {
-				const resourceId = pickVariable(variables.resourceId);
-				if (!resourceId) {
-					throw new Error(
-						`Invalid bk resource URI (missing resourceId): ${uri.toString()}`,
-					);
-				}
-
-				const parsed = parseBkResourceId(resourceId, () =>
-					this.observeBrowserState.listBrowsers(),
-				);
-				if (!parsed) {
-					throw new Error(
-						`Unknown or malformed bk resource ID: ${resourceId} (uri=${uri.toString()})`,
-					);
-				}
-
-				if (parsed.type === "browser") {
-					const entry = this.observeBrowserState.getBrowser(parsed.channelId);
-					if (!entry) {
-						throw new Error(
-							`Browser channel not found: ${parsed.channelId} (uri=${uri.toString()})`,
-						);
-					}
-					return {
-						contents: [
-							{
-								uri: uri.toString(),
-								mimeType: "application/json",
-								text: JSON.stringify(entry, null, 2),
-							},
-						],
-					};
-				}
-
-				// type === "tab"
-				const entry = this.observeBrowserState.getBrowser(parsed.channelId);
-				if (!entry) {
-					throw new Error(
-						`Browser channel not found: ${parsed.channelId} (uri=${uri.toString()})`,
-					);
-				}
-				const tab = entry.snapshot.tabs.find((t) => t.id === parsed.tabId);
-				if (!tab) {
-					throw new Error(
-						`Tab not found: ${parsed.tabId} in channel ${parsed.channelId} (uri=${uri.toString()})`,
-					);
-				}
-				const windowId = findWindowIdForTab(entry.snapshot, parsed.tabId);
-				const contentChangedAt =
-					entry.snapshot.contentChangedAt?.[parsed.tabId] ?? undefined;
-				return {
-					contents: [
-						{
-							uri: uri.toString(),
-							mimeType: "application/json",
-							text: JSON.stringify(
-								{
-									channelId: parsed.channelId,
-									browserInfo: entry.snapshot.browserInfo,
-									extensionInfo: entry.snapshot.extensionInfo,
-									tab: {
-										id: tab.id,
-										title: tab.title,
-										url: tab.url,
-										active: tab.active,
-										windowId,
-										contentChangedAt,
-									},
-								},
-								null,
-								2,
-							),
-						},
-					],
-				};
-			},
+			async (uri, variables) => this.readBkResource(uri, variables),
 		);
+	}
+
+	private listBkResources(): {
+		resources: Array<{
+			uri: string;
+			name: string;
+			title?: string;
+			description?: string;
+			mimeType: string;
+		}>;
+	} {
+		const entries = this.observeBrowserState.listBrowsers();
+
+		const browserResources = entries.map((entry) => ({
+			uri: browserBkUri(entry.channelId),
+			name: `b-${shortChannelId(entry.channelId)}`,
+			title: formatBrowserTitle(entry.snapshot),
+			description: formatBrowserDescription(entry.channelId, entry.snapshot),
+			mimeType: "application/json",
+		}));
+
+		const flat: Array<{
+			channelId: string;
+			tab: BrowserSnapshotTabInfo;
+			snapshot: BrowserSnapshot;
+			contentChangedAt: number;
+		}> = [];
+		for (const entry of entries) {
+			for (const tab of entry.snapshot.tabs) {
+				flat.push({
+					channelId: entry.channelId,
+					tab,
+					snapshot: entry.snapshot,
+					contentChangedAt:
+						entry.snapshot.contentChangedAt?.[tab.id] ?? entry.lastSeenAt,
+				});
+			}
+		}
+		flat.sort((a, b) => {
+			if (a.tab.active !== b.tab.active) return a.tab.active ? -1 : 1;
+			if (a.contentChangedAt !== b.contentChangedAt)
+				return b.contentChangedAt - a.contentChangedAt;
+			return formatTabTitle(a.tab).localeCompare(formatTabTitle(b.tab));
+		});
+		const tabResources = flat
+			.slice(0, TAB_LIST_CAP)
+			.map(({ channelId, tab, snapshot }) => ({
+				uri: tabBkUri(channelId, tab.id),
+				name: `b-${shortChannelId(channelId)}/t-${tab.id}`,
+				title: formatTabTitle(tab),
+				description: formatTabDescription(tab, snapshot),
+				mimeType: "application/json",
+			}));
+
+		return {
+			resources: [
+				...browserResources,
+				...tabResources,
+			],
+		};
+	}
+
+	private async readBkResource(
+		uri: URL,
+		variables: Record<string, string | string[]>,
+	): Promise<{
+		contents: Array<{
+			uri: string;
+			mimeType: string;
+			text: string;
+		}>;
+	}> {
+		const resourceId = pickVariable(variables.resourceId);
+		if (!resourceId) {
+			throw new Error(
+				`Invalid bk resource URI (missing resourceId): ${uri.toString()}`,
+			);
+		}
+
+		const parsed = parseBkResourceId(resourceId, () =>
+			this.observeBrowserState.listBrowsers(),
+		);
+		if (!parsed) {
+			throw new Error(
+				`Unknown or malformed bk resource ID: ${resourceId} (uri=${uri.toString()})`,
+			);
+		}
+
+		if (parsed.type === "browser") {
+			const entry = this.observeBrowserState.getBrowser(parsed.channelId);
+			if (!entry) {
+				throw new Error(
+					`Browser channel not found: ${parsed.channelId} (uri=${uri.toString()})`,
+				);
+			}
+			return {
+				contents: [
+					{
+						uri: uri.toString(),
+						mimeType: "application/json",
+						text: JSON.stringify(entry, null, 2),
+					},
+				],
+			};
+		}
+
+		const entry = this.observeBrowserState.getBrowser(parsed.channelId);
+		if (!entry) {
+			throw new Error(
+				`Browser channel not found: ${parsed.channelId} (uri=${uri.toString()})`,
+			);
+		}
+		const tab = entry.snapshot.tabs.find((t) => t.id === parsed.tabId);
+		if (!tab) {
+			throw new Error(
+				`Tab not found: ${parsed.tabId} in channel ${parsed.channelId} (uri=${uri.toString()})`,
+			);
+		}
+		const windowId = findWindowIdForTab(entry.snapshot, parsed.tabId);
+		const contentChangedAt =
+			entry.snapshot.contentChangedAt?.[parsed.tabId] ?? undefined;
+		return {
+			contents: [
+				{
+					uri: uri.toString(),
+					mimeType: "application/json",
+					text: JSON.stringify(
+						{
+							channelId: parsed.channelId,
+							browserInfo: entry.snapshot.browserInfo,
+							extensionInfo: entry.snapshot.extensionInfo,
+							tab: {
+								id: tab.id,
+								title: tab.title,
+								url: tab.url,
+								active: tab.active,
+								windowId,
+								contentChangedAt,
+							},
+						},
+						null,
+						2,
+					),
+				},
+			],
+		};
 	}
 
 	// ────────────────────────────────────────────────────────────────────────
@@ -433,64 +448,73 @@ export class BrowserResources {
 		const prevBrowserFp = this.knownBrowserFingerprint.get(channelId);
 
 		if (entry === undefined) {
-			// Eviction: notify per-tab URIs, then shrink the picker.
-			if (wasKnown) {
-				this.knownChannelIds.delete(channelId);
-			}
-			for (const tabId of prevTabMap.keys()) {
-				this.safeSendUpdated(server, tabBkUri(channelId, tabId));
-			}
-			this.knownTabsByChannel.delete(channelId);
-			this.knownBrowserFingerprint.delete(channelId);
-			if (wasKnown || prevTabMap.size > 0) {
-				this.safeSendListChanged(server);
-			}
-			this.safeSendUpdated(server, browserBkUri(channelId));
+			this.handleEviction(server, channelId, wasKnown, prevTabMap);
 			return;
 		}
 
-		// Build current tab fingerprint map.
-		const currentTabMap = new Map<string, TabFingerprint>();
-		for (const tab of entry.snapshot.tabs) {
-			currentTabMap.set(tab.id, tabFingerprintOf(tab, entry.snapshot));
-		}
+		const currentTabMap = this.buildTabMap(entry.snapshot);
+		this.notifyTabChanges(server, channelId, prevTabMap, currentTabMap);
 
-		// Detect removed tabs and notify.
+		const currentBrowserFp = browserFingerprintOf(entry.snapshot);
+		const browserFpChanged = !(
+			prevBrowserFp && browserFingerprintsEqual(prevBrowserFp, currentBrowserFp)
+		);
+		if (!wasKnown || browserFpChanged) {
+			this.safeSendUpdated(server, browserBkUri(channelId));
+		}
+		if (!wasKnown) {
+			this.safeSendListChanged(server);
+			this.knownChannelIds.add(channelId);
+		}
+		this.knownTabsByChannel.set(channelId, currentTabMap);
+		this.knownBrowserFingerprint.set(channelId, currentBrowserFp);
+	}
+
+	private handleEviction(
+		server: McpServer,
+		channelId: string,
+		wasKnown: boolean,
+		prevTabMap: Map<string, TabFingerprint>,
+	): void {
+		if (wasKnown) {
+			this.knownChannelIds.delete(channelId);
+		}
+		for (const tabId of prevTabMap.keys()) {
+			this.safeSendUpdated(server, tabBkUri(channelId, tabId));
+		}
+		this.knownTabsByChannel.delete(channelId);
+		this.knownBrowserFingerprint.delete(channelId);
+		if (wasKnown || prevTabMap.size > 0) {
+			this.safeSendListChanged(server);
+		}
+		this.safeSendUpdated(server, browserBkUri(channelId));
+	}
+
+	private buildTabMap(snapshot: BrowserSnapshot): Map<string, TabFingerprint> {
+		const tabMap = new Map<string, TabFingerprint>();
+		for (const tab of snapshot.tabs) {
+			tabMap.set(tab.id, tabFingerprintOf(tab, snapshot));
+		}
+		return tabMap;
+	}
+
+	private notifyTabChanges(
+		server: McpServer,
+		channelId: string,
+		prevTabMap: Map<string, TabFingerprint>,
+		currentTabMap: Map<string, TabFingerprint>,
+	): void {
 		for (const tabId of prevTabMap.keys()) {
 			if (!currentTabMap.has(tabId)) {
 				this.safeSendUpdated(server, tabBkUri(channelId, tabId));
 			}
 		}
-
-		// Detect added or changed tabs and notify only those.
 		for (const [tabId, fp] of currentTabMap) {
 			const prev = prevTabMap.get(tabId);
-			if (!prev || !tabFingerprintsEqual(prev, fp)) {
+			if (!(prev && tabFingerprintsEqual(prev, fp))) {
 				this.safeSendUpdated(server, tabBkUri(channelId, tabId));
 			}
 		}
-
-		// Browser-level notification: only if the browser fingerprint changed
-		// or this is a newly-known channel.
-		const currentBrowserFp = browserFingerprintOf(entry.snapshot);
-		const browserFpChanged =
-			!prevBrowserFp ||
-			!browserFingerprintsEqual(prevBrowserFp, currentBrowserFp);
-		if (!wasKnown || browserFpChanged) {
-			this.safeSendUpdated(server, browserBkUri(channelId));
-		}
-
-		// List-changed: only when the set of channels actually changes.
-		if (!wasKnown) {
-			this.safeSendListChanged(server);
-		}
-
-		// Commit new known state.
-		if (!wasKnown) {
-			this.knownChannelIds.add(channelId);
-		}
-		this.knownTabsByChannel.set(channelId, currentTabMap);
-		this.knownBrowserFingerprint.set(channelId, currentBrowserFp);
 	}
 
 	private safeSendListChanged(server: McpServer): void {

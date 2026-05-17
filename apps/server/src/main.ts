@@ -26,14 +26,14 @@ const shutdown = async (signal: string) => {
 	}
 };
 
-process.on("SIGTERM", () => {
-	void shutdown("SIGTERM");
+process.on("SIGTERM", async () => {
+	await shutdown("SIGTERM");
 });
-process.on("SIGINT", () => {
-	void shutdown("SIGINT");
+process.on("SIGINT", async () => {
+	await shutdown("SIGINT");
 });
-process.stdin.on("close", () => {
-	void shutdown("stdin-close");
+process.stdin.on("close", async () => {
+	await shutdown("stdin-close");
 });
 process.on("unhandledRejection", (reason, promise) => {
 	logger.error("Unhandled Rejection at:", promise, "reason:", reason);

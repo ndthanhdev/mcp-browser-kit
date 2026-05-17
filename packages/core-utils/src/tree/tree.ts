@@ -19,6 +19,45 @@ type PruneResult<R> =
 			children: TreeNode<R>[];
 	  };
 
+type PrunerContext<T, R> = {
+	shouldInclude: (data: T) => boolean;
+	transform: (data: T) => R;
+	includeRoot: boolean;
+};
+
+function pruneNodeHelper<T, R>(
+	node: TreeNode<T>,
+	isRoot: boolean,
+	ctx: PrunerContext<T, R>,
+): PruneResult<R> {
+	const processedChildren: TreeNode<R>[] = [];
+	if (node.children) {
+		for (const childNode of node.children) {
+			const result = pruneNodeHelper(childNode, false, ctx);
+			if (result.type === "keep") {
+				processedChildren.push(result.node);
+			} else {
+				processedChildren.push(...result.children);
+			}
+		}
+	}
+	const shouldIncludeNode =
+		(isRoot && ctx.includeRoot) || ctx.shouldInclude(node.data);
+	if (!shouldIncludeNode) {
+		return {
+			type: "promote",
+			children: processedChildren,
+		};
+	}
+	return {
+		type: "keep",
+		node: {
+			data: ctx.transform(node.data),
+			children: processedChildren.length > 0 ? processedChildren : undefined,
+		},
+	};
+}
+
 /**
  * Conditionally prunes a tree using postorder traversal with child promotion.
  * Removed nodes promote their children to the closest parent in the tree hierarchy.
@@ -39,71 +78,20 @@ export function conditionalPrune<T, R = T>(
 		includeRoot?: boolean;
 	} = {},
 ): TreeNode<R> | null {
-	const {
-		shouldInclude = () => true,
-		transform = (data) => data as unknown as R,
-		includeRoot = true,
-	} = options;
+	const ctx: PrunerContext<T, R> = {
+		shouldInclude: options.shouldInclude ?? (() => true),
+		transform: options.transform ?? ((data) => data as unknown as R),
+		includeRoot: options.includeRoot ?? true,
+	};
 
-	function pruneNode(node: TreeNode<T>, isRoot: boolean): PruneResult<R> {
-		// Step 1: Postorder Traversal - Process children first
-		const processedChildren: TreeNode<R>[] = [];
+	const result = pruneNodeHelper(tree, true, ctx);
 
-		if (node.children) {
-			for (const childNode of node.children) {
-				const result = pruneNode(childNode, false);
-
-				if (result.type === "keep") {
-					// Step 4: Keep child node as-is
-					processedChildren.push(result.node);
-				} else {
-					// Step 3: Promote Children - child is removed, add grandchildren
-					processedChildren.push(...result.children);
-				}
-			}
-		}
-
-		// Step 2: Evaluate Condition - Check if current node should be included
-		const shouldIncludeNode =
-			(isRoot && includeRoot) || shouldInclude(node.data);
-
-		if (!shouldIncludeNode) {
-			// Node is removed - return its children for promotion
-			return {
-				type: "promote",
-				children: processedChildren,
-			};
-		}
-
-		// Node is kept - return with processed children
-		return {
-			type: "keep",
-			node: {
-				data: transform(node.data),
-				children: processedChildren.length > 0 ? processedChildren : undefined,
-			},
-		};
-	}
-
-	// Step 5: Recursive Processing - Start pruning
-	const result = pruneNode(tree, true);
-
-	// Handle root result
 	if (result.type === "keep") {
 		return result.node;
 	}
-
-	// Root was removed - handle promoted children
-	if (result.children.length === 0) {
-		return null;
-	}
-
 	if (result.children.length === 1) {
-		// Single child promoted - it becomes the new root
 		return result.children[0];
 	}
-
-	// Multiple promoted children - no higher parent to promote to, return null
 	return null;
 }
 

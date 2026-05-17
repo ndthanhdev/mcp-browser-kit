@@ -18,7 +18,7 @@ export const executeTabToolM2 = async <T extends ToolKeys>(
 	tool: T,
 	...args: Parameters<GetTool<T>>
 ): Promise<Awaited<ReturnType<GetTool<T>>>> => {
-	const results = await browser.tabs.executeScript(+tabId, {
+	const results = await browser.tabs.executeScript(Number(tabId), {
 		code: `${tabToolsIdentifier}.callTool.apply(undefined, ${JSON.stringify([
 			tool,
 			args,

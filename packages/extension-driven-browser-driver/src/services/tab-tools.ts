@@ -30,60 +30,20 @@ export class TabTools {
 	loadTabContext = async (): Promise<TabContext> => {
 		this.logger.info("Loading tab context");
 
-		// 1. Get root element from document
 		const rootElement = document.documentElement;
-		this.logger.verbose("Retrieved root element from document");
-
-		// 2. Convert root element to DOM tree
 		const domTree = toDomTree(rootElement);
-		this.logger.verbose("Converted root element to DOM tree");
-
-		// 3. Convert DOM tree to readable tree
 		const readableTree = domTreeToReadableTree(domTree);
 		this.logger.verbose(
 			`Converted DOM tree to readable tree: ${readableTree ? "success" : "failed"}`,
 		);
 
-		// 4. Convert readable tree to element records
 		const readableElementRecords = readableTree
 			? toElementRecords(readableTree).slice(1)
 			: [];
-		this.logger.verbose(
-			`Extracted ${readableElementRecords.length} readable element records`,
-		);
 
-		// Get HTML string
 		const html = document.documentElement.outerHTML;
-		this.logger.verbose(`Captured HTML (${html.length} characters)`);
+		const textContent = this.extractTextContent();
 
-		// 5. Extract readable text content using Mozilla Readability
-		let textContent = "";
-		try {
-			const doc = document.cloneNode(true) as Document;
-			const reader = new Readability(doc);
-			const article = reader.parse();
-
-			if (article?.textContent) {
-				textContent = article.textContent.trim();
-				this.logger.verbose(
-					`Extracted text content using Readability (${textContent.length} characters)`,
-				);
-			} else {
-				// Fallback to basic text extraction if Readability fails
-				textContent = document.body.textContent?.trim() ?? "";
-				this.logger.verbose(
-					`Readability returned no content, using fallback (${textContent.length} characters)`,
-				);
-			}
-		} catch (error) {
-			// Fallback to basic text extraction on error
-			textContent = document.body.textContent?.trim() ?? "";
-			this.logger.warn(
-				`Readability failed, using fallback extraction: ${error}`,
-			);
-		}
-
-		// Store the internal context (only if readableTree exists)
 		if (readableTree) {
 			this.contextStore.setLatestCapturedTabContext({
 				html,
@@ -99,14 +59,28 @@ export class TabTools {
 			);
 		}
 
-		// Play scan animation to indicate completion
 		await this.animation.playScanAnimation();
 
-		// Return the public context
 		return {
 			html,
 			readableElementRecords,
 			textContent,
 		};
+	};
+
+	private extractTextContent = (): string => {
+		try {
+			const doc = document.cloneNode(true) as Document;
+			const article = new Readability(doc).parse();
+			if (article?.textContent) {
+				return article.textContent.trim();
+			}
+			return document.body.textContent?.trim() ?? "";
+		} catch (error) {
+			this.logger.warn(
+				`Readability failed, using fallback extraction: ${error}`,
+			);
+			return document.body.textContent?.trim() ?? "";
+		}
 	};
 }

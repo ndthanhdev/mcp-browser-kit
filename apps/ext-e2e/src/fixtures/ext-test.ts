@@ -25,7 +25,7 @@ export const test = extContextTest.extend<
 		await use(playwrightPage);
 	},
 	mcpClientPage: async ({ context }, use) => {
-		// Depend on context to ensure mcpClientPage teardown happens before context.close()
+		// biome-ignore lint/complexity/noVoid: intentional Playwright fixture dependency declaration
 		void context;
 		const mcpClientPage = new McpClientPageObject();
 		await use(mcpClientPage);

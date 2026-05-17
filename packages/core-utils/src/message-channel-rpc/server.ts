@@ -68,6 +68,5 @@ export class MessageChannelRpcServer<
 	};
 }
 
-export type InferProcedureMap<T> = T extends MessageChannelRpcServer<infer U>
-	? ExtractProcedures<U>
-	: never;
+export type InferProcedureMap<T> =
+	T extends MessageChannelRpcServer<infer U> ? ExtractProcedures<U> : never;

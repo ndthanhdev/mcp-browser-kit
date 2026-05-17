@@ -21,7 +21,7 @@ export const getExecuteScriptResult = async <T = void>(results: unknown[]) => {
 };
 
 export const invokeJsFn = async (tabId: string, fnCode: string) => {
-	const results = await browser.tabs.executeScript(+tabId, {
+	const results = await browser.tabs.executeScript(Number(tabId), {
 		code: toIife(fnCode),
 	});
 

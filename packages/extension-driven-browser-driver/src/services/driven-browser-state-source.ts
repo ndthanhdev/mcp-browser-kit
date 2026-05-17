@@ -61,6 +61,23 @@ export class DrivenBrowserStateSource implements BrowserStateSourceOutputPort {
 		this.started = true;
 		this.logger.info("Starting DrivenBrowserStateSource");
 
+		this.registerBrowserEventListeners();
+
+		browser.runtime.onMessage.addListener(this.handleRuntimeMessage);
+		this.disposers.push(() => {
+			browser.runtime.onMessage.removeListener(this.handleRuntimeMessage);
+		});
+
+		// Kick off one `initial` hint so the use case builds its first snapshot
+		// via the browser driver. Delivered synchronously after start() resolves.
+		Promise.resolve().then(() => {
+			this.emit({
+				kind: "initial",
+			});
+		});
+	};
+
+	private registerBrowserEventListeners = (): void => {
 		this.attachTabListener(
 			browser.tabs.onCreated,
 			this.emitTabsHint,
@@ -81,7 +98,6 @@ export class DrivenBrowserStateSource implements BrowserStateSourceOutputPort {
 			this.emitTabsHint,
 			"tabs.onActivated",
 		);
-
 		if (browser.windows) {
 			this.attachTabListener(
 				browser.windows.onCreated,
@@ -94,35 +110,23 @@ export class DrivenBrowserStateSource implements BrowserStateSourceOutputPort {
 				"windows.onRemoved",
 			);
 		}
+	};
 
-		const runtimeMessageListener = (
-			message: unknown,
-			sender: browser.Runtime.MessageSender,
-		): void => {
-			if (!this.isTabContentChangedMessage(message)) {
-				return;
-			}
-			const tabId = sender.tab?.id;
-			if (tabId === undefined) {
-				return;
-			}
-			this.emit({
-				kind: "tabContentChanged",
-				tabId: String(tabId),
-				at: message.at,
-			});
-		};
-		browser.runtime.onMessage.addListener(runtimeMessageListener);
-		this.disposers.push(() => {
-			browser.runtime.onMessage.removeListener(runtimeMessageListener);
-		});
-
-		// Kick off one `initial` hint so the use case builds its first snapshot
-		// via the browser driver. Delivered synchronously after start() resolves.
-		Promise.resolve().then(() => {
-			this.emit({
-				kind: "initial",
-			});
+	private handleRuntimeMessage = (
+		message: unknown,
+		sender: browser.Runtime.MessageSender,
+	): void => {
+		if (!this.isTabContentChangedMessage(message)) {
+			return;
+		}
+		const tabId = sender.tab?.id;
+		if (tabId === undefined) {
+			return;
+		}
+		this.emit({
+			kind: "tabContentChanged",
+			tabId: String(tabId),
+			at: message.at,
 		});
 	};
 

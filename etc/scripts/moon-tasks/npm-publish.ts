@@ -13,7 +13,7 @@ const projectRoot = getProjectRoot();
 // When it is not set, we use --provenance for OIDC Trusted Publishing, which
 // requires GITHUB_ACTIONS, ACTIONS_ID_TOKEN_REQUEST_URL, and
 // ACTIONS_ID_TOKEN_REQUEST_TOKEN to be available in the environment.
-const hasToken = !!process.env.YARN_NPM_AUTH_TOKEN;
+const hasToken = Boolean(process.env.YARN_NPM_AUTH_TOKEN);
 
 const packageJsonPath = path.resolve(projectRoot, "package.json");
 const packageJson = await fse.readJSON(packageJsonPath);

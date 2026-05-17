@@ -9,7 +9,7 @@ await fse.emptyDir(workDirs.target.release.path);
 
 cd(workDirs.etc.workflowRuntime.path);
 
-const hasNpmToken = !!process.env.YARN_NPM_AUTH_TOKEN;
+const hasNpmToken = Boolean(process.env.YARN_NPM_AUTH_TOKEN);
 
 // Build the npm auth args for the Dagger pipeline.
 // If YARN_NPM_AUTH_TOKEN is available, use it directly (token-based auth).
