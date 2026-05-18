@@ -13,7 +13,7 @@ tasks:
     toolchain: node
     preset: server
     script: |
-      yarn dlx @modelcontextprotocol/inspector tsx $projectRoot/target/tsup/dist/main.js
+      DANGEROUSLY_OMIT_AUTH=true yarn dlx @modelcontextprotocol/inspector tsx $projectRoot/target/tsup/dist/main.js
     inputs:
     - '@group(assets)'
     - '@group(sources)'

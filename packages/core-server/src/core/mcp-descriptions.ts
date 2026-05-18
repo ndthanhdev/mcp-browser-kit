@@ -3,157 +3,140 @@ import type { McpDescriptionsInputPort } from "../input-ports";
 
 @injectable()
 export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
+	serverInstructions = (): string => {
+		return [
+			"MCP Browser Kit observes and controls connected browsers via an extension.",
+			"",
+			"Workflow:",
+			"1. Read `bk:///context` first. It returns every connected browser with its windows and tabs, including the `tabKey`, `windowKey`, `tabUri`, and `extensionInfo.manifestVersion` that downstream tools require.",
+			"2. Pick an interaction strategy per tab based on `manifestVersion`:",
+			"   - MV2: `captureTab` + coordinate tools (`clickOnCoordinates`, `fillTextToCoordinates`, `hitEnterOnCoordinates`) and `invokeJsFn` are available.",
+			"   - MV3 (or unknown): use readable-element tools (`clickOnElement`, `fillTextToElement`, `hitEnterOnElement`); coordinate tools and `invokeJsFn` are NOT available.",
+			"3. For readable-element tools, read `<tabUri>/readable-elements` to get `[readablePath, role, text]` tuples. For raw page text, read `<tabUri>/readable-text`.",
+			"4. Prefer readable-element tools over coordinate tools when both work — they are more robust to layout changes and work on MV3.",
+			"",
+			"Resources:",
+			"* `bk:///context` — aggregated browser/window/tab list. Always read first.",
+			"* `bk:///{+resourceId}` — per-browser and per-tab resources; see template description.",
+			"* Subscribe to any URI to receive `notifications/resources/updated` when content changes; cached snapshots become stale after navigation.",
+			"",
+			"Constraints:",
+			"* Resource lists are capped at 200 tabs and 100 completion suggestions.",
+			"* `tabKey` and `windowKey` are opaque — always source them from `bk:///context`, never construct them.",
+		].join("\n");
+	};
+
 	captureTabInstruction = (): string => {
 		return [
-			"📷 Captures a screenshot of a browser tab",
-			"* Use this tool after calling getBasicBrowserContext to obtain visual context of the page",
-			"* The screenshot helps you see what the browser is displaying to the user",
-			"* Requires tabKey from getBasicBrowserContext",
-			"* Returns an image with width, height, and data in base64 format",
-			"* Workflow: 1) getBasicBrowserContext → 2) captureTab → 3) interact with elements",
-			"* Parameters: tabKey",
-			"* NOTE: This feature is only available in browsers supporting Manifest Version 2",
+			"📷 Screenshot a tab. Returns base64 image with `width`, `height`, `mimeType`.",
+			"* Use the returned dimensions to compute pixel coordinates for `clickOnCoordinates`, `fillTextToCoordinates`, and `hitEnterOnCoordinates`.",
+			"* Requires `tabKey` from `bk:///context`.",
+			"* MV2 only. On MV3 tabs, use the `readable-elements` resource instead.",
 		].join("\n");
 	};
 
 	clickOnViewableElementInstruction = (): string => {
 		return [
-			"👆 Clicks on an element at specific X,Y coordinates",
-			"* Use this to click on elements by their position on the screen",
-			"* Requires tabKey from getBasicBrowserContext and x,y coordinates from the screenshot",
-			"* Coordinates are based on the captureTab screenshot dimensions",
-			"* Useful when you know the visual position of an element",
-			"* Parameters: tabKey, x, y",
+			"👆 Click at pixel coordinates inside a tab.",
+			"* Coordinates must come from a recent `captureTab` (same dimensions).",
+			"* Requires `tabKey`, `x`, `y`.",
+			"* Prefer `clickOnElement` when a `readablePath` is available — more reliable and works on MV3.",
 		].join("\n");
 	};
 
 	fillTextToViewableElementInstruction = (): string => {
 		return [
-			"⌨️ Types text into an input field at specific X,Y coordinates",
-			"* Use this to enter text into form fields by their position",
-			"* Requires tabKey from getBasicBrowserContext, x,y coordinates, and the text to enter",
-			"* Coordinates are based on the captureTab screenshot dimensions",
-			"* First clicks at the specified position, then types the provided text",
-			"* After filling text, check for associated submit-like buttons (submit, search, send, etc.)",
-			"* If submit button is visible, use clickOnViewableElement with that button",
-			"* If no submit button is visible, use hitEnterOnViewableElement instead",
-			"* Parameters: tabKey, x, y, value (text to enter)",
+			"⌨️ Click at (x, y) then type text into the focused input.",
+			"* Coordinates must come from a recent `captureTab`.",
+			"* Requires `tabKey`, `x`, `y`, `value`.",
+			"* To submit afterwards: `clickOnCoordinates` on a visible submit button, otherwise `hitEnterOnCoordinates`.",
+			"* Prefer `fillTextToElement` when a `readablePath` is available.",
 		].join("\n");
 	};
 
 	hitEnterOnViewableElementInstruction = (): string => {
 		return [
-			"↵ Hits the Enter key on an element at specific X,Y coordinates",
-			"* Use this to trigger actions like form submission or button clicks",
-			"* Requires tabKey from getBasicBrowserContext and x,y coordinates from the screenshot",
-			"* Coordinates are based on the captureTab screenshot dimensions",
-			"* Parameters: tabKey, x, y",
+			"↵ Click at (x, y) then press Enter (typically to submit a form).",
+			"* Coordinates must come from a recent `captureTab`.",
+			"* Requires `tabKey`, `x`, `y`.",
 		].join("\n");
 	};
 
 	clickOnReadableElementInstruction = (): string => {
 		return [
-			"🔘 Clicks on an element identified by its readablePath from the readable-elements resource",
-			"* Use this to click on elements after identifying them by their text",
-			"* Requires tabKey from getBasicBrowserContext and readablePath from the readable-elements resource",
-			"* More reliable than coordinate-based clicking for dynamic layouts",
-			"* First read the readable-elements resource to get the readablePath, then use this tool",
-			"* Parameters: tabKey, readablePath",
+			"🔘 Click an element by `readablePath`.",
+			"* Get `readablePath` from `<tabUri>/readable-elements` (returns `[readablePath, role, text]` tuples).",
+			"* Requires `tabKey`, `readablePath`.",
+			"* Works on both MV2 and MV3 — prefer this over `clickOnCoordinates`.",
 		].join("\n");
 	};
 
 	fillTextToReadableElementInstruction = (): string => {
 		return [
-			"✏️ Types text into an input field identified by its readablePath from the readable-elements resource",
-			"* Use this to enter text into form fields identified by their text",
-			"* Requires tabKey from getBasicBrowserContext, readablePath from the readable-elements resource, and text to enter",
-			"* Works with text inputs, textareas, and other editable elements",
-			"* First read the readable-elements resource to get the readablePath, then use this tool",
-			"* After filling text, check for associated submit-like buttons (submit, search, send, etc.)",
-			"* If submit button is visible, use clickOnReadableElement with that button",
-			"* If no submit button is visible, use hitEnterOnReadableElement instead",
-			"* Parameters: tabKey, readablePath, value (text to enter)",
+			"✏️ Type text into an element by `readablePath`.",
+			"* Get `readablePath` from `<tabUri>/readable-elements`.",
+			"* Works with text inputs, textareas, and other editable elements.",
+			"* Requires `tabKey`, `readablePath`, `value`.",
+			"* To submit afterwards: `clickOnElement` on a visible submit button, otherwise `hitEnterOnElement`.",
 		].join("\n");
 	};
 
 	hitEnterOnReadableElementInstruction = (): string => {
 		return [
-			"↵ Hits the Enter key on an element identified by its readablePath from the readable-elements resource",
-			"* Use this to trigger actions like form submission or button clicks",
-			"* Requires tabKey from getBasicBrowserContext and readablePath from the readable-elements resource",
-			"* More reliable than coordinate-based clicking for dynamic layouts",
-			"* First read the readable-elements resource to get the readablePath, then use this tool",
-			"* Parameters: tabKey, readablePath",
+			"↵ Focus an element by `readablePath` then press Enter.",
+			"* Use to submit forms when no explicit submit button exists.",
+			"* Requires `tabKey`, `readablePath`.",
 		].join("\n");
 	};
 
 	invokeJsFnInstruction = (): string => {
 		return [
-			"⚙️ Executes custom JavaScript code in the context of the web page",
-			"* Use this for advanced operations not covered by other tools",
-			"* Requires tabKey from getBasicBrowserContext and JavaScript code to execute",
-			"* The code should be the body of a function that returns a value",
-			"* Example: 'return document.title;' to get the page title",
-			"* Gives you full flexibility for custom browser automation",
-			"* Parameters: tabKey, fnBodyCode (JavaScript code as string)",
-			"* NOTE: This feature is only available in browsers supporting Manifest Version 2",
+			"⚙️ Execute a JavaScript function body in the page context.",
+			"* `fnBodyCode` is the function body (no enclosing `function () { ... }`); use `return` to send a value back. The return value is JSON-serialized.",
+			"* Example: `return document.title;`.",
+			"* Requires `tabKey`, `fnBodyCode`.",
+			"* MV2 only. Use only when other tools cannot accomplish the task.",
 		].join("\n");
 	};
 
 	closeTabInstruction = (): string => {
 		return [
-			"🗑️ Closes a specific browser tab",
-			"* Use this to close a tab when you're done with it or need to clean up",
-			"* Requires tabKey from getBasicBrowserContext",
-			"* The tab will be permanently closed and cannot be recovered",
-			"* Be careful not to close the tab you're currently working with",
-			"* Parameters: tabKey",
+			"🗑️ Close a tab. Irreversible.",
+			"* Requires `tabKey`.",
+			"* Do not close the tab you still need for further interactions.",
 		].join("\n");
 	};
 
 	getSelectionInstruction = (): string => {
 		return [
-			"📋 Gets the current text selection in the browser tab",
-			"* Use this to retrieve text that the user has selected on the page",
-			"* Requires tabKey from getBasicBrowserContext",
-			"* Returns information about the selected text including the text content itself",
-			"* Useful for capturing user selections or verifying what text is highlighted",
-			"* Returns empty selection if nothing is currently selected",
-			"* Parameters: tabKey",
+			"📋 Get the user's current text selection in a tab.",
+			"* Requires `tabKey`.",
+			"* Returns an empty selection when nothing is highlighted.",
 		].join("\n");
 	};
 
 	openTabInstruction = (): string => {
 		return [
-			"🌐 Opens a new browser tab with the specified URL",
-			"* Use this to navigate to a new page in a new tab",
-			"* Requires windowKey from getBasicBrowserContext and the URL to open",
-			"* Returns the tabKey of the newly created tab which you can use for further operations",
-			"* The new tab will be created in the specified browser window",
-			"* After opening, you may need to wait a moment for the page to load",
-			"* Parameters: windowKey, url",
+			"🌐 Open a URL in a new tab.",
+			"* Requires `windowKey` from `bk:///context` and the target `url`.",
+			"* Returns the new `tabKey` and `windowKey`. The tab needs a brief moment to finish loading before it is safe to interact with.",
+		].join("\n");
+	};
+
+	contextResourceDescription = (): string => {
+		return [
+			"Aggregated state of every connected browser — read this first.",
+			"Each browser entry includes `windows[]` (with `windowKey` for `openTab`) and `tabs[]` (with `tabKey` for interaction tools, `tabUri` for `readable-text`/`readable-elements`, and `extensionInfo.manifestVersion` which gates available tools).",
 		].join("\n");
 	};
 
 	bkResourceTemplateDescription = (): string => {
 		return [
-			"🌐 BROWSER CONTEXT - START HERE BEFORE USING ANY OTHER TOOLS!",
-			"* List available bk:// resources to discover connected browsers.",
-			"* Read a browser resource (bk:///b-<shortId>) to get the full browser snapshot:",
-			"  - tabs: array of tabs with tabKey, title, url, active status",
-			"  - windows: array of windows with windowKey",
-			"  - extensionInfo.manifestVersion: determines which tools are available",
-			"* tabKey from the snapshot is required by all interaction tools.",
-			"* Standard workflow:",
-			"  1) List resources → find bk:///b-<shortId> browser resource",
-			"  2) Read the browser resource → get tabKey, windowKey, manifestVersion",
-			"  3) Analyze page content based on your goal and manifestVersion:",
-			"     - If interaction is required (clicking, filling forms, etc.):",
-			"       · For Manifest Version 2: Use captureTab for visual context or read the readable-elements resource for element identification",
-			"       · For other Manifest Versions: Use only the readable-elements resource for element identification",
-			"     - If no interaction is required (just reading page content):",
-			"       · Read the readable-text resource to extract all visible text from the page",
-			"  4) Interact using click/fill/enter tools with the obtained tabKey",
+			"Per-browser and per-tab resources under `bk:///{+resourceId}`:",
+			"* `bk:///browsers/<shortId>` — full browser snapshot",
+			"* `bk:///browsers/<shortId>/tabs/<tabId>` — tab metadata with `tabKey`",
+			"* `bk:///browsers/<shortId>/tabs/<tabId>/readable-text` — page inner text",
+			"* `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements` — `[readablePath, role, text]` tuples used by `clickOnElement`, `fillTextToElement`, and `hitEnterOnElement`",
 		].join("\n");
 	};
 

@@ -3,6 +3,10 @@ import {
 	LoggerFactoryOutputPort,
 	type LoggerFactoryOutputPort as LoggerFactoryOutputPortInterface,
 } from "@mcp-browser-kit/core-server";
+import {
+	McpDescriptionsInputPort,
+	type McpDescriptionsInputPort as McpDescriptionsInputPortInterface,
+} from "@mcp-browser-kit/core-server/input-ports";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import type { Container } from "inversify";
@@ -28,6 +32,8 @@ export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 		private readonly interactionTools: InteractionTools,
 		@inject(BrowserResources)
 		private readonly browserResources: BrowserResources,
+		@inject(McpDescriptionsInputPort)
+		private readonly mcpDescriptions: McpDescriptionsInputPortInterface,
 	) {
 		this.logger = this.loggerFactory.create("mcpServer");
 	}
@@ -38,10 +44,15 @@ export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 
 	private createMcpServerInstance(): McpServer {
 		this.logger.verbose("Creating MCP server instance");
-		return new McpServer({
-			name: "MCP Browser Kit",
-			version: "1.0.0",
-		});
+		return new McpServer(
+			{
+				name: "MCP Browser Kit",
+				version: "1.0.0",
+			},
+			{
+				instructions: this.mcpDescriptions.serverInstructions(),
+			},
+		);
 	}
 
 	private setupEventHandlers(): void {
