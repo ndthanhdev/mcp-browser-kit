@@ -201,6 +201,7 @@ export class PublishBrowserStateUseCase
 			}));
 			const tabs: BrowserSnapshotTabInfo[] = tabsRaw.map((t) => ({
 				id: t.id,
+				windowId: t.windowId || undefined,
 				active: t.active,
 				title: t.title,
 				url: t.url,

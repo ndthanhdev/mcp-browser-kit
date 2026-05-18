@@ -35,6 +35,7 @@ const windowInfoSchema = z.object({
 
 const tabInfoSchema = z.object({
 	id: z.string(),
+	windowId: z.string().optional(),
 	active: z.boolean(),
 	title: z.string(),
 	url: z.string(),

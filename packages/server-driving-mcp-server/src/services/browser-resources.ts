@@ -22,6 +22,7 @@ import { inject, injectable } from "inversify";
 import {
 	BK_TEMPLATE,
 	browserBkUri,
+	CONTEXT_URI,
 	findWindowIdForTab,
 	formatBrowserTitle,
 	formatTabTitle,
@@ -90,23 +91,20 @@ const browserFingerprintsEqual = (
  * in sync with the `ObserveBrowserStateInputPort` by pushing `resourceUpdated`
  * and `resourceListChanged` notifications when the registry changes.
  *
- * Resources exposed via a single `bk:///{+resourceId}` template:
- *   - `bk:///b-<shortId>`             — per-browser state snapshot
- *   - `bk:///b-<shortId>/t-<tabId>`   — per-tab metadata
+ * Static resource:
+ *   - `bk:///context`  — aggregated snapshot of all browsers, windows, and
+ *                         tabs including their tool-call keys; always present
+ *                         and updated on every browser state change.
  *
- * The short browser ID is the nanoid portion of the channelId (everything
- * after the `channel:` prefix). Using a single template with reserved
- * expansion (`+`) means the path variable matches slashes, covering both
- * resource types without leaking the internal `channel:` concept.
+ * Template resources via `bk:///{+resourceId}`:
+ *   - `bk:///browsers/<shortId>`                               — per-browser snapshot
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>`                  — per-tab metadata
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-text`    — tab inner text
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements`— tab element list
  *
  * Notification economy: per-tab and per-browser fingerprints are cached so a
  * snapshot that only changes (e.g.) one tab's url produces exactly one
- * `resourceUpdated` for that tab plus one for its browser — not one per
- * tab in the browser.
- *
- * Completion: a single `completeResourceId` handler returns ranked suggestions
- * for both browser and tab resource IDs, filtered by query against short ID,
- * browser name, tab title, and tab URL.
+ * `resourceUpdated` for that tab plus one for its browser — not one per tab.
  */
 @injectable()
 export class BrowserResources {
@@ -144,6 +142,7 @@ export class BrowserResources {
 
 		this.seedKnownState();
 
+		this.registerContextResource(server);
 		this.registerBkTemplateResource(server);
 
 		// Declare subscription capability and register no-op handlers.
@@ -207,6 +206,19 @@ export class BrowserResources {
 	// Registration
 	// ────────────────────────────────────────────────────────────────────────
 
+	private registerContextResource(server: McpServer): void {
+		server.registerResource(
+			"context",
+			CONTEXT_URI,
+			{
+				title: "Browser Context",
+				description: this.mcpDescriptions.contextResourceDescription(),
+				mimeType: "application/json",
+			},
+			async (uri) => this.readContextResource(uri),
+		);
+	}
+
 	private registerBkTemplateResource(server: McpServer): void {
 		server.registerResource(
 			"bk",
@@ -237,7 +249,7 @@ export class BrowserResources {
 
 		const browserResources = entries.map((entry) => ({
 			uri: browserBkUri(entry.channelId),
-			name: `b-${shortChannelId(entry.channelId)}`,
+			name: `browsers/${shortChannelId(entry.channelId)}`,
 			title: formatBrowserTitle(entry.snapshot),
 			description: this.mcpDescriptions.browserResourceDescription(
 				entry.snapshot.tabs.length,
@@ -274,7 +286,7 @@ export class BrowserResources {
 
 		const tabResources = cappedFlat.map(({ channelId, tab, snapshot }) => ({
 			uri: tabBkUri(channelId, tab.id),
-			name: `b-${shortChannelId(channelId)}/t-${tab.id}`,
+			name: `browsers/${shortChannelId(channelId)}/tabs/${tab.id}`,
 			title: formatTabTitle(tab),
 			description: this.mcpDescriptions.tabResourceDescription(
 				tab.url,
@@ -286,7 +298,7 @@ export class BrowserResources {
 
 		const tabReadableTextResources = cappedFlat.map(({ channelId, tab }) => ({
 			uri: tabReadableTextBkUri(channelId, tab.id),
-			name: `b-${shortChannelId(channelId)}/t-${tab.id}/readable-text`,
+			name: `browsers/${shortChannelId(channelId)}/tabs/${tab.id}/readable-text`,
 			title: `${formatTabTitle(tab)} — readable text`,
 			description: this.mcpDescriptions.tabReadableTextDescription(tab.id),
 			mimeType: "text/plain",
@@ -295,7 +307,7 @@ export class BrowserResources {
 		const tabReadableElementsResources = cappedFlat.map(
 			({ channelId, tab }) => ({
 				uri: tabReadableElementsBkUri(channelId, tab.id),
-				name: `b-${shortChannelId(channelId)}/t-${tab.id}/readable-elements`,
+				name: `browsers/${shortChannelId(channelId)}/tabs/${tab.id}/readable-elements`,
 				title: `${formatTabTitle(tab)} — readable elements`,
 				description: this.mcpDescriptions.tabReadableElementsDescription(
 					tab.id,
@@ -310,6 +322,71 @@ export class BrowserResources {
 				...tabResources,
 				...tabReadableTextResources,
 				...tabReadableElementsResources,
+			],
+		};
+	}
+
+	private readContextResource(uri: URL): {
+		contents: Array<{
+			uri: string;
+			mimeType: string;
+			text: string;
+		}>;
+	} {
+		const entries = this.observeBrowserState.listBrowsers();
+
+		const browsers = entries.map((entry) => {
+			const { snapshot, channelId } = entry;
+			const extensionId = snapshot.extensionInfo?.extensionId ?? "";
+
+			const windows = snapshot.windows.map((w) => ({
+				id: w.id,
+				focused: w.focused,
+				windowKey: extensionId ? `${extensionId}::${w.id}` : undefined,
+			}));
+
+			const tabs = snapshot.tabs.map((tab) => {
+				const windowId = tab.windowId ?? findWindowIdForTab(snapshot, tab.id);
+				return {
+					id: tab.id,
+					windowId,
+					url: tab.url,
+					title: tab.title,
+					active: tab.active,
+					tabUri: tabBkUri(channelId, tab.id),
+					tabKey:
+						extensionId && windowId
+							? `${extensionId}::${windowId}::${tab.id}`
+							: undefined,
+					windowKey:
+						extensionId && windowId ? `${extensionId}::${windowId}` : undefined,
+				};
+			});
+
+			return {
+				channelId,
+				browserId: extensionId,
+				status: snapshot.status,
+				browserInfo: snapshot.browserInfo,
+				extensionInfo: snapshot.extensionInfo,
+				windows,
+				tabs,
+			};
+		});
+
+		return {
+			contents: [
+				{
+					uri: uri.toString(),
+					mimeType: "application/json",
+					text: JSON.stringify(
+						{
+							browsers,
+						},
+						null,
+						2,
+					),
+				},
 			],
 		};
 	}
@@ -447,8 +524,8 @@ export class BrowserResources {
 	// ────────────────────────────────────────────────────────────────────────
 
 	/**
-	 * Returns ranked `resourceId` suggestions for both browsers (`b-<shortId>`)
-	 * and tabs (`b-<shortId>/t-<tabId>`), scored against the typed query.
+	 * Returns ranked `resourceId` suggestions for browsers and tabs,
+	 * scored against the typed query.
 	 */
 	private completeResourceId(value: string): string[] {
 		const entries = this.observeBrowserState.listBrowsers();
@@ -464,7 +541,7 @@ export class BrowserResources {
 			const shortId = shortChannelId(entry.channelId);
 			const browserName =
 				entry.snapshot.browserInfo?.browserName ?? entry.channelId;
-			const browserId = `b-${shortId}`;
+			const browserId = `browsers/${shortId}`;
 
 			const browserScore = Math.min(
 				rankByQuery(value, browserId, browserName),
@@ -477,7 +554,7 @@ export class BrowserResources {
 			});
 
 			for (const tab of entry.snapshot.tabs) {
-				const tabId = `${browserId}/t-${tab.id}`;
+				const tabId = `${browserId}/tabs/${tab.id}`;
 				const title = formatTabTitle(tab);
 				const tabScore = Math.min(
 					rankByQuery(value, tabId, title),
@@ -542,6 +619,7 @@ export class BrowserResources {
 		);
 		if (!wasKnown || browserFpChanged) {
 			this.safeSendUpdated(server, browserBkUri(channelId));
+			this.safeSendUpdated(server, CONTEXT_URI);
 		}
 		if (!wasKnown) {
 			this.safeSendListChanged(server);
@@ -562,6 +640,8 @@ export class BrowserResources {
 		}
 		for (const tabId of prevTabMap.keys()) {
 			this.safeSendUpdated(server, tabBkUri(channelId, tabId));
+			this.safeSendUpdated(server, tabReadableTextBkUri(channelId, tabId));
+			this.safeSendUpdated(server, tabReadableElementsBkUri(channelId, tabId));
 		}
 		this.knownTabsByChannel.delete(channelId);
 		this.knownBrowserFingerprint.delete(channelId);
@@ -569,6 +649,7 @@ export class BrowserResources {
 			this.safeSendListChanged(server);
 		}
 		this.safeSendUpdated(server, browserBkUri(channelId));
+		this.safeSendUpdated(server, CONTEXT_URI);
 	}
 
 	private buildTabMap(snapshot: BrowserSnapshot): Map<string, TabFingerprint> {
@@ -593,6 +674,7 @@ export class BrowserResources {
 					server,
 					tabReadableElementsBkUri(channelId, tabId),
 				);
+				this.safeSendUpdated(server, CONTEXT_URI);
 			}
 		}
 		for (const [tabId, fp] of currentTabMap) {
@@ -604,6 +686,7 @@ export class BrowserResources {
 					server,
 					tabReadableElementsBkUri(channelId, tabId),
 				);
+				this.safeSendUpdated(server, CONTEXT_URI);
 			}
 		}
 	}

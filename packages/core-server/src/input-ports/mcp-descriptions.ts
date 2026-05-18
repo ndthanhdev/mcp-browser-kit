@@ -1,4 +1,7 @@
 export interface McpDescriptionsInputPort {
+	// Server-level instructions (passed to McpServer constructor)
+	serverInstructions(): string;
+
 	// Tool descriptions
 	captureTabInstruction(): string;
 	clickOnViewableElementInstruction(): string;
@@ -13,6 +16,7 @@ export interface McpDescriptionsInputPort {
 	openTabInstruction(): string;
 
 	// Resource descriptions
+	contextResourceDescription(): string;
 	bkResourceTemplateDescription(): string;
 	browserResourceDescription(
 		tabCount: number,

@@ -292,7 +292,8 @@ export class McpClientPageObject {
 			const resources = await this.listResources();
 			expect(
 				resources.some(
-					(r) => r.uri.startsWith("bk:///b-") && !r.uri.includes("/t-"),
+					(r) =>
+						r.uri.startsWith("bk:///browsers/") && !r.uri.includes("/tabs/"),
 				),
 			).toBe(true);
 		}).toPass({
@@ -310,7 +311,7 @@ export class McpClientPageObject {
 	): string[] {
 		return resources
 			.map((r) => r.uri)
-			.filter((u) => u.includes("/t-") && !u.includes("/readable-"));
+			.filter((u) => u.includes("/tabs/") && !u.includes("/readable-"));
 	}
 
 	private async readTabResourceData(uri: string): Promise<{
@@ -460,7 +461,7 @@ export class McpClientPageObject {
 			const resources = await this.listResources();
 			const tabUris = resources
 				.map((r) => r.uri)
-				.filter((u) => u.includes("/t-") && !u.includes("/readable-"));
+				.filter((u) => u.includes("/tabs/") && !u.includes("/readable-"));
 			for (const uri of tabUris) {
 				const { json } = await this.readResource(uri);
 				const data = json as

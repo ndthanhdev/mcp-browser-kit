@@ -4,13 +4,16 @@
  * ranking here means `browser-resources.ts` can focus on MCP wiring.
  *
  * URI scheme: `bk:///`
- *   - `bk:///b-<shortId>`                 — one browser
- *   - `bk:///b-<shortId>/t-<tabId>`       — one tab (hierarchically nested)
+ *   - `bk:///context`                                           — aggregated context (static)
+ *   - `bk:///browsers/<shortId>`                               — one browser
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>`                  — one tab
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-text`    — tab text
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements`— tab elements
  *
  * The short browser ID is the nanoid portion of the channelId (everything
- * after the `channel:` prefix). This hides the internal `channel:` concept
- * from callers. The single ResourceTemplate `bk:///{+resourceId}` (reserved
- * expansion) matches both forms because the `+` operator allows slashes.
+ * after the `channel:` prefix). The single ResourceTemplate
+ * `bk:///{+resourceId}` (reserved expansion) matches all forms because the
+ * `+` operator allows slashes.
  */
 
 import type {
@@ -20,6 +23,7 @@ import type {
 
 export const BK_URI_PREFIX = "bk:///";
 export const BK_TEMPLATE = "bk:///{+resourceId}";
+export const CONTEXT_URI = "bk:///context";
 
 // ─── Short ID ────────────────────────────────────────────────────────────────
 
@@ -34,27 +38,27 @@ export const shortChannelId = (channelId: string): string => {
 
 // ─── URI constructors ─────────────────────────────────────────────────────────
 
-/** `bk:///b-<shortId>` */
+/** `bk:///browsers/<shortId>` */
 export const browserBkUri = (channelId: string): string =>
-	`${BK_URI_PREFIX}b-${shortChannelId(channelId)}`;
+	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}`;
 
-/** `bk:///b-<shortId>/t-<tabId>` */
+/** `bk:///browsers/<shortId>/tabs/<tabId>` */
 export const tabBkUri = (channelId: string, tabId: string): string =>
-	`${BK_URI_PREFIX}b-${shortChannelId(channelId)}/t-${tabId}`;
+	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}/tabs/${tabId}`;
 
-/** `bk:///b-<shortId>/t-<tabId>/readable-text` */
+/** `bk:///browsers/<shortId>/tabs/<tabId>/readable-text` */
 export const tabReadableTextBkUri = (
 	channelId: string,
 	tabId: string,
 ): string =>
-	`${BK_URI_PREFIX}b-${shortChannelId(channelId)}/t-${tabId}/readable-text`;
+	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}/tabs/${tabId}/readable-text`;
 
-/** `bk:///b-<shortId>/t-<tabId>/readable-elements` */
+/** `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements` */
 export const tabReadableElementsBkUri = (
 	channelId: string,
 	tabId: string,
 ): string =>
-	`${BK_URI_PREFIX}b-${shortChannelId(channelId)}/t-${tabId}/readable-elements`;
+	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}/tabs/${tabId}/readable-elements`;
 
 // ─── Parser ───────────────────────────────────────────────────────────────────
 
@@ -84,8 +88,10 @@ export type ParsedBkResource =
  * the template) back to structured coordinates.
  *
  * Formats accepted:
- *   `b-<shortId>`            → browser
- *   `b-<shortId>/t-<tabId>`  → tab
+ *   `browsers/<shortId>`                        → browser
+ *   `browsers/<shortId>/tabs/<tabId>`           → tab
+ *   `browsers/<shortId>/tabs/<tabId>/readable-text`
+ *   `browsers/<shortId>/tabs/<tabId>/readable-elements`
  *
  * The short ID is reverse-mapped to a full channelId by scanning the live
  * browser list. Returns `undefined` for malformed input or an unknown short ID.
@@ -96,12 +102,12 @@ export const parseBkResourceId = (
 		channelId: string;
 	}>,
 ): ParsedBkResource | undefined => {
-	if (!resourceId.startsWith("b-")) return;
+	if (!resourceId.startsWith("browsers/")) return;
 
-	const rest = resourceId.slice(2); // strip "b-"
-	const slashT = rest.indexOf("/t-");
+	const rest = resourceId.slice("browsers/".length);
+	const slashTabs = rest.indexOf("/tabs/");
 
-	const shortId = slashT >= 0 ? rest.slice(0, slashT) : rest;
+	const shortId = slashTabs >= 0 ? rest.slice(0, slashTabs) : rest;
 
 	if (!shortId) return;
 
@@ -112,15 +118,15 @@ export const parseBkResourceId = (
 
 	if (!channelId) return;
 
-	if (slashT < 0) {
+	if (slashTabs < 0) {
 		return {
 			type: "browser",
 			channelId,
 		};
 	}
 
-	// Everything after "/t-"
-	const tabRemainder = rest.slice(slashT + 3);
+	// Everything after "/tabs/"
+	const tabRemainder = rest.slice(slashTabs + "/tabs/".length);
 	const slashSuffix = tabRemainder.indexOf("/");
 
 	const tabId =
@@ -232,6 +238,10 @@ export const findWindowIdForTab = (
 	snapshot: BrowserSnapshot,
 	tabId: string,
 ): string | undefined => {
+	if (snapshot.tabs) {
+		const tab = snapshot.tabs.find((t) => t.id === tabId);
+		if (tab?.windowId) return tab.windowId;
+	}
 	const map = snapshot.activeTabIdByWindow;
 	if (!map) return;
 	for (const [windowId, activeTabId] of Object.entries(map)) {

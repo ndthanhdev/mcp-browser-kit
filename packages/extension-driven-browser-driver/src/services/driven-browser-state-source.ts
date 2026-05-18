@@ -185,6 +185,7 @@ export class DrivenBrowserStateSource implements BrowserStateSourceOutputPort {
 				kind: "tabs",
 				tabs: tabs.map((tab) => ({
 					id: tab.id?.toString() ?? "",
+					windowId: tab.windowId?.toString(),
 					active: tab.active ?? false,
 					title: tab.title ?? "",
 					url: tab.url ?? "",

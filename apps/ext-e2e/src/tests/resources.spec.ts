@@ -2,8 +2,8 @@ import { expect, test } from "../fixtures/ext-test";
 import type { McpClientPageObject } from "../pages/mcp-client-page-object";
 import { expectToBeDefined } from "../test-utils/assert-defined";
 
-const BK_BROWSER_PREFIX = "bk:///b-";
-const BK_TAB_INFIX = "/t-";
+const BK_BROWSER_PREFIX = "bk:///browsers/";
+const BK_TAB_INFIX = "/tabs/";
 const BK_TEMPLATE = "bk:///{+resourceId}";
 
 type BrowserEntryJson = {
