@@ -124,7 +124,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		const windowsMap = new Map<string, BrowserTabContext[]>();
 
 		for (const tab of extensionContext.availableTabs) {
-			const window = this.findWindowForTab(extensionContext);
+			const window = this.findWindowForTab(extensionContext, tab);
 			if (!window) continue;
 
 			const windowKey = this.createWindowKey(
@@ -148,10 +148,10 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 	private findWindowForTab = (
 		extensionContext: ExtensionContext,
+		tab: ExtensionTabInfo,
 	): ExtensionWindowInfo | undefined => {
-		// This is a simplification - you may need different logic to associate tabs with windows
 		return (
-			extensionContext.availableWindows.find(() => true) ||
+			extensionContext.availableWindows.find((w) => w.id === tab.windowId) ||
 			extensionContext.availableWindows[0]
 		);
 	};
