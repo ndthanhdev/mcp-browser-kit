@@ -1,31 +1,8 @@
 import { injectable } from "inversify";
-import type { ToolDescriptionsInputPort } from "../input-ports";
+import type { McpDescriptionsInputPort } from "../input-ports";
 
 @injectable()
-export class ToolDescriptionsUseCases implements ToolDescriptionsInputPort {
-	getBasicBrowserContextInstruction = (): string => {
-		return [
-			"🌐 GET BROWSER CONTEXT - CRITICAL FIRST STEP BEFORE USING ANY OTHER TOOLS!",
-			"* This tool MUST be called first to initialize browser automation and get essential data.",
-			"* Returns data structure with:",
-			"  - tabs: Array of browser tabs with properties like id, url, title, and active status",
-			"  - manifestVersion: Version of extension manifest format supported by the browser",
-			"* Each tab includes a unique tabKey required for all other tool operations",
-			"* The active tab (marked with 'active: true') is typically your target for automation",
-			"* The manifestVersion determines which browser features and extension capabilities are available",
-			"* Different browsers support different manifest versions, affecting available tools and API access",
-			"* Standard workflow:",
-			"  1) getBasicBrowserContext → get browser state and tabKey",
-			"  2) Analyze page content based on your goal and manifest version:",
-			"     - If interaction is required (clicking, filling forms, etc.):",
-			"       · For Manifest Version 2: Use captureTab for visual context or getReadableElements for element identification",
-			"       · For other Manifest Versions: Use only getReadableElements for element identification",
-			"     - If no interaction is required (just reading page content):",
-			"       · Use getReadableText to extract all visible text from the page",
-			"  3) Interact using click/fill/enter tools with the obtained tabKey",
-		].join("\n");
-	};
-
+export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 	captureTabInstruction = (): string => {
 		return [
 			"📷 Captures a screenshot of a browser tab",
@@ -36,28 +13,6 @@ export class ToolDescriptionsUseCases implements ToolDescriptionsInputPort {
 			"* Workflow: 1) getBasicBrowserContext → 2) captureTab → 3) interact with elements",
 			"* Parameters: tabKey",
 			"* NOTE: This feature is only available in browsers supporting Manifest Version 2",
-		].join("\n");
-	};
-
-	getReadableTextInstruction = (): string => {
-		return [
-			"📝 Extracts all text content from the current web page",
-			"* Retrieves all visible text from the active tab",
-			"* Requires the tabKey obtained from getBasicBrowserContext",
-			"* Use this to analyze the page content without visual elements",
-			"* Returns a string containing all the text on the page",
-			"* Useful for getting a quick overview of page content",
-		].join("\n");
-	};
-
-	getReadableElementsInstruction = (): string => {
-		return [
-			"🔍 Lists all interactive elements on the page with their text",
-			"* Returns a list of elements with their path, role, and text content",
-			"* Requires the tabKey obtained from getBasicBrowserContext",
-			"* Each element is returned as [path, accessibleRole, accessibleText]",
-			"* Use the path as readablePath to interact with elements through click or fill operations",
-			"* Helps you identify which elements can be interacted with by their text",
 		].join("\n");
 	};
 
@@ -98,22 +53,22 @@ export class ToolDescriptionsUseCases implements ToolDescriptionsInputPort {
 
 	clickOnReadableElementInstruction = (): string => {
 		return [
-			"🔘 Clicks on an element identified by its readablePath from getReadableElements",
+			"🔘 Clicks on an element identified by its readablePath from the readable-elements resource",
 			"* Use this to click on elements after identifying them by their text",
-			"* Requires tabKey from getBasicBrowserContext and readablePath from getReadableElements",
+			"* Requires tabKey from getBasicBrowserContext and readablePath from the readable-elements resource",
 			"* More reliable than coordinate-based clicking for dynamic layouts",
-			"* First call getReadableElements to get the readablePath, then use this tool",
+			"* First read the readable-elements resource to get the readablePath, then use this tool",
 			"* Parameters: tabKey, readablePath",
 		].join("\n");
 	};
 
 	fillTextToReadableElementInstruction = (): string => {
 		return [
-			"✏️ Types text into an input field identified by its readablePath from getReadableElements",
+			"✏️ Types text into an input field identified by its readablePath from the readable-elements resource",
 			"* Use this to enter text into form fields identified by their text",
-			"* Requires tabKey from getBasicBrowserContext, readablePath from getReadableElements, and text to enter",
+			"* Requires tabKey from getBasicBrowserContext, readablePath from the readable-elements resource, and text to enter",
 			"* Works with text inputs, textareas, and other editable elements",
-			"* First call getReadableElements to get the readablePath, then use this tool",
+			"* First read the readable-elements resource to get the readablePath, then use this tool",
 			"* After filling text, check for associated submit-like buttons (submit, search, send, etc.)",
 			"* If submit button is visible, use clickOnReadableElement with that button",
 			"* If no submit button is visible, use hitEnterOnReadableElement instead",
@@ -123,11 +78,11 @@ export class ToolDescriptionsUseCases implements ToolDescriptionsInputPort {
 
 	hitEnterOnReadableElementInstruction = (): string => {
 		return [
-			"↵ Hits the Enter key on an element identified by its readablePath from getReadableElements",
+			"↵ Hits the Enter key on an element identified by its readablePath from the readable-elements resource",
 			"* Use this to trigger actions like form submission or button clicks",
-			"* Requires tabKey from getBasicBrowserContext and readablePath from getReadableElements",
+			"* Requires tabKey from getBasicBrowserContext and readablePath from the readable-elements resource",
 			"* More reliable than coordinate-based clicking for dynamic layouts",
-			"* First call getReadableElements to get the readablePath, then use this tool",
+			"* First read the readable-elements resource to get the readablePath, then use this tool",
 			"* Parameters: tabKey, readablePath",
 		].join("\n");
 	};
@@ -179,4 +134,60 @@ export class ToolDescriptionsUseCases implements ToolDescriptionsInputPort {
 			"* Parameters: windowKey, url",
 		].join("\n");
 	};
+
+	bkResourceTemplateDescription = (): string => {
+		return [
+			"🌐 BROWSER CONTEXT - START HERE BEFORE USING ANY OTHER TOOLS!",
+			"* List available bk:// resources to discover connected browsers.",
+			"* Read a browser resource (bk:///b-<shortId>) to get the full browser snapshot:",
+			"  - tabs: array of tabs with tabKey, title, url, active status",
+			"  - windows: array of windows with windowKey",
+			"  - extensionInfo.manifestVersion: determines which tools are available",
+			"* tabKey from the snapshot is required by all interaction tools.",
+			"* Standard workflow:",
+			"  1) List resources → find bk:///b-<shortId> browser resource",
+			"  2) Read the browser resource → get tabKey, windowKey, manifestVersion",
+			"  3) Analyze page content based on your goal and manifestVersion:",
+			"     - If interaction is required (clicking, filling forms, etc.):",
+			"       · For Manifest Version 2: Use captureTab for visual context or read the readable-elements resource for element identification",
+			"       · For other Manifest Versions: Use only the readable-elements resource for element identification",
+			"     - If no interaction is required (just reading page content):",
+			"       · Read the readable-text resource to extract all visible text from the page",
+			"  4) Interact using click/fill/enter tools with the obtained tabKey",
+		].join("\n");
+	};
+
+	browserResourceDescription = (
+		tabCount: number,
+		windowCount: number,
+		shortId: string,
+	): string => {
+		return `${tabCount} tab${tabCount === 1 ? "" : "s"} · ${windowCount} window${windowCount === 1 ? "" : "s"} · ${shortId}`;
+	};
+
+	tabResourceDescription = (
+		url: string,
+		browserName: string,
+		active: boolean,
+	): string => {
+		const host = this.hostnameOf(url);
+		const base = `${host || url} · ${browserName}`;
+		return active ? `${base} (active)` : base;
+	};
+
+	tabReadableTextDescription = (tabId: string): string => {
+		return `Page inner text for tab ${tabId}`;
+	};
+
+	tabReadableElementsDescription = (tabId: string): string => {
+		return `Interactive elements for tab ${tabId}`;
+	};
+
+	private hostnameOf(url: string): string {
+		try {
+			return new URL(url).hostname;
+		} catch {
+			return url;
+		}
+	}
 }

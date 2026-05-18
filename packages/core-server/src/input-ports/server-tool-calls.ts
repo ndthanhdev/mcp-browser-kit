@@ -44,10 +44,16 @@ export type ServerToolCallsInputPort = {
 		value: string,
 	) => Promise<void>;
 	getContext: () => Promise<Context>;
-	getReadableElements: (tabKey: string) => Promise<{
+	getReadableTextByChannelAndTab: (
+		channelId: string,
+		tabId: string,
+	) => Promise<string>;
+	getReadableElementsByChannelAndTab: (
+		channelId: string,
+		tabId: string,
+	) => Promise<{
 		elements: ReadableElementRecord[];
 	}>;
-	getReadableText: (tabKey: string) => Promise<string>;
 	getSelection: (tabKey: string) => Promise<Selection>;
 	hitEnterOnCoordinates: (
 		tabKey: string,
@@ -96,11 +102,13 @@ export type ServerToolArgsMap = {
 		value: string;
 	};
 	getContext: Record<string, never>;
-	getReadableElements: {
-		tabKey: string;
+	getReadableTextByChannelAndTab: {
+		channelId: string;
+		tabId: string;
 	};
-	getReadableText: {
-		tabKey: string;
+	getReadableElementsByChannelAndTab: {
+		channelId: string;
+		tabId: string;
 	};
 	getSelection: {
 		tabKey: string;

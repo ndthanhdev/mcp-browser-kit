@@ -42,6 +42,20 @@ export const browserBkUri = (channelId: string): string =>
 export const tabBkUri = (channelId: string, tabId: string): string =>
 	`${BK_URI_PREFIX}b-${shortChannelId(channelId)}/t-${tabId}`;
 
+/** `bk:///b-<shortId>/t-<tabId>/readable-text` */
+export const tabReadableTextBkUri = (
+	channelId: string,
+	tabId: string,
+): string =>
+	`${BK_URI_PREFIX}b-${shortChannelId(channelId)}/t-${tabId}/readable-text`;
+
+/** `bk:///b-<shortId>/t-<tabId>/readable-elements` */
+export const tabReadableElementsBkUri = (
+	channelId: string,
+	tabId: string,
+): string =>
+	`${BK_URI_PREFIX}b-${shortChannelId(channelId)}/t-${tabId}/readable-elements`;
+
 // ─── Parser ───────────────────────────────────────────────────────────────────
 
 export type ParsedBkResource =
@@ -51,6 +65,16 @@ export type ParsedBkResource =
 	  }
 	| {
 			type: "tab";
+			channelId: string;
+			tabId: string;
+	  }
+	| {
+			type: "tab-readable-text";
+			channelId: string;
+			tabId: string;
+	  }
+	| {
+			type: "tab-readable-elements";
 			channelId: string;
 			tabId: string;
 	  };
@@ -78,10 +102,8 @@ export const parseBkResourceId = (
 	const slashT = rest.indexOf("/t-");
 
 	const shortId = slashT >= 0 ? rest.slice(0, slashT) : rest;
-	const tabId = slashT >= 0 ? rest.slice(slashT + 3) : undefined;
 
 	if (!shortId) return;
-	if (tabId !== undefined && !tabId) return;
 
 	// Reverse-map short ID → full channelId.
 	const channelId = listBrowsers().find(
@@ -90,16 +112,45 @@ export const parseBkResourceId = (
 
 	if (!channelId) return;
 
-	return tabId === undefined
-		? {
-				type: "browser",
-				channelId,
-			}
-		: {
-				type: "tab",
-				channelId,
-				tabId,
-			};
+	if (slashT < 0) {
+		return {
+			type: "browser",
+			channelId,
+		};
+	}
+
+	// Everything after "/t-"
+	const tabRemainder = rest.slice(slashT + 3);
+	const slashSuffix = tabRemainder.indexOf("/");
+
+	const tabId =
+		slashSuffix >= 0 ? tabRemainder.slice(0, slashSuffix) : tabRemainder;
+	const suffix =
+		slashSuffix >= 0 ? tabRemainder.slice(slashSuffix + 1) : undefined;
+
+	if (!tabId) return;
+
+	if (suffix === "readable-text") {
+		return {
+			type: "tab-readable-text",
+			channelId,
+			tabId,
+		};
+	}
+	if (suffix === "readable-elements") {
+		return {
+			type: "tab-readable-elements",
+			channelId,
+			tabId,
+		};
+	}
+	if (suffix !== undefined) return; // unknown sub-path
+
+	return {
+		type: "tab",
+		channelId,
+		tabId,
+	};
 };
 
 // ─── Display formatters ───────────────────────────────────────────────────────
@@ -121,17 +172,6 @@ export const formatBrowserTitle = (snapshot: BrowserSnapshot): string => {
 	return snapshot.status === "offline" ? `${base} (offline)` : base;
 };
 
-export const formatBrowserDescription = (
-	channelId: string,
-	snapshot: BrowserSnapshot,
-): string => {
-	const tabCount = snapshot.tabs.length;
-	const windowCount = snapshot.windows.length;
-	return `${tabCount} tab${tabCount === 1 ? "" : "s"} · ${windowCount} window${
-		windowCount === 1 ? "" : "s"
-	} · ${shortChannelId(channelId)}`;
-};
-
 const hostnameOf = (url: string): string => {
 	try {
 		return new URL(url).hostname;
@@ -145,16 +185,6 @@ export const formatTabTitle = (tab: BrowserSnapshotTabInfo): string => {
 	if (title) return title;
 	const host = hostnameOf(tab.url);
 	return host || tab.url || tab.id;
-};
-
-export const formatTabDescription = (
-	tab: BrowserSnapshotTabInfo,
-	snapshot: BrowserSnapshot,
-): string => {
-	const host = hostnameOf(tab.url);
-	const browserName = snapshot.browserInfo?.browserName?.trim() || "browser";
-	const base = `${host || tab.url} · ${browserName}`;
-	return tab.active ? `${base} (active)` : base;
 };
 
 // ─── Completion helpers ───────────────────────────────────────────────────────

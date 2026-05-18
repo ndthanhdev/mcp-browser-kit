@@ -3,10 +3,10 @@ import {
 	type LoggerFactoryOutputPort as LoggerFactoryOutputPortInterface,
 } from "@mcp-browser-kit/core-server";
 import {
+	McpDescriptionsInputPort,
+	type McpDescriptionsInputPort as McpDescriptionsInputPortInterface,
 	ServerToolCallsInputPort,
 	type ServerToolCallsInputPort as ServerToolCallsInputPortInterface,
-	ToolDescriptionsInputPort,
-	type ToolDescriptionsInputPort as ToolDescriptionsInputPortInterface,
 } from "@mcp-browser-kit/core-server/input-ports";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { inject, injectable } from "inversify";
@@ -16,7 +16,6 @@ import { createOverResponse } from "../utils/tool-helpers";
 import {
 	actionOutputSchema,
 	captureTabOutputSchema,
-	contextOutputSchema,
 	invokeJsFnOutputSchema,
 	invokeJsFnSchema,
 	openTabOutputSchema,
@@ -34,56 +33,18 @@ export class BrowserTools {
 		loggerFactory: LoggerFactoryOutputPortInterface,
 		@inject(ServerToolCallsInputPort)
 		private readonly toolsInputPort: ServerToolCallsInputPortInterface,
-		@inject(ToolDescriptionsInputPort)
-		private readonly toolDescriptionsInputPort: ToolDescriptionsInputPortInterface,
+		@inject(McpDescriptionsInputPort)
+		private readonly toolDescriptionsInputPort: McpDescriptionsInputPortInterface,
 	) {
 		this.logger = loggerFactory.create("browserTools");
 	}
 
 	register(server: McpServer): void {
-		this.registerGetContext(server);
 		this.registerCaptureTab(server);
 		this.registerInvokeJsFn(server);
 		this.registerOpenTab(server);
 		this.registerCloseTab(server);
 		this.registerGetSelection(server);
-	}
-
-	private registerGetContext(server: McpServer): void {
-		this.logger.verbose("Registering tool: getContext");
-		registerTool(
-			server,
-			"getContext",
-			{
-				description:
-					this.toolDescriptionsInputPort.getBasicBrowserContextInstruction(),
-				inputSchema: {},
-				outputSchema: contextOutputSchema,
-			},
-			async () => {
-				this.logger.verbose("Executing getContext");
-				const overCtx = await over(this.toolsInputPort.getContext);
-
-				if (!overCtx.ok) {
-					this.logger.error("Failed to get context", {
-						reason: overCtx.reason,
-					});
-					return createOverResponse(contextOutputSchema, {
-						ok: false,
-						reason: String(overCtx.reason),
-					});
-				}
-
-				const ctx = overCtx.value;
-				this.logger.verbose("Retrieved browser context", {
-					browserCount: ctx.browsers.length,
-				});
-				return createOverResponse(contextOutputSchema, {
-					ok: true,
-					value: ctx,
-				});
-			},
-		);
 	}
 
 	private registerCaptureTab(server: McpServer): void {

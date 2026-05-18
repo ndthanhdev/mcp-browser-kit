@@ -2,6 +2,12 @@ import {
 	LoggerFactoryOutputPort,
 	ObserveBrowserStateInputPort,
 } from "@mcp-browser-kit/core-server";
+import {
+	McpDescriptionsInputPort,
+	type McpDescriptionsInputPort as McpDescriptionsInputPortInterface,
+	ServerToolCallsInputPort,
+	type ServerToolCallsInputPort as ServerToolCallsInputPortInterface,
+} from "@mcp-browser-kit/core-server/input-ports";
 import type {
 	BrowserSnapshot,
 	BrowserSnapshotTabInfo,
@@ -17,15 +23,15 @@ import {
 	BK_TEMPLATE,
 	browserBkUri,
 	findWindowIdForTab,
-	formatBrowserDescription,
 	formatBrowserTitle,
-	formatTabDescription,
 	formatTabTitle,
 	parseBkResourceId,
 	pickVariable,
 	rankByQuery,
 	shortChannelId,
 	tabBkUri,
+	tabReadableElementsBkUri,
+	tabReadableTextBkUri,
 } from "../utils/browser-resource-uris";
 
 const TAB_LIST_CAP = 200;
@@ -120,6 +126,10 @@ export class BrowserResources {
 		loggerFactory: LoggerFactoryOutputPort,
 		@inject(ObserveBrowserStateInputPort)
 		private readonly observeBrowserState: ObserveBrowserStateInputPort,
+		@inject(ServerToolCallsInputPort)
+		private readonly serverToolCalls: ServerToolCallsInputPortInterface,
+		@inject(McpDescriptionsInputPort)
+		private readonly mcpDescriptions: McpDescriptionsInputPortInterface,
 	) {
 		this.logger = loggerFactory.create("browserResources");
 	}
@@ -207,8 +217,7 @@ export class BrowserResources {
 				},
 			}),
 			{
-				description:
-					"Browser or tab resource. Browser: per-channel state snapshot. Tab: metadata for a single tab (title, url, active state, window, last content change).",
+				description: this.mcpDescriptions.bkResourceTemplateDescription(),
 				mimeType: "application/json",
 			},
 			async (uri, variables) => this.readBkResource(uri, variables),
@@ -230,7 +239,11 @@ export class BrowserResources {
 			uri: browserBkUri(entry.channelId),
 			name: `b-${shortChannelId(entry.channelId)}`,
 			title: formatBrowserTitle(entry.snapshot),
-			description: formatBrowserDescription(entry.channelId, entry.snapshot),
+			description: this.mcpDescriptions.browserResourceDescription(
+				entry.snapshot.tabs.length,
+				entry.snapshot.windows.length,
+				shortChannelId(entry.channelId),
+			),
 			mimeType: "application/json",
 		}));
 
@@ -257,20 +270,46 @@ export class BrowserResources {
 				return b.contentChangedAt - a.contentChangedAt;
 			return formatTabTitle(a.tab).localeCompare(formatTabTitle(b.tab));
 		});
-		const tabResources = flat
-			.slice(0, TAB_LIST_CAP)
-			.map(({ channelId, tab, snapshot }) => ({
-				uri: tabBkUri(channelId, tab.id),
-				name: `b-${shortChannelId(channelId)}/t-${tab.id}`,
-				title: formatTabTitle(tab),
-				description: formatTabDescription(tab, snapshot),
+		const cappedFlat = flat.slice(0, TAB_LIST_CAP);
+
+		const tabResources = cappedFlat.map(({ channelId, tab, snapshot }) => ({
+			uri: tabBkUri(channelId, tab.id),
+			name: `b-${shortChannelId(channelId)}/t-${tab.id}`,
+			title: formatTabTitle(tab),
+			description: this.mcpDescriptions.tabResourceDescription(
+				tab.url,
+				snapshot.browserInfo?.browserName?.trim() || "browser",
+				tab.active,
+			),
+			mimeType: "application/json",
+		}));
+
+		const tabReadableTextResources = cappedFlat.map(({ channelId, tab }) => ({
+			uri: tabReadableTextBkUri(channelId, tab.id),
+			name: `b-${shortChannelId(channelId)}/t-${tab.id}/readable-text`,
+			title: `${formatTabTitle(tab)} — readable text`,
+			description: this.mcpDescriptions.tabReadableTextDescription(tab.id),
+			mimeType: "text/plain",
+		}));
+
+		const tabReadableElementsResources = cappedFlat.map(
+			({ channelId, tab }) => ({
+				uri: tabReadableElementsBkUri(channelId, tab.id),
+				name: `b-${shortChannelId(channelId)}/t-${tab.id}/readable-elements`,
+				title: `${formatTabTitle(tab)} — readable elements`,
+				description: this.mcpDescriptions.tabReadableElementsDescription(
+					tab.id,
+				),
 				mimeType: "application/json",
-			}));
+			}),
+		);
 
 		return {
 			resources: [
 				...browserResources,
 				...tabResources,
+				...tabReadableTextResources,
+				...tabReadableElementsResources,
 			],
 		};
 	}
@@ -331,6 +370,42 @@ export class BrowserResources {
 				`Tab not found: ${parsed.tabId} in channel ${parsed.channelId} (uri=${uri.toString()})`,
 			);
 		}
+
+		if (parsed.type === "tab-readable-text") {
+			this.assertTabOnline(entry.snapshot, uri);
+			const text = await this.serverToolCalls.getReadableTextByChannelAndTab(
+				parsed.channelId,
+				parsed.tabId,
+			);
+			return {
+				contents: [
+					{
+						uri: uri.toString(),
+						mimeType: "text/plain",
+						text,
+					},
+				],
+			};
+		}
+
+		if (parsed.type === "tab-readable-elements") {
+			this.assertTabOnline(entry.snapshot, uri);
+			const { elements } =
+				await this.serverToolCalls.getReadableElementsByChannelAndTab(
+					parsed.channelId,
+					parsed.tabId,
+				);
+			return {
+				contents: [
+					{
+						uri: uri.toString(),
+						mimeType: "application/json",
+						text: JSON.stringify(elements, null, 2),
+					},
+				],
+			};
+		}
+
 		const windowId = findWindowIdForTab(entry.snapshot, parsed.tabId);
 		const contentChangedAt =
 			entry.snapshot.contentChangedAt?.[parsed.tabId] ?? undefined;
@@ -359,6 +434,12 @@ export class BrowserResources {
 				},
 			],
 		};
+	}
+
+	private assertTabOnline(snapshot: BrowserSnapshot, uri: URL): void {
+		if (snapshot.status === "offline") {
+			throw new Error(`Browser is offline (uri=${uri.toString()})`);
+		}
 	}
 
 	// ────────────────────────────────────────────────────────────────────────
@@ -507,12 +588,22 @@ export class BrowserResources {
 		for (const tabId of prevTabMap.keys()) {
 			if (!currentTabMap.has(tabId)) {
 				this.safeSendUpdated(server, tabBkUri(channelId, tabId));
+				this.safeSendUpdated(server, tabReadableTextBkUri(channelId, tabId));
+				this.safeSendUpdated(
+					server,
+					tabReadableElementsBkUri(channelId, tabId),
+				);
 			}
 		}
 		for (const [tabId, fp] of currentTabMap) {
 			const prev = prevTabMap.get(tabId);
 			if (!(prev && tabFingerprintsEqual(prev, fp))) {
 				this.safeSendUpdated(server, tabBkUri(channelId, tabId));
+				this.safeSendUpdated(server, tabReadableTextBkUri(channelId, tabId));
+				this.safeSendUpdated(
+					server,
+					tabReadableElementsBkUri(channelId, tabId),
+				);
 			}
 		}
 	}
