@@ -1,10 +1,39 @@
 import type { Selection } from "@mcp-browser-kit/core-extension";
 import type { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
 import { LoggerFactoryOutputPort as LoggerFactoryOutputPortSymbol } from "@mcp-browser-kit/core-extension/output-ports";
+import type { Logger } from "@mcp-browser-kit/types";
 import { inject, injectable } from "inversify";
 import * as dom from "../utils/dom-tools";
 import { TabAnimationTools } from "./tab-animation-tools";
 import { TabContextStore } from "./tab-context-store";
+
+interface Strategy {
+	label: string;
+	act: () => Promise<void>;
+}
+
+/**
+ * Iterates `strategies` in order. After each act(), runs verify().
+ * Returns on the first strategy whose effect is verified.
+ * Throws if all strategies are exhausted without a verified effect.
+ */
+const withActVerify = async (
+	operationLabel: string,
+	logger: Logger,
+	strategies: Strategy[],
+	verify: () => Promise<boolean>,
+): Promise<void> => {
+	for (const strategy of strategies) {
+		await strategy.act();
+		if (await verify()) return;
+		logger.warn(
+			`${operationLabel}: strategy "${strategy.label}" had no verifiable effect — trying next`,
+		);
+	}
+	throw new Error(
+		`${operationLabel}: all ${strategies.length} strategies failed to produce a verifiable effect`,
+	);
+};
 
 @injectable()
 export class TabDomTools {
@@ -22,9 +51,38 @@ export class TabDomTools {
 	clickOnCoordinates = async (x: number, y: number) => {
 		this.logger.info(`Clicking on coordinates (${x}, ${y})`);
 		await this.animation.playClickAnimation(x, y);
-		const result = dom.clickOnCoordinates(x, y);
+
+		const element = document.elementFromPoint(x, y) as HTMLElement | null;
+		const prevActiveEl = document.activeElement;
+		const prevAriaPressed = element?.getAttribute("aria-pressed");
+		const prevAriaExpanded = element?.getAttribute("aria-expanded");
+
+		await withActVerify(
+			`clickOnCoordinates(${x},${y})`,
+			this.logger,
+			[
+				{
+					label: "element-click",
+					act: async () => dom.clickOnCoordinates(x, y),
+				},
+				{
+					label: "mouse-event-chain",
+					act: async () => {
+						if (element) dom.clickOnElementFallback(element);
+					},
+				},
+			],
+			async () => {
+				const mutated = await dom.watchMutation(50);
+				return (
+					mutated ||
+					document.activeElement !== prevActiveEl ||
+					element?.getAttribute("aria-pressed") !== prevAriaPressed ||
+					element?.getAttribute("aria-expanded") !== prevAriaExpanded
+				);
+			},
+		);
 		this.logger.verbose("Click on coordinates completed");
-		return result;
 	};
 
 	clickOnElementByReadablePath = async (readablePath: string) => {
@@ -32,14 +90,41 @@ export class TabDomTools {
 		await this.animation.playClickAnimationOnElementByReadablePath(
 			readablePath,
 		);
+
 		const element = this.contextStore.getElementFromPath(readablePath);
 		if (!element) {
 			this.logger.warn(`Element not found at path: ${readablePath}`);
 			return;
 		}
-		const result = await dom.clickOnElementByReadablePath(element);
+
+		const prevActiveEl = document.activeElement;
+		const prevAriaPressed = element.getAttribute("aria-pressed");
+		const prevAriaExpanded = element.getAttribute("aria-expanded");
+
+		await withActVerify(
+			`clickOnElementByReadablePath(${readablePath})`,
+			this.logger,
+			[
+				{
+					label: "element-click",
+					act: async () => dom.clickOnElementByReadablePath(element),
+				},
+				{
+					label: "mouse-event-chain",
+					act: async () => dom.clickOnElementFallback(element),
+				},
+			],
+			async () => {
+				const mutated = await dom.watchMutation(50);
+				return (
+					mutated ||
+					document.activeElement !== prevActiveEl ||
+					element.getAttribute("aria-pressed") !== prevAriaPressed ||
+					element.getAttribute("aria-expanded") !== prevAriaExpanded
+				);
+			},
+		);
 		this.logger.verbose("Click on element completed");
-		return result;
 	};
 
 	fillTextToElementByReadablePath = async (
@@ -52,28 +137,71 @@ export class TabDomTools {
 		await this.animation.playClickAnimationOnElementByReadablePath(
 			readablePath,
 		);
+
 		const element = this.contextStore.getElementFromPath(readablePath);
 		if (!element) {
 			this.logger.warn(`Element not found at path: ${readablePath}`);
 			return;
 		}
-		const result = await dom.fillTextToElementByReadablePath(element, value);
+
+		await withActVerify(
+			`fillTextToElementByReadablePath(${readablePath})`,
+			this.logger,
+			[
+				{
+					label: "human-like-typing",
+					act: async () => dom.fillTextToElementByReadablePath(element, value),
+				},
+				{
+					label: "exec-command",
+					act: async () => dom.fillTextExecCommand(element, value),
+				},
+				{
+					label: "native-setter",
+					act: async () => dom.fillTextNativeSetter(element, value),
+				},
+			],
+			async () => dom.verifyFillEffect(element, value),
+		);
 		this.logger.verbose("Fill text completed");
-		return result;
 	};
 
 	fillTextToFocusedElement = async (value: string) => {
 		this.logger.info(
 			`Filling text to focused element, value length: ${value.length}`,
 		);
-		// Play animation on the currently focused element
 		const focusedElement = document.activeElement;
 		if (focusedElement) {
 			await this.animation.playClickAnimationOnElement(focusedElement);
 		}
-		const result = await dom.fillTextToFocusedElement(value);
+
+		const element =
+			focusedElement instanceof HTMLElement ? focusedElement : null;
+
+		await withActVerify(
+			"fillTextToFocusedElement",
+			this.logger,
+			[
+				{
+					label: "human-like-typing",
+					act: async () => dom.fillTextToFocusedElement(value),
+				},
+				{
+					label: "exec-command",
+					act: async () => {
+						if (element) await dom.fillTextExecCommand(element, value);
+					},
+				},
+				{
+					label: "native-setter",
+					act: async () => {
+						if (element) dom.fillTextNativeSetter(element, value);
+					},
+				},
+			],
+			async () => (element ? dom.verifyFillEffect(element, value) : true),
+		);
 		this.logger.verbose("Fill text to focused element completed");
-		return result;
 	};
 
 	focusOnElement = async (readablePath: string) => {
@@ -112,26 +240,78 @@ export class TabDomTools {
 		await this.animation.playClickAnimationOnElementByReadablePath(
 			readablePath,
 		);
+
 		const element = this.contextStore.getElementFromPath(readablePath);
 		if (!element) {
 			this.logger.warn(`Element not found at path: ${readablePath}`);
 			return;
 		}
-		const result = await dom.hitEnterOnElementByReadablePath(element);
+
+		const prevHref = location.href;
+
+		await withActVerify(
+			`hitEnterOnElementByReadablePath(${readablePath})`,
+			this.logger,
+			[
+				{
+					label: "dispatch-enter",
+					act: async () => dom.hitEnterOnElementByReadablePath(element),
+				},
+				{
+					label: "request-submit",
+					act: async () => dom.hitEnterRequestSubmit(element),
+				},
+				{
+					label: "submit-button-click",
+					act: async () => dom.hitEnterSubmitButton(element),
+				},
+			],
+			async () => {
+				const mutated = await dom.watchMutation(50);
+				return mutated || location.href !== prevHref;
+			},
+		);
 		this.logger.verbose("Hit enter on element completed");
-		return result;
 	};
 
 	hitEnterOnFocusedElement = async () => {
 		this.logger.info("Hitting enter on focused element");
-		// Play animation on the currently focused element
 		const focusedElement = document.activeElement;
 		if (focusedElement) {
 			await this.animation.playClickAnimationOnElement(focusedElement);
 		}
-		const result = await dom.hitEnterOnFocusedElement();
+
+		const element =
+			focusedElement instanceof HTMLElement ? focusedElement : null;
+		const prevHref = location.href;
+
+		await withActVerify(
+			"hitEnterOnFocusedElement",
+			this.logger,
+			[
+				{
+					label: "dispatch-enter",
+					act: async () => dom.hitEnterOnFocusedElement(),
+				},
+				{
+					label: "request-submit",
+					act: async () => {
+						if (element) dom.hitEnterRequestSubmit(element);
+					},
+				},
+				{
+					label: "submit-button-click",
+					act: async () => {
+						if (element) dom.hitEnterSubmitButton(element);
+					},
+				},
+			],
+			async () => {
+				const mutated = await dom.watchMutation(50);
+				return mutated || location.href !== prevHref;
+			},
+		);
 		this.logger.verbose("Hit enter on focused element completed");
-		return result;
 	};
 
 	getSelection = async (): Promise<Selection> => {

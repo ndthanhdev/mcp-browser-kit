@@ -9,6 +9,7 @@ export class TestAppPage extends BasePage {
 	readonly formTestUrl = `${TEST_APP_BASE_URL}/form-test`;
 	readonly textTestUrl = `${TEST_APP_BASE_URL}/text-test`;
 	readonly javascriptTestUrl = `${TEST_APP_BASE_URL}/javascript-test`;
+	readonly fallbackTestUrl = `${TEST_APP_BASE_URL}/fallback-test`;
 
 	readonly pageTitle: Locator;
 
@@ -44,6 +45,11 @@ export class TestAppPage extends BasePage {
 	async navigateToJavaScriptTest() {
 		await this.goto(this.javascriptTestUrl);
 		await super.waitForPageLoad(this.getByTestId("page-info"));
+	}
+
+	async navigateToFallbackTest() {
+		await this.goto(this.fallbackTestUrl);
+		await super.waitForPageLoad(this.getByTestId("resistant-button"));
 	}
 
 	getClickTestLocators() {
@@ -82,6 +88,15 @@ export class TestAppPage extends BasePage {
 			dataTable: this.getByTestId("data-table"),
 			navigation: this.getByTestId("navigation"),
 			ariaButtonClose: this.getByTestId("aria-button-close"),
+		};
+	}
+
+	getFallbackTestLocators() {
+		return {
+			resistantButton: this.getByTestId("resistant-button"),
+			mousedownCount: this.getByTestId("mousedown-count"),
+			standardButton: this.getByTestId("standard-button"),
+			standardClickCount: this.getByTestId("standard-click-count"),
 		};
 	}
 
