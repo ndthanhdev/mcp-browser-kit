@@ -33,8 +33,8 @@ test.describe("Fallback Strategy Tools", () => {
 				string,
 			][];
 
-			const resistantButtonPath = elements.find((el) =>
-				el[2]?.includes("Resistant Button"),
+			const resistantButtonPath = elements.find(
+				(el) => el[1] === "button" && el[2]?.includes("Resistant Button"),
 			)?.[0];
 			expectToBeDefined(resistantButtonPath);
 
@@ -74,8 +74,8 @@ test.describe("Fallback Strategy Tools", () => {
 				string,
 			][];
 
-			const standardButtonPath = elements.find((el) =>
-				el[2]?.includes("Standard Button"),
+			const standardButtonPath = elements.find(
+				(el) => el[1] === "button" && el[2]?.includes("Standard Button"),
 			)?.[0];
 			expectToBeDefined(standardButtonPath);
 
