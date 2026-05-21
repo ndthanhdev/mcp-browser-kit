@@ -1,10 +1,98 @@
 import delay from "delay";
 import { playClickAnimationOnElement } from "./animation-tools";
 
+/**
+ * Starts observing mutations, then runs `act()`.
+ * Immediately checks `checkState()`. If true, returns true.
+ * Otherwise, waits for mutations up to `options.timeoutMs`.
+ * On every mutation (or if acceptAnyMutation is true), evaluates `checkState()`.
+ * Returns true if success condition is met, false on timeout.
+ */
+export const performAndVerify = async (
+	act: () => Promise<void> | void,
+	checkState: () => boolean,
+	options: {
+		timeoutMs: number;
+		acceptAnyMutation?: boolean;
+	},
+): Promise<boolean> => {
+	let mutated = false;
+	let resolveObserver: (val: boolean) => void;
+
+	const observerPromise = new Promise<boolean>((resolve) => {
+		resolveObserver = resolve;
+	});
+
+	const observer = new MutationObserver(() => {
+		mutated = true;
+		if (options.acceptAnyMutation) {
+			resolveObserver(true);
+		} else if (checkState()) {
+			resolveObserver(true);
+		}
+	});
+
+	observer.observe(document.body, {
+		childList: true,
+		subtree: true,
+		attributes: true,
+		characterData: true,
+	});
+
+	try {
+		await act();
+
+		if (checkState()) {
+			return true;
+		}
+		if (options.acceptAnyMutation && mutated) {
+			return true;
+		}
+
+		const timeoutPromise = new Promise<boolean>((resolve) => {
+			setTimeout(() => {
+				resolve(checkState() || (!!options.acceptAnyMutation && mutated));
+			}, options.timeoutMs);
+		});
+
+		return await Promise.race([
+			observerPromise,
+			timeoutPromise,
+		]);
+	} finally {
+		observer.disconnect();
+	}
+};
+
 export const clickOnCoordinates = (x: number, y: number) => {
 	const element = document.elementFromPoint(x, y);
 	if (element && element instanceof HTMLElement) {
 		(element as HTMLButtonElement).click();
+	}
+};
+
+/**
+ * Dispatches a full pointer + mouse event chain at the element's center.
+ * Useful when element.click() is intercepted by a JS framework and produces no effect.
+ */
+export const clickOnElementFallback = (element: HTMLElement) => {
+	const rect = element.getBoundingClientRect();
+	const cx = rect.left + rect.width / 2;
+	const cy = rect.top + rect.height / 2;
+	const eventInit: MouseEventInit = {
+		bubbles: true,
+		cancelable: true,
+		clientX: cx,
+		clientY: cy,
+	};
+	for (const type of [
+		"pointerdown",
+		"mousedown",
+		"pointerup",
+		"mouseup",
+		"click",
+	] as const) {
+		element.dispatchEvent(new MouseEvent(type, eventInit));
 	}
 };
 
@@ -118,6 +206,62 @@ export const fillTextToFocusedElement = async (value: string) => {
 	}
 };
 
+/**
+ * Returns true when the input/textarea element holds exactly `value`.
+ */
+export const verifyFillEffect = (
+	element: HTMLElement,
+	value: string,
+): boolean => (element as HTMLInputElement).value === value;
+
+/**
+ * Fill strategy: clears the field and uses execCommand('insertText') so that
+ * framework-level input handlers (e.g. React synthetic events) fire.
+ */
+export const fillTextExecCommand = async (
+	element: HTMLElement,
+	value: string,
+): Promise<void> => {
+	const el = element as HTMLInputElement | HTMLTextAreaElement;
+	el.focus();
+	el.select();
+	document.execCommand("insertText", false, value);
+};
+
+/**
+ * Fill strategy: sets the value directly via the native prototype setter then
+ * dispatches input + change events. Works even when execCommand is disabled.
+ */
+export const fillTextNativeSetter = (
+	element: HTMLElement,
+	value: string,
+): void => {
+	const el = element as HTMLInputElement | HTMLTextAreaElement;
+	el.focus();
+
+	const prototype =
+		el instanceof HTMLTextAreaElement
+			? HTMLTextAreaElement.prototype
+			: HTMLInputElement.prototype;
+	const nativeSetter = Object.getOwnPropertyDescriptor(prototype, "value")?.set;
+
+	if (nativeSetter) {
+		nativeSetter.call(el, value);
+	} else {
+		el.value = value;
+	}
+	el.dispatchEvent(
+		new Event("input", {
+			bubbles: true,
+		}),
+	);
+	el.dispatchEvent(
+		new Event("change", {
+			bubbles: true,
+		}),
+	);
+};
+
 export const focusOnElement = (element: HTMLElement) => {
 	if (element) {
 		element.focus();
@@ -148,6 +292,32 @@ export const hitEnterOnFocusedElement = async () => {
 	if (element && element instanceof HTMLElement) {
 		await dispatchEnter(element);
 	}
+};
+
+/**
+ * Enter strategy: calls requestSubmit() (or submit() as inner fallback) on
+ * the closest ancestor form. Does nothing if no form ancestor exists.
+ */
+export const hitEnterRequestSubmit = (element: HTMLElement): void => {
+	const form = element.closest("form");
+	if (!form) return;
+	try {
+		form.requestSubmit();
+	} catch {
+		form.submit();
+	}
+};
+
+/**
+ * Enter strategy: clicks the nearest [type="submit"] button relative to the
+ * element, then falls back to the first submit button in the document.
+ */
+export const hitEnterSubmitButton = (element: HTMLElement): void => {
+	const submitBtn =
+		element.closest<HTMLElement>('[type="submit"]') ??
+		element.closest("form")?.querySelector<HTMLElement>('[type="submit"]') ??
+		document.querySelector<HTMLElement>('[type="submit"]');
+	submitBtn?.click();
 };
 
 export const getSerializableSelection = () => {
