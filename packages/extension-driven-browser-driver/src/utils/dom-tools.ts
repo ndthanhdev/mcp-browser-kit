@@ -2,26 +2,67 @@ import delay from "delay";
 import { playClickAnimationOnElement } from "./animation-tools";
 
 /**
- * Observes DOM mutations for up to `ms` milliseconds.
- * Resolves true if any mutation fires within the window, false otherwise.
+ * Starts observing mutations, then runs `act()`.
+ * Immediately checks `checkState()`. If true, returns true.
+ * Otherwise, waits for mutations up to `options.timeoutMs`.
+ * On every mutation (or if acceptAnyMutation is true), evaluates `checkState()`.
+ * Returns true if success condition is met, false on timeout.
  */
-export const watchMutation = (ms: number): Promise<boolean> =>
-	new Promise((resolve) => {
-		let fired = false;
-		const observer = new MutationObserver(() => {
-			fired = true;
-		});
-		observer.observe(document.body, {
-			childList: true,
-			subtree: true,
-			attributes: true,
-			characterData: true,
-		});
-		setTimeout(() => {
-			observer.disconnect();
-			resolve(fired);
-		}, ms);
+export const performAndVerify = async (
+	act: () => Promise<void> | void,
+	checkState: () => boolean,
+	options: {
+		timeoutMs: number;
+		acceptAnyMutation?: boolean;
+	},
+): Promise<boolean> => {
+	let mutated = false;
+	let resolveObserver: (val: boolean) => void;
+
+	const observerPromise = new Promise<boolean>((resolve) => {
+		resolveObserver = resolve;
 	});
+
+	const observer = new MutationObserver(() => {
+		mutated = true;
+		if (options.acceptAnyMutation) {
+			resolveObserver(true);
+		} else if (checkState()) {
+			resolveObserver(true);
+		}
+	});
+
+	observer.observe(document.body, {
+		childList: true,
+		subtree: true,
+		attributes: true,
+		characterData: true,
+	});
+
+	try {
+		await act();
+
+		if (checkState()) {
+			return true;
+		}
+		if (options.acceptAnyMutation && mutated) {
+			return true;
+		}
+
+		const timeoutPromise = new Promise<boolean>((resolve) => {
+			setTimeout(() => {
+				resolve(checkState() || (!!options.acceptAnyMutation && mutated));
+			}, options.timeoutMs);
+		});
+
+		return await Promise.race([
+			observerPromise,
+			timeoutPromise,
+		]);
+	} finally {
+		observer.disconnect();
+	}
+};
 
 export const clickOnCoordinates = (x: number, y: number) => {
 	const element = document.elementFromPoint(x, y);

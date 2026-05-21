@@ -3,6 +3,7 @@ import type { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/ou
 import { LoggerFactoryOutputPort as LoggerFactoryOutputPortSymbol } from "@mcp-browser-kit/core-extension/output-ports";
 import type { Logger } from "@mcp-browser-kit/types";
 import { inject, injectable } from "inversify";
+import { config } from "../config";
 import * as dom from "../utils/dom-tools";
 import { TabAnimationTools } from "./tab-animation-tools";
 import { TabContextStore } from "./tab-context-store";
@@ -13,7 +14,7 @@ interface Strategy {
 }
 
 /**
- * Iterates `strategies` in order. After each act(), runs verify().
+ * Iterates `strategies` in order. Runs dom.performAndVerify for each strategy.
  * Returns on the first strategy whose effect is verified.
  * Throws if all strategies are exhausted without a verified effect.
  */
@@ -21,11 +22,17 @@ const withActVerify = async (
 	operationLabel: string,
 	logger: Logger,
 	strategies: Strategy[],
-	verify: () => Promise<boolean>,
+	checkState: () => boolean,
+	options: {
+		acceptAnyMutation?: boolean;
+	} = {},
 ): Promise<void> => {
 	for (const strategy of strategies) {
-		await strategy.act();
-		if (await verify()) return;
+		const success = await dom.performAndVerify(strategy.act, checkState, {
+			timeoutMs: config.watchMutationTimeoutMs,
+			acceptAnyMutation: options.acceptAnyMutation,
+		});
+		if (success) return;
 		logger.warn(
 			`${operationLabel}: strategy "${strategy.label}" had no verifiable effect — trying next`,
 		);
@@ -72,14 +79,12 @@ export class TabDomTools {
 					},
 				},
 			],
-			async () => {
-				const mutated = await dom.watchMutation(50);
-				return (
-					mutated ||
-					document.activeElement !== prevActiveEl ||
-					element?.getAttribute("aria-pressed") !== prevAriaPressed ||
-					element?.getAttribute("aria-expanded") !== prevAriaExpanded
-				);
+			() =>
+				document.activeElement !== prevActiveEl ||
+				element?.getAttribute("aria-pressed") !== prevAriaPressed ||
+				element?.getAttribute("aria-expanded") !== prevAriaExpanded,
+			{
+				acceptAnyMutation: true,
 			},
 		);
 		this.logger.verbose("Click on coordinates completed");
@@ -114,14 +119,12 @@ export class TabDomTools {
 					act: async () => dom.clickOnElementFallback(element),
 				},
 			],
-			async () => {
-				const mutated = await dom.watchMutation(50);
-				return (
-					mutated ||
-					document.activeElement !== prevActiveEl ||
-					element.getAttribute("aria-pressed") !== prevAriaPressed ||
-					element.getAttribute("aria-expanded") !== prevAriaExpanded
-				);
+			() =>
+				document.activeElement !== prevActiveEl ||
+				element.getAttribute("aria-pressed") !== prevAriaPressed ||
+				element.getAttribute("aria-expanded") !== prevAriaExpanded,
+			{
+				acceptAnyMutation: true,
 			},
 		);
 		this.logger.verbose("Click on element completed");
@@ -161,7 +164,7 @@ export class TabDomTools {
 					act: async () => dom.fillTextNativeSetter(element, value),
 				},
 			],
-			async () => dom.verifyFillEffect(element, value),
+			() => dom.verifyFillEffect(element, value),
 		);
 		this.logger.verbose("Fill text completed");
 	};
@@ -199,7 +202,7 @@ export class TabDomTools {
 					},
 				},
 			],
-			async () => (element ? dom.verifyFillEffect(element, value) : true),
+			() => (element ? dom.verifyFillEffect(element, value) : true),
 		);
 		this.logger.verbose("Fill text to focused element completed");
 	};
@@ -266,9 +269,9 @@ export class TabDomTools {
 					act: async () => dom.hitEnterSubmitButton(element),
 				},
 			],
-			async () => {
-				const mutated = await dom.watchMutation(50);
-				return mutated || location.href !== prevHref;
+			() => location.href !== prevHref,
+			{
+				acceptAnyMutation: true,
 			},
 		);
 		this.logger.verbose("Hit enter on element completed");
@@ -306,9 +309,9 @@ export class TabDomTools {
 					},
 				},
 			],
-			async () => {
-				const mutated = await dom.watchMutation(50);
-				return mutated || location.href !== prevHref;
+			() => location.href !== prevHref,
+			{
+				acceptAnyMutation: true,
 			},
 		);
 		this.logger.verbose("Hit enter on focused element completed");
