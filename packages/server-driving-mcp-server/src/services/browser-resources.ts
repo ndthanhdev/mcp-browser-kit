@@ -5,8 +5,8 @@ import {
 import {
 	McpDescriptionsInputPort,
 	type McpDescriptionsInputPort as McpDescriptionsInputPortInterface,
-	ServerToolCallsInputPort,
-	type ServerToolCallsInputPort as ServerToolCallsInputPortInterface,
+	PaginatedContentInputPort,
+	type PaginatedContentInputPort as PaginatedContentInputPortInterface,
 } from "@mcp-browser-kit/core-server/input-ports";
 import type {
 	BrowserSnapshot,
@@ -124,8 +124,8 @@ export class BrowserResources {
 		loggerFactory: LoggerFactoryOutputPort,
 		@inject(ObserveBrowserStateInputPort)
 		private readonly observeBrowserState: ObserveBrowserStateInputPort,
-		@inject(ServerToolCallsInputPort)
-		private readonly serverToolCalls: ServerToolCallsInputPortInterface,
+		@inject(PaginatedContentInputPort)
+		private readonly paginatedContent: PaginatedContentInputPortInterface,
 		@inject(McpDescriptionsInputPort)
 		private readonly mcpDescriptions: McpDescriptionsInputPortInterface,
 	) {
@@ -301,7 +301,7 @@ export class BrowserResources {
 			name: `browsers/${shortChannelId(channelId)}/tabs/${tab.id}/readable-text`,
 			title: `${formatTabTitle(tab)} — readable text`,
 			description: this.mcpDescriptions.tabReadableTextDescription(tab.id),
-			mimeType: "text/plain",
+			mimeType: "application/json",
 		}));
 
 		const tabReadableElementsResources = cappedFlat.map(
@@ -448,36 +448,51 @@ export class BrowserResources {
 			);
 		}
 
-		if (parsed.type === "tab-readable-text") {
+		if (
+			parsed.type === "tab-readable-text" ||
+			parsed.type === "tab-readable-text-page"
+		) {
 			this.assertTabOnline(entry.snapshot, uri);
-			const text = await this.serverToolCalls.getReadableTextByChannelAndTab(
+			const pageNumber =
+				parsed.type === "tab-readable-text-page"
+					? parsed.pageNumber
+					: undefined;
+			const result = await this.paginatedContent.getReadableTextPage(
 				parsed.channelId,
 				parsed.tabId,
+				pageNumber,
 			);
 			return {
 				contents: [
 					{
 						uri: uri.toString(),
-						mimeType: "text/plain",
-						text,
+						mimeType: "application/json",
+						text: JSON.stringify(result, null, 2),
 					},
 				],
 			};
 		}
 
-		if (parsed.type === "tab-readable-elements") {
+		if (
+			parsed.type === "tab-readable-elements" ||
+			parsed.type === "tab-readable-elements-page"
+		) {
 			this.assertTabOnline(entry.snapshot, uri);
-			const { elements } =
-				await this.serverToolCalls.getReadableElementsByChannelAndTab(
-					parsed.channelId,
-					parsed.tabId,
-				);
+			const pageNumber =
+				parsed.type === "tab-readable-elements-page"
+					? parsed.pageNumber
+					: undefined;
+			const result = await this.paginatedContent.getReadableElementsPage(
+				parsed.channelId,
+				parsed.tabId,
+				pageNumber,
+			);
 			return {
 				contents: [
 					{
 						uri: uri.toString(),
 						mimeType: "application/json",
-						text: JSON.stringify(elements, null, 2),
+						text: JSON.stringify(result, null, 2),
 					},
 				],
 			};
@@ -638,6 +653,7 @@ export class BrowserResources {
 		if (wasKnown) {
 			this.knownChannelIds.delete(channelId);
 		}
+		this.paginatedContent.invalidateCache(channelId);
 		for (const tabId of prevTabMap.keys()) {
 			this.safeSendUpdated(server, tabBkUri(channelId, tabId));
 			this.safeSendUpdated(server, tabReadableTextBkUri(channelId, tabId));
@@ -668,6 +684,7 @@ export class BrowserResources {
 	): void {
 		for (const tabId of prevTabMap.keys()) {
 			if (!currentTabMap.has(tabId)) {
+				this.paginatedContent.invalidateCache(channelId, tabId);
 				this.safeSendUpdated(server, tabBkUri(channelId, tabId));
 				this.safeSendUpdated(server, tabReadableTextBkUri(channelId, tabId));
 				this.safeSendUpdated(
@@ -680,6 +697,7 @@ export class BrowserResources {
 		for (const [tabId, fp] of currentTabMap) {
 			const prev = prevTabMap.get(tabId);
 			if (!(prev && tabFingerprintsEqual(prev, fp))) {
+				this.paginatedContent.invalidateCache(channelId, tabId);
 				this.safeSendUpdated(server, tabBkUri(channelId, tabId));
 				this.safeSendUpdated(server, tabReadableTextBkUri(channelId, tabId));
 				this.safeSendUpdated(

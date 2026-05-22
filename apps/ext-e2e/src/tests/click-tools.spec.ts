@@ -24,13 +24,16 @@ test.describe("Click Tools", () => {
 				testAppPage.page,
 				"click-test",
 			);
-			const elements = JSON.parse(
+			const paginatedResult = JSON.parse(
 				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as [
-				string,
-				string,
-				string,
-			][];
+			) as {
+				data: [
+					string,
+					string,
+					string,
+				][];
+			};
+			const elements = paginatedResult.data;
 			const primaryButtonPath = elements.find((el) =>
 				el[2]?.includes("Primary Button"),
 			)?.[0];
@@ -60,13 +63,16 @@ test.describe("Click Tools", () => {
 				testAppPage.page,
 				"click-test",
 			);
-			const elements = JSON.parse(
+			const paginatedResult = JSON.parse(
 				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as [
-				string,
-				string,
-				string,
-			][];
+			) as {
+				data: [
+					string,
+					string,
+					string,
+				][];
+			};
+			const elements = paginatedResult.data;
 			const nestedButtonPath = elements.find((el) =>
 				el[2]?.includes("Nested Button"),
 			)?.[0];

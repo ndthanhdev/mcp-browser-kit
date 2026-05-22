@@ -4,11 +4,13 @@
  * ranking here means `browser-resources.ts` can focus on MCP wiring.
  *
  * URI scheme: `bk:///`
- *   - `bk:///context`                                           — aggregated context (static)
- *   - `bk:///browsers/<shortId>`                               — one browser
- *   - `bk:///browsers/<shortId>/tabs/<tabId>`                  — one tab
- *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-text`    — tab text
- *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements`— tab elements
+ *   - `bk:///context`                                                        — aggregated context (static)
+ *   - `bk:///browsers/<shortId>`                                            — one browser
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>`                               — one tab
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-text`                 — tab text (page 1)
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements`             — tab elements (page 1)
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-text/pages/<N>`       — tab text page N
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements/pages/<N>`   — tab elements page N
  *
  * The short browser ID is the nanoid portion of the channelId (everything
  * after the `channel:` prefix). The single ResourceTemplate
@@ -60,6 +62,22 @@ export const tabReadableElementsBkUri = (
 ): string =>
 	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}/tabs/${tabId}/readable-elements`;
 
+/** `bk:///browsers/<shortId>/tabs/<tabId>/readable-text/pages/<page>` */
+export const tabReadableTextPageBkUri = (
+	channelId: string,
+	tabId: string,
+	page: number,
+): string =>
+	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}/tabs/${tabId}/readable-text/pages/${page}`;
+
+/** `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements/pages/<page>` */
+export const tabReadableElementsPageBkUri = (
+	channelId: string,
+	tabId: string,
+	page: number,
+): string =>
+	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}/tabs/${tabId}/readable-elements/pages/${page}`;
+
 // ─── Parser ───────────────────────────────────────────────────────────────────
 
 export type ParsedBkResource =
@@ -81,6 +99,18 @@ export type ParsedBkResource =
 			type: "tab-readable-elements";
 			channelId: string;
 			tabId: string;
+	  }
+	| {
+			type: "tab-readable-text-page";
+			channelId: string;
+			tabId: string;
+			pageNumber: number;
+	  }
+	| {
+			type: "tab-readable-elements-page";
+			channelId: string;
+			tabId: string;
+			pageNumber: number;
 	  };
 
 /**
@@ -150,7 +180,26 @@ export const parseBkResourceId = (
 			tabId,
 		};
 	}
-	if (suffix !== undefined) return; // unknown sub-path
+
+	const pageMatch = suffix?.match(
+		/^(readable-text|readable-elements)\/pages\/(\d+)$/,
+	);
+	if (pageMatch) {
+		const pageNumber = Number(pageMatch[2]);
+		if (pageNumber < 1) return;
+		const type =
+			pageMatch[1] === "readable-text"
+				? ("tab-readable-text-page" as const)
+				: ("tab-readable-elements-page" as const);
+		return {
+			type,
+			channelId,
+			tabId,
+			pageNumber,
+		};
+	}
+
+	if (suffix !== undefined) return;
 
 	return {
 		type: "tab",

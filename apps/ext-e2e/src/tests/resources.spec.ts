@@ -212,7 +212,7 @@ test.describe("Browser-state MCP Resources", () => {
 			});
 		});
 
-		test("reading a readable-text URI returns page inner text", async ({
+		test("reading a readable-text URI returns paginated page inner text", async ({
 			testAppPage,
 			mcpClientPage,
 		}) => {
@@ -223,17 +223,26 @@ test.describe("Browser-state MCP Resources", () => {
 				"text-test",
 			);
 
-			const text = await mcpClientPage.readResourceText(
+			const { json } = await mcpClientPage.readResource(
 				`${tabUri}/readable-text`,
 			);
 
-			expect(text).toContain("Text Test Screen");
-			expect(text).toContain("Heading Level 1");
-			expect(text).toContain("Heading Level 2");
-			expect(text).toContain("first paragraph");
+			const paginated = json as {
+				resultId: string;
+				pageNumber: number;
+				hasNextPage: boolean;
+				totalPages: number;
+				data: string;
+			};
+			expect(typeof paginated.resultId).toBe("string");
+			expect(paginated.pageNumber).toBe(1);
+			expect(paginated.totalPages).toBeGreaterThanOrEqual(1);
+			expect(typeof paginated.hasNextPage).toBe("boolean");
+			expect(typeof paginated.data).toBe("string");
+			expect(paginated.data).toContain("Text Test Screen");
 		});
 
-		test("reading a readable-elements URI returns element tuples", async ({
+		test("reading a readable-elements URI returns paginated element tuples", async ({
 			testAppPage,
 			mcpClientPage,
 		}) => {
@@ -244,7 +253,7 @@ test.describe("Browser-state MCP Resources", () => {
 				"text-test",
 			);
 
-			const { result } = await mcpClientPage.readResource(
+			const { result, json } = await mcpClientPage.readResource(
 				`${tabUri}/readable-elements`,
 			);
 
@@ -252,13 +261,20 @@ test.describe("Browser-state MCP Resources", () => {
 			expectToBeDefined(first);
 			expect(first.mimeType).toBe("application/json");
 
-			const elements = JSON.parse(
-				"text" in first ? String(first.text) : "[]",
-			) as unknown[];
-			expect(Array.isArray(elements)).toBe(true);
-			expect(elements.length).toBeGreaterThan(0);
+			const paginated = json as {
+				resultId: string;
+				pageNumber: number;
+				hasNextPage: boolean;
+				totalPages: number;
+				data: unknown[];
+			};
+			expect(typeof paginated.resultId).toBe("string");
+			expect(paginated.pageNumber).toBe(1);
+			expect(paginated.totalPages).toBeGreaterThanOrEqual(1);
+			expect(Array.isArray(paginated.data)).toBe(true);
+			expect(paginated.data.length).toBeGreaterThan(0);
 
-			const tuple = elements[0] as unknown[];
+			const tuple = paginated.data[0] as unknown[];
 			expect(Array.isArray(tuple)).toBe(true);
 			expect(tuple.length).toBe(3);
 			expect(typeof tuple[0]).toBe("string");

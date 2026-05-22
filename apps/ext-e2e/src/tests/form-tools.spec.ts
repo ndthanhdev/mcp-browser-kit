@@ -24,13 +24,16 @@ test.describe("Form Tools", () => {
 				testAppPage.page,
 				"form-test",
 			);
-			const elements = JSON.parse(
+			const paginatedResult = JSON.parse(
 				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as [
-				string,
-				string,
-				string,
-			][];
+			) as {
+				data: [
+					string,
+					string,
+					string,
+				][];
+			};
+			const elements = paginatedResult.data;
 			const usernameInputPath = elements.find(
 				(el) => el[1] === "input" && el[2]?.includes("Enter username"),
 			)?.[0];
@@ -60,13 +63,16 @@ test.describe("Form Tools", () => {
 				testAppPage.page,
 				"form-test",
 			);
-			const elements = JSON.parse(
+			const paginatedResult = JSON.parse(
 				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as [
-				string,
-				string,
-				string,
-			][];
+			) as {
+				data: [
+					string,
+					string,
+					string,
+				][];
+			};
+			const elements = paginatedResult.data;
 			const textareaPath = elements.find(
 				(el) => el[1] === "textarea" && el[2]?.includes("Enter your message"),
 			)?.[0];
@@ -126,13 +132,16 @@ test.describe("Form Tools", () => {
 				testAppPage.page,
 				"form-test",
 			);
-			const elements = JSON.parse(
+			const paginatedResult = JSON.parse(
 				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as [
-				string,
-				string,
-				string,
-			][];
+			) as {
+				data: [
+					string,
+					string,
+					string,
+				][];
+			};
+			const elements = paginatedResult.data;
 			const searchInputPath = elements.find(
 				(el) => el[1] === "input" && el[2]?.includes("Search"),
 			)?.[0];
@@ -202,13 +211,16 @@ test.describe("Form Tools", () => {
 				testAppPage.page,
 				"form-test",
 			);
-			const elements = JSON.parse(
+			const paginatedResult = JSON.parse(
 				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as [
-				string,
-				string,
-				string,
-			][];
+			) as {
+				data: [
+					string,
+					string,
+					string,
+				][];
+			};
+			const elements = paginatedResult.data;
 
 			const usernameInputPath = elements.find((el) =>
 				el[2]?.includes("Enter username"),

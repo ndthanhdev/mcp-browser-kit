@@ -14,10 +14,12 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"   - MV3 (or unknown): use readable-element tools (`clickOnElement`, `fillTextToElement`, `hitEnterOnElement`); coordinate tools and `invokeJsFn` are NOT available.",
 			"3. For readable-element tools, read `<tabUri>/readable-elements` to get `[readablePath, role, text]` tuples. For raw page text, read `<tabUri>/readable-text`.",
 			"4. Prefer readable-element tools over coordinate tools when both work — they are more robust to layout changes and work on MV3.",
+			"5. `readable-text` and `readable-elements` are paginated. Reading the base URI returns page 1. Check `hasNextPage`; if true, read `<tabUri>/readable-text/pages/<nextPageNumber>` (or `readable-elements/pages/<nextPageNumber>`) to continue. Always read page 1 first — it caches the content for subsequent page fetches.",
 			"",
 			"Resources:",
 			"* `bk:///context` — aggregated browser/window/tab list. Always read first.",
 			"* `bk:///{+resourceId}` — per-browser and per-tab resources; see template description.",
+			"* `readable-text` and `readable-elements` return paginated JSON with `hasNextPage`, `nextPageNumber`, and `totalPages`. Fetch `/pages/<N>` to get subsequent pages.",
 			"* Subscribe to any URI to receive `notifications/resources/updated` when content changes; cached snapshots become stale after navigation.",
 			"",
 			"Constraints:",
@@ -135,8 +137,10 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"Per-browser and per-tab resources under `bk:///{+resourceId}`:",
 			"* `bk:///browsers/<shortId>` — full browser snapshot",
 			"* `bk:///browsers/<shortId>/tabs/<tabId>` — tab metadata with `tabKey`",
-			"* `bk:///browsers/<shortId>/tabs/<tabId>/readable-text` — page inner text",
-			"* `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements` — `[readablePath, role, text]` tuples used by `clickOnElement`, `fillTextToElement`, and `hitEnterOnElement`",
+			"* `bk:///browsers/<shortId>/tabs/<tabId>/readable-text` — page inner text (paginated, read base URI for page 1)",
+			"* `bk:///browsers/<shortId>/tabs/<tabId>/readable-text/pages/<N>` — page N of readable text",
+			"* `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements` — `[readablePath, role, text]` tuples (paginated, read base URI for page 1)",
+			"* `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements/pages/<N>` — page N of readable elements",
 		].join("\n");
 	};
 
@@ -159,11 +163,21 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 	};
 
 	tabReadableTextDescription = (tabId: string): string => {
-		return `Page inner text for tab ${tabId}`;
+		return [
+			`Paginated inner text for tab ${tabId}.`,
+			"Returns JSON with `data` (text), `hasNextPage`, `nextPageNumber`, `totalPages`.",
+			"If `hasNextPage` is true, read `.../readable-text/pages/<nextPageNumber>` to continue.",
+			"Always read this base URI first (page 1) before fetching subsequent pages.",
+		].join(" ");
 	};
 
 	tabReadableElementsDescription = (tabId: string): string => {
-		return `Interactive elements for tab ${tabId}`;
+		return [
+			`Paginated interactive elements for tab ${tabId}.`,
+			"Returns JSON with `data` (`[readablePath, role, text]` tuples), `hasNextPage`, `nextPageNumber`, `totalPages`.",
+			"If `hasNextPage` is true, read `.../readable-elements/pages/<nextPageNumber>` to continue.",
+			"Always read this base URI first (page 1) before fetching subsequent pages.",
+		].join(" ");
 	};
 
 	private hostnameOf(url: string): string {

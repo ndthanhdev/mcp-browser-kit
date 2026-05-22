@@ -31,6 +31,12 @@ const testScreens = [
 		title: "JavaScript Test",
 		description: "Test JavaScript execution: invokeJsFn",
 	},
+	{
+		path: "/pagination-test",
+		title: "Pagination Test",
+		description:
+			"Test text and element pagination tools and pagination resource URIs",
+	},
 ];
 
 export function HomeScreen() {
