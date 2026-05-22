@@ -70,7 +70,7 @@ test.describe("Browser-state MCP Resources", () => {
 			const resources = await mcpClientPage.listResources();
 			const tabUris = resources
 				.map((r) => r.uri)
-				.filter((u) => u.includes(BK_TAB_INFIX) && !u.includes("/readable-"));
+				.filter((u) => u.includes(BK_TAB_INFIX) && !u.includes("/snapshots/"));
 			expect(tabUris.length).toBeGreaterThan(0);
 		});
 
@@ -212,7 +212,7 @@ test.describe("Browser-state MCP Resources", () => {
 			});
 		});
 
-		test("reading a readable-text URI returns paginated page inner text", async ({
+		test("reading a readable-text page 1 URI returns snapshot page inner text", async ({
 			testAppPage,
 			mcpClientPage,
 		}) => {
@@ -227,22 +227,22 @@ test.describe("Browser-state MCP Resources", () => {
 				`${tabUri}/readable-text`,
 			);
 
-			const paginated = json as {
-				resultId: string;
+			const snapshotResult = json as {
+				snapshotId: string;
 				pageNumber: number;
 				hasNextPage: boolean;
 				totalPages: number;
 				data: string;
 			};
-			expect(typeof paginated.resultId).toBe("string");
-			expect(paginated.pageNumber).toBe(1);
-			expect(paginated.totalPages).toBeGreaterThanOrEqual(1);
-			expect(typeof paginated.hasNextPage).toBe("boolean");
-			expect(typeof paginated.data).toBe("string");
-			expect(paginated.data).toContain("Text Test Screen");
+			expect(typeof snapshotResult.snapshotId).toBe("string");
+			expect(snapshotResult.pageNumber).toBe(1);
+			expect(snapshotResult.totalPages).toBeGreaterThanOrEqual(1);
+			expect(typeof snapshotResult.hasNextPage).toBe("boolean");
+			expect(typeof snapshotResult.data).toBe("string");
+			expect(snapshotResult.data).toContain("Text Test Screen");
 		});
 
-		test("reading a readable-elements URI returns paginated element tuples", async ({
+		test("reading a readable-elements page 1 URI returns snapshot element tuples", async ({
 			testAppPage,
 			mcpClientPage,
 		}) => {
@@ -261,20 +261,20 @@ test.describe("Browser-state MCP Resources", () => {
 			expectToBeDefined(first);
 			expect(first.mimeType).toBe("application/json");
 
-			const paginated = json as {
-				resultId: string;
+			const snapshotResult = json as {
+				snapshotId: string;
 				pageNumber: number;
 				hasNextPage: boolean;
 				totalPages: number;
 				data: unknown[];
 			};
-			expect(typeof paginated.resultId).toBe("string");
-			expect(paginated.pageNumber).toBe(1);
-			expect(paginated.totalPages).toBeGreaterThanOrEqual(1);
-			expect(Array.isArray(paginated.data)).toBe(true);
-			expect(paginated.data.length).toBeGreaterThan(0);
+			expect(typeof snapshotResult.snapshotId).toBe("string");
+			expect(snapshotResult.pageNumber).toBe(1);
+			expect(snapshotResult.totalPages).toBeGreaterThanOrEqual(1);
+			expect(Array.isArray(snapshotResult.data)).toBe(true);
+			expect(snapshotResult.data.length).toBeGreaterThan(0);
 
-			const tuple = paginated.data[0] as unknown[];
+			const tuple = snapshotResult.data[0] as unknown[];
 			expect(Array.isArray(tuple)).toBe(true);
 			expect(tuple.length).toBe(3);
 			expect(typeof tuple[0]).toBe("string");
@@ -282,7 +282,7 @@ test.describe("Browser-state MCP Resources", () => {
 			expect(typeof tuple[2]).toBe("string");
 		});
 
-		test("readable-text notification fires when tab content changes", async ({
+		test("readable-text page 1 notification fires when tab content changes", async ({
 			testAppPage,
 			mcpClientPage,
 		}) => {

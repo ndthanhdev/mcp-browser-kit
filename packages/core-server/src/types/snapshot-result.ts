@@ -1,5 +1,5 @@
-export interface PaginatedResult<T> {
-	resultId: string;
+export interface SnapshotResult<T> {
+	snapshotId: string;
 	pageNumber: number;
 	nextPageNumber: number | null;
 	hasNextPage: boolean;

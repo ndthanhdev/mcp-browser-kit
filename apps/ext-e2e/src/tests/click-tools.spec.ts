@@ -24,16 +24,7 @@ test.describe("Click Tools", () => {
 				testAppPage.page,
 				"click-test",
 			);
-			const paginatedResult = JSON.parse(
-				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as {
-				data: [
-					string,
-					string,
-					string,
-				][];
-			};
-			const elements = paginatedResult.data;
+			const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
 			const primaryButtonPath = elements.find((el) =>
 				el[2]?.includes("Primary Button"),
 			)?.[0];
@@ -63,16 +54,7 @@ test.describe("Click Tools", () => {
 				testAppPage.page,
 				"click-test",
 			);
-			const paginatedResult = JSON.parse(
-				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as {
-				data: [
-					string,
-					string,
-					string,
-				][];
-			};
-			const elements = paginatedResult.data;
+			const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
 			const nestedButtonPath = elements.find((el) =>
 				el[2]?.includes("Nested Button"),
 			)?.[0];

@@ -4,20 +4,23 @@ import type {
 } from "@mcp-browser-kit/core-extension";
 import { createPrefixId } from "@mcp-browser-kit/core-utils";
 import { inject, injectable } from "inversify";
-import type { PaginatedContentInputPort } from "../input-ports/paginated-content";
+import type { SnapshotContentInputPort } from "../input-ports/snapshot-content";
 import { LoggerFactoryOutputPort } from "../output-ports";
-import type { PaginatedResult } from "../types";
+import type { SnapshotResult } from "../types";
 import { ExtensionChannelManager } from "./extension-channel-manager";
 
 const READABLE_TEXT_PAGE_SIZE = 5_000;
 const READABLE_ELEMENTS_PAGE_SIZE = 100;
 
-const resultIdGenerator = createPrefixId("paginated");
+const snapshotIdGenerator = createPrefixId("snapshot");
 
 type ContentType = "readable-text" | "readable-elements";
 
 interface CachedPages<T> {
-	resultId: string;
+	snapshotId: string;
+	channelId: string;
+	tabId: string;
+	type: ContentType;
 	pages: T[];
 	totalPages: number;
 }
@@ -78,9 +81,9 @@ function splitArrayByTokenLength<T>(
 function buildResult<T>(
 	cached: CachedPages<T>,
 	pageNumber: number,
-): PaginatedResult<T> {
+): SnapshotResult<T> {
 	return {
-		resultId: cached.resultId,
+		snapshotId: cached.snapshotId,
 		pageNumber,
 		nextPageNumber: pageNumber < cached.totalPages ? pageNumber + 1 : null,
 		hasNextPage: pageNumber < cached.totalPages,
@@ -90,9 +93,10 @@ function buildResult<T>(
 }
 
 @injectable()
-export class PaginatedContentUseCases implements PaginatedContentInputPort {
+export class SnapshotContentUseCases implements SnapshotContentInputPort {
 	private readonly logger;
 	private readonly cache = new Map<string, CachedPages<unknown>>();
+	private readonly cacheBySnapshotId = new Map<string, CachedPages<unknown>>();
 
 	constructor(
 		@inject(LoggerFactoryOutputPort)
@@ -100,30 +104,39 @@ export class PaginatedContentUseCases implements PaginatedContentInputPort {
 		@inject(ExtensionChannelManager)
 		private readonly extensionChannelManager: ExtensionChannelManager,
 	) {
-		this.logger = loggerFactory.create("PaginatedContent");
+		this.logger = loggerFactory.create("SnapshotContent");
 	}
 
 	async getReadableTextPage(
 		channelId: string,
 		tabId: string,
 		pageNumber = 1,
-	): Promise<PaginatedResult<string>> {
+	): Promise<SnapshotResult<string>> {
 		const key = cacheKey(channelId, tabId, "readable-text");
 
 		if (pageNumber === 1) {
 			const text = await this.fetchReadableText(channelId, tabId);
 			const pages = splitText(text, READABLE_TEXT_PAGE_SIZE);
+			const snapshotId = snapshotIdGenerator.generate();
 			const cached: CachedPages<string> = {
-				resultId: resultIdGenerator.generate(),
+				snapshotId,
+				channelId,
+				tabId,
+				type: "readable-text",
 				pages,
 				totalPages: pages.length,
 			};
+			const old = this.cache.get(key);
+			if (old) {
+				this.cacheBySnapshotId.delete(old.snapshotId);
+			}
 			this.cache.set(key, cached);
+			this.cacheBySnapshotId.set(snapshotId, cached);
 			this.logger.verbose("Cached readable-text", {
 				channelId,
 				tabId,
 				totalPages: cached.totalPages,
-				resultId: cached.resultId,
+				snapshotId: cached.snapshotId,
 			});
 			return buildResult(cached, 1);
 		}
@@ -135,7 +148,7 @@ export class PaginatedContentUseCases implements PaginatedContentInputPort {
 		channelId: string,
 		tabId: string,
 		pageNumber = 1,
-	): Promise<PaginatedResult<ReadableElementRecord[]>> {
+	): Promise<SnapshotResult<ReadableElementRecord[]>> {
 		const key = cacheKey(channelId, tabId, "readable-elements");
 
 		if (pageNumber === 1) {
@@ -145,17 +158,26 @@ export class PaginatedContentUseCases implements PaginatedContentInputPort {
 				READABLE_ELEMENTS_PAGE_SIZE,
 				(item) => JSON.stringify(item).length,
 			);
+			const snapshotId = snapshotIdGenerator.generate();
 			const cached: CachedPages<ReadableElementRecord[]> = {
-				resultId: resultIdGenerator.generate(),
+				snapshotId,
+				channelId,
+				tabId,
+				type: "readable-elements",
 				pages,
 				totalPages: pages.length,
 			};
+			const old = this.cache.get(key);
+			if (old) {
+				this.cacheBySnapshotId.delete(old.snapshotId);
+			}
 			this.cache.set(key, cached);
+			this.cacheBySnapshotId.set(snapshotId, cached);
 			this.logger.verbose("Cached readable-elements", {
 				channelId,
 				tabId,
 				totalPages: cached.totalPages,
-				resultId: cached.resultId,
+				snapshotId: cached.snapshotId,
 			});
 			return buildResult(cached, 1);
 		}
@@ -167,13 +189,45 @@ export class PaginatedContentUseCases implements PaginatedContentInputPort {
 		);
 	}
 
+	async getSnapshotPage(
+		snapshotId: string,
+		type: "readable-text" | "readable-elements",
+		pageNumber: number,
+	): Promise<SnapshotResult<any>> {
+		const cached = this.cacheBySnapshotId.get(snapshotId);
+		if (!cached) {
+			throw new Error(
+				`No cached snapshot pages found for snapshot ID: ${snapshotId}. Read page 1 first to fetch and cache content.`,
+			);
+		}
+		if (cached.type !== type) {
+			throw new Error(
+				`Requested snapshot type (${type}) does not match cached type (${cached.type}) for snapshot ID: ${snapshotId}.`,
+			);
+		}
+		if (pageNumber < 1 || pageNumber > cached.totalPages) {
+			throw new Error(
+				`Page ${pageNumber} out of range (1–${cached.totalPages}) for snapshot ID: ${snapshotId}`,
+			);
+		}
+		return buildResult(cached, pageNumber);
+	}
+
 	invalidateCache(channelId: string, tabId?: string): void {
 		if (tabId) {
 			const textKey = cacheKey(channelId, tabId, "readable-text");
 			const elemKey = cacheKey(channelId, tabId, "readable-elements");
+			const textCached = this.cache.get(textKey);
+			if (textCached) {
+				this.cacheBySnapshotId.delete(textCached.snapshotId);
+			}
+			const elemCached = this.cache.get(elemKey);
+			if (elemCached) {
+				this.cacheBySnapshotId.delete(elemCached.snapshotId);
+			}
 			this.cache.delete(textKey);
 			this.cache.delete(elemKey);
-			this.logger.verbose("Invalidated paginated cache for tab", {
+			this.logger.verbose("Invalidated snapshot cache for tab", {
 				channelId,
 				tabId,
 			});
@@ -181,12 +235,13 @@ export class PaginatedContentUseCases implements PaginatedContentInputPort {
 		}
 
 		const prefix = `${channelId}::`;
-		for (const key of this.cache.keys()) {
+		for (const [key, cached] of this.cache.entries()) {
 			if (key.startsWith(prefix)) {
+				this.cacheBySnapshotId.delete(cached.snapshotId);
 				this.cache.delete(key);
 			}
 		}
-		this.logger.verbose("Invalidated paginated cache for channel", {
+		this.logger.verbose("Invalidated snapshot cache for channel", {
 			channelId,
 		});
 	}
@@ -195,7 +250,7 @@ export class PaginatedContentUseCases implements PaginatedContentInputPort {
 		key: string,
 		pageNumber: number,
 		type: ContentType,
-	): PaginatedResult<T> {
+	): SnapshotResult<T> {
 		const cached = this.cache.get(key) as CachedPages<T> | undefined;
 		if (!cached) {
 			throw new Error(

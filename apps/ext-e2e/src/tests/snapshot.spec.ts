@@ -1,8 +1,8 @@
 import { expect, test } from "../fixtures/ext-test";
 import { expectToBeDefined } from "../test-utils/assert-defined";
 
-type PaginatedResultJson<T> = {
-	resultId: string;
+type SnapshotResultJson<T> = {
+	snapshotId: string;
 	pageNumber: number;
 	nextPageNumber: number | null;
 	hasNextPage: boolean;
@@ -10,7 +10,7 @@ type PaginatedResultJson<T> = {
 	data: T;
 };
 
-test.describe("Browser Pagination E2E Tests", () => {
+test.describe("Browser Snapshot E2E Tests", () => {
 	test.beforeEach(async ({ mcpClientPage }) => {
 		test.setTimeout(45000);
 		await mcpClientPage.startServer();
@@ -18,26 +18,26 @@ test.describe("Browser Pagination E2E Tests", () => {
 		await mcpClientPage.waitForBrowsers();
 	});
 
-	test.describe("Text and Element Pagination", () => {
-		test("should successfully paginate readable text across multiple pages", async ({
+	test.describe("Text and Element Snapshot", () => {
+		test("should successfully snapshot readable text across multiple pages", async ({
 			testAppPage,
 			mcpClientPage,
 		}) => {
-			await testAppPage.navigateToPaginationTest();
+			await testAppPage.navigateToSnapshotTest();
 
 			const tabUri = await mcpClientPage.waitForTabUriByUrl(
 				testAppPage.page,
-				"pagination-test",
+				"snapshot-test",
 			);
 
 			// 1. Fetch Page 1 (readable-text)
 			const { json: jsonPage1 } = await mcpClientPage.readResource(
 				`${tabUri}/readable-text`,
 			);
-			const page1 = jsonPage1 as PaginatedResultJson<string>;
+			const page1 = jsonPage1 as SnapshotResultJson<string>;
 
 			expectToBeDefined(page1);
-			expect(typeof page1.resultId).toBe("string");
+			expect(typeof page1.snapshotId).toBe("string");
 			expect(page1.pageNumber).toBe(1);
 			expect(page1.totalPages).toBe(3); // 13k chars / 5k page size = 3 pages
 			expect(page1.hasNextPage).toBe(true);
@@ -47,12 +47,12 @@ test.describe("Browser Pagination E2E Tests", () => {
 
 			// 2. Fetch Page 2 from cache
 			const { json: jsonPage2 } = await mcpClientPage.readResource(
-				`${tabUri}/readable-text/pages/2`,
+				`bk:///snapshot-types/readable-text/snapshots/${page1.snapshotId}/pages/2`,
 			);
-			const page2 = jsonPage2 as PaginatedResultJson<string>;
+			const page2 = jsonPage2 as SnapshotResultJson<string>;
 
 			expectToBeDefined(page2);
-			expect(page2.resultId).toBe(page1.resultId);
+			expect(page2.snapshotId).toBe(page1.snapshotId);
 			expect(page2.pageNumber).toBe(2);
 			expect(page2.totalPages).toBe(3);
 			expect(page2.hasNextPage).toBe(true);
@@ -62,12 +62,12 @@ test.describe("Browser Pagination E2E Tests", () => {
 
 			// 3. Fetch Page 3 from cache (last page)
 			const { json: jsonPage3 } = await mcpClientPage.readResource(
-				`${tabUri}/readable-text/pages/3`,
+				`bk:///snapshot-types/readable-text/snapshots/${page1.snapshotId}/pages/3`,
 			);
-			const page3 = jsonPage3 as PaginatedResultJson<string>;
+			const page3 = jsonPage3 as SnapshotResultJson<string>;
 
 			expectToBeDefined(page3);
-			expect(page3.resultId).toBe(page1.resultId);
+			expect(page3.snapshotId).toBe(page1.snapshotId);
 			expect(page3.pageNumber).toBe(3);
 			expect(page3.totalPages).toBe(3);
 			expect(page3.hasNextPage).toBe(false);
@@ -76,15 +76,15 @@ test.describe("Browser Pagination E2E Tests", () => {
 			expect(page3.data).toContain("This is paragraph number 25.");
 		});
 
-		test("should successfully paginate interactive elements across multiple pages using token length constraints", async ({
+		test("should successfully snapshot interactive elements across multiple pages using token length constraints", async ({
 			testAppPage,
 			mcpClientPage,
 		}) => {
-			await testAppPage.navigateToPaginationTest();
+			await testAppPage.navigateToSnapshotTest();
 
 			const tabUri = await mcpClientPage.waitForTabUriByUrl(
 				testAppPage.page,
-				"pagination-test",
+				"snapshot-test",
 			);
 
 			// Helper to check token length constraints on page data
@@ -103,10 +103,10 @@ test.describe("Browser Pagination E2E Tests", () => {
 			const { json: jsonPage1 } = await mcpClientPage.readResource(
 				`${tabUri}/readable-elements`,
 			);
-			const page1 = jsonPage1 as PaginatedResultJson<unknown[]>;
+			const page1 = jsonPage1 as SnapshotResultJson<unknown[]>;
 
 			expectToBeDefined(page1);
-			expect(typeof page1.resultId).toBe("string");
+			expect(typeof page1.snapshotId).toBe("string");
 			expect(page1.pageNumber).toBe(1);
 			expect(page1.totalPages).toBeGreaterThanOrEqual(100); // 249 elements split by 100 chars max will yield > 100 pages
 			expect(page1.hasNextPage).toBe(true);
@@ -115,12 +115,12 @@ test.describe("Browser Pagination E2E Tests", () => {
 
 			// 2. Fetch Page 2 from cache
 			const { json: jsonPage2 } = await mcpClientPage.readResource(
-				`${tabUri}/readable-elements/pages/2`,
+				`bk:///snapshot-types/readable-elements/snapshots/${page1.snapshotId}/pages/2`,
 			);
-			const page2 = jsonPage2 as PaginatedResultJson<unknown[]>;
+			const page2 = jsonPage2 as SnapshotResultJson<unknown[]>;
 
 			expectToBeDefined(page2);
-			expect(page2.resultId).toBe(page1.resultId);
+			expect(page2.snapshotId).toBe(page1.snapshotId);
 			expect(page2.pageNumber).toBe(2);
 			expect(page2.totalPages).toBe(page1.totalPages);
 			expect(page2.hasNextPage).toBe(true);
@@ -130,12 +130,12 @@ test.describe("Browser Pagination E2E Tests", () => {
 			// 3. Fetch Last Page from cache
 			const lastPageNumber = page1.totalPages;
 			const { json: jsonPageLast } = await mcpClientPage.readResource(
-				`${tabUri}/readable-elements/pages/${lastPageNumber}`,
+				`bk:///snapshot-types/readable-elements/snapshots/${page1.snapshotId}/pages/${lastPageNumber}`,
 			);
-			const pageLast = jsonPageLast as PaginatedResultJson<unknown[]>;
+			const pageLast = jsonPageLast as SnapshotResultJson<unknown[]>;
 
 			expectToBeDefined(pageLast);
-			expect(pageLast.resultId).toBe(page1.resultId);
+			expect(pageLast.snapshotId).toBe(page1.snapshotId);
 			expect(pageLast.pageNumber).toBe(lastPageNumber);
 			expect(pageLast.totalPages).toBe(lastPageNumber);
 			expect(pageLast.hasNextPage).toBe(false);
@@ -144,75 +144,72 @@ test.describe("Browser Pagination E2E Tests", () => {
 		});
 
 		test("should throw errors when accessing cache out of bounds or before page 1", async ({
-			context,
 			testAppPage,
 			mcpClientPage,
 		}) => {
-			await testAppPage.navigateToPaginationTest();
+			await testAppPage.navigateToSnapshotTest();
 
 			const tabUri = await mcpClientPage.waitForTabUriByUrl(
 				testAppPage.page,
-				"pagination-test",
+				"snapshot-test",
 			);
 
 			// 1. Fetch Page 1 first to populate cache
-			await mcpClientPage.readResource(`${tabUri}/readable-text`);
+			const { json: jsonPage1 } = await mcpClientPage.readResource(
+				`${tabUri}/readable-text`,
+			);
+			const page1 = jsonPage1 as SnapshotResultJson<string>;
 
 			// 2. Access out of range page (Page 4 when only 3 exist)
 			await expect(
-				mcpClientPage.readResource(`${tabUri}/readable-text/pages/4`),
+				mcpClientPage.readResource(
+					`bk:///snapshot-types/readable-text/snapshots/${page1.snapshotId}/pages/4`,
+				),
 			).rejects.toThrow(/Page 4 out of range/);
 
-			// 3. Open a separate tab to verify reading Page 2 before Page 1 throws
-			const secondPage = await context.newPage();
-			await secondPage.goto("http://localhost:3000/pagination-test");
-			await secondPage.waitForLoadState("networkidle");
-
-			const secondTabUri = await mcpClientPage.waitForTabUriByUrl(
-				secondPage,
-				"pagination-test",
-			);
-
-			// Try reading Page 2 immediately on this new tab (cache should be empty)
+			// 3. Try reading Page 2 with a fake snapshot ID (cache should not have it)
 			await expect(
-				mcpClientPage.readResource(`${secondTabUri}/readable-text/pages/2`),
-			).rejects.toThrow(/No cached readable-text pages. Read page 1 first/);
+				mcpClientPage.readResource(
+					"bk:///snapshot-types/readable-text/snapshots/snapshot-fake/pages/2",
+				),
+			).rejects.toThrow(
+				/No cached snapshot pages found for snapshot ID: snapshot-fake/,
+			);
 		});
 
 		test("should invalidate cache when the page is reloaded or navigated", async ({
 			testAppPage,
 			mcpClientPage,
 		}) => {
-			await testAppPage.navigateToPaginationTest();
+			await testAppPage.navigateToSnapshotTest();
 
 			const tabUri = await mcpClientPage.waitForTabUriByUrl(
 				testAppPage.page,
-				"pagination-test",
+				"snapshot-test",
 			);
 
 			// 1. Read Page 1 to populate cache
-			await mcpClientPage.readResource(`${tabUri}/readable-text`);
+			const { json: jsonPage1 } = await mcpClientPage.readResource(
+				`${tabUri}/readable-text`,
+			);
+			const page1 = jsonPage1 as SnapshotResultJson<string>;
 
 			// 2. Verify Page 2 reads successfully
 			const { json: jsonPage2 } = await mcpClientPage.readResource(
-				`${tabUri}/readable-text/pages/2`,
+				`bk:///snapshot-types/readable-text/snapshots/${page1.snapshotId}/pages/2`,
 			);
 			expect(jsonPage2).toBeDefined();
 
 			// 3. Navigate away and back to change the tab fingerprint, triggering cache invalidation
 			await testAppPage.navigateToHome();
-			await testAppPage.navigateToPaginationTest();
+			await testAppPage.navigateToSnapshotTest();
 
-			// Wait for the tab to be updated and obtain the new tab URI if changed
-			const newTabUri = await mcpClientPage.waitForTabUriByUrl(
-				testAppPage.page,
-				"pagination-test",
-			);
-
-			// 4. Try reading Page 2 directly on the new/refreshed tab (should fail due to invalidation)
+			// 4. Try reading Page 2 directly using the invalidated snapshotId (should fail due to invalidation)
 			await expect(
-				mcpClientPage.readResource(`${newTabUri}/readable-text/pages/2`),
-			).rejects.toThrow(/No cached readable-text pages. Read page 1 first/);
+				mcpClientPage.readResource(
+					`bk:///snapshot-types/readable-text/snapshots/${page1.snapshotId}/pages/2`,
+				),
+			).rejects.toThrow(/No cached snapshot pages found for snapshot ID:/);
 		});
 	});
 });

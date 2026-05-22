@@ -10,7 +10,7 @@ export class TestAppPage extends BasePage {
 	readonly textTestUrl = `${TEST_APP_BASE_URL}/text-test`;
 	readonly javascriptTestUrl = `${TEST_APP_BASE_URL}/javascript-test`;
 	readonly fallbackTestUrl = `${TEST_APP_BASE_URL}/fallback-test`;
-	readonly paginationTestUrl = `${TEST_APP_BASE_URL}/pagination-test`;
+	readonly snapshotTestUrl = `${TEST_APP_BASE_URL}/snapshot-test`;
 
 	readonly pageTitle: Locator;
 
@@ -43,8 +43,8 @@ export class TestAppPage extends BasePage {
 		await super.waitForPageLoad(this.getByTestId("heading-1"));
 	}
 
-	async navigateToPaginationTest() {
-		await this.goto(this.paginationTestUrl);
+	async navigateToSnapshotTest() {
+		await this.goto(this.snapshotTestUrl);
 		await super.waitForPageLoad(this.getByTestId("page-title"));
 	}
 

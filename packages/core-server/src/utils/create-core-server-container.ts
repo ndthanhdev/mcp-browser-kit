@@ -4,16 +4,16 @@ import {
 	ExtensionChannelManager,
 	McpDescriptionsUseCases,
 	ObserveBrowserStateUseCases,
-	PaginatedContentUseCases,
 	ServerLifecycle,
+	SnapshotContentUseCases,
 	ToolCallUseCases,
 } from "../core";
 import {
 	McpDescriptionsInputPort,
 	ObserveBrowserStateInputPort,
-	PaginatedContentInputPort,
 	ServerLifecycleInputPort,
 	ServerToolCallsInputPort,
+	SnapshotContentInputPort,
 } from "../input-ports";
 import { LifecycleParticipantOutputPort } from "../output-ports";
 
@@ -30,8 +30,8 @@ export const createCoreServerContainer = () => {
 		.bind<McpDescriptionsInputPort>(McpDescriptionsInputPort)
 		.to(McpDescriptionsUseCases);
 	container
-		.bind<PaginatedContentInputPort>(PaginatedContentInputPort)
-		.to(PaginatedContentUseCases);
+		.bind<SnapshotContentInputPort>(SnapshotContentInputPort)
+		.to(SnapshotContentUseCases);
 	container.bind<ExtensionChannelManager>(ExtensionChannelManager).toSelf();
 	container.bind<BrowserStateRegistry>(BrowserStateRegistry).toSelf();
 	container

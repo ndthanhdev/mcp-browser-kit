@@ -32,10 +32,10 @@ const testScreens = [
 		description: "Test JavaScript execution: invokeJsFn",
 	},
 	{
-		path: "/pagination-test",
-		title: "Pagination Test",
+		path: "/snapshot-test",
+		title: "Snapshot Test",
 		description:
-			"Test text and element pagination tools and pagination resource URIs",
+			"Test text and element snapshot tools and snapshot resource URIs",
 	},
 ];
 

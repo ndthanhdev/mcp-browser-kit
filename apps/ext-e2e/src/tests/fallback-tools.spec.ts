@@ -25,16 +25,7 @@ test.describe("Fallback Strategy Tools", () => {
 				"fallback-test",
 			);
 
-			const paginatedResult = JSON.parse(
-				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as {
-				data: [
-					string,
-					string,
-					string,
-				][];
-			};
-			const elements = paginatedResult.data;
+			const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
 
 			const resistantButtonPath = elements.find(
 				(el) => el[1] === "button" && el[2]?.includes("Resistant Button"),
@@ -69,16 +60,7 @@ test.describe("Fallback Strategy Tools", () => {
 				"fallback-test",
 			);
 
-			const paginatedResult = JSON.parse(
-				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as {
-				data: [
-					string,
-					string,
-					string,
-				][];
-			};
-			const elements = paginatedResult.data;
+			const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
 
 			const standardButtonPath = elements.find(
 				(el) => el[1] === "button" && el[2]?.includes("Standard Button"),

@@ -5,8 +5,8 @@ import {
 import {
 	McpDescriptionsInputPort,
 	type McpDescriptionsInputPort as McpDescriptionsInputPortInterface,
-	PaginatedContentInputPort,
-	type PaginatedContentInputPort as PaginatedContentInputPortInterface,
+	SnapshotContentInputPort,
+	type SnapshotContentInputPort as SnapshotContentInputPortInterface,
 } from "@mcp-browser-kit/core-server/input-ports";
 import type {
 	BrowserSnapshot,
@@ -124,8 +124,8 @@ export class BrowserResources {
 		loggerFactory: LoggerFactoryOutputPort,
 		@inject(ObserveBrowserStateInputPort)
 		private readonly observeBrowserState: ObserveBrowserStateInputPort,
-		@inject(PaginatedContentInputPort)
-		private readonly paginatedContent: PaginatedContentInputPortInterface,
+		@inject(SnapshotContentInputPort)
+		private readonly snapshotContent: SnapshotContentInputPortInterface,
 		@inject(McpDescriptionsInputPort)
 		private readonly mcpDescriptions: McpDescriptionsInputPortInterface,
 	) {
@@ -299,7 +299,7 @@ export class BrowserResources {
 		const tabReadableTextResources = cappedFlat.map(({ channelId, tab }) => ({
 			uri: tabReadableTextBkUri(channelId, tab.id),
 			name: `browsers/${shortChannelId(channelId)}/tabs/${tab.id}/readable-text`,
-			title: `${formatTabTitle(tab)} — readable text`,
+			title: `${formatTabTitle(tab)} — readable text snapshot`,
 			description: this.mcpDescriptions.tabReadableTextDescription(tab.id),
 			mimeType: "application/json",
 		}));
@@ -308,7 +308,7 @@ export class BrowserResources {
 			({ channelId, tab }) => ({
 				uri: tabReadableElementsBkUri(channelId, tab.id),
 				name: `browsers/${shortChannelId(channelId)}/tabs/${tab.id}/readable-elements`,
-				title: `${formatTabTitle(tab)} — readable elements`,
+				title: `${formatTabTitle(tab)} — readable elements snapshot`,
 				description: this.mcpDescriptions.tabReadableElementsDescription(
 					tab.id,
 				),
@@ -417,6 +417,23 @@ export class BrowserResources {
 			);
 		}
 
+		if (parsed.type === "snapshot-page") {
+			const result = await this.snapshotContent.getSnapshotPage(
+				parsed.snapshotId,
+				parsed.contentType,
+				parsed.pageNumber,
+			);
+			return {
+				contents: [
+					{
+						uri: uri.toString(),
+						mimeType: "application/json",
+						text: JSON.stringify(result, null, 2),
+					},
+				],
+			};
+		}
+
 		if (parsed.type === "browser") {
 			const entry = this.observeBrowserState.getBrowser(parsed.channelId);
 			if (!entry) {
@@ -447,20 +464,12 @@ export class BrowserResources {
 				`Tab not found: ${parsed.tabId} in channel ${parsed.channelId} (uri=${uri.toString()})`,
 			);
 		}
-
-		if (
-			parsed.type === "tab-readable-text" ||
-			parsed.type === "tab-readable-text-page"
-		) {
+		if (parsed.type === "tab-readable-text") {
 			this.assertTabOnline(entry.snapshot, uri);
-			const pageNumber =
-				parsed.type === "tab-readable-text-page"
-					? parsed.pageNumber
-					: undefined;
-			const result = await this.paginatedContent.getReadableTextPage(
+			const result = await this.snapshotContent.getReadableTextPage(
 				parsed.channelId,
 				parsed.tabId,
-				pageNumber,
+				1,
 			);
 			return {
 				contents: [
@@ -473,19 +482,29 @@ export class BrowserResources {
 			};
 		}
 
-		if (
-			parsed.type === "tab-readable-elements" ||
-			parsed.type === "tab-readable-elements-page"
-		) {
+		if (parsed.type === "tab-readable-elements") {
 			this.assertTabOnline(entry.snapshot, uri);
-			const pageNumber =
-				parsed.type === "tab-readable-elements-page"
-					? parsed.pageNumber
-					: undefined;
-			const result = await this.paginatedContent.getReadableElementsPage(
+			const result = await this.snapshotContent.getReadableElementsPage(
 				parsed.channelId,
 				parsed.tabId,
-				pageNumber,
+				1,
+			);
+			return {
+				contents: [
+					{
+						uri: uri.toString(),
+						mimeType: "application/json",
+						text: JSON.stringify(result, null, 2),
+					},
+				],
+			};
+		}
+
+		if (parsed.type === "snapshot-page") {
+			const result = await this.snapshotContent.getSnapshotPage(
+				parsed.snapshotId,
+				parsed.contentType,
+				parsed.pageNumber,
 			);
 			return {
 				contents: [
@@ -653,7 +672,7 @@ export class BrowserResources {
 		if (wasKnown) {
 			this.knownChannelIds.delete(channelId);
 		}
-		this.paginatedContent.invalidateCache(channelId);
+		this.snapshotContent.invalidateCache(channelId);
 		for (const tabId of prevTabMap.keys()) {
 			this.safeSendUpdated(server, tabBkUri(channelId, tabId));
 			this.safeSendUpdated(server, tabReadableTextBkUri(channelId, tabId));
@@ -684,7 +703,7 @@ export class BrowserResources {
 	): void {
 		for (const tabId of prevTabMap.keys()) {
 			if (!currentTabMap.has(tabId)) {
-				this.paginatedContent.invalidateCache(channelId, tabId);
+				this.snapshotContent.invalidateCache(channelId, tabId);
 				this.safeSendUpdated(server, tabBkUri(channelId, tabId));
 				this.safeSendUpdated(server, tabReadableTextBkUri(channelId, tabId));
 				this.safeSendUpdated(
@@ -697,7 +716,7 @@ export class BrowserResources {
 		for (const [tabId, fp] of currentTabMap) {
 			const prev = prevTabMap.get(tabId);
 			if (!(prev && tabFingerprintsEqual(prev, fp))) {
-				this.paginatedContent.invalidateCache(channelId, tabId);
+				this.snapshotContent.invalidateCache(channelId, tabId);
 				this.safeSendUpdated(server, tabBkUri(channelId, tabId));
 				this.safeSendUpdated(server, tabReadableTextBkUri(channelId, tabId));
 				this.safeSendUpdated(

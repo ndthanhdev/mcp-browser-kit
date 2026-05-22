@@ -62,21 +62,13 @@ export const tabReadableElementsBkUri = (
 ): string =>
 	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}/tabs/${tabId}/readable-elements`;
 
-/** `bk:///browsers/<shortId>/tabs/<tabId>/readable-text/pages/<page>` */
-export const tabReadableTextPageBkUri = (
-	channelId: string,
-	tabId: string,
+/** `bk:///snapshot-types/<type>/snapshots/<snapshotId>/pages/<page>` */
+export const snapshotPageBkUri = (
+	type: "readable-text" | "readable-elements",
+	snapshotId: string,
 	page: number,
 ): string =>
-	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}/tabs/${tabId}/readable-text/pages/${page}`;
-
-/** `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements/pages/<page>` */
-export const tabReadableElementsPageBkUri = (
-	channelId: string,
-	tabId: string,
-	page: number,
-): string =>
-	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}/tabs/${tabId}/readable-elements/pages/${page}`;
+	`${BK_URI_PREFIX}snapshot-types/${type}/snapshots/${snapshotId}/pages/${page}`;
 
 // ─── Parser ───────────────────────────────────────────────────────────────────
 
@@ -101,15 +93,9 @@ export type ParsedBkResource =
 			tabId: string;
 	  }
 	| {
-			type: "tab-readable-text-page";
-			channelId: string;
-			tabId: string;
-			pageNumber: number;
-	  }
-	| {
-			type: "tab-readable-elements-page";
-			channelId: string;
-			tabId: string;
+			type: "snapshot-page";
+			contentType: "readable-text" | "readable-elements";
+			snapshotId: string;
 			pageNumber: number;
 	  };
 
@@ -122,6 +108,7 @@ export type ParsedBkResource =
  *   `browsers/<shortId>/tabs/<tabId>`           → tab
  *   `browsers/<shortId>/tabs/<tabId>/readable-text`
  *   `browsers/<shortId>/tabs/<tabId>/readable-elements`
+ *   `snapshot-types/<type>/snapshots/<snapshotId>/pages/<pageNumber>`
  *
  * The short ID is reverse-mapped to a full channelId by scanning the live
  * browser list. Returns `undefined` for malformed input or an unknown short ID.
@@ -132,6 +119,26 @@ export const parseBkResourceId = (
 		channelId: string;
 	}>,
 ): ParsedBkResource | undefined => {
+	if (resourceId.startsWith("snapshot-types/")) {
+		const match = resourceId.match(
+			/^snapshot-types\/(readable-text|readable-elements)\/snapshots\/([^/]+)\/pages\/(\d+)$/,
+		);
+		if (match) {
+			const contentType = match[1] as "readable-text" | "readable-elements";
+			const snapshotId = match[2];
+			const pageNumber = Number(match[3]);
+			if (pageNumber >= 1) {
+				return {
+					type: "snapshot-page",
+					contentType,
+					snapshotId,
+					pageNumber,
+				};
+			}
+		}
+		return;
+	}
+
 	if (!resourceId.startsWith("browsers/")) return;
 
 	const rest = resourceId.slice("browsers/".length);
@@ -164,42 +171,23 @@ export const parseBkResourceId = (
 	const suffix =
 		slashSuffix >= 0 ? tabRemainder.slice(slashSuffix + 1) : undefined;
 
-	if (!tabId) return;
-
-	if (suffix === "readable-text") {
-		return {
-			type: "tab-readable-text",
-			channelId,
-			tabId,
-		};
+	if (suffix !== undefined) {
+		if (suffix === "readable-text") {
+			return {
+				type: "tab-readable-text",
+				channelId,
+				tabId,
+			};
+		}
+		if (suffix === "readable-elements") {
+			return {
+				type: "tab-readable-elements",
+				channelId,
+				tabId,
+			};
+		}
+		return;
 	}
-	if (suffix === "readable-elements") {
-		return {
-			type: "tab-readable-elements",
-			channelId,
-			tabId,
-		};
-	}
-
-	const pageMatch = suffix?.match(
-		/^(readable-text|readable-elements)\/pages\/(\d+)$/,
-	);
-	if (pageMatch) {
-		const pageNumber = Number(pageMatch[2]);
-		if (pageNumber < 1) return;
-		const type =
-			pageMatch[1] === "readable-text"
-				? ("tab-readable-text-page" as const)
-				: ("tab-readable-elements-page" as const);
-		return {
-			type,
-			channelId,
-			tabId,
-			pageNumber,
-		};
-	}
-
-	if (suffix !== undefined) return;
 
 	return {
 		type: "tab",
