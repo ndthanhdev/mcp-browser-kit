@@ -9,8 +9,7 @@ import { LoggerFactoryOutputPort } from "../output-ports";
 import type { SnapshotResult } from "../types";
 import { ExtensionChannelManager } from "./extension-channel-manager";
 
-const READABLE_TEXT_PAGE_SIZE = 5_000;
-const READABLE_ELEMENTS_PAGE_SIZE = 100;
+const PAGE_SIZE_CHARS = 8_192;
 
 const snapshotIdGenerator = createPrefixId("snapshot");
 
@@ -43,33 +42,29 @@ function splitText(text: string, pageSize: number): string[] {
 	return pages;
 }
 
-function splitArrayByTokenLength<T>(
-	items: T[],
-	maxTokenLength: number,
-	getItemLength: (item: T) => number,
-): T[][] {
+function splitArrayByCharLength<T>(items: T[], maxChars: number): T[][] {
 	if (items.length === 0)
 		return [
 			items,
 		];
 	const pages: T[][] = [];
 	let currentPage: T[] = [];
-	let currentPageLength = 0;
+	let currentLength = 0;
 
 	for (const item of items) {
-		const itemLength = getItemLength(item);
+		const itemLength = JSON.stringify(item).length;
 		if (currentPage.length === 0) {
 			currentPage.push(item);
-			currentPageLength = itemLength;
-		} else if (currentPageLength + itemLength <= maxTokenLength) {
+			currentLength = itemLength;
+		} else if (currentLength + itemLength <= maxChars) {
 			currentPage.push(item);
-			currentPageLength += itemLength;
+			currentLength += itemLength;
 		} else {
 			pages.push(currentPage);
 			currentPage = [
 				item,
 			];
-			currentPageLength = itemLength;
+			currentLength = itemLength;
 		}
 	}
 	if (currentPage.length > 0) {
@@ -116,7 +111,7 @@ export class SnapshotContentUseCases implements SnapshotContentInputPort {
 
 		if (pageNumber === 1) {
 			const text = await this.fetchReadableText(channelId, tabId);
-			const pages = splitText(text, READABLE_TEXT_PAGE_SIZE);
+			const pages = splitText(text, PAGE_SIZE_CHARS);
 			const snapshotId = snapshotIdGenerator.generate();
 			const cached: CachedPages<string> = {
 				snapshotId,
@@ -153,11 +148,7 @@ export class SnapshotContentUseCases implements SnapshotContentInputPort {
 
 		if (pageNumber === 1) {
 			const elements = await this.fetchReadableElements(channelId, tabId);
-			const pages = splitArrayByTokenLength(
-				elements,
-				READABLE_ELEMENTS_PAGE_SIZE,
-				(item) => JSON.stringify(item).length,
-			);
+			const pages = splitArrayByCharLength(elements, PAGE_SIZE_CHARS);
 			const snapshotId = snapshotIdGenerator.generate();
 			const cached: CachedPages<ReadableElementRecord[]> = {
 				snapshotId,
