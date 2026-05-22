@@ -5,6 +5,7 @@ import {
 	McpDescriptionsUseCases,
 	ObserveBrowserStateUseCases,
 	ServerLifecycle,
+	SnapshotContentUseCases,
 	ToolCallUseCases,
 } from "../core";
 import {
@@ -12,6 +13,7 @@ import {
 	ObserveBrowserStateInputPort,
 	ServerLifecycleInputPort,
 	ServerToolCallsInputPort,
+	SnapshotContentInputPort,
 } from "../input-ports";
 import { LifecycleParticipantOutputPort } from "../output-ports";
 
@@ -27,6 +29,9 @@ export const createCoreServerContainer = () => {
 	container
 		.bind<McpDescriptionsInputPort>(McpDescriptionsInputPort)
 		.to(McpDescriptionsUseCases);
+	container
+		.bind<SnapshotContentInputPort>(SnapshotContentInputPort)
+		.to(SnapshotContentUseCases);
 	container.bind<ExtensionChannelManager>(ExtensionChannelManager).toSelf();
 	container.bind<BrowserStateRegistry>(BrowserStateRegistry).toSelf();
 	container

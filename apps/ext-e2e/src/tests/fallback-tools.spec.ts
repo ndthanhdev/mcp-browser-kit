@@ -25,13 +25,7 @@ test.describe("Fallback Strategy Tools", () => {
 				"fallback-test",
 			);
 
-			const elements = JSON.parse(
-				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as [
-				string,
-				string,
-				string,
-			][];
+			const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
 
 			const resistantButtonPath = elements.find(
 				(el) => el[1] === "button" && el[2]?.includes("Resistant Button"),
@@ -66,13 +60,7 @@ test.describe("Fallback Strategy Tools", () => {
 				"fallback-test",
 			);
 
-			const elements = JSON.parse(
-				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as [
-				string,
-				string,
-				string,
-			][];
+			const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
 
 			const standardButtonPath = elements.find(
 				(el) => el[1] === "button" && el[2]?.includes("Standard Button"),

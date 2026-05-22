@@ -31,6 +31,12 @@ const testScreens = [
 		title: "JavaScript Test",
 		description: "Test JavaScript execution: invokeJsFn",
 	},
+	{
+		path: "/snapshot-test",
+		title: "Snapshot Test",
+		description:
+			"Test text and element snapshot tools and snapshot resource URIs",
+	},
 ];
 
 export function HomeScreen() {

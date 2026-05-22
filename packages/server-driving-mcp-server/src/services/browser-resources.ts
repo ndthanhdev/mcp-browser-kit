@@ -5,8 +5,8 @@ import {
 import {
 	McpDescriptionsInputPort,
 	type McpDescriptionsInputPort as McpDescriptionsInputPortInterface,
-	ServerToolCallsInputPort,
-	type ServerToolCallsInputPort as ServerToolCallsInputPortInterface,
+	SnapshotContentInputPort,
+	type SnapshotContentInputPort as SnapshotContentInputPortInterface,
 } from "@mcp-browser-kit/core-server/input-ports";
 import type {
 	BrowserSnapshot,
@@ -124,8 +124,8 @@ export class BrowserResources {
 		loggerFactory: LoggerFactoryOutputPort,
 		@inject(ObserveBrowserStateInputPort)
 		private readonly observeBrowserState: ObserveBrowserStateInputPort,
-		@inject(ServerToolCallsInputPort)
-		private readonly serverToolCalls: ServerToolCallsInputPortInterface,
+		@inject(SnapshotContentInputPort)
+		private readonly snapshotContent: SnapshotContentInputPortInterface,
 		@inject(McpDescriptionsInputPort)
 		private readonly mcpDescriptions: McpDescriptionsInputPortInterface,
 	) {
@@ -299,16 +299,16 @@ export class BrowserResources {
 		const tabReadableTextResources = cappedFlat.map(({ channelId, tab }) => ({
 			uri: tabReadableTextBkUri(channelId, tab.id),
 			name: `browsers/${shortChannelId(channelId)}/tabs/${tab.id}/readable-text`,
-			title: `${formatTabTitle(tab)} — readable text`,
+			title: `${formatTabTitle(tab)} — readable text snapshot`,
 			description: this.mcpDescriptions.tabReadableTextDescription(tab.id),
-			mimeType: "text/plain",
+			mimeType: "application/json",
 		}));
 
 		const tabReadableElementsResources = cappedFlat.map(
 			({ channelId, tab }) => ({
 				uri: tabReadableElementsBkUri(channelId, tab.id),
 				name: `browsers/${shortChannelId(channelId)}/tabs/${tab.id}/readable-elements`,
-				title: `${formatTabTitle(tab)} — readable elements`,
+				title: `${formatTabTitle(tab)} — readable elements snapshot`,
 				description: this.mcpDescriptions.tabReadableElementsDescription(
 					tab.id,
 				),
@@ -417,6 +417,23 @@ export class BrowserResources {
 			);
 		}
 
+		if (parsed.type === "snapshot-page") {
+			const result = await this.snapshotContent.getSnapshotPage(
+				parsed.snapshotId,
+				parsed.contentType,
+				parsed.pageNumber,
+			);
+			return {
+				contents: [
+					{
+						uri: uri.toString(),
+						mimeType: "application/json",
+						text: JSON.stringify(result, null, 2),
+					},
+				],
+			};
+		}
+
 		if (parsed.type === "browser") {
 			const entry = this.observeBrowserState.getBrowser(parsed.channelId);
 			if (!entry) {
@@ -447,19 +464,19 @@ export class BrowserResources {
 				`Tab not found: ${parsed.tabId} in channel ${parsed.channelId} (uri=${uri.toString()})`,
 			);
 		}
-
 		if (parsed.type === "tab-readable-text") {
 			this.assertTabOnline(entry.snapshot, uri);
-			const text = await this.serverToolCalls.getReadableTextByChannelAndTab(
+			const result = await this.snapshotContent.getReadableTextPage(
 				parsed.channelId,
 				parsed.tabId,
+				1,
 			);
 			return {
 				contents: [
 					{
 						uri: uri.toString(),
-						mimeType: "text/plain",
-						text,
+						mimeType: "application/json",
+						text: JSON.stringify(result, null, 2),
 					},
 				],
 			};
@@ -467,17 +484,17 @@ export class BrowserResources {
 
 		if (parsed.type === "tab-readable-elements") {
 			this.assertTabOnline(entry.snapshot, uri);
-			const { elements } =
-				await this.serverToolCalls.getReadableElementsByChannelAndTab(
-					parsed.channelId,
-					parsed.tabId,
-				);
+			const result = await this.snapshotContent.getReadableElementsPage(
+				parsed.channelId,
+				parsed.tabId,
+				1,
+			);
 			return {
 				contents: [
 					{
 						uri: uri.toString(),
 						mimeType: "application/json",
-						text: JSON.stringify(elements, null, 2),
+						text: JSON.stringify(result, null, 2),
 					},
 				],
 			};
@@ -638,6 +655,7 @@ export class BrowserResources {
 		if (wasKnown) {
 			this.knownChannelIds.delete(channelId);
 		}
+		this.snapshotContent.invalidateCache(channelId);
 		for (const tabId of prevTabMap.keys()) {
 			this.safeSendUpdated(server, tabBkUri(channelId, tabId));
 			this.safeSendUpdated(server, tabReadableTextBkUri(channelId, tabId));
@@ -668,6 +686,7 @@ export class BrowserResources {
 	): void {
 		for (const tabId of prevTabMap.keys()) {
 			if (!currentTabMap.has(tabId)) {
+				this.snapshotContent.invalidateCache(channelId, tabId);
 				this.safeSendUpdated(server, tabBkUri(channelId, tabId));
 				this.safeSendUpdated(server, tabReadableTextBkUri(channelId, tabId));
 				this.safeSendUpdated(
@@ -680,6 +699,7 @@ export class BrowserResources {
 		for (const [tabId, fp] of currentTabMap) {
 			const prev = prevTabMap.get(tabId);
 			if (!(prev && tabFingerprintsEqual(prev, fp))) {
+				this.snapshotContent.invalidateCache(channelId, tabId);
 				this.safeSendUpdated(server, tabBkUri(channelId, tabId));
 				this.safeSendUpdated(server, tabReadableTextBkUri(channelId, tabId));
 				this.safeSendUpdated(

@@ -4,11 +4,13 @@
  * ranking here means `browser-resources.ts` can focus on MCP wiring.
  *
  * URI scheme: `bk:///`
- *   - `bk:///context`                                           — aggregated context (static)
- *   - `bk:///browsers/<shortId>`                               — one browser
- *   - `bk:///browsers/<shortId>/tabs/<tabId>`                  — one tab
- *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-text`    — tab text
- *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements`— tab elements
+ *   - `bk:///context`                                                        — aggregated context (static)
+ *   - `bk:///browsers/<shortId>`                                            — one browser
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>`                               — one tab
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-text`                 — tab text (page 1)
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements`             — tab elements (page 1)
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-text/pages/<N>`       — tab text page N
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements/pages/<N>`   — tab elements page N
  *
  * The short browser ID is the nanoid portion of the channelId (everything
  * after the `channel:` prefix). The single ResourceTemplate
@@ -60,6 +62,14 @@ export const tabReadableElementsBkUri = (
 ): string =>
 	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}/tabs/${tabId}/readable-elements`;
 
+/** `bk:///snapshot-types/<type>/snapshots/<snapshotId>/pages/<page>` */
+export const snapshotPageBkUri = (
+	type: "readable-text" | "readable-elements",
+	snapshotId: string,
+	page: number,
+): string =>
+	`${BK_URI_PREFIX}snapshot-types/${type}/snapshots/${snapshotId}/pages/${page}`;
+
 // ─── Parser ───────────────────────────────────────────────────────────────────
 
 export type ParsedBkResource =
@@ -81,6 +91,12 @@ export type ParsedBkResource =
 			type: "tab-readable-elements";
 			channelId: string;
 			tabId: string;
+	  }
+	| {
+			type: "snapshot-page";
+			contentType: "readable-text" | "readable-elements";
+			snapshotId: string;
+			pageNumber: number;
 	  };
 
 /**
@@ -92,6 +108,7 @@ export type ParsedBkResource =
  *   `browsers/<shortId>/tabs/<tabId>`           → tab
  *   `browsers/<shortId>/tabs/<tabId>/readable-text`
  *   `browsers/<shortId>/tabs/<tabId>/readable-elements`
+ *   `snapshot-types/<type>/snapshots/<snapshotId>/pages/<pageNumber>`
  *
  * The short ID is reverse-mapped to a full channelId by scanning the live
  * browser list. Returns `undefined` for malformed input or an unknown short ID.
@@ -102,6 +119,26 @@ export const parseBkResourceId = (
 		channelId: string;
 	}>,
 ): ParsedBkResource | undefined => {
+	if (resourceId.startsWith("snapshot-types/")) {
+		const match = resourceId.match(
+			/^snapshot-types\/(readable-text|readable-elements)\/snapshots\/([^/]+)\/pages\/(\d+)$/,
+		);
+		if (match) {
+			const contentType = match[1] as "readable-text" | "readable-elements";
+			const snapshotId = match[2];
+			const pageNumber = Number(match[3]);
+			if (pageNumber >= 1) {
+				return {
+					type: "snapshot-page",
+					contentType,
+					snapshotId,
+					pageNumber,
+				};
+			}
+		}
+		return;
+	}
+
 	if (!resourceId.startsWith("browsers/")) return;
 
 	const rest = resourceId.slice("browsers/".length);
@@ -134,23 +171,23 @@ export const parseBkResourceId = (
 	const suffix =
 		slashSuffix >= 0 ? tabRemainder.slice(slashSuffix + 1) : undefined;
 
-	if (!tabId) return;
-
-	if (suffix === "readable-text") {
-		return {
-			type: "tab-readable-text",
-			channelId,
-			tabId,
-		};
+	if (suffix !== undefined) {
+		if (suffix === "readable-text") {
+			return {
+				type: "tab-readable-text",
+				channelId,
+				tabId,
+			};
+		}
+		if (suffix === "readable-elements") {
+			return {
+				type: "tab-readable-elements",
+				channelId,
+				tabId,
+			};
+		}
+		return;
 	}
-	if (suffix === "readable-elements") {
-		return {
-			type: "tab-readable-elements",
-			channelId,
-			tabId,
-		};
-	}
-	if (suffix !== undefined) return; // unknown sub-path
 
 	return {
 		type: "tab",

@@ -24,13 +24,7 @@ test.describe("Form Tools", () => {
 				testAppPage.page,
 				"form-test",
 			);
-			const elements = JSON.parse(
-				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as [
-				string,
-				string,
-				string,
-			][];
+			const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
 			const usernameInputPath = elements.find(
 				(el) => el[1] === "input" && el[2]?.includes("Enter username"),
 			)?.[0];
@@ -60,13 +54,7 @@ test.describe("Form Tools", () => {
 				testAppPage.page,
 				"form-test",
 			);
-			const elements = JSON.parse(
-				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as [
-				string,
-				string,
-				string,
-			][];
+			const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
 			const textareaPath = elements.find(
 				(el) => el[1] === "textarea" && el[2]?.includes("Enter your message"),
 			)?.[0];
@@ -126,13 +114,7 @@ test.describe("Form Tools", () => {
 				testAppPage.page,
 				"form-test",
 			);
-			const elements = JSON.parse(
-				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as [
-				string,
-				string,
-				string,
-			][];
+			const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
 			const searchInputPath = elements.find(
 				(el) => el[1] === "input" && el[2]?.includes("Search"),
 			)?.[0];
@@ -202,13 +184,7 @@ test.describe("Form Tools", () => {
 				testAppPage.page,
 				"form-test",
 			);
-			const elements = JSON.parse(
-				await mcpClientPage.readResourceText(`${tabUri}/readable-elements`),
-			) as [
-				string,
-				string,
-				string,
-			][];
+			const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
 
 			const usernameInputPath = elements.find((el) =>
 				el[2]?.includes("Enter username"),

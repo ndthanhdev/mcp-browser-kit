@@ -227,6 +227,42 @@ export class McpClientPageObject {
 		return first && "text" in first ? String(first.text) : "";
 	}
 
+	async readAllSnapshotElements(tabUri: string): Promise<
+		[
+			string,
+			string,
+			string,
+		][]
+	> {
+		type SnapshotPage = {
+			snapshotId: string;
+			data: [
+				string,
+				string,
+				string,
+			][];
+			hasNextPage: boolean;
+			nextPageNumber: number | null;
+			totalPages: number;
+		};
+		const firstText = await this.readResourceText(
+			`${tabUri}/readable-elements`,
+		);
+		const first = JSON.parse(firstText) as SnapshotPage;
+		const allElements = [
+			...first.data,
+		];
+
+		let page = first;
+		while (page.hasNextPage && page.nextPageNumber != null) {
+			const nextUri = `bk:///snapshot-types/readable-elements/snapshots/${page.snapshotId}/pages/${page.nextPageNumber}`;
+			const nextText = await this.readResourceText(nextUri);
+			page = JSON.parse(nextText) as SnapshotPage;
+			allElements.push(...page.data);
+		}
+		return allElements;
+	}
+
 	async subscribeResource(uri: string) {
 		await this.client.request(
 			{
