@@ -500,23 +500,6 @@ export class BrowserResources {
 			};
 		}
 
-		if (parsed.type === "snapshot-page") {
-			const result = await this.snapshotContent.getSnapshotPage(
-				parsed.snapshotId,
-				parsed.contentType,
-				parsed.pageNumber,
-			);
-			return {
-				contents: [
-					{
-						uri: uri.toString(),
-						mimeType: "application/json",
-						text: JSON.stringify(result, null, 2),
-					},
-				],
-			};
-		}
-
 		const windowId = findWindowIdForTab(entry.snapshot, parsed.tabId);
 		const contentChangedAt =
 			entry.snapshot.contentChangedAt?.[parsed.tabId] ?? undefined;
