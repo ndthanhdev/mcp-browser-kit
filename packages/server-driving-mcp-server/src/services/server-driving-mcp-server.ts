@@ -13,6 +13,7 @@ import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import { BrowserResources } from "./browser-resources";
 import { BrowserTools } from "./browser-tools";
+import { HumanHintTools } from "./human-hint-tools";
 import { InteractionTools } from "./interaction-tools";
 
 @injectable()
@@ -30,6 +31,8 @@ export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 		private readonly browserTools: BrowserTools,
 		@inject(InteractionTools)
 		private readonly interactionTools: InteractionTools,
+		@inject(HumanHintTools)
+		private readonly humanHintTools: HumanHintTools,
 		@inject(BrowserResources)
 		private readonly browserResources: BrowserResources,
 		@inject(McpDescriptionsInputPort)
@@ -77,6 +80,9 @@ export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 
 			this.logger.verbose("Registering interaction tools");
 			this.interactionTools.register(this.server);
+
+			this.logger.verbose("Registering human hint tools");
+			this.humanHintTools.register(this.server);
 
 			this.logger.verbose("Registering browser resources");
 			this.unsubscribeResources = this.browserResources.register(this.server);
@@ -158,6 +164,7 @@ export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 	static setupContainer(container: Container): void {
 		container.bind<BrowserTools>(BrowserTools).toSelf();
 		container.bind<InteractionTools>(InteractionTools).toSelf();
+		container.bind<HumanHintTools>(HumanHintTools).toSelf();
 		container.bind<BrowserResources>(BrowserResources).toSelf();
 
 		container.bind<ServerDrivingMcpServer>(ServerDrivingMcpServer).toSelf();

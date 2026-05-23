@@ -86,3 +86,16 @@ export const openTab = async (
 		windowId: tab.windowId?.toString() ?? "",
 	};
 };
+
+export const activateTab = async (tabId: string): Promise<void> => {
+	const id = Number.parseInt(tabId, 10);
+	const tab = await browser.tabs.get(id);
+	await browser.tabs.update(id, {
+		active: true,
+	});
+	if (tab.windowId !== undefined) {
+		await browser.windows.update(tab.windowId, {
+			focused: true,
+		});
+	}
+};

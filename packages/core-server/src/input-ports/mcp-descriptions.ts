@@ -14,6 +14,7 @@ export interface McpDescriptionsInputPort {
 	closeTabInstruction(): string;
 	getSelectionInstruction(): string;
 	openTabInstruction(): string;
+	showHumanHintInstruction(): string;
 
 	// Resource descriptions
 	contextResourceDescription(): string;

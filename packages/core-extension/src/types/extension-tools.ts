@@ -1,3 +1,7 @@
+import type {
+	HumanHintTabResult,
+	ShowHumanHintParams,
+} from "@mcp-browser-kit/types";
 import type { ExtensionContext } from "./extension-context";
 import type { ReadableElementRecord } from "./readable-element-record";
 import type { Screenshot } from "./screenshot";
@@ -26,6 +30,11 @@ export interface TabSpecificTool {
 	getSelection(tabId: string): Promise<Selection>;
 	hitEnterOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
 	hitEnterOnElement(tabId: string, readablePath: string): Promise<void>;
+	showHumanHint(
+		tabId: string,
+		params: ShowHumanHintParams,
+		humanMessage: string,
+	): Promise<HumanHintTabResult>;
 	invokeJsFn(tabId: string, fnBodyCode: string): Promise<unknown>;
 }
 

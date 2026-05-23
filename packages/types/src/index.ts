@@ -1,6 +1,7 @@
 export * from "./browser-state";
 export * from "./coordinates";
 export * from "./func";
+export * from "./human-hint";
 export * from "./logger-factory";
 export * from "./message-channel";
 export * from "./rpc";

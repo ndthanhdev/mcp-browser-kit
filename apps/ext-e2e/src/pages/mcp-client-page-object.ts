@@ -163,6 +163,22 @@ export class McpClientPageObject {
 		return res as TypedCallToolResult<T>;
 	}
 
+	async callToolRaw(
+		name: string,
+		args: Record<string, unknown> = {},
+	): Promise<CallToolResult> {
+		return this.client.request(
+			{
+				method: "tools/call",
+				params: {
+					name,
+					arguments: args,
+				},
+			},
+			CallToolResultSchema,
+		);
+	}
+
 	async listResources() {
 		const res = await this.client.request(
 			{

@@ -15,6 +15,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"3. For readable-element tools, read `<tabUri>/snapshots/readable-elements/pages/1` to get `[readablePath, role, text]` tuples. For raw page text, read `<tabUri>/snapshots/readable-text/pages/1`.",
 			"4. Prefer readable-element tools over coordinate tools when both work — they are more robust to layout changes and work on MV3.",
 			"5. `readable-text` and `readable-elements` snapshots are paginated. Fetch `<tabUri>/snapshots/readable-text/pages/<pageNumber>` (or `snapshots/readable-elements/pages/<pageNumber>`) to access pages. Always read page 1 first — it caches the content for subsequent page fetches.",
+			"6. When automation fails (as a soft guideline, retry once if the failure looks transient) or a step is human-only (CAPTCHA, 2FA, irreversible confirmations), call `showHumanHint` with the target, action, message, and `value` when filling.",
 			"",
 			"Resources:",
 			"* `bk:///context` — aggregated browser/window/tab list. Always read first.",
@@ -122,6 +123,17 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"🌐 Open a URL in a new tab.",
 			"* Requires `windowKey` from `bk:///context` and the target `url`.",
 			"* Returns the new `tabKey` and `windowKey`. The tab needs a brief moment to finish loading before it is safe to interact with.",
+		].join("\n");
+	};
+
+	showHumanHintInstruction = (): string => {
+		return [
+			"🧑‍💻 Highlight an element and instruct the human to act when automation fails or the step is human-only.",
+			"* Requires `tabKey`, `action` (`click`, `fill`, or `hit-enter`), and `message`.",
+			"* Provide exactly one target: `readablePath` (preferred) or `x` and `y` coordinates.",
+			"* `fill` requires `value` — the text the human should type.",
+			"* On success, focuses the tab, scrolls the target into view, shows an overlay + callout for 60s (dismissible). Returns `humanMessage` to relay in chat.",
+			"* On failure, returns `ok: false` with a `reason` but still includes a usable `humanMessage`.",
 		].join("\n");
 	};
 
