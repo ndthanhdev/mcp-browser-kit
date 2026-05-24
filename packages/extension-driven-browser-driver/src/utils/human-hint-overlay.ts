@@ -88,12 +88,12 @@ const createOverlayRoot = (humanMessage: string): HTMLElement => {
 	const ring = document.createElement("div");
 	ring.dataset.mbkHintRing = "true";
 	ring.style.cssText =
-		"position:fixed;box-sizing:border-box;border:3px solid rgba(255,180,0,0.95);border-radius:8px;box-shadow:0 0 0 4px rgba(255,180,0,0.25),0 8px 24px rgba(0,0,0,0.25);pointer-events:none;transition:top 120ms ease,left 120ms ease,width 120ms ease,height 120ms ease;";
+		"position:fixed;box-sizing:border-box;border:3px solid rgba(0,255,0,0.9);border-radius:8px;box-shadow:0 0 0 4px rgba(0,255,0,0.25),0 8px 24px rgba(0,0,0,0.25);pointer-events:none;transition:top 120ms ease,left 120ms ease,width 120ms ease,height 120ms ease;";
 
 	const callout = document.createElement("div");
 	callout.dataset.mbkHintCallout = "true";
 	callout.style.cssText =
-		"position:fixed;max-width:min(360px,calc(100vw - 24px));padding:12px 40px 12px 12px;background:#1f2937;color:#f9fafb;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.35);pointer-events:auto;line-height:1.45;font-size:14px;";
+		"position:fixed;max-width:min(360px,calc(100vw - 24px));padding:12px 40px 12px 12px;background:#1f2937;color:#f9fafb;border-left:3px solid rgba(0,255,0,0.8);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.35);pointer-events:auto;line-height:1.45;font-size:14px;";
 
 	const text = document.createElement("div");
 	text.dataset.mbkHintText = "true";
@@ -148,7 +148,7 @@ const pulseAnchor = async (anchor: Anchor): Promise<void> => {
 	await playClickAnimationAdvance(cx, cy, {
 		duration: 900,
 		size: 48,
-		color: "rgba(255, 180, 0, 0.85)",
+		color: "rgba(0, 255, 0, 0.8)",
 	});
 };
 
