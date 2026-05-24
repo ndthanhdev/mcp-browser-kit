@@ -160,7 +160,7 @@ test.describe("Browser Snapshot E2E Tests", () => {
 			);
 		});
 
-		test("should invalidate cache when the page is reloaded or navigated", async ({
+		test("should keep snapshot readable after navigation (idempotent pagination)", async ({
 			testAppPage,
 			mcpClientPage,
 		}) => {
@@ -177,22 +177,26 @@ test.describe("Browser Snapshot E2E Tests", () => {
 			);
 			const page1 = jsonPage1 as SnapshotResultJson<string>;
 
-			// 2. Verify Page 2 reads successfully
-			const { json: jsonPage2 } = await mcpClientPage.readResource(
-				`bk:///snapshot-types/readable-text/snapshots/${page1.snapshotId}/pages/2`,
-			);
-			expect(jsonPage2).toBeDefined();
-
-			// 3. Navigate away and back to change the tab fingerprint, triggering cache invalidation
+			// 2. Navigate away and back to change the tab fingerprint
 			await testAppPage.navigateToHome();
 			await testAppPage.navigateToSnapshotTest();
 
-			// 4. Try reading Page 2 directly using the invalidated snapshotId (should fail due to invalidation)
-			await expect(
-				mcpClientPage.readResource(
-					`bk:///snapshot-types/readable-text/snapshots/${page1.snapshotId}/pages/2`,
-				),
-			).rejects.toThrow(/No cached snapshot pages found for snapshot ID:/);
+			// 3. The old snapshot should still be readable by snapshotId
+			const { json: jsonPage2 } = await mcpClientPage.readResource(
+				`bk:///snapshot-types/readable-text/snapshots/${page1.snapshotId}/pages/2`,
+			);
+			const page2 = jsonPage2 as SnapshotResultJson<string>;
+
+			expect(page2).toBeDefined();
+			expect(page2.snapshotId).toBe(page1.snapshotId);
+			expect(page2.pageNumber).toBe(2);
+
+			// 4. Reading page 1 again via the tab URI should produce a fresh snapshot
+			const { json: jsonFresh } = await mcpClientPage.readResource(
+				`${tabUri}/readable-text`,
+			);
+			const fresh = jsonFresh as SnapshotResultJson<string>;
+			expect(fresh.snapshotId).not.toBe(page1.snapshotId);
 		});
 	});
 });

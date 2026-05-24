@@ -39,6 +39,70 @@ export const openTabSchema = {
 	url: z.string().describe("URL to open in the new tab"),
 };
 
+export const showHumanHintInputSchema = {
+	tabKey: z.string().describe("Tab key to target"),
+	action: z
+		.enum([
+			"click",
+			"fill",
+			"hit-enter",
+		])
+		.describe("Manual step the human should take"),
+	message: z
+		.string()
+		.describe("Human-facing instruction shown in browser callout and chat"),
+	value: z
+		.string()
+		.optional()
+		.describe("Required for fill — text the human should type"),
+	readablePath: z
+		.string()
+		.optional()
+		.describe("Readable path from readable-elements (MV3 / element flow)"),
+	x: z
+		.number()
+		.optional()
+		.describe("X coordinate in pixels (MV2 / screenshot flow)"),
+	y: z
+		.number()
+		.optional()
+		.describe("Y coordinate in pixels (MV2 / screenshot flow)"),
+};
+
+const humanHintTargetSchema = z.discriminatedUnion("type", [
+	z.object({
+		type: z.literal("readablePath"),
+		readablePath: z.string(),
+		label: z.string().optional(),
+	}),
+	z.object({
+		type: z.literal("coordinates"),
+		x: z.number(),
+		y: z.number(),
+	}),
+]);
+
+export const showHumanHintOutputSchema = {
+	ok: z.boolean().describe("Whether the overlay was shown"),
+	reason: z.string().optional().describe("Failure reason when ok is false"),
+	action: z.enum([
+		"click",
+		"fill",
+		"hit-enter",
+	]),
+	target: humanHintTargetSchema.optional(),
+	value: z.string().optional(),
+	message: z.string(),
+	humanMessage: z
+		.string()
+		.describe("Ready-to-relay instruction for the person at the keyboard"),
+	tab: z.object({
+		title: z.string(),
+		url: z.string(),
+	}),
+	expiresInSeconds: z.number(),
+};
+
 export const createOverOutputSchema = <T extends Record<string, z.ZodType>>(
 	valueSchema: T,
 ) => ({
@@ -90,6 +154,7 @@ type ServerToolOverSchemaMap = {
 	clickOnElement: typeof actionOutputSchema;
 	fillTextToElement: typeof actionOutputSchema;
 	hitEnterOnElement: typeof actionOutputSchema;
+	showHumanHint: typeof showHumanHintOutputSchema;
 };
 
 export type McpToolName = keyof ServerToolOverSchemaMap;

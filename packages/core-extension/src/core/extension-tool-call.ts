@@ -1,3 +1,7 @@
+import type {
+	HumanHintTabResult,
+	ShowHumanHintParams,
+} from "@mcp-browser-kit/types";
 import { inject, injectable } from "inversify";
 import type { ExtensionToolCallInputPort } from "../input-ports";
 import {
@@ -128,6 +132,14 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 			readablePath,
 			value,
 		);
+	};
+
+	showHumanHint = (
+		tabId: string,
+		params: ShowHumanHintParams,
+		humanMessage: string,
+	): Promise<HumanHintTabResult> => {
+		return this.browserDriver.showHumanHint(tabId, params, humanMessage);
 	};
 
 	invokeJsFn = (tabId: string, fnBodyCode: string): Promise<unknown> => {

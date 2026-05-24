@@ -11,7 +11,11 @@ import {
 	BrowserDriverOutputPort,
 	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-extension/output-ports";
-import type { Func } from "@mcp-browser-kit/types";
+import type {
+	Func,
+	HumanHintTabResult,
+	ShowHumanHintParams,
+} from "@mcp-browser-kit/types";
 import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import * as backgroundToolsM2 from "../utils/background-tools-m2";
@@ -231,6 +235,25 @@ export class DrivenBrowserDriverM2 implements BrowserDriverOutputPort {
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.hitEnterOnFocusedElement",
 			args: [],
+			extraArgs: {
+				tabId,
+			},
+		});
+	};
+
+	showHumanHint = async (
+		tabId: string,
+		params: ShowHumanHintParams,
+		humanMessage: string,
+	): Promise<HumanHintTabResult> => {
+		this.logger.verbose(`Showing human hint in tab: ${tabId}`);
+		await backgroundToolsM3.activateTab(tabId);
+		return this.tabRpcService.tabRpcClient.call({
+			method: "showHumanHint",
+			args: [
+				params,
+				humanMessage,
+			],
 			extraArgs: {
 				tabId,
 			},

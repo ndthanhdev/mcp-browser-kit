@@ -11,7 +11,11 @@ import type {
 	Selection,
 	TabContext,
 } from "@mcp-browser-kit/core-extension/types";
-import type { Func } from "@mcp-browser-kit/types";
+import type {
+	Func,
+	HumanHintTabResult,
+	ShowHumanHintParams,
+} from "@mcp-browser-kit/types";
 import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import * as backgroundToolsM3 from "../utils/background-tools-m3";
@@ -230,6 +234,25 @@ export class DrivenBrowserDriverM3 implements BrowserDriverOutputPort {
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.hitEnterOnFocusedElement",
 			args: [],
+			extraArgs: {
+				tabId,
+			},
+		});
+	};
+
+	showHumanHint = async (
+		tabId: string,
+		params: ShowHumanHintParams,
+		humanMessage: string,
+	): Promise<HumanHintTabResult> => {
+		this.logger.verbose(`Showing human hint in tab: ${tabId}`);
+		await backgroundToolsM3.activateTab(tabId);
+		return this.tabRpcService.tabRpcClient.call({
+			method: "showHumanHint",
+			args: [
+				params,
+				humanMessage,
+			],
 			extraArgs: {
 				tabId,
 			},

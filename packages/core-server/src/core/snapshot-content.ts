@@ -10,6 +10,7 @@ import type { SnapshotResult } from "../types";
 import { ExtensionChannelManager } from "./extension-channel-manager";
 
 const PAGE_SIZE_CHARS = 8_192;
+const SNAPSHOT_CAP = 50;
 
 const snapshotIdGenerator = createPrefixId("snapshot");
 
@@ -121,12 +122,9 @@ export class SnapshotContentUseCases implements SnapshotContentInputPort {
 				pages,
 				totalPages: pages.length,
 			};
-			const old = this.cache.get(key);
-			if (old) {
-				this.cacheBySnapshotId.delete(old.snapshotId);
-			}
 			this.cache.set(key, cached);
 			this.cacheBySnapshotId.set(snapshotId, cached);
+			this.evictIfOverCap();
 			this.logger.verbose("Cached readable-text", {
 				channelId,
 				tabId,
@@ -158,12 +156,9 @@ export class SnapshotContentUseCases implements SnapshotContentInputPort {
 				pages,
 				totalPages: pages.length,
 			};
-			const old = this.cache.get(key);
-			if (old) {
-				this.cacheBySnapshotId.delete(old.snapshotId);
-			}
 			this.cache.set(key, cached);
 			this.cacheBySnapshotId.set(snapshotId, cached);
+			this.evictIfOverCap();
 			this.logger.verbose("Cached readable-elements", {
 				channelId,
 				tabId,
@@ -206,19 +201,9 @@ export class SnapshotContentUseCases implements SnapshotContentInputPort {
 
 	invalidateCache(channelId: string, tabId?: string): void {
 		if (tabId) {
-			const textKey = cacheKey(channelId, tabId, "readable-text");
-			const elemKey = cacheKey(channelId, tabId, "readable-elements");
-			const textCached = this.cache.get(textKey);
-			if (textCached) {
-				this.cacheBySnapshotId.delete(textCached.snapshotId);
-			}
-			const elemCached = this.cache.get(elemKey);
-			if (elemCached) {
-				this.cacheBySnapshotId.delete(elemCached.snapshotId);
-			}
-			this.cache.delete(textKey);
-			this.cache.delete(elemKey);
-			this.logger.verbose("Invalidated snapshot cache for tab", {
+			this.cache.delete(cacheKey(channelId, tabId, "readable-text"));
+			this.cache.delete(cacheKey(channelId, tabId, "readable-elements"));
+			this.logger.verbose("Invalidated latest-snapshot pointer for tab", {
 				channelId,
 				tabId,
 			});
@@ -232,9 +217,22 @@ export class SnapshotContentUseCases implements SnapshotContentInputPort {
 				this.cache.delete(key);
 			}
 		}
-		this.logger.verbose("Invalidated snapshot cache for channel", {
+		for (const [id, cached] of this.cacheBySnapshotId.entries()) {
+			if (cached.channelId === channelId) {
+				this.cacheBySnapshotId.delete(id);
+			}
+		}
+		this.logger.verbose("Purged all snapshots for disconnected channel", {
 			channelId,
 		});
+	}
+
+	private evictIfOverCap(): void {
+		while (this.cacheBySnapshotId.size > SNAPSHOT_CAP) {
+			const oldest = this.cacheBySnapshotId.keys().next().value;
+			if (oldest === undefined) break;
+			this.cacheBySnapshotId.delete(oldest);
+		}
 	}
 
 	private getFromCache<T>(

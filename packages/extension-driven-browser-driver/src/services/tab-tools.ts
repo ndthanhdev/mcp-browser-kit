@@ -1,6 +1,10 @@
 import type { TabContext } from "@mcp-browser-kit/core-extension";
 import type { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
 import { LoggerFactoryOutputPort as LoggerFactoryOutputPortSymbol } from "@mcp-browser-kit/core-extension/output-ports";
+import type {
+	HumanHintTabResult,
+	ShowHumanHintParams,
+} from "@mcp-browser-kit/types";
 import { Readability } from "@mozilla/readability";
 import { inject, injectable } from "inversify";
 import { toDomTree } from "../utils/to-dom-tree";
@@ -9,6 +13,7 @@ import { domTreeToReadableTree } from "../utils/to-readable-tree";
 import { TabAnimationTools } from "./tab-animation-tools";
 import { TabContextStore } from "./tab-context-store";
 import { TabDomTools } from "./tab-dom-tools";
+import { TabHumanHintTools } from "./tab-human-hint-tools";
 
 /**
  * TabTools class provides access to browser automation tools.
@@ -22,6 +27,7 @@ export class TabTools {
 		private readonly loggerFactory: LoggerFactoryOutputPort,
 		@inject(TabDomTools) public readonly dom: TabDomTools,
 		@inject(TabAnimationTools) public readonly animation: TabAnimationTools,
+		@inject(TabHumanHintTools) private readonly humanHint: TabHumanHintTools,
 		@inject(TabContextStore) private readonly contextStore: TabContextStore,
 	) {
 		this.logger = this.loggerFactory.create("TabTools");
@@ -82,5 +88,12 @@ export class TabTools {
 			);
 			return document.body.textContent?.trim() ?? "";
 		}
+	};
+
+	showHumanHint = async (
+		params: ShowHumanHintParams,
+		humanMessage: string,
+	): Promise<HumanHintTabResult> => {
+		return this.humanHint.showHumanHint(params, humanMessage);
 	};
 }

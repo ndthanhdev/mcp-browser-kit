@@ -3,6 +3,10 @@ import type {
 	ReadableElementRecord,
 	Selection,
 } from "@mcp-browser-kit/core-extension";
+import type {
+	HumanHintResponse,
+	ShowHumanHintParams,
+} from "@mcp-browser-kit/types";
 import type { Screenshot } from "../types";
 
 export interface BrowserTabContext {
@@ -69,6 +73,10 @@ export type ServerToolCallsInputPort = {
 		tabKey: string;
 		windowKey: string;
 	}>;
+	showHumanHint: (
+		tabKey: string,
+		params: ShowHumanHintParams,
+	) => Promise<HumanHintResponse>;
 };
 export const ServerToolCallsInputPort = Symbol.for("ServerToolCallsInputPort");
 
@@ -129,6 +137,15 @@ export type ServerToolArgsMap = {
 	openTab: {
 		windowKey: string;
 		url: string;
+	};
+	showHumanHint: {
+		tabKey: string;
+		action: ShowHumanHintParams["action"];
+		message: string;
+		value?: string;
+		readablePath?: string;
+		x?: number;
+		y?: number;
 	};
 };
 

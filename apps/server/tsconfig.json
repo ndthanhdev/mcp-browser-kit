@@ -7,6 +7,12 @@
 			"@mcp-browser-kit/extension/*": [
 				"../extension/src/*"
 			],
+			"@mcp-browser-kit/types": [
+				"../../packages/types/src/index.ts"
+			],
+			"@mcp-browser-kit/types/*": [
+				"../../packages/types/src/*"
+			],
 			"@mcp-browser-kit/core-server": [
 				"../../packages/core-server/src/index.ts"
 			],
@@ -49,12 +55,16 @@
 	"include": [
 		"src/**/*.ts",
 		"../../packages/rpc/src/**/*",
+		"../../packages/types/src/**/*",
 		"../../packages/core-server/src/**/*",
 		"../../packages/helper-base-extension-channel-provider/src/**/*",
 		"../../packages/server-driven-trpc-channel-provider/src/**/*",
 		"../../packages/server-driving-mcp-server/src/**/*"
 	],
 	"references": [
+		{
+			"path": "../../packages/types"
+		},
 		{
 			"path": "../../packages/core-server"
 		},
