@@ -12,15 +12,15 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"2. Pick an interaction strategy per tab based on `manifestVersion`:",
 			"   - MV2: `captureTab` + coordinate tools (`clickOnCoordinates`, `fillTextToCoordinates`, `hitEnterOnCoordinates`) and `invokeJsFn` are available.",
 			"   - MV3 (or unknown): use readable-element tools (`clickOnElement`, `fillTextToElement`, `hitEnterOnElement`); coordinate tools and `invokeJsFn` are NOT available.",
-			"3. For readable-element tools, read `<tabUri>/snapshots/readable-elements/pages/1` to get `[readablePath, role, text]` tuples. For raw page text, read `<tabUri>/snapshots/readable-text/pages/1`.",
+			"3. For readable-element tools, read `<tabUri>/readable-elements` to get `[readablePath, role, text]` tuples. For raw page text, read `<tabUri>/readable-text`.",
 			"4. Prefer readable-element tools over coordinate tools when both work — they are more robust to layout changes and work on MV3.",
-			"5. `readable-text` and `readable-elements` snapshots are paginated. Fetch `<tabUri>/snapshots/readable-text/pages/<pageNumber>` (or `snapshots/readable-elements/pages/<pageNumber>`) to access pages. Always read page 1 first — it caches the content for subsequent page fetches.",
+			"5. `readable-text` and `readable-elements` are paginated. The response includes `snapshotId`, `hasNextPage`, `nextPageNumber`, and `totalPages`. If `hasNextPage` is true, fetch `bk:///snapshot-types/<type>/snapshots/<snapshotId>/pages/<nextPageNumber>` for subsequent pages.",
 			"6. When automation fails (as a soft guideline, retry once if the failure looks transient) or a step is human-only (CAPTCHA, 2FA, irreversible confirmations), call `showHumanHint` with the target, action, message, and `value` when filling.",
 			"",
 			"Resources:",
 			"* `bk:///context` — aggregated browser/window/tab list. Always read first.",
 			"* `bk:///{+resourceId}` — per-browser and per-tab resources; see template description.",
-			"* `readable-text` and `readable-elements` return snapshot JSON with `hasNextPage`, `nextPageNumber`, and `totalPages`. Fetch `/pages/<N>` under `/snapshots/<type>` to get subsequent pages.",
+			"* `readable-text` and `readable-elements` return snapshot JSON with `snapshotId`, `hasNextPage`, `nextPageNumber`, and `totalPages`. Fetch `bk:///snapshot-types/<type>/snapshots/<snapshotId>/pages/<N>` for subsequent pages.",
 			"* Subscribe to any URI to receive `notifications/resources/updated` when content changes; cached snapshots become stale after navigation.",
 			"",
 			"Constraints:",
@@ -68,7 +68,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 	clickOnReadableElementInstruction = (): string => {
 		return [
 			"🔘 Click an element by `readablePath`.",
-			"* Get `readablePath` from `<tabUri>/snapshots/readable-elements/pages/1` (returns `[readablePath, role, text]` tuples).",
+			"* Get `readablePath` from `<tabUri>/readable-elements` (returns `[readablePath, role, text]` tuples).",
 			"* Requires `tabKey`, `readablePath`.",
 			"* Works on both MV2 and MV3 — prefer this over `clickOnCoordinates`.",
 		].join("\n");
@@ -77,7 +77,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 	fillTextToReadableElementInstruction = (): string => {
 		return [
 			"✏️ Type text into an element by `readablePath`.",
-			"* Get `readablePath` from `<tabUri>/snapshots/readable-elements/pages/1`.",
+			"* Get `readablePath` from `<tabUri>/readable-elements`.",
 			"* Works with text inputs, textareas, and other editable elements.",
 			"* Requires `tabKey`, `readablePath`, `value`.",
 			"* To submit afterwards: `clickOnElement` on a visible submit button, otherwise `hitEnterOnElement`.",
@@ -149,8 +149,9 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"Per-browser and per-tab resources under `bk:///{+resourceId}`:",
 			"* `bk:///browsers/<shortId>` — full browser snapshot",
 			"* `bk:///browsers/<shortId>/tabs/<tabId>` — tab metadata with `tabKey`",
-			"* `bk:///browsers/<shortId>/tabs/<tabId>/snapshots/readable-text/pages/<N>` — page N of readable text snapshot",
-			"* `bk:///browsers/<shortId>/tabs/<tabId>/snapshots/readable-elements/pages/<N>` — page N of readable elements snapshot",
+			"* `bk:///browsers/<shortId>/tabs/<tabId>/readable-text` — readable text snapshot (page 1)",
+			"* `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements` — readable elements snapshot (page 1)",
+			"* `bk:///snapshot-types/<type>/snapshots/<snapshotId>/pages/<N>` — subsequent snapshot pages (use `snapshotId` from page 1 response)",
 		].join("\n");
 	};
 
@@ -175,18 +176,16 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 	tabReadableTextDescription = (tabId: string): string => {
 		return [
 			`Snapshot inner text for tab ${tabId}.`,
-			"Returns JSON with `data` (text), `hasNextPage`, `nextPageNumber`, `totalPages`.",
-			"If `hasNextPage` is true, read `.../snapshots/readable-text/pages/<nextPageNumber>` to continue.",
-			"Always read page 1 first to fetch and cache content for subsequent page fetches.",
+			"Returns JSON with `snapshotId`, `data` (text), `hasNextPage`, `nextPageNumber`, `totalPages`.",
+			"If `hasNextPage` is true, read `bk:///snapshot-types/readable-text/snapshots/<snapshotId>/pages/<nextPageNumber>` to continue.",
 		].join(" ");
 	};
 
 	tabReadableElementsDescription = (tabId: string): string => {
 		return [
 			`Snapshot interactive elements for tab ${tabId}.`,
-			"Returns JSON with `data` (`[readablePath, role, text]` tuples), `hasNextPage`, `nextPageNumber`, `totalPages`.",
-			"If `hasNextPage` is true, read `.../snapshots/readable-elements/pages/<nextPageNumber>` to continue.",
-			"Always read page 1 first to fetch and cache content for subsequent page fetches.",
+			"Returns JSON with `snapshotId`, `data` (`[readablePath, role, text]` tuples), `hasNextPage`, `nextPageNumber`, `totalPages`.",
+			"If `hasNextPage` is true, read `bk:///snapshot-types/readable-elements/snapshots/<snapshotId>/pages/<nextPageNumber>` to continue.",
 		].join(" ");
 	};
 
