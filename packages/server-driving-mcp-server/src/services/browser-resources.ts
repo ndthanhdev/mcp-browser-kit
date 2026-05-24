@@ -189,6 +189,7 @@ export class BrowserResources {
 		this.knownTabsByChannel.clear();
 		this.knownBrowserFingerprint.clear();
 		for (const entry of this.observeBrowserState.listBrowsers()) {
+			if (entry.snapshot.status === "offline") continue;
 			this.knownChannelIds.add(entry.channelId);
 			const tabMap = new Map<string, TabFingerprint>();
 			for (const tab of entry.snapshot.tabs) {
@@ -245,7 +246,9 @@ export class BrowserResources {
 			mimeType: string;
 		}>;
 	} {
-		const entries = this.observeBrowserState.listBrowsers();
+		const entries = this.observeBrowserState
+			.listBrowsers()
+			.filter((e) => e.snapshot.status !== "offline");
 
 		const browserResources = entries.map((entry) => ({
 			uri: browserBkUri(entry.channelId),
@@ -333,7 +336,9 @@ export class BrowserResources {
 			text: string;
 		}>;
 	} {
-		const entries = this.observeBrowserState.listBrowsers();
+		const entries = this.observeBrowserState
+			.listBrowsers()
+			.filter((e) => e.snapshot.status !== "offline");
 
 		const browsers = entries.map((entry) => {
 			const { snapshot, channelId } = entry;
@@ -458,6 +463,7 @@ export class BrowserResources {
 				`Browser channel not found: ${parsed.channelId} (uri=${uri.toString()})`,
 			);
 		}
+		this.assertTabOnline(entry.snapshot, uri);
 		const tab = entry.snapshot.tabs.find((t) => t.id === parsed.tabId);
 		if (!tab) {
 			throw new Error(
@@ -465,7 +471,6 @@ export class BrowserResources {
 			);
 		}
 		if (parsed.type === "tab-readable-text") {
-			this.assertTabOnline(entry.snapshot, uri);
 			const result = await this.snapshotContent.getReadableTextPage(
 				parsed.channelId,
 				parsed.tabId,
@@ -483,7 +488,6 @@ export class BrowserResources {
 		}
 
 		if (parsed.type === "tab-readable-elements") {
-			this.assertTabOnline(entry.snapshot, uri);
 			const result = await this.snapshotContent.getReadableElementsPage(
 				parsed.channelId,
 				parsed.tabId,
@@ -545,7 +549,9 @@ export class BrowserResources {
 	 * scored against the typed query.
 	 */
 	private completeResourceId(value: string): string[] {
-		const entries = this.observeBrowserState.listBrowsers();
+		const entries = this.observeBrowserState
+			.listBrowsers()
+			.filter((e) => e.snapshot.status !== "offline");
 
 		type Candidate = {
 			id: string;
@@ -627,6 +633,11 @@ export class BrowserResources {
 			return;
 		}
 
+		if (entry.snapshot.status === "offline") {
+			this.handleOffline(server, channelId, wasKnown, prevTabMap);
+			return;
+		}
+
 		const currentTabMap = this.buildTabMap(entry.snapshot);
 		this.notifyTabChanges(server, channelId, prevTabMap, currentTabMap);
 
@@ -646,6 +657,28 @@ export class BrowserResources {
 		this.knownBrowserFingerprint.set(channelId, currentBrowserFp);
 	}
 
+	private handleOffline(
+		server: McpServer,
+		channelId: string,
+		wasKnown: boolean,
+		prevTabMap: Map<string, TabFingerprint>,
+	): void {
+		if (wasKnown) {
+			this.knownChannelIds.delete(channelId);
+		}
+		this.knownTabsByChannel.delete(channelId);
+		this.knownBrowserFingerprint.delete(channelId);
+
+		for (const tabId of prevTabMap.keys()) {
+			this.safeSendUpdated(server, tabBkUri(channelId, tabId));
+			this.safeSendUpdated(server, tabReadableTextBkUri(channelId, tabId));
+			this.safeSendUpdated(server, tabReadableElementsBkUri(channelId, tabId));
+		}
+		this.safeSendUpdated(server, browserBkUri(channelId));
+		this.safeSendUpdated(server, CONTEXT_URI);
+		this.safeSendListChanged(server);
+	}
+
 	private handleEviction(
 		server: McpServer,
 		channelId: string,
@@ -663,11 +696,8 @@ export class BrowserResources {
 		}
 		this.knownTabsByChannel.delete(channelId);
 		this.knownBrowserFingerprint.delete(channelId);
-		if (wasKnown || prevTabMap.size > 0) {
-			this.safeSendListChanged(server);
-		}
 		this.safeSendUpdated(server, browserBkUri(channelId));
-		this.safeSendUpdated(server, CONTEXT_URI);
+		this.safeSendListChanged(server);
 	}
 
 	private buildTabMap(snapshot: BrowserSnapshot): Map<string, TabFingerprint> {
