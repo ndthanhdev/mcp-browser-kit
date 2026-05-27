@@ -6,6 +6,8 @@ const routes = [
 	route("form-test", "pages/form-test.tsx"),
 	route("text-test", "pages/text-test.tsx"),
 	route("javascript-test", "pages/javascript-test.tsx"),
+	route("fallback-test", "pages/fallback-test.tsx"),
+	route("snapshot-test", "pages/snapshot-test.tsx"),
 ] satisfies RouteConfig;
 
 export default routes;

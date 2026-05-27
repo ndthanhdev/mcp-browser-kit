@@ -2,16 +2,18 @@ import { Container } from "inversify";
 import {
 	BrowserStateRegistry,
 	ExtensionChannelManager,
+	McpDescriptionsUseCases,
 	ObserveBrowserStateUseCases,
 	ServerLifecycle,
+	SnapshotContentUseCases,
 	ToolCallUseCases,
-	ToolDescriptionsUseCases,
 } from "../core";
 import {
+	McpDescriptionsInputPort,
 	ObserveBrowserStateInputPort,
 	ServerLifecycleInputPort,
 	ServerToolCallsInputPort,
-	ToolDescriptionsInputPort,
+	SnapshotContentInputPort,
 } from "../input-ports";
 import { LifecycleParticipantOutputPort } from "../output-ports";
 
@@ -25,8 +27,11 @@ export const createCoreServerContainer = () => {
 		.bind<ServerToolCallsInputPort>(ServerToolCallsInputPort)
 		.to(ToolCallUseCases);
 	container
-		.bind<ToolDescriptionsInputPort>(ToolDescriptionsInputPort)
-		.to(ToolDescriptionsUseCases);
+		.bind<McpDescriptionsInputPort>(McpDescriptionsInputPort)
+		.to(McpDescriptionsUseCases);
+	container
+		.bind<SnapshotContentInputPort>(SnapshotContentInputPort)
+		.to(SnapshotContentUseCases);
 	container.bind<ExtensionChannelManager>(ExtensionChannelManager).toSelf();
 	container.bind<BrowserStateRegistry>(BrowserStateRegistry).toSelf();
 	container

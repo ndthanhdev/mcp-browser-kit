@@ -1,5 +1,5 @@
 export { BrowserResources } from "./browser-resources";
 export { BrowserTools } from "./browser-tools";
-export { ElementTools } from "./element-tools";
+export { HumanHintTools } from "./human-hint-tools";
 export { InteractionTools } from "./interaction-tools";
 export { ServerDrivingMcpServer } from "./server-driving-mcp-server";

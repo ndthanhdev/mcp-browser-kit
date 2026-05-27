@@ -2,8 +2,8 @@ import { expect, test } from "../fixtures/ext-test";
 import type { McpClientPageObject } from "../pages/mcp-client-page-object";
 import { expectToBeDefined } from "../test-utils/assert-defined";
 
-const BK_BROWSER_PREFIX = "bk:///b-";
-const BK_TAB_INFIX = "/t-";
+const BK_BROWSER_PREFIX = "bk:///browsers/";
+const BK_TAB_INFIX = "/tabs/";
 const BK_TEMPLATE = "bk:///{+resourceId}";
 
 type BrowserEntryJson = {
@@ -70,7 +70,7 @@ test.describe("Browser-state MCP Resources", () => {
 			const resources = await mcpClientPage.listResources();
 			const tabUris = resources
 				.map((r) => r.uri)
-				.filter((u) => u.includes(BK_TAB_INFIX));
+				.filter((u) => u.includes(BK_TAB_INFIX) && !u.includes("/snapshots/"));
 			expect(tabUris.length).toBeGreaterThan(0);
 		});
 
@@ -97,26 +97,17 @@ test.describe("Browser-state MCP Resources", () => {
 			).rejects.toThrow();
 		});
 
-		test("reading a browser URI reflects new tabs after openTab", async ({
+		test("reading a browser URI reflects new tabs after navigation", async ({
 			context,
 			testAppPage,
 			mcpClientPage,
 		}) => {
 			await testAppPage.navigateToHome();
 
-			const ctx = await mcpClientPage.callTool("getContext", {});
-			const windowKey =
-				ctx.structuredContent?.value?.browsers[0]?.browserWindows[0]?.windowKey;
-			expectToBeDefined(windowKey);
-
 			const browserUri = await getFirstBrowserUri(mcpClientPage);
 
-			const newPagePromise = context.waitForEvent("page");
-			await mcpClientPage.callTool("openTab", {
-				windowKey,
-				url: "http://localhost:3000/form-test",
-			});
-			const newPage = await newPagePromise;
+			const newPage = await context.newPage();
+			await newPage.goto("http://localhost:3000/form-test");
 			await newPage.waitForLoadState("networkidle");
 
 			await expect(async () => {
@@ -141,7 +132,7 @@ test.describe("Browser-state MCP Resources", () => {
 	});
 
 	test.describe("Notifications", () => {
-		test("resources/updated fires for browser URI on tab open", async ({
+		test("resources/updated fires for browser URI on new tab", async ({
 			context,
 			testAppPage,
 			mcpClientPage,
@@ -150,26 +141,17 @@ test.describe("Browser-state MCP Resources", () => {
 
 			const browserUri = await getFirstBrowserUri(mcpClientPage);
 
-			const ctx = await mcpClientPage.callTool("getContext", {});
-			const windowKey =
-				ctx.structuredContent?.value?.browsers[0]?.browserWindows[0]?.windowKey;
-			expectToBeDefined(windowKey);
-
 			await mcpClientPage.subscribeResource(browserUri);
 			mcpClientPage.clearResourceNotifications();
 
-			const newPagePromise = context.waitForEvent("page");
-			await mcpClientPage.callTool("openTab", {
-				windowKey,
-				url: "http://localhost:3000/click-test",
-			});
-			const newPage = await newPagePromise;
+			const newPage = await context.newPage();
+			await newPage.goto("http://localhost:3000/click-test");
 			await newPage.waitForLoadState("networkidle");
 
 			await mcpClientPage.waitForResourceUpdated(browserUri);
 		});
 
-		test("resources/updated fires for browser URI on tab open (second browser URI)", async ({
+		test("resources/updated fires for browser URI on second new tab", async ({
 			context,
 			testAppPage,
 			mcpClientPage,
@@ -178,20 +160,11 @@ test.describe("Browser-state MCP Resources", () => {
 
 			const browserUri = await getFirstBrowserUri(mcpClientPage);
 
-			const ctx = await mcpClientPage.callTool("getContext", {});
-			const windowKey =
-				ctx.structuredContent?.value?.browsers[0]?.browserWindows[0]?.windowKey;
-			expectToBeDefined(windowKey);
-
 			await mcpClientPage.subscribeResource(browserUri);
 			mcpClientPage.clearResourceNotifications();
 
-			const newPagePromise = context.waitForEvent("page");
-			await mcpClientPage.callTool("openTab", {
-				windowKey,
-				url: "http://localhost:3000/text-test",
-			});
-			const newPage = await newPagePromise;
+			const newPage = await context.newPage();
+			await newPage.goto("http://localhost:3000/text-test");
 			await newPage.waitForLoadState("networkidle");
 
 			await mcpClientPage.waitForResourceUpdated(browserUri);
@@ -206,27 +179,127 @@ test.describe("Browser-state MCP Resources", () => {
 
 			const browserUri = await getFirstBrowserUri(mcpClientPage);
 
-			const ctx = await mcpClientPage.callTool("getContext", {});
-			const windowKey =
-				ctx.structuredContent?.value?.browsers[0]?.browserWindows[0]?.windowKey;
-			expectToBeDefined(windowKey);
-
 			await mcpClientPage.subscribeResource(browserUri);
 			mcpClientPage.clearResourceNotifications();
 
-			const newPagePromise = context.waitForEvent("page");
-			await mcpClientPage.callTool("openTab", {
-				windowKey,
-				url: "http://localhost:3000/javascript-test",
-			});
-			const newPage = await newPagePromise;
+			const newPage = await context.newPage();
+			await newPage.goto("http://localhost:3000/javascript-test");
 			await newPage.waitForLoadState("networkidle");
 
-			// The browser URI should have been updated...
 			await mcpClientPage.waitForResourceUpdated(browserUri);
 
-			// ...but no new channel means no list_changed notification.
 			expect(mcpClientPage.getListChangedNotifications().length).toBe(0);
+		});
+	});
+
+	test.describe("Tab content resources", () => {
+		test("resources/list includes readable-text and readable-elements URIs", async ({
+			testAppPage,
+			mcpClientPage,
+		}) => {
+			await testAppPage.navigateToTextTest();
+
+			await expect(async () => {
+				const resources = await mcpClientPage.listResources();
+				const uris = resources.map((r) => r.uri);
+				expect(uris.some((u) => u.endsWith("/readable-text"))).toBe(true);
+				expect(uris.some((u) => u.endsWith("/readable-elements"))).toBe(true);
+			}).toPass({
+				timeout: 10000,
+				intervals: [
+					500,
+				],
+			});
+		});
+
+		test("reading a readable-text page 1 URI returns snapshot page inner text", async ({
+			testAppPage,
+			mcpClientPage,
+		}) => {
+			await testAppPage.navigateToTextTest();
+
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				testAppPage.page,
+				"text-test",
+			);
+
+			const { json } = await mcpClientPage.readResource(
+				`${tabUri}/readable-text`,
+			);
+
+			const snapshotResult = json as {
+				snapshotId: string;
+				pageNumber: number;
+				hasNextPage: boolean;
+				totalPages: number;
+				data: string;
+			};
+			expect(typeof snapshotResult.snapshotId).toBe("string");
+			expect(snapshotResult.pageNumber).toBe(1);
+			expect(snapshotResult.totalPages).toBeGreaterThanOrEqual(1);
+			expect(typeof snapshotResult.hasNextPage).toBe("boolean");
+			expect(typeof snapshotResult.data).toBe("string");
+			expect(snapshotResult.data).toContain("Text Test Screen");
+		});
+
+		test("reading a readable-elements page 1 URI returns snapshot element tuples", async ({
+			testAppPage,
+			mcpClientPage,
+		}) => {
+			await testAppPage.navigateToTextTest();
+
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				testAppPage.page,
+				"text-test",
+			);
+
+			const { result, json } = await mcpClientPage.readResource(
+				`${tabUri}/readable-elements`,
+			);
+
+			const first = result.contents[0];
+			expectToBeDefined(first);
+			expect(first.mimeType).toBe("application/json");
+
+			const snapshotResult = json as {
+				snapshotId: string;
+				pageNumber: number;
+				hasNextPage: boolean;
+				totalPages: number;
+				data: unknown[];
+			};
+			expect(typeof snapshotResult.snapshotId).toBe("string");
+			expect(snapshotResult.pageNumber).toBe(1);
+			expect(snapshotResult.totalPages).toBeGreaterThanOrEqual(1);
+			expect(Array.isArray(snapshotResult.data)).toBe(true);
+			expect(snapshotResult.data.length).toBeGreaterThan(0);
+
+			const tuple = snapshotResult.data[0] as unknown[];
+			expect(Array.isArray(tuple)).toBe(true);
+			expect(tuple.length).toBe(3);
+			expect(typeof tuple[0]).toBe("string");
+			expect(typeof tuple[1]).toBe("string");
+			expect(typeof tuple[2]).toBe("string");
+		});
+
+		test("readable-text page 1 notification fires when tab content changes", async ({
+			testAppPage,
+			mcpClientPage,
+		}) => {
+			await testAppPage.navigateToTextTest();
+
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				testAppPage.page,
+				"text-test",
+			);
+			const readableTextUri = `${tabUri}/readable-text`;
+
+			await mcpClientPage.subscribeResource(readableTextUri);
+			mcpClientPage.clearResourceNotifications();
+
+			await testAppPage.navigateToTextTest();
+
+			await mcpClientPage.waitForResourceUpdated(readableTextUri);
 		});
 	});
 });

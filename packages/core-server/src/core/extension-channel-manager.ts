@@ -152,6 +152,17 @@ export class ExtensionChannelManager {
 	};
 
 	/**
+	 * Get the RPC client for a specific channel.
+	 * @param channelId - The channel ID
+	 * @returns The RPC client, or undefined if no client exists for the channel
+	 */
+	public getRpcClientByChannelId = (
+		channelId: string,
+	): MessageChannelRpcClient<ExtensionToolCallInputPort> | undefined => {
+		return this.rpcClients.get(channelId);
+	};
+
+	/**
 	 * Get a specific RPC client by browser ID.
 	 * Uses a fast-path lookup via the cached browserIdToChannelId map.
 	 * On a cache miss, falls back to querying all connected clients for their

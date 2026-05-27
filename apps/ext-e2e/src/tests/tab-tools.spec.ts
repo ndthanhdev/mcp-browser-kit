@@ -9,65 +9,6 @@ test.describe("Tab Tools", () => {
 		await mcpClientPage.waitForBrowsers();
 	});
 
-	test.describe("getContext", () => {
-		test("returns browser context with tabs", async ({
-			testAppPage,
-			mcpClientPage,
-		}) => {
-			await testAppPage.navigateToHome();
-
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const context = contextResult.structuredContent?.value;
-
-			expect(context).toBeDefined();
-			expect(context?.browsers).toBeDefined();
-			expect(context?.browsers.length).toBeGreaterThan(0);
-		});
-
-		test("context contains browser windows", async ({
-			testAppPage,
-			mcpClientPage,
-		}) => {
-			await testAppPage.navigateToHome();
-
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const browsers = contextResult.structuredContent?.value?.browsers ?? [];
-
-			expect(browsers[0]?.browserWindows).toBeDefined();
-			expect(browsers[0]?.browserWindows.length).toBeGreaterThan(0);
-		});
-
-		test("context contains tab information", async ({
-			testAppPage,
-			mcpClientPage,
-		}) => {
-			await testAppPage.navigateToHome();
-
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const browsers = contextResult.structuredContent?.value?.browsers ?? [];
-			const tabs = browsers[0]?.browserWindows[0]?.tabs ?? [];
-
-			const homeTab = tabs.find((t) => t.url.includes("localhost"));
-			expect(homeTab).toBeDefined();
-			expect(homeTab?.tabKey).toBeDefined();
-			expect(homeTab?.title).toBeDefined();
-			expect(homeTab?.url).toBeDefined();
-		});
-
-		test("context includes available tools", async ({
-			testAppPage,
-			mcpClientPage,
-		}) => {
-			await testAppPage.navigateToHome();
-
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const browsers = contextResult.structuredContent?.value?.browsers ?? [];
-
-			expect(browsers[0]?.availableTools).toBeDefined();
-			expect(Array.isArray(browsers[0]?.availableTools)).toBe(true);
-		});
-	});
-
 	test.describe("openTab", () => {
 		test("opens new tab with specified URL", async ({
 			context,
@@ -76,9 +17,7 @@ test.describe("Tab Tools", () => {
 		}) => {
 			await testAppPage.navigateToHome();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const browsers = contextResult.structuredContent?.value?.browsers ?? [];
-			const windowKey = browsers[0]?.browserWindows[0]?.windowKey;
+			const windowKey = await mcpClientPage.getFirstWindowKey();
 			expectToBeDefined(windowKey);
 
 			const newPagePromise = context.waitForEvent("page");
@@ -92,12 +31,11 @@ test.describe("Tab Tools", () => {
 			expect(openResult.structuredContent?.value?.tabKey).toBeDefined();
 			expect(openResult.structuredContent?.value?.windowKey).toBe(windowKey);
 
-			const newContextResult = await mcpClientPage.callTool("getContext", {});
-			const newTabs =
-				newContextResult.structuredContent?.value?.browsers[0]
-					?.browserWindows[0]?.tabs ?? [];
-			const clickTestTab = newTabs.find((t) => t.url.includes("click-test"));
-			expect(clickTestTab).toBeDefined();
+			const clickTestUri = await mcpClientPage.waitForTabUriByUrl(
+				newPage,
+				"click-test",
+			);
+			expect(clickTestUri).toBeTruthy();
 		});
 
 		test("returns correct tabKey for new tab", async ({
@@ -107,29 +45,25 @@ test.describe("Tab Tools", () => {
 		}) => {
 			await testAppPage.navigateToHome();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const windowKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]
-					?.windowKey;
+			const windowKey = await mcpClientPage.getFirstWindowKey();
 			expectToBeDefined(windowKey);
 
 			const newPagePromise = context.waitForEvent("page");
-			const openResult = await mcpClientPage.callTool("openTab", {
+			await mcpClientPage.callTool("openTab", {
 				windowKey,
 				url: "http://localhost:3000/form-test",
 			});
 			const newPage = await newPagePromise;
 			await newPage.waitForLoadState("networkidle");
 
-			const newTabKey = openResult.structuredContent?.value?.tabKey;
-			expectToBeDefined(newTabKey);
-
-			const textResult = await mcpClientPage.callTool("getReadableText", {
-				tabKey: newTabKey,
-			});
-			expect(textResult.structuredContent?.value?.innerText).toContain(
-				"Form Test",
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				newPage,
+				"form-test",
 			);
+			const text = await mcpClientPage.readResourceText(
+				`${tabUri}/readable-text`,
+			);
+			expect(text).toContain("Form Test");
 		});
 	});
 
@@ -141,10 +75,7 @@ test.describe("Tab Tools", () => {
 		}) => {
 			await testAppPage.navigateToHome();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const windowKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]
-					?.windowKey;
+			const windowKey = await mcpClientPage.getFirstWindowKey();
 			expectToBeDefined(windowKey);
 
 			const newPagePromise = context.waitForEvent("page");
@@ -157,27 +88,22 @@ test.describe("Tab Tools", () => {
 			const newTabKey = openResult.structuredContent?.value?.tabKey;
 			expectToBeDefined(newTabKey);
 
-			const beforeClose = await mcpClientPage.callTool("getContext", {});
-			const tabsBeforeClose =
-				beforeClose.structuredContent?.value?.browsers[0]?.browserWindows[0]
-					?.tabs ?? [];
-			const textTestTabBefore = tabsBeforeClose.find((t) =>
-				t.url.includes("text-test"),
-			);
-			expect(textTestTabBefore).toBeDefined();
+			const uriBeforeClose = await mcpClientPage.findTabUriByUrl("text-test");
+			expect(uriBeforeClose).toBeTruthy();
 
 			await mcpClientPage.callTool("closeTab", {
 				tabKey: newTabKey,
 			});
 
-			const afterClose = await mcpClientPage.callTool("getContext", {});
-			const tabsAfterClose =
-				afterClose.structuredContent?.value?.browsers[0]?.browserWindows[0]
-					?.tabs ?? [];
-			const textTestTabAfter = tabsAfterClose.find((t) =>
-				t.url.includes("text-test"),
-			);
-			expect(textTestTabAfter).toBeUndefined();
+			await expect(async () => {
+				const uriAfterClose = await mcpClientPage.findTabUriByUrl("text-test");
+				expect(uriAfterClose).toBeNull();
+			}).toPass({
+				timeout: 5000,
+				intervals: [
+					500,
+				],
+			});
 		});
 	});
 
@@ -189,11 +115,10 @@ test.describe("Tab Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("click-test"),
-				)?.tabKey;
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"click-test",
+			);
 			expectToBeDefined(tabKey);
 
 			const captureResult = await mcpClientPage.callTool("captureTab", {
@@ -214,11 +139,10 @@ test.describe("Tab Tools", () => {
 		}) => {
 			await testAppPage.navigateToHome();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("localhost"),
-				)?.tabKey;
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"localhost",
+			);
 			expectToBeDefined(tabKey);
 
 			const captureResult = await mcpClientPage.callTool("captureTab", {
@@ -238,11 +162,10 @@ test.describe("Tab Tools", () => {
 		}) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("javascript-test"),
-				)?.tabKey;
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"javascript-test",
+			);
 			expectToBeDefined(tabKey);
 
 			const captureResult = await mcpClientPage.callTool("captureTab", {
@@ -264,10 +187,7 @@ test.describe("Tab Tools", () => {
 		}) => {
 			await testAppPage.navigateToHome();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const windowKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]
-					?.windowKey;
+			const windowKey = await mcpClientPage.getFirstWindowKey();
 			expectToBeDefined(windowKey);
 
 			const newPage1Promise = context.waitForEvent("page");
@@ -291,15 +211,23 @@ test.describe("Tab Tools", () => {
 			expectToBeDefined(tab1Key);
 			expectToBeDefined(tab2Key);
 
-			const text1 = await mcpClientPage.callTool("getReadableText", {
-				tabKey: tab1Key,
-			});
-			expect(text1.structuredContent?.value?.innerText).toContain("Click Test");
+			const tabUri1 = await mcpClientPage.waitForTabUriByUrl(
+				newPage1,
+				"click-test",
+			);
+			const text1 = await mcpClientPage.readResourceText(
+				`${tabUri1}/readable-text`,
+			);
+			expect(text1).toContain("Click Test");
 
-			const text2 = await mcpClientPage.callTool("getReadableText", {
-				tabKey: tab2Key,
-			});
-			expect(text2.structuredContent?.value?.innerText).toContain("Form Test");
+			const tabUri2 = await mcpClientPage.waitForTabUriByUrl(
+				newPage2,
+				"form-test",
+			);
+			const text2 = await mcpClientPage.readResourceText(
+				`${tabUri2}/readable-text`,
+			);
+			expect(text2).toContain("Form Test");
 
 			await mcpClientPage.callTool("closeTab", {
 				tabKey: tab1Key,
@@ -308,15 +236,17 @@ test.describe("Tab Tools", () => {
 				tabKey: tab2Key,
 			});
 
-			const finalContext = await mcpClientPage.callTool("getContext", {});
-			const finalTabs =
-				finalContext.structuredContent?.value?.browsers[0]?.browserWindows[0]
-					?.tabs ?? [];
-			const clickTestTab = finalTabs.find((t) => t.url.includes("click-test"));
-			const formTestTab = finalTabs.find((t) => t.url.includes("form-test"));
-
-			expect(clickTestTab).toBeUndefined();
-			expect(formTestTab).toBeUndefined();
+			await expect(async () => {
+				const clickTestUri = await mcpClientPage.findTabUriByUrl("click-test");
+				const formTestUri = await mcpClientPage.findTabUriByUrl("form-test");
+				expect(clickTestUri).toBeNull();
+				expect(formTestUri).toBeNull();
+			}).toPass({
+				timeout: 5000,
+				intervals: [
+					500,
+				],
+			});
 		});
 	});
 });

@@ -15,6 +15,7 @@ import browser, { type Runtime } from "webextension-polyfill";
 import { TabAnimationTools } from "./tab-animation-tools";
 import { TabContextStore } from "./tab-context-store";
 import { TabDomTools } from "./tab-dom-tools";
+import { TabHumanHintTools } from "./tab-human-hint-tools";
 import { TabTools } from "./tab-tools";
 
 export type ToolKeys = Paths<
@@ -60,6 +61,7 @@ export class TabToolsSetup {
 	static setupContainer(container: Container): void {
 		// Tab service dependencies
 		container.bind<TabDomTools>(TabDomTools).to(TabDomTools);
+		container.bind<TabHumanHintTools>(TabHumanHintTools).to(TabHumanHintTools);
 		container.bind<TabAnimationTools>(TabAnimationTools).to(TabAnimationTools);
 		container.bind<TabContextStore>(TabContextStore).to(TabContextStore);
 		container.bind<TabTools>(TabTools).to(TabTools);

@@ -1,5 +1,4 @@
 import { expect, test } from "../fixtures/ext-test";
-import { expectToBeDefined } from "../test-utils/assert-defined";
 
 test.describe("JavaScript Tools", () => {
 	test.skip(({ extTarget }) => extTarget !== "m2");
@@ -15,12 +14,10 @@ test.describe("JavaScript Tools", () => {
 		test("returns document title", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("javascript-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"javascript-test",
+			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
 				tabKey,
@@ -35,12 +32,10 @@ test.describe("JavaScript Tools", () => {
 		test("returns number value", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("javascript-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"javascript-test",
+			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
 				tabKey,
@@ -53,12 +48,10 @@ test.describe("JavaScript Tools", () => {
 		test("returns boolean value", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("javascript-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"javascript-test",
+			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
 				tabKey,
@@ -71,12 +64,10 @@ test.describe("JavaScript Tools", () => {
 		test("returns array value", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("javascript-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"javascript-test",
+			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
 				tabKey,
@@ -93,12 +84,10 @@ test.describe("JavaScript Tools", () => {
 		test("returns object value", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("javascript-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"javascript-test",
+			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
 				tabKey,
@@ -114,12 +103,10 @@ test.describe("JavaScript Tools", () => {
 		test("returns null value", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("javascript-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"javascript-test",
+			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
 				tabKey,
@@ -135,12 +122,10 @@ test.describe("JavaScript Tools", () => {
 		}) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("javascript-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"javascript-test",
+			);
 
 			const result1 = await mcpClientPage.callTool("invokeJsFn", {
 				tabKey,
@@ -161,12 +146,10 @@ test.describe("JavaScript Tools", () => {
 		}) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("javascript-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"javascript-test",
+			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
 				tabKey,
@@ -184,12 +167,10 @@ test.describe("JavaScript Tools", () => {
 		}) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("javascript-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"javascript-test",
+			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
 				tabKey,
@@ -205,12 +186,10 @@ test.describe("JavaScript Tools", () => {
 		}) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("javascript-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"javascript-test",
+			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
 				tabKey,
@@ -230,12 +209,10 @@ test.describe("JavaScript Tools", () => {
 		test("reads data attributes", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("javascript-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"javascript-test",
+			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
 				tabKey,
@@ -259,12 +236,10 @@ test.describe("JavaScript Tools", () => {
 		test("modifies element styles", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("javascript-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"javascript-test",
+			);
 
 			await mcpClientPage.callTool("invokeJsFn", {
 				tabKey,
@@ -288,12 +263,10 @@ test.describe("JavaScript Tools", () => {
 		}) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const contextResult = await mcpClientPage.callTool("getContext", {});
-			const tabKey =
-				contextResult.structuredContent?.value?.browsers[0]?.browserWindows[0]?.tabs.find(
-					(t) => t.url.includes("javascript-test"),
-				)?.tabKey;
-			expectToBeDefined(tabKey);
+			const tabKey = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"javascript-test",
+			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
 				tabKey,

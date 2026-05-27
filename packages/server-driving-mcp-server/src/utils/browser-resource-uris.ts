@@ -4,13 +4,18 @@
  * ranking here means `browser-resources.ts` can focus on MCP wiring.
  *
  * URI scheme: `bk:///`
- *   - `bk:///b-<shortId>`                 — one browser
- *   - `bk:///b-<shortId>/t-<tabId>`       — one tab (hierarchically nested)
+ *   - `bk:///context`                                                        — aggregated context (static)
+ *   - `bk:///browsers/<shortId>`                                            — one browser
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>`                               — one tab
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-text`                 — tab text (page 1)
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements`             — tab elements (page 1)
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-text/pages/<N>`       — tab text page N
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements/pages/<N>`   — tab elements page N
  *
  * The short browser ID is the nanoid portion of the channelId (everything
- * after the `channel:` prefix). This hides the internal `channel:` concept
- * from callers. The single ResourceTemplate `bk:///{+resourceId}` (reserved
- * expansion) matches both forms because the `+` operator allows slashes.
+ * after the `channel:` prefix). The single ResourceTemplate
+ * `bk:///{+resourceId}` (reserved expansion) matches all forms because the
+ * `+` operator allows slashes.
  */
 
 import type {
@@ -20,6 +25,7 @@ import type {
 
 export const BK_URI_PREFIX = "bk:///";
 export const BK_TEMPLATE = "bk:///{+resourceId}";
+export const CONTEXT_URI = "bk:///context";
 
 // ─── Short ID ────────────────────────────────────────────────────────────────
 
@@ -34,13 +40,35 @@ export const shortChannelId = (channelId: string): string => {
 
 // ─── URI constructors ─────────────────────────────────────────────────────────
 
-/** `bk:///b-<shortId>` */
+/** `bk:///browsers/<shortId>` */
 export const browserBkUri = (channelId: string): string =>
-	`${BK_URI_PREFIX}b-${shortChannelId(channelId)}`;
+	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}`;
 
-/** `bk:///b-<shortId>/t-<tabId>` */
+/** `bk:///browsers/<shortId>/tabs/<tabId>` */
 export const tabBkUri = (channelId: string, tabId: string): string =>
-	`${BK_URI_PREFIX}b-${shortChannelId(channelId)}/t-${tabId}`;
+	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}/tabs/${tabId}`;
+
+/** `bk:///browsers/<shortId>/tabs/<tabId>/readable-text` */
+export const tabReadableTextBkUri = (
+	channelId: string,
+	tabId: string,
+): string =>
+	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}/tabs/${tabId}/readable-text`;
+
+/** `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements` */
+export const tabReadableElementsBkUri = (
+	channelId: string,
+	tabId: string,
+): string =>
+	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}/tabs/${tabId}/readable-elements`;
+
+/** `bk:///snapshot-types/<type>/snapshots/<snapshotId>/pages/<page>` */
+export const snapshotPageBkUri = (
+	type: "readable-text" | "readable-elements",
+	snapshotId: string,
+	page: number,
+): string =>
+	`${BK_URI_PREFIX}snapshot-types/${type}/snapshots/${snapshotId}/pages/${page}`;
 
 // ─── Parser ───────────────────────────────────────────────────────────────────
 
@@ -53,6 +81,22 @@ export type ParsedBkResource =
 			type: "tab";
 			channelId: string;
 			tabId: string;
+	  }
+	| {
+			type: "tab-readable-text";
+			channelId: string;
+			tabId: string;
+	  }
+	| {
+			type: "tab-readable-elements";
+			channelId: string;
+			tabId: string;
+	  }
+	| {
+			type: "snapshot-page";
+			contentType: "readable-text" | "readable-elements";
+			snapshotId: string;
+			pageNumber: number;
 	  };
 
 /**
@@ -60,8 +104,11 @@ export type ParsedBkResource =
  * the template) back to structured coordinates.
  *
  * Formats accepted:
- *   `b-<shortId>`            → browser
- *   `b-<shortId>/t-<tabId>`  → tab
+ *   `browsers/<shortId>`                        → browser
+ *   `browsers/<shortId>/tabs/<tabId>`           → tab
+ *   `browsers/<shortId>/tabs/<tabId>/readable-text`
+ *   `browsers/<shortId>/tabs/<tabId>/readable-elements`
+ *   `snapshot-types/<type>/snapshots/<snapshotId>/pages/<pageNumber>`
  *
  * The short ID is reverse-mapped to a full channelId by scanning the live
  * browser list. Returns `undefined` for malformed input or an unknown short ID.
@@ -72,16 +119,34 @@ export const parseBkResourceId = (
 		channelId: string;
 	}>,
 ): ParsedBkResource | undefined => {
-	if (!resourceId.startsWith("b-")) return;
+	if (resourceId.startsWith("snapshot-types/")) {
+		const match = resourceId.match(
+			/^snapshot-types\/(readable-text|readable-elements)\/snapshots\/([^/]+)\/pages\/(\d+)$/,
+		);
+		if (match) {
+			const contentType = match[1] as "readable-text" | "readable-elements";
+			const snapshotId = match[2];
+			const pageNumber = Number(match[3]);
+			if (pageNumber >= 1) {
+				return {
+					type: "snapshot-page",
+					contentType,
+					snapshotId,
+					pageNumber,
+				};
+			}
+		}
+		return;
+	}
 
-	const rest = resourceId.slice(2); // strip "b-"
-	const slashT = rest.indexOf("/t-");
+	if (!resourceId.startsWith("browsers/")) return;
 
-	const shortId = slashT >= 0 ? rest.slice(0, slashT) : rest;
-	const tabId = slashT >= 0 ? rest.slice(slashT + 3) : undefined;
+	const rest = resourceId.slice("browsers/".length);
+	const slashTabs = rest.indexOf("/tabs/");
+
+	const shortId = slashTabs >= 0 ? rest.slice(0, slashTabs) : rest;
 
 	if (!shortId) return;
-	if (tabId !== undefined && !tabId) return;
 
 	// Reverse-map short ID → full channelId.
 	const channelId = listBrowsers().find(
@@ -90,16 +155,45 @@ export const parseBkResourceId = (
 
 	if (!channelId) return;
 
-	return tabId === undefined
-		? {
-				type: "browser",
-				channelId,
-			}
-		: {
-				type: "tab",
+	if (slashTabs < 0) {
+		return {
+			type: "browser",
+			channelId,
+		};
+	}
+
+	// Everything after "/tabs/"
+	const tabRemainder = rest.slice(slashTabs + "/tabs/".length);
+	const slashSuffix = tabRemainder.indexOf("/");
+
+	const tabId =
+		slashSuffix >= 0 ? tabRemainder.slice(0, slashSuffix) : tabRemainder;
+	const suffix =
+		slashSuffix >= 0 ? tabRemainder.slice(slashSuffix + 1) : undefined;
+
+	if (suffix !== undefined) {
+		if (suffix === "readable-text") {
+			return {
+				type: "tab-readable-text",
 				channelId,
 				tabId,
 			};
+		}
+		if (suffix === "readable-elements") {
+			return {
+				type: "tab-readable-elements",
+				channelId,
+				tabId,
+			};
+		}
+		return;
+	}
+
+	return {
+		type: "tab",
+		channelId,
+		tabId,
+	};
 };
 
 // ─── Display formatters ───────────────────────────────────────────────────────
@@ -121,17 +215,6 @@ export const formatBrowserTitle = (snapshot: BrowserSnapshot): string => {
 	return snapshot.status === "offline" ? `${base} (offline)` : base;
 };
 
-export const formatBrowserDescription = (
-	channelId: string,
-	snapshot: BrowserSnapshot,
-): string => {
-	const tabCount = snapshot.tabs.length;
-	const windowCount = snapshot.windows.length;
-	return `${tabCount} tab${tabCount === 1 ? "" : "s"} · ${windowCount} window${
-		windowCount === 1 ? "" : "s"
-	} · ${shortChannelId(channelId)}`;
-};
-
 const hostnameOf = (url: string): string => {
 	try {
 		return new URL(url).hostname;
@@ -145,16 +228,6 @@ export const formatTabTitle = (tab: BrowserSnapshotTabInfo): string => {
 	if (title) return title;
 	const host = hostnameOf(tab.url);
 	return host || tab.url || tab.id;
-};
-
-export const formatTabDescription = (
-	tab: BrowserSnapshotTabInfo,
-	snapshot: BrowserSnapshot,
-): string => {
-	const host = hostnameOf(tab.url);
-	const browserName = snapshot.browserInfo?.browserName?.trim() || "browser";
-	const base = `${host || tab.url} · ${browserName}`;
-	return tab.active ? `${base} (active)` : base;
 };
 
 // ─── Completion helpers ───────────────────────────────────────────────────────
@@ -202,6 +275,10 @@ export const findWindowIdForTab = (
 	snapshot: BrowserSnapshot,
 	tabId: string,
 ): string | undefined => {
+	if (snapshot.tabs) {
+		const tab = snapshot.tabs.find((t) => t.id === tabId);
+		if (tab?.windowId) return tab.windowId;
+	}
 	const map = snapshot.activeTabIdByWindow;
 	if (!map) return;
 	for (const [windowId, activeTabId] of Object.entries(map)) {

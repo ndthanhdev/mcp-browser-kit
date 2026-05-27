@@ -17,7 +17,9 @@ export const coordinateTextInputSchema = {
 
 export const readableElementSchema = {
 	tabKey: z.string().describe("Tab key to target"),
-	readablePath: z.string().describe("Readable path from getReadableElements"),
+	readablePath: z
+		.string()
+		.describe("Readable path from the readable-elements resource"),
 };
 
 export const readableElementTextInputSchema = {
@@ -37,28 +39,68 @@ export const openTabSchema = {
 	url: z.string().describe("URL to open in the new tab"),
 };
 
-export const browserTabContextSchema = {
-	tabKey: z.string().describe("Unique key identifying the tab"),
-	active: z.boolean().describe("Whether the tab is currently active"),
-	title: z.string().describe("Title of the tab"),
-	url: z.string().describe("Current URL of the tab"),
+export const showHumanHintInputSchema = {
+	tabKey: z.string().describe("Tab key to target"),
+	action: z
+		.enum([
+			"click",
+			"fill",
+			"hit-enter",
+		])
+		.describe("Manual step the human should take"),
+	message: z
+		.string()
+		.describe("Human-facing instruction shown in browser callout and chat"),
+	value: z
+		.string()
+		.optional()
+		.describe("Required for fill — text the human should type"),
+	readablePath: z
+		.string()
+		.optional()
+		.describe("Readable path from readable-elements (MV3 / element flow)"),
+	x: z
+		.number()
+		.optional()
+		.describe("X coordinate in pixels (MV2 / screenshot flow)"),
+	y: z
+		.number()
+		.optional()
+		.describe("Y coordinate in pixels (MV2 / screenshot flow)"),
 };
 
-export const browserWindowContextSchema = {
-	windowKey: z.string().describe("Unique key identifying the window"),
-	tabs: z
-		.array(z.object(browserTabContextSchema))
-		.describe("List of tabs in this window"),
-};
+const humanHintTargetSchema = z.discriminatedUnion("type", [
+	z.object({
+		type: z.literal("readablePath"),
+		readablePath: z.string(),
+		label: z.string().optional(),
+	}),
+	z.object({
+		type: z.literal("coordinates"),
+		x: z.number(),
+		y: z.number(),
+	}),
+]);
 
-export const browserContextSchema = {
-	browserId: z.string().describe("Unique identifier for the browser"),
-	availableTools: z
-		.array(z.string())
-		.describe("List of available tool names for this browser"),
-	browserWindows: z
-		.array(z.object(browserWindowContextSchema))
-		.describe("List of browser windows"),
+export const showHumanHintOutputSchema = {
+	ok: z.boolean().describe("Whether the overlay was shown"),
+	reason: z.string().optional().describe("Failure reason when ok is false"),
+	action: z.enum([
+		"click",
+		"fill",
+		"hit-enter",
+	]),
+	target: humanHintTargetSchema.optional(),
+	value: z.string().optional(),
+	message: z.string(),
+	humanMessage: z
+		.string()
+		.describe("Ready-to-relay instruction for the person at the keyboard"),
+	tab: z.object({
+		title: z.string(),
+		url: z.string(),
+	}),
+	expiresInSeconds: z.number(),
 };
 
 export const createOverOutputSchema = <T extends Record<string, z.ZodType>>(
@@ -72,37 +114,13 @@ export const createOverOutputSchema = <T extends Record<string, z.ZodType>>(
 	reason: z.string().optional().describe("Error reason when ok is false"),
 });
 
-export const contextOutputSchema = createOverOutputSchema({
-	browsers: z
-		.array(z.object(browserContextSchema))
-		.describe("List of connected browsers"),
-});
-
 export const openTabOutputSchema = createOverOutputSchema({
 	tabKey: z.string().describe("Key of the newly opened tab"),
 	windowKey: z.string().describe("Window key where the tab was opened"),
 });
 
-export const readableElementOutputSchema = createOverOutputSchema({
-	elements: z
-		.array(
-			z.tuple([
-				z.string().describe("Unique path to identify the element"),
-				z.string().describe("Accessible role or tag name of the element"),
-				z.string().describe("Accessible text content of the element"),
-			]),
-		)
-		.describe(
-			"List of readable elements on the page as [path, role, text] tuples",
-		),
-});
-
 export const selectionOutputSchema = createOverOutputSchema({
 	selectedText: z.string().describe("Selected text on the page"),
-});
-
-export const readableTextOutputSchema = createOverOutputSchema({
-	innerText: z.string().describe("Inner text content of the page"),
 });
 
 export const invokeJsFnOutputSchema = createOverOutputSchema({
@@ -125,23 +143,23 @@ type InferOverValue<T> = T extends {
 	: Record<string, never>;
 
 type ServerToolOverSchemaMap = {
-	getContext: typeof contextOutputSchema;
 	captureTab: typeof captureTabOutputSchema;
 	invokeJsFn: typeof invokeJsFnOutputSchema;
 	openTab: typeof openTabOutputSchema;
 	closeTab: typeof actionOutputSchema;
 	getSelection: typeof selectionOutputSchema;
-	getReadableText: typeof readableTextOutputSchema;
-	getReadableElements: typeof readableElementOutputSchema;
 	clickOnCoordinates: typeof actionOutputSchema;
 	fillTextToCoordinates: typeof actionOutputSchema;
 	hitEnterOnCoordinates: typeof actionOutputSchema;
 	clickOnElement: typeof actionOutputSchema;
 	fillTextToElement: typeof actionOutputSchema;
 	hitEnterOnElement: typeof actionOutputSchema;
+	showHumanHint: typeof showHumanHintOutputSchema;
 };
 
-export interface ServerToolOverResult<T extends keyof ServerToolOverSchemaMap> {
+export type McpToolName = keyof ServerToolOverSchemaMap;
+
+export interface ServerToolOverResult<T extends McpToolName> {
 	ok: boolean;
 	value?: InferOverValue<ServerToolOverSchemaMap[T]>;
 	reason?: string;

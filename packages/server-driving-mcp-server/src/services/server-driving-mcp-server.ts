@@ -3,13 +3,17 @@ import {
 	LoggerFactoryOutputPort,
 	type LoggerFactoryOutputPort as LoggerFactoryOutputPortInterface,
 } from "@mcp-browser-kit/core-server";
+import {
+	McpDescriptionsInputPort,
+	type McpDescriptionsInputPort as McpDescriptionsInputPortInterface,
+} from "@mcp-browser-kit/core-server/input-ports";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import { BrowserResources } from "./browser-resources";
 import { BrowserTools } from "./browser-tools";
-import { ElementTools } from "./element-tools";
+import { HumanHintTools } from "./human-hint-tools";
 import { InteractionTools } from "./interaction-tools";
 
 @injectable()
@@ -25,12 +29,14 @@ export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 		private readonly loggerFactory: LoggerFactoryOutputPortInterface,
 		@inject(BrowserTools)
 		private readonly browserTools: BrowserTools,
-		@inject(ElementTools)
-		private readonly elementTools: ElementTools,
 		@inject(InteractionTools)
 		private readonly interactionTools: InteractionTools,
+		@inject(HumanHintTools)
+		private readonly humanHintTools: HumanHintTools,
 		@inject(BrowserResources)
 		private readonly browserResources: BrowserResources,
+		@inject(McpDescriptionsInputPort)
+		private readonly mcpDescriptions: McpDescriptionsInputPortInterface,
 	) {
 		this.logger = this.loggerFactory.create("mcpServer");
 	}
@@ -41,10 +47,15 @@ export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 
 	private createMcpServerInstance(): McpServer {
 		this.logger.verbose("Creating MCP server instance");
-		return new McpServer({
-			name: "MCP Browser Kit",
-			version: "1.0.0",
-		});
+		return new McpServer(
+			{
+				name: "MCP Browser Kit",
+				version: "1.0.0",
+			},
+			{
+				instructions: this.mcpDescriptions.serverInstructions(),
+			},
+		);
 	}
 
 	private setupEventHandlers(): void {
@@ -67,18 +78,20 @@ export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 			this.logger.verbose("Registering browser tools");
 			this.browserTools.register(this.server);
 
-			this.logger.verbose("Registering element tools");
-			this.elementTools.register(this.server);
-
 			this.logger.verbose("Registering interaction tools");
 			this.interactionTools.register(this.server);
+
+			this.logger.verbose("Registering human hint tools");
+			this.humanHintTools.register(this.server);
 
 			this.logger.verbose("Registering browser resources");
 			this.unsubscribeResources = this.browserResources.register(this.server);
 
 			this.setupEventHandlers();
 
-			this.logger.info("All MCP server tools registered successfully");
+			this.logger.info(
+				"All MCP server tools and resources registered successfully",
+			);
 			return this.server;
 		} catch (error) {
 			this.logger.error("Failed to initialize MCP server", {
@@ -150,14 +163,12 @@ export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 
 	static setupContainer(container: Container): void {
 		container.bind<BrowserTools>(BrowserTools).toSelf();
-		container.bind<ElementTools>(ElementTools).toSelf();
 		container.bind<InteractionTools>(InteractionTools).toSelf();
+		container.bind<HumanHintTools>(HumanHintTools).toSelf();
 		container.bind<BrowserResources>(BrowserResources).toSelf();
 
 		container.bind<ServerDrivingMcpServer>(ServerDrivingMcpServer).toSelf();
 
-		// Register as a lifecycle participant so server-lifecycle orchestration
-		// owns start/stop of the MCP server and its stdio transport.
 		container
 			.bind<LifecycleParticipantOutputPort>(LifecycleParticipantOutputPort)
 			.toService(ServerDrivingMcpServer);

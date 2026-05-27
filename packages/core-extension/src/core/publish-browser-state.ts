@@ -201,6 +201,7 @@ export class PublishBrowserStateUseCase
 			}));
 			const tabs: BrowserSnapshotTabInfo[] = tabsRaw.map((t) => ({
 				id: t.id,
+				windowId: t.windowId || undefined,
 				active: t.active,
 				title: t.title,
 				url: t.url,
@@ -208,16 +209,8 @@ export class PublishBrowserStateUseCase
 
 			const activeTabIdByWindow: Record<string, string> = {};
 			for (const tab of tabsRaw) {
-				if (tab.active) {
-					// BrowserDriverOutputPort's ExtensionTabInfo does not carry
-					// windowId today, so fall back to the first focused window if
-					// multiple actives collide. This is best-effort; the richer
-					// browser-state-source adapter provides windowId via the
-					// `tabs` hint.
-					const focused = windows.find((w) => w.focused);
-					if (focused) {
-						activeTabIdByWindow[focused.id] = tab.id;
-					}
+				if (tab.active && tab.windowId) {
+					activeTabIdByWindow[tab.windowId] = tab.id;
 				}
 			}
 

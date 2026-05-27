@@ -1,4 +1,8 @@
 import type {
+	HumanHintTabResult,
+	ShowHumanHintParams,
+} from "@mcp-browser-kit/types";
+import type {
 	BrowserInfo,
 	ExtensionInfo,
 	ExtensionTabInfo,
@@ -42,6 +46,11 @@ export interface BrowserDriverOutputPort {
 		tabId: string,
 		readableTreePath: string,
 	): Promise<void>;
+	showHumanHint(
+		tabId: string,
+		params: ShowHumanHintParams,
+		humanMessage: string,
+	): Promise<HumanHintTabResult>;
 	invokeJsFn(tabId: string, fnBodyCode: string): Promise<unknown>;
 }
 

@@ -4,12 +4,8 @@ import type {
 	ExtensionTabInfo,
 	ExtensionWindowInfo,
 } from "@mcp-browser-kit/core-extension/types";
-import { createPrefixId } from "@mcp-browser-kit/core-utils";
 import browser from "webextension-polyfill";
 import { getBrowserInfoPolyfill } from "./browser-info-polyfill";
-import { LocalStorageKeys } from "./storage-keys";
-
-const extensionInstanceId = createPrefixId("extension");
 
 export const closeTab = async (tabId: string): Promise<void> => {
 	await browser.tabs.remove(Number.parseInt(tabId, 10));
@@ -46,37 +42,11 @@ export const getExtensionInfo = async (): Promise<ExtensionInfo> => {
 	};
 };
 
-let browserIdPromise: Promise<string> | null = null;
-
-const getBrowserIdInternal = async (): Promise<string> => {
-	const storageKey = LocalStorageKeys.ExtensionInstanceId;
-
-	try {
-		const result = await browser.storage.local.get(storageKey);
-
-		if (result[storageKey]) {
-			return result[storageKey] as string;
-		}
-
-		// Generate new ID if not found
-		const newInstanceId = extensionInstanceId.generate();
-		await browser.storage.local.set({
-			[storageKey]: newInstanceId,
-		});
-
-		return newInstanceId;
-	} catch (error) {
-		console.error("Failed to get/set extension instance ID:", error);
-		// Fallback to generating a new ID without storing it
-		return extensionInstanceId.generate();
-	}
-};
-
 export const getBrowserId = (): Promise<string> => {
-	if (!browserIdPromise) {
-		browserIdPromise = getBrowserIdInternal();
+	if (!browser.runtime.id) {
+		return Promise.reject(new Error("Extension ID is not available"));
 	}
-	return browserIdPromise;
+	return Promise.resolve(browser.runtime.id);
 };
 
 export const getTabs = async () => {
@@ -84,6 +54,7 @@ export const getTabs = async () => {
 
 	return tabs.map((tab) => ({
 		id: tab.id?.toString() ?? "",
+		windowId: tab.windowId?.toString() ?? "",
 		title: tab.title ?? "",
 		url: tab.url ?? "",
 		active: tab.active ?? false,
@@ -114,4 +85,17 @@ export const openTab = async (
 		tabId: tab.id?.toString() ?? "",
 		windowId: tab.windowId?.toString() ?? "",
 	};
+};
+
+export const activateTab = async (tabId: string): Promise<void> => {
+	const id = Number.parseInt(tabId, 10);
+	const tab = await browser.tabs.get(id);
+	await browser.tabs.update(id, {
+		active: true,
+	});
+	if (tab.windowId !== undefined) {
+		await browser.windows.update(tab.windowId, {
+			focused: true,
+		});
+	}
 };

@@ -28,6 +28,7 @@ export interface BrowserSnapshotWindowInfo {
 
 export interface BrowserSnapshotTabInfo {
 	id: string;
+	windowId?: string;
 	active: boolean;
 	title: string;
 	url: string;

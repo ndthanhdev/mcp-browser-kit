@@ -9,6 +9,12 @@ import type {
 } from "@mcp-browser-kit/core-extension";
 import type { MessageChannelRpcClient } from "@mcp-browser-kit/core-utils";
 import { isBrowserInternalUrl } from "@mcp-browser-kit/core-utils";
+import type {
+	HumanHintResponse,
+	HumanHintTabResult,
+	ShowHumanHintParams,
+} from "@mcp-browser-kit/types";
+import { HUMAN_HINT_EXPIRES_IN_SECONDS } from "@mcp-browser-kit/types";
 import { inject, injectable } from "inversify";
 import Lru from "quick-lru";
 
@@ -21,6 +27,11 @@ import type {
 } from "../input-ports";
 import { LoggerFactoryOutputPort } from "../output-ports";
 import { TabKey, WindowKey } from "../utils";
+import {
+	buildHumanMessage,
+	targetFromParams,
+	validateShowHumanHintParams,
+} from "../utils/build-human-message";
 import { ExtensionChannelManager } from "./extension-channel-manager";
 
 @injectable()
@@ -124,7 +135,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		const windowsMap = new Map<string, BrowserTabContext[]>();
 
 		for (const tab of extensionContext.availableTabs) {
-			const window = this.findWindowForTab(extensionContext);
+			const window = this.findWindowForTab(extensionContext, tab);
 			if (!window) continue;
 
 			const windowKey = this.createWindowKey(
@@ -148,10 +159,10 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 
 	private findWindowForTab = (
 		extensionContext: ExtensionContext,
+		tab: ExtensionTabInfo,
 	): ExtensionWindowInfo | undefined => {
-		// This is a simplification - you may need different logic to associate tabs with windows
 		return (
-			extensionContext.availableWindows.find(() => true) ||
+			extensionContext.availableWindows.find((w) => w.id === tab.windowId) ||
 			extensionContext.availableWindows[0]
 		);
 	};
@@ -353,48 +364,72 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		}
 	};
 
-	getReadableText = async (tabKey: string): Promise<string> => {
-		this.logger.info(`Getting readable text from tab: ${tabKey}`);
+	getReadableTextByChannelAndTab = async (
+		channelId: string,
+		tabId: string,
+	): Promise<string> => {
+		this.logger.info(
+			`Getting readable text from channel: ${channelId}, tab: ${tabId}`,
+		);
+
+		const rpcClient =
+			this.extensionChannelManager.getRpcClientByChannelId(channelId);
+		if (!rpcClient) {
+			throw new Error(`No active channel for: ${channelId}`);
+		}
 
 		try {
-			const readableText = await this.callRpcForTab({
+			const readableText = await rpcClient.call({
 				method: "getReadableText" as const,
 				args: [
-					tabKey,
+					tabId,
 				],
 				extraArgs: {},
 			});
-
 			this.logger.info("Retrieved readable text successfully");
 			return readableText;
 		} catch (error) {
-			this.logger.error("Failed to get readable text", error);
+			this.logger.error(
+				"Failed to get readable text by channel and tab",
+				error,
+			);
 			throw error;
 		}
 	};
 
-	getReadableElements = async (
-		tabKey: string,
+	getReadableElementsByChannelAndTab = async (
+		channelId: string,
+		tabId: string,
 	): Promise<{
 		elements: ReadableElementRecord[];
 	}> => {
-		this.logger.info(`Getting readable elements from tab: ${tabKey}`);
+		this.logger.info(
+			`Getting readable elements from channel: ${channelId}, tab: ${tabId}`,
+		);
+
+		const rpcClient =
+			this.extensionChannelManager.getRpcClientByChannelId(channelId);
+		if (!rpcClient) {
+			throw new Error(`No active channel for: ${channelId}`);
+		}
 
 		try {
-			const elementRecords = await this.callRpcForTab({
+			const elementRecords = await rpcClient.call({
 				method: "getReadableElements" as const,
 				args: [
-					tabKey,
+					tabId,
 				],
 				extraArgs: {},
 			});
-
 			this.logger.info(`Retrieved ${elementRecords.length} readable elements`);
 			return {
 				elements: elementRecords,
 			};
 		} catch (error) {
-			this.logger.error("Failed to get readable elements", error);
+			this.logger.error(
+				"Failed to get readable elements by channel and tab",
+				error,
+			);
 			throw error;
 		}
 	};
@@ -647,5 +682,121 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 	 */
 	getTabContext = (tabKey: string): BrowserTabContext | undefined => {
 		return this.tabContextCache.get(tabKey);
+	};
+
+	showHumanHint = async (
+		tabKey: string,
+		params: ShowHumanHintParams,
+	): Promise<HumanHintResponse> => {
+		this.logger.info("Showing human hint", {
+			tabKey,
+			action: params.action,
+		});
+
+		const tab = await this.resolveTabInfo(tabKey);
+		const humanMessage = buildHumanMessage(
+			params.action,
+			params.message,
+			params.value,
+		);
+
+		const validationError = validateShowHumanHintParams(params);
+		if (validationError) {
+			return {
+				ok: false,
+				reason: validationError,
+				action: params.action,
+				target: targetFromParams(params),
+				value: params.value,
+				message: params.message,
+				humanMessage,
+				tab,
+				expiresInSeconds: HUMAN_HINT_EXPIRES_IN_SECONDS,
+			};
+		}
+
+		try {
+			await this.ensureNotAnInternalBrowserPage(tabKey);
+
+			const tabData = TabKey.parse(tabKey);
+			const rpcClient =
+				await this.extensionChannelManager.getRpcClientByBrowserId(
+					tabData.extensionId,
+				);
+
+			const tabResult = (await rpcClient.call({
+				method: "showHumanHint",
+				args: [
+					tabData.tabId,
+					params,
+					humanMessage,
+				],
+				extraArgs: {},
+			})) as HumanHintTabResult;
+
+			return {
+				ok: tabResult.ok,
+				reason: tabResult.reason,
+				action: params.action,
+				target: tabResult.target ?? targetFromParams(params),
+				value: params.value,
+				message: params.message,
+				humanMessage,
+				tab,
+				expiresInSeconds: HUMAN_HINT_EXPIRES_IN_SECONDS,
+			};
+		} catch (error) {
+			const reason = error instanceof Error ? error.message : String(error);
+			this.logger.error("Failed to show human hint", {
+				tabKey,
+				reason,
+			});
+			return {
+				ok: false,
+				reason,
+				action: params.action,
+				target: targetFromParams(params),
+				value: params.value,
+				message: params.message,
+				humanMessage,
+				tab,
+				expiresInSeconds: HUMAN_HINT_EXPIRES_IN_SECONDS,
+			};
+		}
+	};
+
+	private resolveTabInfo = async (
+		tabKey: string,
+	): Promise<{
+		title: string;
+		url: string;
+	}> => {
+		const cached = this.tabContextCache.get(tabKey);
+		if (cached)
+			return {
+				title: cached.title,
+				url: cached.url,
+			};
+
+		try {
+			const context = await this.getContext();
+			for (const browser of context.browsers) {
+				for (const window of browser.browserWindows) {
+					const tab = window.tabs.find((t) => t.tabKey === tabKey);
+					if (tab)
+						return {
+							title: tab.title,
+							url: tab.url,
+						};
+				}
+			}
+		} catch {
+			this.logger.warn("Failed to resolve tab info for human hint");
+		}
+
+		return {
+			title: "",
+			url: "",
+		};
 	};
 }
