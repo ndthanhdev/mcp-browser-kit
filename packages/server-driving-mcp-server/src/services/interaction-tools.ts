@@ -52,10 +52,17 @@ export class InteractionTools {
 			server,
 			"clickOnCoordinates",
 			{
+				title: "Click at coordinates",
 				description:
 					this.toolDescriptionsInputPort.clickOnViewableElementInstruction(),
 				inputSchema: coordinateSchema,
 				outputSchema: actionOutputSchema,
+				annotations: {
+					readOnlyHint: false,
+					destructiveHint: false,
+					idempotentHint: false,
+					openWorldHint: true,
+				},
 			},
 			async ({ tabKey, x, y }) => {
 				this.logger.info("Executing clickOnCoordinates", {
@@ -103,10 +110,17 @@ export class InteractionTools {
 			server,
 			"fillTextToCoordinates",
 			{
+				title: "Fill text at coordinates",
 				description:
 					this.toolDescriptionsInputPort.fillTextToViewableElementInstruction(),
 				inputSchema: coordinateTextInputSchema,
 				outputSchema: actionOutputSchema,
+				annotations: {
+					readOnlyHint: false,
+					destructiveHint: false,
+					idempotentHint: false,
+					openWorldHint: true,
+				},
 			},
 			async ({ tabKey, x, y, value }) => {
 				this.logger.info("Executing fillTextToCoordinates", {
@@ -155,10 +169,17 @@ export class InteractionTools {
 			server,
 			"hitEnterOnCoordinates",
 			{
+				title: "Hit enter at coordinates",
 				description:
 					this.toolDescriptionsInputPort.hitEnterOnViewableElementInstruction(),
 				inputSchema: coordinateSchema,
 				outputSchema: actionOutputSchema,
+				annotations: {
+					readOnlyHint: false,
+					destructiveHint: false,
+					idempotentHint: false,
+					openWorldHint: true,
+				},
 			},
 			async ({ tabKey, x, y }) => {
 				this.logger.info("Executing hitEnterOnCoordinates", {
@@ -206,10 +227,17 @@ export class InteractionTools {
 			server,
 			"clickOnElement",
 			{
+				title: "Click element",
 				description:
 					this.toolDescriptionsInputPort.clickOnReadableElementInstruction(),
 				inputSchema: readableElementSchema,
 				outputSchema: actionOutputSchema,
+				annotations: {
+					readOnlyHint: false,
+					destructiveHint: false,
+					idempotentHint: false,
+					openWorldHint: true,
+				},
 			},
 			async ({ tabKey, readablePath }) => {
 				this.logger.info("Executing clickOnElement", {
@@ -254,10 +282,17 @@ export class InteractionTools {
 			server,
 			"fillTextToElement",
 			{
+				title: "Fill text into element",
 				description:
 					this.toolDescriptionsInputPort.fillTextToReadableElementInstruction(),
 				inputSchema: readableElementTextInputSchema,
 				outputSchema: actionOutputSchema,
+				annotations: {
+					readOnlyHint: false,
+					destructiveHint: false,
+					idempotentHint: false,
+					openWorldHint: true,
+				},
 			},
 			async ({ tabKey, readablePath, value }) => {
 				this.logger.info("Executing fillTextToElement", {
@@ -303,10 +338,17 @@ export class InteractionTools {
 			server,
 			"hitEnterOnElement",
 			{
+				title: "Hit enter on element",
 				description:
 					this.toolDescriptionsInputPort.hitEnterOnReadableElementInstruction(),
 				inputSchema: readableElementSchema,
 				outputSchema: actionOutputSchema,
+				annotations: {
+					readOnlyHint: false,
+					destructiveHint: false,
+					idempotentHint: false,
+					openWorldHint: true,
+				},
 			},
 			async ({ tabKey, readablePath }) => {
 				this.logger.info("Executing hitEnterOnElement", {

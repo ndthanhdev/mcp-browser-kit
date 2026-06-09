@@ -53,9 +53,14 @@ export class BrowserTools {
 			server,
 			"captureTab",
 			{
+				title: "Capture tab screenshot",
 				description: this.toolDescriptionsInputPort.captureTabInstruction(),
 				inputSchema: tabKeySchema,
 				outputSchema: captureTabOutputSchema,
+				annotations: {
+					readOnlyHint: true,
+					openWorldHint: true,
+				},
 			},
 			async ({ tabKey }) => {
 				this.logger.info("Executing captureTab", {
@@ -105,9 +110,16 @@ export class BrowserTools {
 			server,
 			"invokeJsFn",
 			{
+				title: "Invoke JavaScript function",
 				description: this.toolDescriptionsInputPort.invokeJsFnInstruction(),
 				inputSchema: invokeJsFnSchema,
 				outputSchema: invokeJsFnOutputSchema,
+				annotations: {
+					readOnlyHint: false,
+					destructiveHint: true,
+					idempotentHint: false,
+					openWorldHint: true,
+				},
 			},
 			async ({ tabKey, fnBodyCode }) => {
 				this.logger.info("Executing invokeJsFn", {
@@ -149,9 +161,16 @@ export class BrowserTools {
 			server,
 			"openTab",
 			{
+				title: "Open tab",
 				description: this.toolDescriptionsInputPort.openTabInstruction(),
 				inputSchema: openTabSchema,
 				outputSchema: openTabOutputSchema,
+				annotations: {
+					readOnlyHint: false,
+					destructiveHint: false,
+					idempotentHint: false,
+					openWorldHint: true,
+				},
 			},
 			async ({ windowKey, url }) => {
 				this.logger.info("Executing openTab", {
@@ -200,9 +219,16 @@ export class BrowserTools {
 			server,
 			"closeTab",
 			{
+				title: "Close tab",
 				description: this.toolDescriptionsInputPort.closeTabInstruction(),
 				inputSchema: tabKeySchema,
 				outputSchema: actionOutputSchema,
+				annotations: {
+					readOnlyHint: false,
+					destructiveHint: true,
+					idempotentHint: true,
+					openWorldHint: true,
+				},
 			},
 			async ({ tabKey }) => {
 				this.logger.info("Executing closeTab", {
@@ -244,9 +270,14 @@ export class BrowserTools {
 			server,
 			"getSelection",
 			{
+				title: "Get text selection",
 				description: this.toolDescriptionsInputPort.getSelectionInstruction(),
 				inputSchema: tabKeySchema,
 				outputSchema: selectionOutputSchema,
+				annotations: {
+					readOnlyHint: true,
+					openWorldHint: true,
+				},
 			},
 			async ({ tabKey }) => {
 				this.logger.info("Executing getSelection", {

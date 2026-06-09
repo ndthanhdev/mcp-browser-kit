@@ -40,10 +40,11 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 
 	captureTabInstruction = (): string => {
 		return [
-			"Screenshot a tab; returns base64 image with width, height, mimeType.",
+			"Screenshot a tab.",
 			"When: MV2 tabs only; you need pixel coordinates for coordinate tools.",
 			"How: tabKey from bk:///context browsers[].tabs[].tabKey; use returned dimensions to compute x/y.",
 			"Requires: tabKey.",
+			"Returns: value { data (base64 image), width, height, mimeType } — use width/height to scale coordinates.",
 			"Avoid: calling on manifestVersion 3 — use readable-elements instead.",
 		].join("\n");
 	};
@@ -54,6 +55,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: MV2 fallback when no readablePath is available.",
 			"How: x/y from a recent captureTab screenshot (same width/height); tabKey from context.",
 			"Requires: tabKey, x, y.",
+			"Returns: ok=true on success; on ok=false re-capture the tab and recompute x/y.",
 			"Avoid: on MV3 (no screenshot source); prefer clickOnElement when readablePath exists.",
 		].join("\n");
 	};
@@ -64,6 +66,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: MV2 fallback for inputs without a readablePath.",
 			"How: coordinates from recent captureTab; submit via clickOnCoordinates on submit button or hitEnterOnCoordinates.",
 			"Requires: tabKey, x, y, value.",
+			"Returns: ok=true on success; on ok=false re-capture the tab and recompute x/y.",
 			"Avoid: on MV3; prefer fillTextToElement when readablePath is available.",
 		].join("\n");
 	};
@@ -74,6 +77,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: MV2 fallback to submit when no submit button readablePath exists.",
 			"How: coordinates from recent captureTab.",
 			"Requires: tabKey, x, y.",
+			"Returns: ok=true on success; on ok=false re-capture the tab and recompute x/y.",
 			"Avoid: on MV3; prefer hitEnterOnElement when readablePath is available.",
 		].join("\n");
 	};
@@ -84,6 +88,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: primary click method on MV2 and MV3.",
 			"How: read {tabUri}/readable-elements; filter [path, role, text] tuples by role and text; copy path exactly (e.g. 0.2.1) — not a CSS selector.",
 			"Requires: tabKey, readablePath.",
+			"Returns: ok=true on success; on ok=false re-read readable-elements and pick a fresh path.",
 			"Avoid: inventing paths; re-read elements after navigation if click fails.",
 		].join("\n");
 	};
@@ -94,6 +99,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: primary fill method on MV2 and MV3.",
 			"How: readablePath from first element of [path, role, text] tuple in readable-elements; submit via clickOnElement on submit button or hitEnterOnElement.",
 			"Requires: tabKey, readablePath, value.",
+			"Returns: ok=true on success; on ok=false re-read readable-elements and pick a fresh path.",
 			"Avoid: CSS selectors as readablePath; stale paths after DOM changes.",
 		].join("\n");
 	};
@@ -104,6 +110,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: submitting a form when no explicit submit button exists.",
 			"How: readablePath from readable-elements tuple (dot-separated index like 0.2.1).",
 			"Requires: tabKey, readablePath.",
+			"Returns: ok=true on success; on ok=false re-read readable-elements and pick a fresh path.",
 			"Avoid: using when a submit button readablePath is available — click it instead.",
 		].join("\n");
 	};
@@ -114,6 +121,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: MV2 only, and only when element/coordinate tools cannot accomplish the task.",
 			"How: fnBodyCode is the function body only (no function wrapper); use return to send a value back. Example: return document.title;",
 			"Requires: tabKey, fnBodyCode.",
+			"Returns: value.result = whatever you return (must be JSON-serializable).",
 			"Avoid: on manifestVersion 3; wrapping in function () { ... }.",
 		].join("\n");
 	};
@@ -124,6 +132,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: finished with a tab and no further interaction needed.",
 			"How: tabKey from bk:///context browsers[].tabs[].tabKey.",
 			"Requires: tabKey.",
+			"Returns: ok=true once closed.",
 			"Avoid: closing the tab you still need for further interactions.",
 		].join("\n");
 	};
@@ -134,7 +143,8 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: you need text the user has highlighted on the page.",
 			"How: tabKey from bk:///context.",
 			"Requires: tabKey.",
-			"Avoid: expecting content when nothing is selected — returns empty string.",
+			"Returns: value.selectedText — empty string when nothing is selected.",
+			"Avoid: expecting content when nothing is selected.",
 		].join("\n");
 	};
 
@@ -144,6 +154,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: navigating to a page not already open.",
 			"How: windowKey from bk:///context; url must include scheme (https://); after success re-read context for the new tabKey and wait for page load.",
 			"Requires: windowKey, url.",
+			"Returns: value { tabKey, windowKey } — use the returned tabKey for follow-up calls.",
 			"Avoid: interacting immediately — tab needs a moment to load.",
 		].join("\n");
 	};
@@ -154,7 +165,8 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: CAPTCHA, 2FA, irreversible confirmations, or repeated tool failures.",
 			"How: provide exactly one target — readablePath (preferred) OR x and y, not both; fill action requires value.",
 			"Requires: tabKey, action (click | fill | hit-enter), message.",
-			"Avoid: both readablePath and coordinates; relay returned humanMessage to the user.",
+			"Returns: humanMessage (relay verbatim to the user) and expiresInSeconds.",
+			"Avoid: both readablePath and coordinates.",
 		].join("\n");
 	};
 
