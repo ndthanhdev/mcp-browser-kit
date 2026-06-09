@@ -37,9 +37,16 @@ export class HumanHintTools {
 			server,
 			"showHumanHint",
 			{
+				title: "Show human hint",
 				description: this.toolDescriptionsInputPort.showHumanHintInstruction(),
 				inputSchema: showHumanHintInputSchema,
 				outputSchema: showHumanHintOutputSchema,
+				annotations: {
+					readOnlyHint: false,
+					destructiveHint: false,
+					idempotentHint: true,
+					openWorldHint: true,
+				},
 			},
 			async ({ tabKey, action, message, value, readablePath, x, y }) => {
 				this.logger.info("Executing showHumanHint", {

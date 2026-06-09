@@ -7,10 +7,9 @@
  *   - `bk:///context`                                                        — aggregated context (static)
  *   - `bk:///browsers/<shortId>`                                            — one browser
  *   - `bk:///browsers/<shortId>/tabs/<tabId>`                               — one tab
- *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-text`                 — tab text (page 1)
- *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements`             — tab elements (page 1)
- *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-text/pages/<N>`       — tab text page N
- *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements/pages/<N>`   — tab elements page N
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-text`                 — tab text (page 1 only)
+ *   - `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements`             — tab elements (page 1 only)
+ *   - `bk:///snapshot-types/<type>/snapshots/<snapshotId>/pages/<N>`        — page 2+ (use snapshotId from page 1)
  *
  * The short browser ID is the nanoid portion of the channelId (everything
  * after the `channel:` prefix). The single ResourceTemplate

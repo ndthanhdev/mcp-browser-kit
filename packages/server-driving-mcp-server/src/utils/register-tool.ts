@@ -3,6 +3,7 @@ import type {
 	McpServer,
 	ToolCallback,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
 import type { z } from "zod";
 
 type ZodObjectShape = Record<string, z.ZodType>;
@@ -11,9 +12,11 @@ interface ToolConfig<
 	TInput extends ZodObjectShape,
 	TOutput extends ZodObjectShape | undefined,
 > {
+	title?: string;
 	description: string;
 	inputSchema: TInput;
 	outputSchema?: TOutput;
+	annotations?: ToolAnnotations;
 }
 
 /**
