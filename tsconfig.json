@@ -28,6 +28,9 @@
 	],
 	"references": [
 		{
+			"path": "./etc/scripts"
+		},
+		{
 			"path": "apps/ext-e2e"
 		},
 		{
@@ -41,9 +44,6 @@
 		},
 		{
 			"path": "apps/server"
-		},
-		{
-			"path": "etc/scripts"
 		},
 		{
 			"path": "packages/core-extension"
