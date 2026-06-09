@@ -31,6 +31,18 @@
 			"path": "./etc/scripts"
 		},
 		{
+			"path": "./packages/core-extension"
+		},
+		{
+			"path": "./packages/core-server"
+		},
+		{
+			"path": "./packages/core-utils"
+		},
+		{
+			"path": "./packages/types"
+		},
+		{
 			"path": "apps/ext-e2e"
 		},
 		{
@@ -44,15 +56,6 @@
 		},
 		{
 			"path": "apps/server"
-		},
-		{
-			"path": "packages/core-extension"
-		},
-		{
-			"path": "packages/core-server"
-		},
-		{
-			"path": "packages/core-utils"
 		},
 		{
 			"path": "packages/driven-logger-factory"
@@ -77,9 +80,6 @@
 		},
 		{
 			"path": "packages/server-driving-mcp-server"
-		},
-		{
-			"path": "packages/types"
 		}
 	]
 }

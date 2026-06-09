@@ -7,151 +7,174 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 		return [
 			"MCP Browser Kit observes and controls connected browsers via an extension.",
 			"",
-			"Workflow:",
-			"1. Read `bk:///context` first. It returns every connected browser with its windows and tabs, including the `tabKey`, `windowKey`, `tabUri`, and `extensionInfo.manifestVersion` that downstream tools require.",
-			"2. Pick an interaction strategy per tab based on `manifestVersion`:",
-			"   - MV2: `captureTab` + coordinate tools (`clickOnCoordinates`, `fillTextToCoordinates`, `hitEnterOnCoordinates`) and `invokeJsFn` are available.",
-			"   - MV3 (or unknown): use readable-element tools (`clickOnElement`, `fillTextToElement`, `hitEnterOnElement`); coordinate tools and `invokeJsFn` are NOT available.",
-			"3. For readable-element tools, read `<tabUri>/readable-elements` to get `[readablePath, role, text]` tuples. For raw page text, read `<tabUri>/readable-text`.",
-			"4. Prefer readable-element tools over coordinate tools when both work — they are more robust to layout changes and work on MV3.",
-			"5. `readable-text` and `readable-elements` are paginated. The response includes `snapshotId`, `hasNextPage`, `nextPageNumber`, and `totalPages`. If `hasNextPage` is true, fetch `bk:///snapshot-types/<type>/snapshots/<snapshotId>/pages/<nextPageNumber>` for subsequent pages.",
-			"6. When automation fails (as a soft guideline, retry once if the failure looks transient) or a step is human-only (CAPTCHA, 2FA, irreversible confirmations), call `showHumanHint` with the target, action, message, and `value` when filling.",
+			"Quick start:",
+			"1. resources/read -> bk:///context",
+			"2. Find target tab in browsers[].tabs[] by matching url or title",
+			"3. Copy tabKey, tabUri, and extensionInfo.manifestVersion verbatim — never construct keys",
+			"4. resources/read -> {tabUri}/readable-elements",
+			"5. If hasNextPage, read bk:///snapshot-types/readable-elements/snapshots/{snapshotId}/pages/{nextPageNumber}",
+			"6. Filter data tuples [path, role, text] by role and text; use path (e.g. 0.2.1) as readablePath",
+			"7. Call tool; always check structuredContent.ok — if false, re-read elements or showHumanHint",
 			"",
-			"Resources:",
-			"* `bk:///context` — aggregated browser/window/tab list. Always read first.",
-			"* `bk:///{+resourceId}` — per-browser and per-tab resources; see template description.",
-			"* `readable-text` and `readable-elements` return snapshot JSON with `snapshotId`, `hasNextPage`, `nextPageNumber`, and `totalPages`. Fetch `bk:///snapshot-types/<type>/snapshots/<snapshotId>/pages/<N>` for subsequent pages.",
-			"* Subscribe to any URI to receive `notifications/resources/updated` when content changes; cached snapshots become stale after navigation.",
+			"Context shape (bk:///context):",
+			'{ "browsers": [{ "extensionInfo": { "manifestVersion": 3 }, "tabs": [{ "tabKey": "ext::win::tab", "tabUri": "bk:///browsers/.../tabs/...", "windowKey": "ext::win", "url": "...", "title": "..." }] }] }',
+			"",
+			"Tool selection by manifestVersion:",
+			"- MV2: all tools; prefer element tools; invokeJsFn only as last resort",
+			"- MV3: clickOnElement, fillTextToElement, hitEnterOnElement, openTab, closeTab, getSelection, showHumanHint",
+			"- MV3 blocked: captureTab, invokeJsFn; avoid coordinate tools (no screenshot source for x/y)",
+			"",
+			"Error recovery:",
+			"- Tab not found -> re-read bk:///context",
+			"- Element not found at path / no longer exists -> re-read readable-elements, pick fresh path",
+			"- Page N out of range / No cached snapshot -> read page 1 first, use snapshotId from that response",
+			"- captureTab/invokeJsFn not supported -> switch to element tools",
 			"",
 			"Constraints:",
-			"* Resource lists are capped at 200 tabs and 100 completion suggestions.",
-			"* `tabKey` and `windowKey` are opaque — always source them from `bk:///context`, never construct them.",
+			"- tabKey and windowKey are opaque — source from bk:///context only",
+			"- readablePath is a dot-separated tree index (0.2.1), not a CSS selector",
+			"- Snapshots go stale after navigation; re-read after page changes",
+			"- Resource lists capped at 200 tabs; subscribe for resources/updated notifications",
 		].join("\n");
 	};
 
 	captureTabInstruction = (): string => {
 		return [
-			"📷 Screenshot a tab. Returns base64 image with `width`, `height`, `mimeType`.",
-			"* Use the returned dimensions to compute pixel coordinates for `clickOnCoordinates`, `fillTextToCoordinates`, and `hitEnterOnCoordinates`.",
-			"* Requires `tabKey` from `bk:///context`.",
-			"* MV2 only. On MV3 tabs, use the `readable-elements` resource instead.",
+			"Screenshot a tab; returns base64 image with width, height, mimeType.",
+			"When: MV2 tabs only; you need pixel coordinates for coordinate tools.",
+			"How: tabKey from bk:///context browsers[].tabs[].tabKey; use returned dimensions to compute x/y.",
+			"Requires: tabKey.",
+			"Avoid: calling on manifestVersion 3 — use readable-elements instead.",
 		].join("\n");
 	};
 
 	clickOnViewableElementInstruction = (): string => {
 		return [
-			"👆 Click at pixel coordinates inside a tab.",
-			"* Coordinates must come from a recent `captureTab` (same dimensions).",
-			"* Requires `tabKey`, `x`, `y`.",
-			"* Prefer `clickOnElement` when a `readablePath` is available — more reliable and works on MV3.",
+			"Click at pixel coordinates inside a tab.",
+			"When: MV2 fallback when no readablePath is available.",
+			"How: x/y from a recent captureTab screenshot (same width/height); tabKey from context.",
+			"Requires: tabKey, x, y.",
+			"Avoid: on MV3 (no screenshot source); prefer clickOnElement when readablePath exists.",
 		].join("\n");
 	};
 
 	fillTextToViewableElementInstruction = (): string => {
 		return [
-			"⌨️ Click at (x, y) then type text into the focused input.",
-			"* Coordinates must come from a recent `captureTab`.",
-			"* Requires `tabKey`, `x`, `y`, `value`.",
-			"* To submit afterwards: `clickOnCoordinates` on a visible submit button, otherwise `hitEnterOnCoordinates`.",
-			"* Prefer `fillTextToElement` when a `readablePath` is available.",
+			"Click at (x, y) then type text into the focused input.",
+			"When: MV2 fallback for inputs without a readablePath.",
+			"How: coordinates from recent captureTab; submit via clickOnCoordinates on submit button or hitEnterOnCoordinates.",
+			"Requires: tabKey, x, y, value.",
+			"Avoid: on MV3; prefer fillTextToElement when readablePath is available.",
 		].join("\n");
 	};
 
 	hitEnterOnViewableElementInstruction = (): string => {
 		return [
-			"↵ Click at (x, y) then press Enter (typically to submit a form).",
-			"* Coordinates must come from a recent `captureTab`.",
-			"* Requires `tabKey`, `x`, `y`.",
+			"Click at (x, y) then press Enter to submit a form.",
+			"When: MV2 fallback to submit when no submit button readablePath exists.",
+			"How: coordinates from recent captureTab.",
+			"Requires: tabKey, x, y.",
+			"Avoid: on MV3; prefer hitEnterOnElement when readablePath is available.",
 		].join("\n");
 	};
 
 	clickOnReadableElementInstruction = (): string => {
 		return [
-			"🔘 Click an element by `readablePath`.",
-			"* Get `readablePath` from `<tabUri>/readable-elements` (returns `[readablePath, role, text]` tuples).",
-			"* Requires `tabKey`, `readablePath`.",
-			"* Works on both MV2 and MV3 — prefer this over `clickOnCoordinates`.",
+			"Click an element by readablePath.",
+			"When: primary click method on MV2 and MV3.",
+			"How: read {tabUri}/readable-elements; filter [path, role, text] tuples by role and text; copy path exactly (e.g. 0.2.1) — not a CSS selector.",
+			"Requires: tabKey, readablePath.",
+			"Avoid: inventing paths; re-read elements after navigation if click fails.",
 		].join("\n");
 	};
 
 	fillTextToReadableElementInstruction = (): string => {
 		return [
-			"✏️ Type text into an element by `readablePath`.",
-			"* Get `readablePath` from `<tabUri>/readable-elements`.",
-			"* Works with text inputs, textareas, and other editable elements.",
-			"* Requires `tabKey`, `readablePath`, `value`.",
-			"* To submit afterwards: `clickOnElement` on a visible submit button, otherwise `hitEnterOnElement`.",
+			"Type text into an input, textarea, or editable element by readablePath.",
+			"When: primary fill method on MV2 and MV3.",
+			"How: readablePath from first element of [path, role, text] tuple in readable-elements; submit via clickOnElement on submit button or hitEnterOnElement.",
+			"Requires: tabKey, readablePath, value.",
+			"Avoid: CSS selectors as readablePath; stale paths after DOM changes.",
 		].join("\n");
 	};
 
 	hitEnterOnReadableElementInstruction = (): string => {
 		return [
-			"↵ Focus an element by `readablePath` then press Enter.",
-			"* Use to submit forms when no explicit submit button exists.",
-			"* Requires `tabKey`, `readablePath`.",
+			"Focus an element by readablePath then press Enter.",
+			"When: submitting a form when no explicit submit button exists.",
+			"How: readablePath from readable-elements tuple (dot-separated index like 0.2.1).",
+			"Requires: tabKey, readablePath.",
+			"Avoid: using when a submit button readablePath is available — click it instead.",
 		].join("\n");
 	};
 
 	invokeJsFnInstruction = (): string => {
 		return [
-			"⚙️ Execute a JavaScript function body in the page context.",
-			"* `fnBodyCode` is the function body (no enclosing `function () { ... }`); use `return` to send a value back. The return value is JSON-serialized.",
-			"* Example: `return document.title;`.",
-			"* Requires `tabKey`, `fnBodyCode`.",
-			"* MV2 only. Use only when other tools cannot accomplish the task.",
+			"Execute a JavaScript function body in the page context.",
+			"When: MV2 only, and only when element/coordinate tools cannot accomplish the task.",
+			"How: fnBodyCode is the function body only (no function wrapper); use return to send a value back. Example: return document.title;",
+			"Requires: tabKey, fnBodyCode.",
+			"Avoid: on manifestVersion 3; wrapping in function () { ... }.",
 		].join("\n");
 	};
 
 	closeTabInstruction = (): string => {
 		return [
-			"🗑️ Close a tab. Irreversible.",
-			"* Requires `tabKey`.",
-			"* Do not close the tab you still need for further interactions.",
+			"Close a tab. Irreversible.",
+			"When: finished with a tab and no further interaction needed.",
+			"How: tabKey from bk:///context browsers[].tabs[].tabKey.",
+			"Requires: tabKey.",
+			"Avoid: closing the tab you still need for further interactions.",
 		].join("\n");
 	};
 
 	getSelectionInstruction = (): string => {
 		return [
-			"📋 Get the user's current text selection in a tab.",
-			"* Requires `tabKey`.",
-			"* Returns an empty selection when nothing is highlighted.",
+			"Get the user's current text selection in a tab.",
+			"When: you need text the user has highlighted on the page.",
+			"How: tabKey from bk:///context.",
+			"Requires: tabKey.",
+			"Avoid: expecting content when nothing is selected — returns empty string.",
 		].join("\n");
 	};
 
 	openTabInstruction = (): string => {
 		return [
-			"🌐 Open a URL in a new tab.",
-			"* Requires `windowKey` from `bk:///context` and the target `url`.",
-			"* Returns the new `tabKey` and `windowKey`. The tab needs a brief moment to finish loading before it is safe to interact with.",
+			"Open a URL in a new tab.",
+			"When: navigating to a page not already open.",
+			"How: windowKey from bk:///context; url must include scheme (https://); after success re-read context for the new tabKey and wait for page load.",
+			"Requires: windowKey, url.",
+			"Avoid: interacting immediately — tab needs a moment to load.",
 		].join("\n");
 	};
 
 	showHumanHintInstruction = (): string => {
 		return [
-			"🧑‍💻 Highlight an element and instruct the human to act when automation fails or the step is human-only.",
-			"* Requires `tabKey`, `action` (`click`, `fill`, or `hit-enter`), and `message`.",
-			"* Provide exactly one target: `readablePath` (preferred) or `x` and `y` coordinates.",
-			"* `fill` requires `value` — the text the human should type.",
-			"* On success, focuses the tab, scrolls the target into view, shows an overlay + callout for 60s (dismissible). Returns `humanMessage` to relay in chat.",
-			"* On failure, returns `ok: false` with a `reason` but still includes a usable `humanMessage`.",
+			"Highlight an element and instruct the human to act when automation fails or the step is human-only.",
+			"When: CAPTCHA, 2FA, irreversible confirmations, or repeated tool failures.",
+			"How: provide exactly one target — readablePath (preferred) OR x and y, not both; fill action requires value.",
+			"Requires: tabKey, action (click | fill | hit-enter), message.",
+			"Avoid: both readablePath and coordinates; relay returned humanMessage to the user.",
 		].join("\n");
 	};
 
 	contextResourceDescription = (): string => {
 		return [
 			"Aggregated state of every connected browser — read this first.",
-			"Each browser entry includes `windows[]` (with `windowKey` for `openTab`) and `tabs[]` (with `tabKey` for interaction tools, `tabUri` for `readable-text`/`readable-elements`, and `extensionInfo.manifestVersion` which gates available tools).",
-		].join("\n");
+			"tabKey, tabUri, and windowKey are on each entry in browsers[].tabs[], not at browser root.",
+			"extensionInfo.manifestVersion on each browser gates available tools (2 = all, 3 = element tools only).",
+			"Example pointer: browsers[0].tabs[0].tabUri -> append /readable-elements to interact.",
+		].join(" ");
 	};
 
 	bkResourceTemplateDescription = (): string => {
 		return [
-			"Per-browser and per-tab resources under `bk:///{+resourceId}`:",
-			"* `bk:///browsers/<shortId>` — full browser snapshot",
-			"* `bk:///browsers/<shortId>/tabs/<tabId>` — tab metadata with `tabKey`",
-			"* `bk:///browsers/<shortId>/tabs/<tabId>/readable-text` — readable text snapshot (page 1)",
-			"* `bk:///browsers/<shortId>/tabs/<tabId>/readable-elements` — readable elements snapshot (page 1)",
-			"* `bk:///snapshot-types/<type>/snapshots/<snapshotId>/pages/<N>` — subsequent snapshot pages (use `snapshotId` from page 1 response)",
+			"Per-browser and per-tab resources under bk:///{+resourceId}:",
+			"bk:///browsers/<shortId> — full browser snapshot",
+			"bk:///browsers/<shortId>/tabs/<tabId> — tab metadata with tabKey",
+			"bk:///browsers/<shortId>/tabs/<tabId>/readable-text — readable text snapshot (page 1 only)",
+			"bk:///browsers/<shortId>/tabs/<tabId>/readable-elements — readable elements snapshot (page 1 only)",
+			"bk:///snapshot-types/<type>/snapshots/<snapshotId>/pages/<N> — page 2+ for both readable-text and readable-elements (use snapshotId from page 1)",
 		].join("\n");
 	};
 
@@ -176,16 +199,17 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 	tabReadableTextDescription = (tabId: string): string => {
 		return [
 			`Snapshot inner text for tab ${tabId}.`,
-			"Returns JSON with `snapshotId`, `data` (text), `hasNextPage`, `nextPageNumber`, `totalPages`.",
-			"If `hasNextPage` is true, read `bk:///snapshot-types/readable-text/snapshots/<snapshotId>/pages/<nextPageNumber>` to continue.",
+			"Returns JSON with snapshotId, data (text), hasNextPage, nextPageNumber, totalPages.",
+			"Page 2+: bk:///snapshot-types/readable-text/snapshots/<snapshotId>/pages/<nextPageNumber> — tab URIs do not support /pages/N.",
 		].join(" ");
 	};
 
 	tabReadableElementsDescription = (tabId: string): string => {
 		return [
 			`Snapshot interactive elements for tab ${tabId}.`,
-			"Returns JSON with `snapshotId`, `data` (`[readablePath, role, text]` tuples), `hasNextPage`, `nextPageNumber`, `totalPages`.",
-			"If `hasNextPage` is true, read `bk:///snapshot-types/readable-elements/snapshots/<snapshotId>/pages/<nextPageNumber>` to continue.",
+			"Returns JSON with snapshotId, data ([path, role, text] tuples), hasNextPage, nextPageNumber, totalPages.",
+			"path is a dot-separated tree index (e.g. 0.2.1) — use as readablePath, not a CSS selector.",
+			"Page 2+: bk:///snapshot-types/readable-elements/snapshots/<snapshotId>/pages/<nextPageNumber>.",
 		].join(" ");
 	};
 

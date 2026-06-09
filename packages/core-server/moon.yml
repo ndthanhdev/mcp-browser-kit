@@ -4,3 +4,10 @@ dependsOn:
 - core-extension
 - types
 - core-utils
+tasks:
+  test:
+    toolchain: node
+    preset: utility
+    script: tsx --test src/core/mcp-descriptions.spec.ts
+    inputs:
+    - src/**/*

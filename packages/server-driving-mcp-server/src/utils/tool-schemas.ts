@@ -1,13 +1,29 @@
 import { z } from "zod";
 
 export const tabKeySchema = {
-	tabKey: z.string().describe("Tab key to target"),
+	tabKey: z
+		.string()
+		.describe(
+			"Opaque key from bk:///context browsers[].tabs[].tabKey — never construct",
+		),
 };
 
 export const coordinateSchema = {
-	tabKey: z.string().describe("Tab key of the active tab"),
-	x: z.number().describe("X coordinate (pixels)"),
-	y: z.number().describe("Y coordinate (pixels)"),
+	tabKey: z
+		.string()
+		.describe(
+			"Opaque key from bk:///context browsers[].tabs[].tabKey — never construct",
+		),
+	x: z
+		.number()
+		.describe(
+			"X coordinate in pixels from a recent captureTab screenshot (MV2 only)",
+		),
+	y: z
+		.number()
+		.describe(
+			"Y coordinate in pixels from a recent captureTab screenshot (MV2 only)",
+		),
 };
 
 export const coordinateTextInputSchema = {
@@ -16,10 +32,16 @@ export const coordinateTextInputSchema = {
 };
 
 export const readableElementSchema = {
-	tabKey: z.string().describe("Tab key to target"),
+	tabKey: z
+		.string()
+		.describe(
+			"Opaque key from bk:///context browsers[].tabs[].tabKey — never construct",
+		),
 	readablePath: z
 		.string()
-		.describe("Readable path from the readable-elements resource"),
+		.describe(
+			"Dot-separated tree path (e.g. 0.2.1) — first element of [path, role, text] tuple from readable-elements; not a CSS selector",
+		),
 };
 
 export const readableElementTextInputSchema = {
@@ -28,19 +50,35 @@ export const readableElementTextInputSchema = {
 };
 
 export const invokeJsFnSchema = {
-	tabKey: z.string().describe("Tab key to run JavaScript in"),
+	tabKey: z
+		.string()
+		.describe(
+			"Opaque key from bk:///context browsers[].tabs[].tabKey — never construct",
+		),
 	fnBodyCode: z
 		.string()
-		.describe("Function body code to execute in page context"),
+		.describe(
+			"Function body only (no function wrapper). Example: return document.title; MV2 only",
+		),
 };
 
 export const openTabSchema = {
-	windowKey: z.string().describe("Window key where the new tab should open"),
-	url: z.string().describe("URL to open in the new tab"),
+	windowKey: z
+		.string()
+		.describe(
+			"Opaque key from bk:///context browsers[].tabs[].windowKey — never construct",
+		),
+	url: z
+		.string()
+		.describe("URL to open, including scheme (e.g. https://example.com)"),
 };
 
 export const showHumanHintInputSchema = {
-	tabKey: z.string().describe("Tab key to target"),
+	tabKey: z
+		.string()
+		.describe(
+			"Opaque key from bk:///context browsers[].tabs[].tabKey — never construct",
+		),
 	action: z
 		.enum([
 			"click",
@@ -58,15 +96,21 @@ export const showHumanHintInputSchema = {
 	readablePath: z
 		.string()
 		.optional()
-		.describe("Readable path from readable-elements (MV3 / element flow)"),
+		.describe(
+			"Dot-separated tree path from readable-elements (e.g. 0.2.1); provide this OR x+y, not both",
+		),
 	x: z
 		.number()
 		.optional()
-		.describe("X coordinate in pixels (MV2 / screenshot flow)"),
+		.describe(
+			"X coordinate from captureTab (MV2); provide this with y OR readablePath, not both",
+		),
 	y: z
 		.number()
 		.optional()
-		.describe("Y coordinate in pixels (MV2 / screenshot flow)"),
+		.describe(
+			"Y coordinate from captureTab (MV2); provide this with x OR readablePath, not both",
+		),
 };
 
 const humanHintTargetSchema = z.discriminatedUnion("type", [
