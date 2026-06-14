@@ -180,6 +180,27 @@ export const captureTabOutputSchema = createOverOutputSchema({
 
 export const actionOutputSchema = createOverOutputSchema({});
 
+export const snapshotPageSchema = {
+	snapshotId: z
+		.string()
+		.describe(
+			"The snapshotId returned from a previous getReadableText or getReadableElements call",
+		),
+	type: z
+		.enum([
+			"readable-text",
+			"readable-elements",
+		])
+		.describe("Content type: readable-text or readable-elements"),
+	pageNumber: z
+		.number()
+		.int()
+		.min(1)
+		.describe(
+			"Page number to retrieve (from nextPageNumber in a prior response)",
+		),
+};
+
 type InferOverValue<T> = T extends {
 	value: z.ZodOptional<infer V extends z.ZodType>;
 }

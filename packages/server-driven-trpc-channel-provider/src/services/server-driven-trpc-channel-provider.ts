@@ -100,6 +100,9 @@ export class ServerDrivenTrpcChannelProvider
 		return new Promise<void>((resolve) => {
 			this.logger.info("Stopping tRPC channel provider");
 			this.handler?.broadcastReconnectNotification();
+			for (const client of this.wss?.clients ?? []) {
+				client.terminate();
+			}
 			this.wss?.close(() => {
 				this.logger.info("WebSocket Server closed");
 				this.httpServer?.close(() => {

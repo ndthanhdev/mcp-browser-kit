@@ -16,6 +16,12 @@ export interface McpDescriptionsInputPort {
 	openTabInstruction(): string;
 	showHumanHintInstruction(): string;
 
+	// Fallback tool descriptions (for clients without resource support)
+	getContextInstruction(): string;
+	getReadableTextInstruction(): string;
+	getReadableElementsInstruction(): string;
+	getSnapshotPageInstruction(): string;
+
 	// Resource descriptions
 	contextResourceDescription(): string;
 	bkResourceTemplateDescription(): string;

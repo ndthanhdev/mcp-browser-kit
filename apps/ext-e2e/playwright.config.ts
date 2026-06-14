@@ -22,6 +22,7 @@ process.env.PLAYWRIGHT_BROWSERS_PATH ??= path.resolve(
 export default defineConfig<ExtContextOptions>({
 	testDir: "./src/tests",
 	outputDir: "target/playwright/test-results",
+	timeout: 45000,
 	fullyParallel: true,
 	forbidOnly: Boolean(process.env.CI),
 	retries: process.env.CI ? 2 : 0,
@@ -36,7 +37,7 @@ export default defineConfig<ExtContextOptions>({
 		],
 	],
 	use: {
-		trace: "on",
+		trace: "retain-on-failure",
 		video: "on",
 	},
 

@@ -15,6 +15,7 @@ import { BrowserResources } from "./browser-resources";
 import { BrowserTools } from "./browser-tools";
 import { HumanHintTools } from "./human-hint-tools";
 import { InteractionTools } from "./interaction-tools";
+import { ResourceFallbackTools } from "./resource-fallback-tools";
 
 @injectable()
 export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
@@ -35,6 +36,8 @@ export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 		private readonly humanHintTools: HumanHintTools,
 		@inject(BrowserResources)
 		private readonly browserResources: BrowserResources,
+		@inject(ResourceFallbackTools)
+		private readonly resourceFallbackTools: ResourceFallbackTools,
 		@inject(McpDescriptionsInputPort)
 		private readonly mcpDescriptions: McpDescriptionsInputPortInterface,
 	) {
@@ -83,6 +86,9 @@ export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 
 			this.logger.verbose("Registering human hint tools");
 			this.humanHintTools.register(this.server);
+
+			this.logger.verbose("Registering resource fallback tools");
+			this.resourceFallbackTools.register(this.server);
 
 			this.logger.verbose("Registering browser resources");
 			this.unsubscribeResources = this.browserResources.register(this.server);
@@ -166,6 +172,7 @@ export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 		container.bind<InteractionTools>(InteractionTools).toSelf();
 		container.bind<HumanHintTools>(HumanHintTools).toSelf();
 		container.bind<BrowserResources>(BrowserResources).toSelf();
+		container.bind<ResourceFallbackTools>(ResourceFallbackTools).toSelf();
 
 		container.bind<ServerDrivingMcpServer>(ServerDrivingMcpServer).toSelf();
 
