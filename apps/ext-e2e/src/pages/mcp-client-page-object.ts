@@ -179,6 +179,55 @@ export class McpClientPageObject {
 		);
 	}
 
+	async callToolJson<T = unknown>(
+		name: string,
+		args: Record<string, unknown> = {},
+	): Promise<T> {
+		const result = await this.callToolRaw(name, args);
+		const first = result.content[0];
+		if (!first || first.type !== "text") {
+			throw new Error(`Tool ${name} returned no text content`);
+		}
+		return JSON.parse(first.text) as T;
+	}
+
+	async readAllSnapshotElementsViaTool(tabKey: string): Promise<
+		[
+			string,
+			string,
+			string,
+		][]
+	> {
+		type SnapshotPage = {
+			snapshotId: string;
+			data: [
+				string,
+				string,
+				string,
+			][];
+			hasNextPage: boolean;
+			nextPageNumber: number | null;
+			totalPages: number;
+		};
+		const first = await this.callToolJson<SnapshotPage>("getReadableElements", {
+			tabKey,
+		});
+		const allElements = [
+			...first.data,
+		];
+
+		let page = first;
+		while (page.hasNextPage && page.nextPageNumber != null) {
+			page = await this.callToolJson<SnapshotPage>("getSnapshotPage", {
+				snapshotId: page.snapshotId,
+				type: "readable-elements",
+				pageNumber: page.nextPageNumber,
+			});
+			allElements.push(...page.data);
+		}
+		return allElements;
+	}
+
 	async listResources() {
 		const res = await this.client.request(
 			{

@@ -7,7 +7,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 		return [
 			"MCP Browser Kit observes and controls connected browsers via an extension.",
 			"",
-			"Quick start:",
+			"Quick start (resources):",
 			"1. resources/read -> bk:///context",
 			"2. Find target tab in browsers[].tabs[] by matching url or title",
 			"3. Copy tabKey, tabUri, and extensionInfo.manifestVersion verbatim — never construct keys",
@@ -16,7 +16,13 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"6. Filter data tuples [path, role, text] by role and text; use path (e.g. 0.2.1) as readablePath",
 			"7. Call tool; always check structuredContent.ok — if false, re-read elements or showHumanHint",
 			"",
-			"Context shape (bk:///context):",
+			"Quick start (tools — for clients without resource support):",
+			"1. getContext (no params) — same data as bk:///context",
+			"2. getReadableElements({ tabKey }) — same data as {tabUri}/readable-elements",
+			"3. If hasNextPage, getSnapshotPage({ snapshotId, type, pageNumber })",
+			"4. Use readablePath from the elements in interaction tools",
+			"",
+			"Context shape (bk:///context or getContext):",
 			'{ "browsers": [{ "extensionInfo": { "manifestVersion": 3 }, "tabs": [{ "tabKey": "ext::win::tab", "tabUri": "bk:///browsers/.../tabs/...", "windowKey": "ext::win", "url": "...", "title": "..." }] }] }',
 			"",
 			"Tool selection by manifestVersion:",
@@ -25,13 +31,13 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"- MV3 blocked: captureTab, invokeJsFn; avoid coordinate tools (no screenshot source for x/y)",
 			"",
 			"Error recovery:",
-			"- Tab not found -> re-read bk:///context",
-			"- Element not found at path / no longer exists -> re-read readable-elements, pick fresh path",
+			"- Tab not found -> re-read bk:///context or call getContext",
+			"- Element not found at path / no longer exists -> re-read readable-elements or call getReadableElements, pick fresh path",
 			"- Page N out of range / No cached snapshot -> read page 1 first, use snapshotId from that response",
 			"- captureTab/invokeJsFn not supported -> switch to element tools",
 			"",
 			"Constraints:",
-			"- tabKey and windowKey are opaque — source from bk:///context only",
+			"- tabKey and windowKey are opaque — source from bk:///context or getContext only",
 			"- readablePath is a dot-separated tree index (0.2.1), not a CSS selector",
 			"- Snapshots go stale after navigation; re-read after page changes",
 			"- Resource lists capped at 200 tabs; subscribe for resources/updated notifications",
@@ -167,6 +173,51 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"Requires: tabKey, action (click | fill | hit-enter), message.",
 			"Returns: humanMessage (relay verbatim to the user) and expiresInSeconds.",
 			"Avoid: both readablePath and coordinates.",
+		].join("\n");
+	};
+
+	getContextInstruction = (): string => {
+		return [
+			"Get aggregated state of every connected browser.",
+			"When: discovering available tabs before interacting — equivalent to reading the bk:///context resource.",
+			"How: no parameters needed.",
+			"Requires: nothing.",
+			"Returns: browsers[] with extensionInfo, windows, and tabs (each with tabKey, tabUri, windowKey, url, title, active).",
+			"Avoid: calling repeatedly in a tight loop — cache the result for the duration of a task.",
+		].join("\n");
+	};
+
+	getReadableTextInstruction = (): string => {
+		return [
+			"Get the readable inner text of a tab.",
+			"When: you need the text content of a page — equivalent to reading {tabUri}/readable-text resource.",
+			"How: tabKey from getContext or bk:///context.",
+			"Requires: tabKey.",
+			"Returns: { snapshotId, data (text), hasNextPage, nextPageNumber, totalPages }.",
+			"Pagination: if hasNextPage is true, call getSnapshotPage with the returned snapshotId and nextPageNumber.",
+		].join("\n");
+	};
+
+	getReadableElementsInstruction = (): string => {
+		return [
+			"Get interactive elements of a tab as [path, role, text] tuples.",
+			"When: you need element paths for clickOnElement/fillTextToElement — equivalent to reading {tabUri}/readable-elements resource.",
+			"How: tabKey from getContext or bk:///context.",
+			"Requires: tabKey.",
+			"Returns: { snapshotId, data ([path, role, text] tuples), hasNextPage, nextPageNumber, totalPages }.",
+			"path is a dot-separated tree index (e.g. 0.2.1) — use as readablePath in interaction tools.",
+			"Pagination: if hasNextPage is true, call getSnapshotPage with the returned snapshotId and nextPageNumber.",
+		].join("\n");
+	};
+
+	getSnapshotPageInstruction = (): string => {
+		return [
+			"Get a continuation page for a readable-text or readable-elements snapshot.",
+			"When: a previous getReadableText or getReadableElements call returned hasNextPage=true.",
+			"How: use the snapshotId and nextPageNumber from the previous response.",
+			"Requires: snapshotId, type (readable-text | readable-elements), pageNumber.",
+			"Returns: same shape as the original call — { snapshotId, data, hasNextPage, nextPageNumber, totalPages }.",
+			"Avoid: calling without first fetching page 1 via getReadableText or getReadableElements.",
 		].join("\n");
 	};
 
