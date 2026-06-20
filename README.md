@@ -1,7 +1,7 @@
 # MCP Browser Kit
 
 [![NPM Version](https://img.shields.io/npm/v/%40mcp-browser-kit%2Fserver)](https://www.npmjs.com/package/@mcp-browser-kit/server)
-[![Branch Push](https://github.com/ndthanhdev/mcp-browser-kit/actions/workflows/branch-push.yml/badge.svg)](https://github.com/ndthanhdev/mcp-browser-kit/actions/workflows/branch-push.yml)
+[![Workspace Updated](https://github.com/ndthanhdev/mcp-browser-kit/actions/workflows/workspace-updated.yml/badge.svg)](https://github.com/ndthanhdev/mcp-browser-kit/actions/workflows/workspace-updated.yml)
 [![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-60a5fa?style=flat&logo=biome)](https://biomejs.dev)
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/ndthanhdev/mcp-browser-kit)](https://archestra.ai/mcp-catalog/ndthanhdev__mcp-browser-kit)
 

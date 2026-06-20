@@ -1,4 +1,4 @@
-name: Branch Push
+name: Workspace Updated
 
 on:
   push:
@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - run: "./etc/scripts/workflows/push-build.ts"
+      - run: "./etc/scripts/workflows/workspace-updated-build.ts"
 
       - name: Upload workspace target
         if: always()
@@ -72,7 +72,7 @@ jobs:
         env:
           PW_SHARD_INDEX: ${{ matrix.shardIndex }}
           PW_SHARD_TOTAL: ${{ matrix.shardTotal }}
-        run: "./etc/scripts/workflows/push-e2e-shard.ts"
+        run: "./etc/scripts/workflows/workspace-updated-e2e-shard.ts"
 
       - name: Upload blob report
         if: always()
@@ -115,7 +115,7 @@ jobs:
           path: apps/ext-e2e/all-blob-reports
 
       - name: Merge reports
-        run: "./etc/scripts/workflows/push-e2e-merge.ts"
+        run: "./etc/scripts/workflows/workspace-updated-e2e-merge.ts"
 
       - name: Upload HTML report
         if: always()

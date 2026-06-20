@@ -1,4 +1,4 @@
-name: PR Build
+name: PR Updated
 
 on:
   pull_request:
@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - run: "./etc/scripts/workflows/pr-build.ts"
+      - run: "./etc/scripts/workflows/pr-updated-build.ts"
 
       - name: Upload workspace target
         if: always()
@@ -72,7 +72,7 @@ jobs:
         env:
           PW_SHARD_INDEX: ${{ matrix.shardIndex }}
           PW_SHARD_TOTAL: ${{ matrix.shardTotal }}
-        run: "./etc/scripts/workflows/pr-e2e-shard.ts"
+        run: "./etc/scripts/workflows/pr-updated-e2e-shard.ts"
 
       - name: Upload blob report
         if: always()
@@ -115,7 +115,7 @@ jobs:
           path: apps/ext-e2e/all-blob-reports
 
       - name: Merge reports
-        run: "./etc/scripts/workflows/pr-e2e-merge.ts"
+        run: "./etc/scripts/workflows/pr-updated-e2e-merge.ts"
 
       - name: Upload HTML report
         if: always()
