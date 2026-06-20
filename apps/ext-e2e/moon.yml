@@ -18,6 +18,13 @@ tasks:
       runInCI: false
     deps:
     - ~:build
+  merge-reports:
+    toolchain: node
+    options:
+      runInCI: false
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/playwright/browsers
+    script: playwright merge-reports --reporter html ./all-blob-reports
 tags:
 - playwright
 dependsOn:

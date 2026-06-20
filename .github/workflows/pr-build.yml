@@ -89,6 +89,15 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Dagger
+        uses: dagger/dagger-for-github@v8.2.0
+        with:
+          version: v0.20.6
+          verb: functions
+          workdir: ./etc/workflow-runtime
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -105,9 +114,8 @@ jobs:
           merge-multiple: true
           path: apps/ext-e2e/all-blob-reports
 
-      - name: Merge into HTML report
-        working-directory: apps/ext-e2e
-        run: yarn exec playwright merge-reports --reporter html ./all-blob-reports
+      - name: Merge reports
+        run: "./etc/scripts/workflows/pr-e2e-merge.ts"
 
       - name: Upload HTML report
         if: always()
