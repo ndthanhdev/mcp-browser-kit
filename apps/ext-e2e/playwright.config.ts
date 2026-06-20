@@ -63,7 +63,8 @@ export default defineConfig<ExtContextOptions>({
 
 	webServer: [
 		{
-			command: "moon run ext-e2e-test-app:react-router-start-csr",
+			command:
+				"moon exec ext-e2e-test-app:react-router-start-csr --ignore-ci-checks",
 			cwd: path.resolve(__dirname, "../.."),
 			url: "http://localhost:3000",
 			timeout: 30000,

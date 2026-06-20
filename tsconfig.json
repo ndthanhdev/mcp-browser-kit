@@ -28,6 +28,9 @@
 	],
 	"references": [
 		{
+			"path": "./apps/ext-e2e-test-app"
+		},
+		{
 			"path": "./etc/scripts"
 		},
 		{
@@ -44,9 +47,6 @@
 		},
 		{
 			"path": "apps/ext-e2e"
-		},
-		{
-			"path": "apps/ext-e2e-test-app"
 		},
 		{
 			"path": "apps/m2"
