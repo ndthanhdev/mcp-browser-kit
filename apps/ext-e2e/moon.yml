@@ -9,11 +9,13 @@ tasks:
   test:
     options:
       runDepsInParallel: false
+      runInCI: false
     deps:
     - ~:playwright-test
   playwright-test:
     options:
       runDepsInParallel: false
+      runInCI: false
     deps:
     - ~:build
 tags:

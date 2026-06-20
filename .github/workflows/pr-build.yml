@@ -1,0 +1,120 @@
+name: PR Build
+
+on:
+  pull_request:
+    branches:
+      - main
+      - release/*.*
+
+jobs:
+  build:
+    name: Build
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Dagger
+        uses: dagger/dagger-for-github@v8.2.0
+        with:
+          version: v0.20.6
+          verb: functions
+          workdir: ./etc/workflow-runtime
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: yarn install
+
+      - run: "./etc/scripts/workflows/pr-build.ts"
+
+      - name: Upload workspace target
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: workspace-target
+          path: target/
+          retention-days: 1
+
+  e2e:
+    name: E2E (shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+    runs-on: "ubuntu-latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2, 3]
+        shardTotal: [3]
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.tmp/playwright/browsers
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.tmp/playwright/browsers
+          key: playwright-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+
+      - name: Install Playwright browsers
+        run: yarn exec playwright install --with-deps chromium
+
+      - name: Run e2e shard
+        env:
+          PW_SHARD_INDEX: ${{ matrix.shardIndex }}
+          PW_SHARD_TOTAL: ${{ matrix.shardTotal }}
+        run: moon exec ext-e2e:playwright-test --ignore-ci-checks
+
+      - name: Upload blob report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: e2e-blob-${{ matrix.shardIndex }}
+          path: apps/ext-e2e/target/playwright/blob-report
+          retention-days: 1
+
+  e2e-merge:
+    name: E2E report
+    needs: e2e
+    if: always()
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Download blob reports
+        uses: actions/download-artifact@v6
+        with:
+          pattern: e2e-blob-*
+          merge-multiple: true
+          path: apps/ext-e2e/all-blob-reports
+
+      - name: Merge into HTML report
+        working-directory: apps/ext-e2e
+        run: yarn exec playwright merge-reports --reporter html ./all-blob-reports
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: e2e-html-report
+          path: apps/ext-e2e/playwright-report
+          retention-days: 7
