@@ -19,6 +19,16 @@ process.env.PLAYWRIGHT_BROWSERS_PATH ??= path.resolve(
 	"../../.tmp/playwright/browsers",
 );
 
+const shardIndex = Number(process.env.PW_SHARD_INDEX);
+const shardTotal = Number(process.env.PW_SHARD_TOTAL);
+const shard =
+	Number.isInteger(shardIndex) && Number.isInteger(shardTotal) && shardTotal > 0
+		? {
+				current: shardIndex,
+				total: shardTotal,
+			}
+		: undefined;
+
 export default defineConfig<ExtContextOptions>({
 	testDir: "./src/tests",
 	outputDir: "target/playwright/test-results",
@@ -27,15 +37,25 @@ export default defineConfig<ExtContextOptions>({
 	forbidOnly: Boolean(process.env.CI),
 	retries: process.env.CI ? 2 : 0,
 	workers: 1,
-	reporter: [
-		[
-			"html",
-			{
-				outputFolder: "target/playwright/playwright-report",
-				open: "never",
-			},
-		],
-	],
+	shard,
+	reporter: shard
+		? [
+				[
+					"blob",
+					{
+						outputDir: "target/playwright/blob-report",
+					},
+				],
+			]
+		: [
+				[
+					"html",
+					{
+						outputFolder: "target/playwright/playwright-report",
+						open: "never",
+					},
+				],
+			],
 	use: {
 		trace: "retain-on-failure",
 		video: "on",
@@ -43,7 +63,8 @@ export default defineConfig<ExtContextOptions>({
 
 	webServer: [
 		{
-			command: "moon run ext-e2e-test-app:react-router-start-csr",
+			command:
+				"moon exec ext-e2e-test-app:react-router-start-csr --ignore-ci-checks",
 			cwd: path.resolve(__dirname, "../.."),
 			url: "http://localhost:3000",
 			timeout: 30000,

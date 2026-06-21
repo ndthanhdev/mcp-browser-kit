@@ -44,7 +44,7 @@ moon run ext-e2e:test
 moon run server:mcp-inspector
 ```
 
-CI (`.github/workflows/workspace-check.yml`) runs `moon check --all` via Dagger on `main` and `release/*`. Make that pass before considering work done.
+CI runs via two workflows: `.github/workflows/pr-updated.yml` (PRs, `moon ci`) and `.github/workflows/workspace-updated.yml` (push to `main`/`release/*`, `moon check --all`). Both build via Dagger then run sharded e2e tests. Make them pass before considering work done.
 
 ## Constraints
 

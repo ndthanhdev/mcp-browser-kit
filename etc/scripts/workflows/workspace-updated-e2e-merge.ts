@@ -1,11 +1,13 @@
 #!/usr/bin/env -S yarn dlx tsx
 import "zx/globals";
+import path from "node:path";
 import fse from "fs-extra";
 import { workDirs } from "../utils/work-dirs";
 
 $.verbose = true;
 
-await fse.emptyDir(workDirs.target.release.path);
+const reportDir = path.resolve(workDirs.path, "apps/ext-e2e/playwright-report");
+await fse.emptyDir(reportDir);
 
 cd(workDirs.etc.workflowRuntime.path);
 
@@ -17,24 +19,18 @@ await $`${[
 	"build-env",
 	"with-env-variable",
 	"--name",
-	"MODE",
+	"CI",
 	"--value",
-	"dev",
-	"with-moon-task",
-	"--task",
-	"scripts:git-shallow-remove",
+	"true",
 	"with-moon-task",
 	"--task",
 	"scripts:playwright-install",
-	"with-moon-command",
-	"--command",
-	"ci",
 	"with-moon-task",
 	"--task",
-	"scripts:collect-workspace-targets",
+	"ext-e2e:merge-reports",
 	"container",
 	"directory",
-	`--path=${workDirs.target.relativePath}`,
+	"--path=apps/ext-e2e/playwright-report",
 	"export",
-	`--path=${workDirs.target.path}`,
+	`--path=${reportDir}`,
 ]}`;
