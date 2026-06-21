@@ -1,10 +1,12 @@
-import type { ServerChannelInfo } from "@mcp-browser-kit/core-extension";
+import type {
+	ServerChannelInfo,
+	ServerChannelProviderOutputPort,
+} from "@mcp-browser-kit/core-extension";
 import {
 	ExtensionToolCallInputPort,
 	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-extension";
 import { MessageChannelRpcServer } from "@mcp-browser-kit/core-utils";
-import type { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
 import { inject, injectable } from "inversify";
 
 @injectable()
@@ -15,7 +17,7 @@ export class ExtensionDrivingTrpcController {
 		MessageChannelRpcServer<ExtensionToolCallInputPort>
 	>();
 	private readonly channelListeners = new Map<string, () => void>();
-	private serverChannelProvider?: ExtensionDrivenServerChannelProvider;
+	private serverChannelProvider?: ServerChannelProviderOutputPort;
 
 	constructor(
 		@inject(ExtensionToolCallInputPort)
@@ -30,7 +32,7 @@ export class ExtensionDrivingTrpcController {
 	 * Connects to a ExtensionDrivenServerChannelProvider and listens for connect/disconnect events
 	 */
 	public listenToServerChannelEvents = (
-		serverChannelProvider: ExtensionDrivenServerChannelProvider,
+		serverChannelProvider: ServerChannelProviderOutputPort,
 	): (() => void) => {
 		this.logger.info("Setting up server channel event listeners");
 
