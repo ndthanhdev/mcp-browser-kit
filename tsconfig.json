@@ -31,6 +31,12 @@
 			"path": "./apps/ext-e2e-test-app"
 		},
 		{
+			"path": "./apps/m2"
+		},
+		{
+			"path": "./apps/m3"
+		},
+		{
 			"path": "./etc/scripts"
 		},
 		{
@@ -43,40 +49,34 @@
 			"path": "./packages/core-utils"
 		},
 		{
+			"path": "./packages/driven-logger-factory"
+		},
+		{
+			"path": "./packages/extension-driven-browser-driver"
+		},
+		{
+			"path": "./packages/extension-driven-server-channel-provider"
+		},
+		{
+			"path": "./packages/extension-driving-trpc-controller"
+		},
+		{
+			"path": "./packages/helper-base-extension-channel-provider"
+		},
+		{
+			"path": "./packages/helper-extension-keep-alive"
+		},
+		{
+			"path": "./packages/server-driven-trpc-channel-provider"
+		},
+		{
 			"path": "./packages/types"
 		},
 		{
 			"path": "apps/ext-e2e"
 		},
 		{
-			"path": "apps/m2"
-		},
-		{
-			"path": "apps/m3"
-		},
-		{
 			"path": "apps/server"
-		},
-		{
-			"path": "packages/driven-logger-factory"
-		},
-		{
-			"path": "packages/extension-driven-browser-driver"
-		},
-		{
-			"path": "packages/extension-driven-server-channel-provider"
-		},
-		{
-			"path": "packages/extension-driving-trpc-controller"
-		},
-		{
-			"path": "packages/helper-base-extension-channel-provider"
-		},
-		{
-			"path": "packages/helper-extension-keep-alive"
-		},
-		{
-			"path": "packages/server-driven-trpc-channel-provider"
 		},
 		{
 			"path": "packages/server-driving-mcp-server"

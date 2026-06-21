@@ -6,10 +6,7 @@ import {
 } from "@mcp-browser-kit/core-extension";
 import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
 import { DrivenBrowserStateSource } from "@mcp-browser-kit/extension-driven-browser-driver";
-import {
-	DrivenBrowserDriverM3,
-	type DrivenBrowserDriverM3 as DrivenBrowserDriverM3Type,
-} from "@mcp-browser-kit/extension-driven-browser-driver/m3";
+import { DrivenBrowserDriverM2 } from "@mcp-browser-kit/extension-driven-browser-driver/m2";
 import {
 	ExtensionDrivenServerChannelProvider,
 	type ExtensionDrivenServerChannelProvider as ExtensionDrivenServerChannelProviderType,
@@ -20,16 +17,16 @@ import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 
 @injectable()
-export class MbkSw {
+export class ExtensionBootstrap {
 	private logger: ReturnType<LoggerFactoryOutputPort["create"]>;
 
 	constructor(
 		@inject(BrowserDriverOutputPort)
-		private readonly driverM3: BrowserDriverOutputPort,
+		private readonly driverM2: BrowserDriverOutputPort,
 		@inject(ServerChannelProviderOutputPort)
 		private readonly serverProvider: ServerChannelProviderOutputPort,
 		@inject(ExtensionDrivingTrpcController)
-		private readonly drivingTrpcController: ExtensionDrivingTrpcController,
+		private readonly trpcController: ExtensionDrivingTrpcController,
 		@inject(KeepAlive)
 		private readonly keepAlive: KeepAlive,
 		@inject(PublishBrowserStateInputPort)
@@ -37,7 +34,7 @@ export class MbkSw {
 		@inject(LoggerFactoryOutputPort)
 		loggerFactory: LoggerFactoryOutputPort,
 	) {
-		this.logger = loggerFactory.create("MbkSw");
+		this.logger = loggerFactory.create("ExtensionBootstrap");
 	}
 
 	static setupContainer(container: Container): void {
@@ -48,7 +45,7 @@ export class MbkSw {
 		);
 
 		// Setup browser driver
-		DrivenBrowserDriverM3.setupContainer(container);
+		DrivenBrowserDriverM2.setupContainer(container);
 
 		// Setup browser-state source (observability)
 		DrivenBrowserStateSource.setupContainer(container);
@@ -57,7 +54,7 @@ export class MbkSw {
 		// (also binds ServerEventSinkOutputPort to the same instance)
 		ExtensionDrivenServerChannelProvider.setupContainer(container);
 
-		// Setup TRPC controller
+		// Register ExtensionDrivingTrpcController service
 		container
 			.bind<ExtensionDrivingTrpcController>(ExtensionDrivingTrpcController)
 			.to(ExtensionDrivingTrpcController);
@@ -65,15 +62,22 @@ export class MbkSw {
 		// Register KeepAlive service
 		container.bind<KeepAlive>(KeepAlive).to(KeepAlive);
 
-		// Register MbkSw service
-		container.bind<MbkSw>(MbkSw).to(MbkSw);
+		// Register ExtensionBootstrap service
+		container
+			.bind<ExtensionBootstrap>(ExtensionBootstrap)
+			.to(ExtensionBootstrap);
 	}
 
 	bootstrap(): void {
-		this.logger.info("Bootstrapping MbkSw...");
+		this.logger.info("Bootstrapping ExtensionBootstrap...");
 
 		// Link RPC for browser driver
-		(this.driverM3 as DrivenBrowserDriverM3Type).linkRpc();
+		(this.driverM2 as DrivenBrowserDriverM2).linkRpc();
+
+		// Setup TRPC controller to listen to server channel events
+		this.trpcController.listenToServerChannelEvents(
+			this.serverProvider as ExtensionDrivenServerChannelProviderType,
+		);
 
 		// Start keep-alive listening
 		this.keepAlive.startListening();
@@ -88,16 +92,11 @@ export class MbkSw {
 				);
 			});
 
-		// Listen to server channel events
-		this.drivingTrpcController.listenToServerChannelEvents(
-			this.serverProvider as ExtensionDrivenServerChannelProviderType,
-		);
-
 		// Start observing browser state and publishing snapshots to the server.
 		this.publishBrowserState.start().catch((error) => {
 			this.logger.error("Error starting browser-state publisher:", error);
 		});
 
-		this.logger.info("MbkSw bootstrap complete");
+		this.logger.info("ExtensionBootstrap bootstrap complete");
 	}
 }

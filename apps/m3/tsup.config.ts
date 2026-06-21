@@ -2,8 +2,8 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
 	entry: [
-		"src/bootstrap-mbk-tab.ts",
-		"src/bootstrap-mbk-sw.ts",
+		"src/bootstrap-extension-tab.ts",
+		"src/bootstrap-extension.ts",
 	],
 	splitting: false,
 	sourcemap: "inline",

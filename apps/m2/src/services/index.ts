@@ -1,2 +1,2 @@
-export * from "./mbk-bg";
-export * from "./mbk-tab";
+export * from "./extension-bootstrap";
+export * from "./extension-tab-bootstrap";
