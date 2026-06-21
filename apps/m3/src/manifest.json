@@ -25,13 +25,13 @@
 				"<all_urls>"
 			],
 			"js": [
-				"bootstrap-mbk-tab.js"
+				"bootstrap-extension-tab.js"
 			],
 			"run_at": "document_start"
 		}
 	],
 	"background": {
-		"service_worker": "bootstrap-mbk-sw.js",
+		"service_worker": "bootstrap-extension.js",
 		"type": "module"
 	}
 }

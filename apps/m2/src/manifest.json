@@ -22,7 +22,7 @@
 				"<all_urls>"
 			],
 			"js": [
-				"bootstrap-mbk-tab.js"
+				"bootstrap-extension-tab.js"
 			],
 			"run_at": "document_start"
 		}
@@ -30,7 +30,7 @@
 	"background": {
 		"scripts": [
 			"vendors/webextension-polyfill/browser-polyfill.min.js",
-			"bootstrap-mbk-bg.js"
+			"bootstrap-extension.js"
 		],
 		"persistent": true
 	},

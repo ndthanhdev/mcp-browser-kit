@@ -117,19 +117,21 @@ title: Extension Core Architecture
 flowchart TD
   subgraph Driving["Driving"]
     ExtensionToolCall
-    ManageChannels
+    BrowserAgent
+    ExtensionBootstrap
   end
   subgraph ExtensionCore["Core"]
     subgraph UseCases["Use Cases"]
       ExtensionToolCallUseCases
-      ManageChannelUseCases
       PublishBrowserStateUseCase
+      BrowserAgentUseCases
     end
     ServerChannelManager
   end
   subgraph Driven["Driven"]
     BrowserDriver
     BrowserStateSource
+    LlmProvider
     subgraph ExtensionDrivenServerChannelProvider["ExtensionDrivenServerChannelProvider (adapter)"]
       ServerChannelProvider
       ServerEventSink
@@ -139,12 +141,14 @@ flowchart TD
 
   %% From Driving
   ExtensionToolCall --> ExtensionToolCallUseCases
-  ManageChannels --> ManageChannelUseCases
+  BrowserAgent --> BrowserAgentUseCases
+  ExtensionBootstrap --> PublishBrowserStateUseCase
   %% From Core
   ExtensionToolCallUseCases --> BrowserDriver
   ExtensionToolCallUseCases --> ServerChannelManager
-  ManageChannelUseCases --> ServerChannelManager
   ServerChannelManager --> ServerChannelProvider
+  BrowserAgentUseCases --> LlmProvider
+  BrowserAgentUseCases --> BrowserDriver
   %% Observability
   BrowserStateSource --> PublishBrowserStateUseCase
   PublishBrowserStateUseCase --> BrowserDriver
@@ -159,6 +163,7 @@ title: M3 Architecture
 ---
 flowchart TD
   subgraph Background["Background"]
+    ExtensionBootstrap["ExtensionBootstrap"]
     ExtensionTrpcController["ExtensionTrpcController"]
     CoreExtension
   end
@@ -173,13 +178,13 @@ flowchart TD
   end
 
   subgraph ExtensionDriving["ExtensionDriving"]
-    ManageChannels
     ExtensionToolCalls
   end
 
   subgraph ExtensionDriven["ExtensionDriven"]
     BrowserDriver
     ServerChannelProvider
+    LlmProvider
   end
 
   subgraph CoreExtension["CoreExtension"]
@@ -188,6 +193,9 @@ flowchart TD
     ExtensionDriven
   end
 
+  ExtensionBootstrap --> ExtensionTrpcController
+  ExtensionBootstrap -->|"publish browser state"| Core
+  ExtensionBootstrap -->|"discover servers"| ServerChannelProvider
   ExtensionTrpcController -----> ServerChannelProvider
   ExtensionTrpcController ---> ExtensionToolCalls
   ExtensionDriving --> Core

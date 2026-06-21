@@ -4,13 +4,13 @@ import {
 	TabContentMutationObserver,
 	TabToolsSetup,
 } from "@mcp-browser-kit/extension-driven-browser-driver";
-import { DrivenBrowserDriverM3 } from "@mcp-browser-kit/extension-driven-browser-driver/m3";
+import { DrivenBrowserDriverM2 } from "@mcp-browser-kit/extension-driven-browser-driver/m2";
 import { KeepAlive } from "@mcp-browser-kit/helper-extension-keep-alive";
 import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 
 @injectable()
-export class MbkTab {
+export class ExtensionTabBootstrap {
 	private logger: ReturnType<LoggerFactoryOutputPort["create"]>;
 	private readonly mutationObserver = new TabContentMutationObserver();
 
@@ -22,7 +22,7 @@ export class MbkTab {
 		@inject(LoggerFactoryOutputPort)
 		loggerFactory: LoggerFactoryOutputPort,
 	) {
-		this.logger = loggerFactory.create("MbkTab");
+		this.logger = loggerFactory.create("ExtensionTabBootstrap");
 	}
 
 	static setupContainer(container: Container): void {
@@ -32,18 +32,20 @@ export class MbkTab {
 			LoggerFactoryOutputPort,
 		);
 
-		// Setup M3 container with required services
-		DrivenBrowserDriverM3.setupTabContainer(container);
+		// Setup M2 container with required services
+		DrivenBrowserDriverM2.setupTabContainer(container);
 
 		// Register KeepAlive service
 		container.bind<KeepAlive>(KeepAlive).to(KeepAlive);
 
-		// Register MbkTab service
-		container.bind<MbkTab>(MbkTab).to(MbkTab);
+		// Register ExtensionTabBootstrap service
+		container
+			.bind<ExtensionTabBootstrap>(ExtensionTabBootstrap)
+			.to(ExtensionTabBootstrap);
 	}
 
 	bootstrap(): void {
-		this.logger.info("Bootstrapping MbkTab...");
+		this.logger.info("Bootstrapping ExtensionTabBootstrap...");
 
 		// Set up tab tools in global scope using the instance
 		this.tabToolsSetup.setUpTabTools();
@@ -57,6 +59,6 @@ export class MbkTab {
 		// Start observing DOM mutations and pinging the background.
 		this.mutationObserver.start();
 
-		this.logger.info("MbkTab bootstrap complete");
+		this.logger.info("ExtensionTabBootstrap bootstrap complete");
 	}
 }
