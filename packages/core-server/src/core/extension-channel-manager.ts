@@ -1,5 +1,8 @@
 import type { ExtensionToolCallInputPort } from "@mcp-browser-kit/core-extension";
-import { MessageChannelRpcClient } from "@mcp-browser-kit/core-utils";
+import {
+	MessageChannelRpcClient,
+	shortChannelId,
+} from "@mcp-browser-kit/core-utils";
 import { inject, injectable } from "inversify";
 import { LoggerFactoryOutputPort } from "../output-ports";
 import {
@@ -15,7 +18,6 @@ export class ExtensionChannelManager {
 		string,
 		MessageChannelRpcClient<ExtensionToolCallInputPort>
 	>();
-	private readonly browserIdToChannelId = new Map<string, string>();
 	private isListening = false;
 
 	constructor(
@@ -52,9 +54,7 @@ export class ExtensionChannelManager {
 		this.logger.info("Successfully started listening for extension channels");
 	};
 
-	private handleConnectionConnected = async (
-		channel: ChannelInfo,
-	): Promise<void> => {
+	private handleConnectionConnected = (channel: ChannelInfo): void => {
 		this.logger.info("Extension channel connected", {
 			channelId: channel.channelId,
 		});
@@ -76,32 +76,10 @@ export class ExtensionChannelManager {
 				"Extension channel and RPC client added to active channels",
 				{
 					channelId: channel.channelId,
+					browserId: shortChannelId(channel.channelId),
 					totalChannels: this.channels.size,
 				},
 			);
-
-			// Get extension context to retrieve browserId
-			try {
-				const context = await rpcClient.call({
-					method: "getExtensionContext",
-					args: [],
-					extraArgs: {},
-				});
-
-				this.browserIdToChannelId.set(context.browserId, channel.channelId);
-
-				this.logger.info("Browser instance mapped to channel", {
-					browserId: context.browserId,
-					browserName: context.browserInfo.browserName,
-					browserVersion: context.browserInfo.browserVersion,
-					channelId: channel.channelId,
-				});
-			} catch (error) {
-				this.logger.error("Failed to get extension context", {
-					channelId: channel.channelId,
-					error,
-				});
-			}
 		} catch (error) {
 			this.logger.error("Failed to create RPC client for channel", {
 				channelId: channel.channelId,
@@ -124,14 +102,6 @@ export class ExtensionChannelManager {
 			this.rpcClients.delete(channel.channelId);
 		}
 
-		// Clean up browserId mapping
-		for (const [browserId, channelId] of this.browserIdToChannelId) {
-			if (channelId === channel.channelId) {
-				this.browserIdToChannelId.delete(browserId);
-				break;
-			}
-		}
-
 		this.logger.verbose(
 			"Extension channel and RPC client removed from active channels",
 			{
@@ -152,6 +122,19 @@ export class ExtensionChannelManager {
 	};
 
 	/**
+	 * Get all active RPC clients paired with their channelId.
+	 * @returns Array of [channelId, rpcClient] entries
+	 */
+	public getRpcClientEntries = (): Array<
+		[
+			string,
+			MessageChannelRpcClient<ExtensionToolCallInputPort>,
+		]
+	> => {
+		return Array.from(this.rpcClients.entries());
+	};
+
+	/**
 	 * Get the RPC client for a specific channel.
 	 * @param channelId - The channel ID
 	 * @returns The RPC client, or undefined if no client exists for the channel
@@ -163,58 +146,19 @@ export class ExtensionChannelManager {
 	};
 
 	/**
-	 * Get a specific RPC client by browser ID.
-	 * Uses a fast-path lookup via the cached browserIdToChannelId map.
-	 * On a cache miss, falls back to querying all connected clients for their
-	 * current browserId, updates the map, and returns the matching client.
-	 * This self-healing behavior handles stale mappings that may occur when
-	 * concurrent getBrowserId() calls during initial connection produce
-	 * different IDs due to a race condition.
-	 * @param browserId - The browser ID to get the RPC client for
+	 * Get a specific RPC client by browserId (the short channel id — the
+	 * `channel:` prefix stripped from the full channelId). Scans the active
+	 * channels for the one whose short id matches.
+	 * @param browserId - The short channel id to get the RPC client for
 	 * @returns The RPC client
-	 * @throws Error if no RPC client is found for the given browser ID
+	 * @throws Error if no RPC client is found for the given browserId
 	 */
-	public getRpcClientByBrowserId = async (
+	public getRpcClientByBrowserId = (
 		browserId: string,
-	): Promise<MessageChannelRpcClient<ExtensionToolCallInputPort>> => {
-		// Fast path: direct lookup
-		const channelId = this.browserIdToChannelId.get(browserId);
-		if (channelId) {
-			const rpcClient = this.rpcClients.get(channelId);
-			if (rpcClient) {
+	): MessageChannelRpcClient<ExtensionToolCallInputPort> => {
+		for (const [channelId, rpcClient] of this.rpcClients) {
+			if (shortChannelId(channelId) === browserId) {
 				return rpcClient;
-			}
-		}
-
-		// Slow path: query all clients for their current browserId
-		this.logger.info("Browser ID not found in cache, querying all clients", {
-			browserId,
-			cachedMappings: Object.fromEntries(this.browserIdToChannelId),
-		});
-
-		for (const [clientChannelId, rpcClient] of this.rpcClients) {
-			try {
-				const context = await rpcClient.call({
-					method: "getExtensionContext",
-					args: [],
-					extraArgs: {},
-				});
-
-				// Update the mapping with the fresh browserId
-				this.browserIdToChannelId.set(context.browserId, clientChannelId);
-
-				if (context.browserId === browserId) {
-					this.logger.info("Found matching client via self-healing lookup", {
-						browserId,
-						channelId: clientChannelId,
-					});
-					return rpcClient;
-				}
-			} catch (error) {
-				this.logger.error("Failed to query client during self-healing lookup", {
-					channelId: clientChannelId,
-					error,
-				});
 			}
 		}
 

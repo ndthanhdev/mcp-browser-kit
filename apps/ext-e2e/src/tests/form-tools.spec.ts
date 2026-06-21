@@ -16,7 +16,7 @@ test.describe("Form Tools", () => {
 		}) => {
 			await testAppPage.navigateToFormTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"form-test",
 			);
@@ -31,7 +31,7 @@ test.describe("Form Tools", () => {
 			expectToBeDefined(usernameInputPath);
 
 			await mcpClientPage.callTool("fillTextToElement", {
-				tabKey,
+				...tab,
 				readablePath: usernameInputPath,
 				value: "testuser123",
 			});
@@ -46,7 +46,7 @@ test.describe("Form Tools", () => {
 		}) => {
 			await testAppPage.navigateToFormTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"form-test",
 			);
@@ -62,7 +62,7 @@ test.describe("Form Tools", () => {
 
 			const testMessage = "This is a test message\nwith multiple lines";
 			await mcpClientPage.callTool("fillTextToElement", {
-				tabKey,
+				...tab,
 				readablePath: textareaPath,
 				value: testMessage,
 			});
@@ -79,7 +79,7 @@ test.describe("Form Tools", () => {
 		}) => {
 			await testAppPage.navigateToFormTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"form-test",
 			);
@@ -89,7 +89,7 @@ test.describe("Form Tools", () => {
 			expectToBeDefined(emailBox);
 
 			await mcpClientPage.callTool("fillTextToCoordinates", {
-				tabKey,
+				...tab,
 				x: emailBox.x + emailBox.width / 2,
 				y: emailBox.y + emailBox.height / 2,
 				value: "test@example.com",
@@ -106,7 +106,7 @@ test.describe("Form Tools", () => {
 		}) => {
 			await testAppPage.navigateToFormTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"form-test",
 			);
@@ -121,13 +121,13 @@ test.describe("Form Tools", () => {
 			expectToBeDefined(searchInputPath);
 
 			await mcpClientPage.callTool("fillTextToElement", {
-				tabKey,
+				...tab,
 				readablePath: searchInputPath,
 				value: "test search query",
 			});
 
 			await mcpClientPage.callTool("hitEnterOnElement", {
-				tabKey,
+				...tab,
 				readablePath: searchInputPath,
 			});
 
@@ -143,7 +143,7 @@ test.describe("Form Tools", () => {
 		}) => {
 			await testAppPage.navigateToFormTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"form-test",
 			);
@@ -153,14 +153,14 @@ test.describe("Form Tools", () => {
 			expectToBeDefined(searchBox);
 
 			await mcpClientPage.callTool("fillTextToCoordinates", {
-				tabKey,
+				...tab,
 				x: searchBox.x + searchBox.width / 2,
 				y: searchBox.y + searchBox.height / 2,
 				value: "coordinate search",
 			});
 
 			await mcpClientPage.callTool("hitEnterOnCoordinates", {
-				tabKey,
+				...tab,
 				x: searchBox.x + searchBox.width / 2,
 				y: searchBox.y + searchBox.height / 2,
 			});
@@ -176,7 +176,7 @@ test.describe("Form Tools", () => {
 		}) => {
 			await testAppPage.navigateToFormTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"form-test",
 			);
@@ -198,7 +198,7 @@ test.describe("Form Tools", () => {
 
 			if (usernameInputPath) {
 				await mcpClientPage.callTool("fillTextToElement", {
-					tabKey,
+					...tab,
 					readablePath: usernameInputPath,
 					value: "formuser",
 				});
@@ -206,7 +206,7 @@ test.describe("Form Tools", () => {
 
 			if (emailInputPath) {
 				await mcpClientPage.callTool("fillTextToElement", {
-					tabKey,
+					...tab,
 					readablePath: emailInputPath,
 					value: "form@example.com",
 				});
@@ -214,7 +214,7 @@ test.describe("Form Tools", () => {
 
 			if (submitButtonPath) {
 				await mcpClientPage.callTool("clickOnElement", {
-					tabKey,
+					...tab,
 					readablePath: submitButtonPath,
 				});
 			}

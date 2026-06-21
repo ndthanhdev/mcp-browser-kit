@@ -16,7 +16,7 @@ test.describe("Fallback Strategy Tools", () => {
 		}) => {
 			await testAppPage.navigateToFallbackTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"fallback-test",
 			);
@@ -33,7 +33,7 @@ test.describe("Fallback Strategy Tools", () => {
 			expectToBeDefined(resistantButtonPath);
 
 			const result = await mcpClientPage.callTool("clickOnElement", {
-				tabKey,
+				...tab,
 				readablePath: resistantButtonPath,
 			});
 
@@ -51,7 +51,7 @@ test.describe("Fallback Strategy Tools", () => {
 		}) => {
 			await testAppPage.navigateToFallbackTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"fallback-test",
 			);
@@ -68,7 +68,7 @@ test.describe("Fallback Strategy Tools", () => {
 			expectToBeDefined(standardButtonPath);
 
 			const result = await mcpClientPage.callTool("clickOnElement", {
-				tabKey,
+				...tab,
 				readablePath: standardButtonPath,
 			});
 
@@ -81,12 +81,14 @@ test.describe("Fallback Strategy Tools", () => {
 		});
 	});
 
-	test.describe("clickOnElement — invalid tabKey", () => {
-		test("returns ok: false when the tabKey is not found", async ({
+	test.describe("clickOnElement — invalid browserId", () => {
+		test("returns ok: false when the browser is not found", async ({
 			mcpClientPage,
 		}) => {
 			const result = await mcpClientPage.callTool("clickOnElement", {
-				tabKey: "invalid-tab-key-xyz",
+				browserId: "invalid-browser-xyz",
+				windowId: "0",
+				tabId: "0",
 				readablePath: "some/path",
 			});
 

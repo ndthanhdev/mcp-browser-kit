@@ -12,7 +12,6 @@ type SnapshotResultJson<T> = {
 
 type ContextJson = {
 	browsers: Array<{
-		channelId: string;
 		browserId: string;
 		status: string;
 		browserInfo: unknown;
@@ -23,7 +22,6 @@ type ContextJson = {
 		windows: Array<{
 			id: string;
 			focused: boolean;
-			windowKey: string;
 		}>;
 		tabs: Array<{
 			id: string;
@@ -32,8 +30,6 @@ type ContextJson = {
 			title: string;
 			active: boolean;
 			tabUri: string;
-			tabKey: string;
-			windowKey: string;
 		}>;
 	}>;
 };
@@ -72,14 +68,15 @@ test.describe("Resource Fallback Tools", () => {
 
 			expect(context.browsers.length).toBeGreaterThan(0);
 			const browser = context.browsers[0];
+			expect(typeof browser.browserId).toBe("string");
 			expectToBeDefined(browser.extensionInfo);
 			expect(typeof browser.extensionInfo.extensionId).toBe("string");
 			expect(browser.tabs.length).toBeGreaterThan(0);
 
 			const tab = browser.tabs[0];
-			expect(typeof tab.tabKey).toBe("string");
+			expect(typeof tab.id).toBe("string");
+			expect(typeof tab.windowId).toBe("string");
 			expect(typeof tab.tabUri).toBe("string");
-			expect(typeof tab.windowKey).toBe("string");
 			expect(typeof tab.url).toBe("string");
 			expect(typeof tab.title).toBe("string");
 		});
@@ -97,12 +94,11 @@ test.describe("Resource Fallback Tools", () => {
 				const toolBrowser = toolContext.browsers[i];
 				const resBrowser = resCtx.browsers[i];
 
-				expect(toolBrowser.channelId).toBe(resBrowser.channelId);
 				expect(toolBrowser.browserId).toBe(resBrowser.browserId);
 				expect(toolBrowser.tabs.length).toBe(resBrowser.tabs.length);
 
 				for (let j = 0; j < toolBrowser.tabs.length; j++) {
-					expect(toolBrowser.tabs[j].tabKey).toBe(resBrowser.tabs[j].tabKey);
+					expect(toolBrowser.tabs[j].id).toBe(resBrowser.tabs[j].id);
 					expect(toolBrowser.tabs[j].url).toBe(resBrowser.tabs[j].url);
 				}
 			}
@@ -116,7 +112,7 @@ test.describe("Resource Fallback Tools", () => {
 		}) => {
 			await testAppPage.navigateToTextTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"text-test",
 			);
@@ -124,7 +120,8 @@ test.describe("Resource Fallback Tools", () => {
 			const result = await mcpClientPage.callToolJson<
 				SnapshotResultJson<string>
 			>("getReadableText", {
-				tabKey,
+				browserId: tab.browserId,
+				tabId: tab.tabId,
 			});
 
 			expect(typeof result.snapshotId).toBe("string");
@@ -140,7 +137,7 @@ test.describe("Resource Fallback Tools", () => {
 		}) => {
 			await testAppPage.navigateToSnapshotTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"snapshot-test",
 			);
@@ -148,7 +145,8 @@ test.describe("Resource Fallback Tools", () => {
 			const page1 = await mcpClientPage.callToolJson<
 				SnapshotResultJson<string>
 			>("getReadableText", {
-				tabKey,
+				browserId: tab.browserId,
+				tabId: tab.tabId,
 			});
 
 			expect(page1.hasNextPage).toBe(true);
@@ -170,12 +168,13 @@ test.describe("Resource Fallback Tools", () => {
 			expect(page2.data).toContain("This is paragraph number 25.");
 		});
 
-		test("returns error for invalid tabKey", async ({ mcpClientPage }) => {
+		test("returns error for invalid browserId", async ({ mcpClientPage }) => {
 			const result = await mcpClientPage.callToolJson<{
 				ok: boolean;
 				reason: string;
 			}>("getReadableText", {
-				tabKey: "invalid::key::xyz",
+				browserId: "invalid-browser-xyz",
+				tabId: "0",
 			});
 
 			expect(result.ok).toBe(false);
@@ -190,7 +189,7 @@ test.describe("Resource Fallback Tools", () => {
 		}) => {
 			await testAppPage.navigateToTextTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"text-test",
 			);
@@ -204,7 +203,8 @@ test.describe("Resource Fallback Tools", () => {
 					][]
 				>
 			>("getReadableElements", {
-				tabKey,
+				browserId: tab.browserId,
+				tabId: tab.tabId,
 			});
 
 			expect(typeof result.snapshotId).toBe("string");
@@ -226,13 +226,12 @@ test.describe("Resource Fallback Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"click-test",
 			);
 
-			const elements =
-				await mcpClientPage.readAllSnapshotElementsViaTool(tabKey);
+			const elements = await mcpClientPage.readAllSnapshotElementsViaTool(tab);
 
 			const primaryButtonPath = elements.find(
 				(el) => el[1] === "button" && el[2]?.includes("Primary"),
@@ -240,7 +239,7 @@ test.describe("Resource Fallback Tools", () => {
 			expectToBeDefined(primaryButtonPath);
 
 			const clickResult = await mcpClientPage.callTool("clickOnElement", {
-				tabKey,
+				...tab,
 				readablePath: primaryButtonPath,
 			});
 
@@ -253,7 +252,7 @@ test.describe("Resource Fallback Tools", () => {
 		test("matches resource output", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToTextTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"text-test",
 			);
@@ -271,7 +270,8 @@ test.describe("Resource Fallback Tools", () => {
 					][]
 				>
 			>("getReadableElements", {
-				tabKey,
+				browserId: tab.browserId,
+				tabId: tab.tabId,
 			});
 
 			const resourceText = await mcpClientPage.readResourceText(
@@ -303,7 +303,7 @@ test.describe("Resource Fallback Tools", () => {
 		}) => {
 			await testAppPage.navigateToSnapshotTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"snapshot-test",
 			);
@@ -317,7 +317,8 @@ test.describe("Resource Fallback Tools", () => {
 					][]
 				>
 			>("getReadableElements", {
-				tabKey,
+				browserId: tab.browserId,
+				tabId: tab.tabId,
 			});
 
 			expect(page1.hasNextPage).toBe(true);
@@ -363,7 +364,7 @@ test.describe("Resource Fallback Tools", () => {
 		}) => {
 			await testAppPage.navigateToSnapshotTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"snapshot-test",
 			);
@@ -371,7 +372,8 @@ test.describe("Resource Fallback Tools", () => {
 			const page1 = await mcpClientPage.callToolJson<
 				SnapshotResultJson<string>
 			>("getReadableText", {
-				tabKey,
+				browserId: tab.browserId,
+				tabId: tab.tabId,
 			});
 
 			const result = await mcpClientPage.callToolJson<{

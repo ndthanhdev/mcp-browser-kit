@@ -10,18 +10,20 @@ import type {
 import type { Screenshot } from "../types";
 
 export interface BrowserTabContext {
-	tabKey: string;
+	windowId: string;
+	tabId: string;
 	active: boolean;
 	title: string;
 	url: string;
 }
 
 export interface BrowserWindowContext {
-	windowKey: string;
+	windowId: string;
 	tabs: BrowserTabContext[];
 }
 
 export interface BrowserContext {
+	/** Short channel id — the public-facing browser identifier. */
 	browserId: string;
 	availableTools: ExtensionToolName[];
 	browserWindows: BrowserWindowContext[];
@@ -32,18 +34,41 @@ export interface Context {
 }
 
 export type ServerToolCallsInputPort = {
-	captureTab: (tabKey: string) => Promise<Screenshot>;
-	clickOnCoordinates: (tabKey: string, x: number, y: number) => Promise<void>;
-	clickOnElement: (tabKey: string, readablePath: string) => Promise<void>;
-	closeTab: (tabKey: string) => Promise<void>;
+	captureTab: (
+		browserId: string,
+		windowId: string,
+		tabId: string,
+	) => Promise<Screenshot>;
+	clickOnCoordinates: (
+		browserId: string,
+		windowId: string,
+		tabId: string,
+		x: number,
+		y: number,
+	) => Promise<void>;
+	clickOnElement: (
+		browserId: string,
+		windowId: string,
+		tabId: string,
+		readablePath: string,
+	) => Promise<void>;
+	closeTab: (
+		browserId: string,
+		windowId: string,
+		tabId: string,
+	) => Promise<void>;
 	fillTextToCoordinates: (
-		tabKey: string,
+		browserId: string,
+		windowId: string,
+		tabId: string,
 		x: number,
 		y: number,
 		value: string,
 	) => Promise<void>;
 	fillTextToElement: (
-		tabKey: string,
+		browserId: string,
+		windowId: string,
+		tabId: string,
 		readablePath: string,
 		value: string,
 	) => Promise<void>;
@@ -58,23 +83,43 @@ export type ServerToolCallsInputPort = {
 	) => Promise<{
 		elements: ReadableElementRecord[];
 	}>;
-	getSelection: (tabKey: string) => Promise<Selection>;
+	getSelection: (
+		browserId: string,
+		windowId: string,
+		tabId: string,
+	) => Promise<Selection>;
 	hitEnterOnCoordinates: (
-		tabKey: string,
+		browserId: string,
+		windowId: string,
+		tabId: string,
 		x: number,
 		y: number,
 	) => Promise<void>;
-	hitEnterOnElement: (tabKey: string, readablePath: string) => Promise<void>;
-	invokeJsFn: (tabKey: string, fnBodyCode: string) => Promise<unknown>;
+	hitEnterOnElement: (
+		browserId: string,
+		windowId: string,
+		tabId: string,
+		readablePath: string,
+	) => Promise<void>;
+	invokeJsFn: (
+		browserId: string,
+		windowId: string,
+		tabId: string,
+		fnBodyCode: string,
+	) => Promise<unknown>;
 	openTab: (
-		windowKey: string,
+		browserId: string,
+		windowId: string,
 		url: string,
 	) => Promise<{
-		tabKey: string;
-		windowKey: string;
+		browserId: string;
+		windowId: string;
+		tabId: string;
 	}>;
 	showHumanHint: (
-		tabKey: string,
+		browserId: string,
+		windowId: string,
+		tabId: string,
 		params: ShowHumanHintParams,
 	) => Promise<HumanHintResponse>;
 };
@@ -82,30 +127,28 @@ export const ServerToolCallsInputPort = Symbol.for("ServerToolCallsInputPort");
 
 export type ServerToolName = keyof ServerToolCallsInputPort;
 
+type TabRef = {
+	browserId: string;
+	windowId: string;
+	tabId: string;
+};
+
 export type ServerToolArgsMap = {
-	captureTab: {
-		tabKey: string;
-	};
-	clickOnCoordinates: {
-		tabKey: string;
+	captureTab: TabRef;
+	clickOnCoordinates: TabRef & {
 		x: number;
 		y: number;
 	};
-	clickOnElement: {
-		tabKey: string;
+	clickOnElement: TabRef & {
 		readablePath: string;
 	};
-	closeTab: {
-		tabKey: string;
-	};
-	fillTextToCoordinates: {
-		tabKey: string;
+	closeTab: TabRef;
+	fillTextToCoordinates: TabRef & {
 		x: number;
 		y: number;
 		value: string;
 	};
-	fillTextToElement: {
-		tabKey: string;
+	fillTextToElement: TabRef & {
 		readablePath: string;
 		value: string;
 	};
@@ -118,28 +161,23 @@ export type ServerToolArgsMap = {
 		channelId: string;
 		tabId: string;
 	};
-	getSelection: {
-		tabKey: string;
-	};
-	hitEnterOnCoordinates: {
-		tabKey: string;
+	getSelection: TabRef;
+	hitEnterOnCoordinates: TabRef & {
 		x: number;
 		y: number;
 	};
-	hitEnterOnElement: {
-		tabKey: string;
+	hitEnterOnElement: TabRef & {
 		readablePath: string;
 	};
-	invokeJsFn: {
-		tabKey: string;
+	invokeJsFn: TabRef & {
 		fnBodyCode: string;
 	};
 	openTab: {
-		windowKey: string;
+		browserId: string;
+		windowId: string;
 		url: string;
 	};
-	showHumanHint: {
-		tabKey: string;
+	showHumanHint: TabRef & {
 		action: ShowHumanHintParams["action"];
 		message: string;
 		value?: string;

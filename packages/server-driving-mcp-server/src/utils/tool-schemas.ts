@@ -1,19 +1,38 @@
 import { z } from "zod";
 
-export const tabKeySchema = {
-	tabKey: z
-		.string()
-		.describe(
-			"Opaque key from bk:///context browsers[].tabs[].tabKey — never construct",
-		),
+const browserIdSchema = z
+	.string()
+	.describe("browserId from bk:///context browsers[].browserId");
+
+const windowIdSchema = z
+	.string()
+	.describe("windowId from bk:///context browsers[].tabs[].windowId");
+
+const tabIdSchema = z
+	.string()
+	.describe("tabId from bk:///context browsers[].tabs[].id");
+
+/** Identifies a tab: browserId + windowId + tabId, all read from context. */
+export const tabRefSchema = {
+	browserId: browserIdSchema,
+	windowId: windowIdSchema,
+	tabId: tabIdSchema,
+};
+
+/** Identifies a window: browserId + windowId, both read from context. */
+export const windowRefSchema = {
+	browserId: browserIdSchema,
+	windowId: windowIdSchema,
+};
+
+/** Identifies a tab for resource-style reads: browserId + tabId. */
+export const tabReadRefSchema = {
+	browserId: browserIdSchema,
+	tabId: tabIdSchema,
 };
 
 export const coordinateSchema = {
-	tabKey: z
-		.string()
-		.describe(
-			"Opaque key from bk:///context browsers[].tabs[].tabKey — never construct",
-		),
+	...tabRefSchema,
 	x: z
 		.number()
 		.describe(
@@ -32,11 +51,7 @@ export const coordinateTextInputSchema = {
 };
 
 export const readableElementSchema = {
-	tabKey: z
-		.string()
-		.describe(
-			"Opaque key from bk:///context browsers[].tabs[].tabKey — never construct",
-		),
+	...tabRefSchema,
 	readablePath: z
 		.string()
 		.describe(
@@ -50,11 +65,7 @@ export const readableElementTextInputSchema = {
 };
 
 export const invokeJsFnSchema = {
-	tabKey: z
-		.string()
-		.describe(
-			"Opaque key from bk:///context browsers[].tabs[].tabKey — never construct",
-		),
+	...tabRefSchema,
 	fnBodyCode: z
 		.string()
 		.describe(
@@ -63,22 +74,14 @@ export const invokeJsFnSchema = {
 };
 
 export const openTabSchema = {
-	windowKey: z
-		.string()
-		.describe(
-			"Opaque key from bk:///context browsers[].tabs[].windowKey — never construct",
-		),
+	...windowRefSchema,
 	url: z
 		.string()
 		.describe("URL to open, including scheme (e.g. https://example.com)"),
 };
 
 export const showHumanHintInputSchema = {
-	tabKey: z
-		.string()
-		.describe(
-			"Opaque key from bk:///context browsers[].tabs[].tabKey — never construct",
-		),
+	...tabRefSchema,
 	action: z
 		.enum([
 			"click",
@@ -159,8 +162,9 @@ export const createOverOutputSchema = <T extends Record<string, z.ZodType>>(
 });
 
 export const openTabOutputSchema = createOverOutputSchema({
-	tabKey: z.string().describe("Key of the newly opened tab"),
-	windowKey: z.string().describe("Window key where the tab was opened"),
+	browserId: z.string().describe("browserId of the newly opened tab"),
+	windowId: z.string().describe("windowId where the tab was opened"),
+	tabId: z.string().describe("tabId of the newly opened tab"),
 });
 
 export const selectionOutputSchema = createOverOutputSchema({

@@ -48,20 +48,36 @@ export class HumanHintTools {
 					openWorldHint: true,
 				},
 			},
-			async ({ tabKey, action, message, value, readablePath, x, y }) => {
+			async ({
+				browserId,
+				windowId,
+				tabId,
+				action,
+				message,
+				value,
+				readablePath,
+				x,
+				y,
+			}) => {
 				this.logger.info("Executing showHumanHint", {
-					tabKey,
+					browserId,
+					tabId,
 					action,
 				});
 
-				const result = await this.toolsInputPort.showHumanHint(tabKey, {
-					action,
-					message,
-					value,
-					readablePath,
-					x,
-					y,
-				});
+				const result = await this.toolsInputPort.showHumanHint(
+					browserId,
+					windowId,
+					tabId,
+					{
+						action,
+						message,
+						value,
+						readablePath,
+						x,
+						y,
+					},
+				);
 
 				return {
 					content: [

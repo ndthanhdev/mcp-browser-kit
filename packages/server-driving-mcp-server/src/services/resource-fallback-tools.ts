@@ -2,7 +2,6 @@ import {
 	LoggerFactoryOutputPort,
 	type LoggerFactoryOutputPort as LoggerFactoryOutputPortInterface,
 	ObserveBrowserStateInputPort,
-	TabKey,
 } from "@mcp-browser-kit/core-server";
 import {
 	McpDescriptionsInputPort,
@@ -10,11 +9,12 @@ import {
 	SnapshotContentInputPort,
 	type SnapshotContentInputPort as SnapshotContentInputPortInterface,
 } from "@mcp-browser-kit/core-server/input-ports";
+import { shortChannelId } from "@mcp-browser-kit/core-utils";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
 import { findWindowIdForTab, tabBkUri } from "../utils/browser-resource-uris";
-import { snapshotPageSchema, tabKeySchema } from "../utils/tool-schemas";
+import { snapshotPageSchema, tabReadRefSchema } from "../utils/tool-schemas";
 
 /**
  * Fallback MCP tools that expose the same data as the bk:/// resources.
@@ -101,24 +101,26 @@ export class ResourceFallbackTools {
 			{
 				title: "Get readable text",
 				description: this.mcpDescriptions.getReadableTextInstruction(),
-				inputSchema: tabKeySchema,
+				inputSchema: tabReadRefSchema,
 				annotations: {
 					readOnlyHint: true,
 					openWorldHint: true,
 				},
 			},
-			async ({ tabKey }) => {
+			async ({ browserId, tabId }) => {
 				this.logger.info("Executing getReadableText", {
-					tabKey,
+					browserId,
+					tabId,
 				});
 				const overResult = await over(async () => {
-					const { channelId, tabId } = this.resolveTabKey(tabKey);
+					const channelId = this.resolveChannelId(browserId);
 					return this.snapshotContent.getReadableTextPage(channelId, tabId, 1);
 				});
 
 				if (!overResult.ok) {
 					this.logger.error("Failed to get readable text", {
-						tabKey,
+						browserId,
+						tabId,
 						reason: overResult.reason,
 					});
 					return {
@@ -157,18 +159,19 @@ export class ResourceFallbackTools {
 			{
 				title: "Get readable elements",
 				description: this.mcpDescriptions.getReadableElementsInstruction(),
-				inputSchema: tabKeySchema,
+				inputSchema: tabReadRefSchema,
 				annotations: {
 					readOnlyHint: true,
 					openWorldHint: true,
 				},
 			},
-			async ({ tabKey }) => {
+			async ({ browserId, tabId }) => {
 				this.logger.info("Executing getReadableElements", {
-					tabKey,
+					browserId,
+					tabId,
 				});
 				const overResult = await over(async () => {
-					const { channelId, tabId } = this.resolveTabKey(tabKey);
+					const channelId = this.resolveChannelId(browserId);
 					return this.snapshotContent.getReadableElementsPage(
 						channelId,
 						tabId,
@@ -178,7 +181,8 @@ export class ResourceFallbackTools {
 
 				if (!overResult.ok) {
 					this.logger.error("Failed to get readable elements", {
-						tabKey,
+						browserId,
+						tabId,
 						reason: overResult.reason,
 					});
 					return {
@@ -285,12 +289,11 @@ export class ResourceFallbackTools {
 
 		const browsers = entries.map((entry) => {
 			const { snapshot, channelId } = entry;
-			const extensionId = snapshot.extensionInfo?.extensionId ?? "";
+			const browserId = shortChannelId(channelId);
 
 			const windows = snapshot.windows.map((w) => ({
 				id: w.id,
 				focused: w.focused,
-				windowKey: extensionId ? `${extensionId}::${w.id}` : undefined,
 			}));
 
 			const tabs = snapshot.tabs.map((tab) => {
@@ -302,18 +305,11 @@ export class ResourceFallbackTools {
 					title: tab.title,
 					active: tab.active,
 					tabUri: tabBkUri(channelId, tab.id),
-					tabKey:
-						extensionId && windowId
-							? `${extensionId}::${windowId}::${tab.id}`
-							: undefined,
-					windowKey:
-						extensionId && windowId ? `${extensionId}::${windowId}` : undefined,
 				};
 			});
 
 			return {
-				channelId,
-				browserId: extensionId,
+				browserId,
 				status: snapshot.status,
 				browserInfo: snapshot.browserInfo,
 				extensionInfo: snapshot.extensionInfo,
@@ -328,28 +324,18 @@ export class ResourceFallbackTools {
 	}
 
 	/**
-	 * Resolves a `tabKey` (extensionId::windowId::tabId) to the corresponding
-	 * `channelId` and `tabId` needed by `SnapshotContentInputPort`.
+	 * Resolves a `browserId` (the short channel id) to the full `channelId`
+	 * needed by `SnapshotContentInputPort`.
 	 */
-	private resolveTabKey(tabKey: string): {
-		channelId: string;
-		tabId: string;
-	} {
-		const parsed = TabKey.parse(tabKey);
-
+	private resolveChannelId(browserId: string): string {
 		const entries = this.observeBrowserState.listBrowsers();
 		const match = entries.find(
-			(e) => e.snapshot.extensionInfo?.extensionId === parsed.extensionId,
+			(e) => shortChannelId(e.channelId) === browserId,
 		);
 		if (!match) {
-			throw new Error(
-				`No browser found for extensionId: ${parsed.extensionId} (from tabKey: ${tabKey})`,
-			);
+			throw new Error(`No browser found for browserId: ${browserId}`);
 		}
 
-		return {
-			channelId: match.channelId,
-			tabId: parsed.tabId,
-		};
+		return match.channelId;
 	}
 }

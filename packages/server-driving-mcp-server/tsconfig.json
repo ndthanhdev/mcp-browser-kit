@@ -12,6 +12,12 @@
 			"@mcp-browser-kit/core-server/*": [
 				"../core-server/src/*"
 			],
+			"@mcp-browser-kit/core-utils": [
+				"../core-utils/src/index.ts"
+			],
+			"@mcp-browser-kit/core-utils/*": [
+				"../core-utils/src/*"
+			],
 			"@mcp-browser-kit/types": [
 				"../types/src/index.ts"
 			],
@@ -23,6 +29,9 @@
 	"references": [
 		{
 			"path": "../core-server"
+		},
+		{
+			"path": "../core-utils"
 		},
 		{
 			"path": "../types"

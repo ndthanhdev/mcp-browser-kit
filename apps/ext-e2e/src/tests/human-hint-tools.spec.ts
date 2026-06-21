@@ -36,7 +36,7 @@ test.describe("Human Hint Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"click-test",
 			);
@@ -51,7 +51,7 @@ test.describe("Human Hint Tools", () => {
 			expectToBeDefined(primaryButtonPath);
 
 			const result = await mcpClientPage.callToolRaw("showHumanHint", {
-				tabKey,
+				...tab,
 				action: "click",
 				message: "Click this button to proceed.",
 				readablePath: primaryButtonPath,
@@ -87,7 +87,7 @@ test.describe("Human Hint Tools", () => {
 		}) => {
 			await testAppPage.navigateToFormTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"form-test",
 			);
@@ -102,7 +102,7 @@ test.describe("Human Hint Tools", () => {
 			expectToBeDefined(usernameInputPath);
 
 			const result = await mcpClientPage.callToolRaw("showHumanHint", {
-				tabKey,
+				...tab,
 				action: "fill",
 				message: "Type your username here.",
 				value: "testuser123",
@@ -132,7 +132,7 @@ test.describe("Human Hint Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"click-test",
 			);
@@ -145,7 +145,7 @@ test.describe("Human Hint Tools", () => {
 			const centerY = buttonBox.y + buttonBox.height / 2;
 
 			const result = await mcpClientPage.callToolRaw("showHumanHint", {
-				tabKey,
+				...tab,
 				action: "click",
 				message: "Click the secondary button.",
 				x: centerX,
@@ -171,7 +171,7 @@ test.describe("Human Hint Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"click-test",
 			);
@@ -186,7 +186,7 @@ test.describe("Human Hint Tools", () => {
 			expectToBeDefined(primaryButtonPath);
 
 			const result = await mcpClientPage.callToolRaw("showHumanHint", {
-				tabKey,
+				...tab,
 				action: "fill",
 				message: "Fill in username.",
 				readablePath: primaryButtonPath,
@@ -204,13 +204,13 @@ test.describe("Human Hint Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"click-test",
 			);
 
 			const result = await mcpClientPage.callToolRaw("showHumanHint", {
-				tabKey,
+				...tab,
 				action: "click",
 				message: "Click something.",
 			});
@@ -226,7 +226,7 @@ test.describe("Human Hint Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"click-test",
 			);
@@ -241,7 +241,7 @@ test.describe("Human Hint Tools", () => {
 			expectToBeDefined(primaryButtonPath);
 
 			const result = await mcpClientPage.callToolRaw("showHumanHint", {
-				tabKey,
+				...tab,
 				action: "click",
 				message: "Ambiguous target.",
 				readablePath: primaryButtonPath,
@@ -264,7 +264,7 @@ test.describe("Human Hint Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"click-test",
 			);
@@ -279,7 +279,7 @@ test.describe("Human Hint Tools", () => {
 			expectToBeDefined(primaryButtonPath);
 
 			await mcpClientPage.callToolRaw("showHumanHint", {
-				tabKey,
+				...tab,
 				action: "click",
 				message: "Click to dismiss test.",
 				readablePath: primaryButtonPath,
@@ -306,7 +306,7 @@ test.describe("Human Hint Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"click-test",
 			);
@@ -325,7 +325,7 @@ test.describe("Human Hint Tools", () => {
 			expectToBeDefined(nestedButtonPath);
 
 			await mcpClientPage.callToolRaw("showHumanHint", {
-				tabKey,
+				...tab,
 				action: "click",
 				message: "First hint.",
 				readablePath: primaryButtonPath,
@@ -337,7 +337,7 @@ test.describe("Human Hint Tools", () => {
 			});
 
 			await mcpClientPage.callToolRaw("showHumanHint", {
-				tabKey,
+				...tab,
 				action: "click",
 				message: "Second hint replaces first.",
 				readablePath: nestedButtonPath,
