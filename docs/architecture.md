@@ -126,7 +126,6 @@ flowchart TD
       PublishBrowserStateUseCase
       BrowserAgentUseCases
     end
-    ServerChannelManager
   end
   subgraph Driven["Driven"]
     BrowserDriver
@@ -145,14 +144,16 @@ flowchart TD
   ExtensionBootstrap --> PublishBrowserStateUseCase
   %% From Core
   ExtensionToolCallUseCases --> BrowserDriver
-  ExtensionToolCallUseCases --> ServerChannelManager
-  ServerChannelManager --> ServerChannelProvider
   BrowserAgentUseCases --> LlmProvider
   BrowserAgentUseCases --> BrowserDriver
   %% Observability
   BrowserStateSource --> PublishBrowserStateUseCase
   PublishBrowserStateUseCase --> BrowserDriver
   PublishBrowserStateUseCase --> ServerEventSink
+
+  %% Planned (not yet implemented)
+  classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
+  class BrowserAgent,BrowserAgentUseCases,LlmProvider planned;
 ```
 
 # Extension Architecture (Level 0)
@@ -202,4 +203,8 @@ flowchart TD
   Core --> ExtensionDriven
   TabRpcClient --> TabRpcServer
   TabContentMutationObserver -->|"mbk.tabContent.changed"| BrowserStateSource
+
+  %% Planned (not yet implemented)
+  classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
+  class LlmProvider planned;
 ```

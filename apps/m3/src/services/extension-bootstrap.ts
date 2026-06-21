@@ -10,10 +10,7 @@ import {
 	DrivenBrowserDriverM3,
 	type DrivenBrowserDriverM3 as DrivenBrowserDriverM3Type,
 } from "@mcp-browser-kit/extension-driven-browser-driver/m3";
-import {
-	ExtensionDrivenServerChannelProvider,
-	type ExtensionDrivenServerChannelProvider as ExtensionDrivenServerChannelProviderType,
-} from "@mcp-browser-kit/extension-driven-server-channel-provider";
+import { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
 import { ExtensionDrivingTrpcController } from "@mcp-browser-kit/extension-driving-trpc-controller";
 import { KeepAlive } from "@mcp-browser-kit/helper-extension-keep-alive";
 import type { Container } from "inversify";
@@ -25,7 +22,7 @@ export class ExtensionBootstrap {
 
 	constructor(
 		@inject(BrowserDriverOutputPort)
-		private readonly driverM3: BrowserDriverOutputPort,
+		private readonly driverM3: DrivenBrowserDriverM3Type,
 		@inject(ServerChannelProviderOutputPort)
 		private readonly serverProvider: ServerChannelProviderOutputPort,
 		@inject(ExtensionDrivingTrpcController)
@@ -75,25 +72,21 @@ export class ExtensionBootstrap {
 		this.logger.info("Bootstrapping ExtensionBootstrap...");
 
 		// Link RPC for browser driver
-		(this.driverM3 as DrivenBrowserDriverM3Type).linkRpc();
+		this.driverM3.linkRpc();
 
 		// Start keep-alive listening
 		this.keepAlive.startListening();
 
 		// Initial discovery call
-		(this.serverProvider as ExtensionDrivenServerChannelProviderType)
-			.startServersDiscovering()
-			.catch((error) => {
-				this.logger.error(
-					"Error during initial server discovery and connection:",
-					error,
-				);
-			});
+		this.serverProvider.startServersDiscovering().catch((error) => {
+			this.logger.error(
+				"Error during initial server discovery and connection:",
+				error,
+			);
+		});
 
 		// Listen to server channel events
-		this.drivingTrpcController.listenToServerChannelEvents(
-			this.serverProvider as ExtensionDrivenServerChannelProviderType,
-		);
+		this.drivingTrpcController.listenToServerChannelEvents(this.serverProvider);
 
 		// Start observing browser state and publishing snapshots to the server.
 		this.publishBrowserState.start().catch((error) => {

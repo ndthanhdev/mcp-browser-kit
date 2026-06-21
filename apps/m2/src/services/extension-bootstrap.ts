@@ -7,10 +7,7 @@ import {
 import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
 import { DrivenBrowserStateSource } from "@mcp-browser-kit/extension-driven-browser-driver";
 import { DrivenBrowserDriverM2 } from "@mcp-browser-kit/extension-driven-browser-driver/m2";
-import {
-	ExtensionDrivenServerChannelProvider,
-	type ExtensionDrivenServerChannelProvider as ExtensionDrivenServerChannelProviderType,
-} from "@mcp-browser-kit/extension-driven-server-channel-provider";
+import { ExtensionDrivenServerChannelProvider } from "@mcp-browser-kit/extension-driven-server-channel-provider";
 import { ExtensionDrivingTrpcController } from "@mcp-browser-kit/extension-driving-trpc-controller";
 import { KeepAlive } from "@mcp-browser-kit/helper-extension-keep-alive";
 import type { Container } from "inversify";
@@ -22,7 +19,7 @@ export class ExtensionBootstrap {
 
 	constructor(
 		@inject(BrowserDriverOutputPort)
-		private readonly driverM2: BrowserDriverOutputPort,
+		private readonly driverM2: DrivenBrowserDriverM2,
 		@inject(ServerChannelProviderOutputPort)
 		private readonly serverProvider: ServerChannelProviderOutputPort,
 		@inject(ExtensionDrivingTrpcController)
@@ -72,25 +69,21 @@ export class ExtensionBootstrap {
 		this.logger.info("Bootstrapping ExtensionBootstrap...");
 
 		// Link RPC for browser driver
-		(this.driverM2 as DrivenBrowserDriverM2).linkRpc();
+		this.driverM2.linkRpc();
 
 		// Setup TRPC controller to listen to server channel events
-		this.trpcController.listenToServerChannelEvents(
-			this.serverProvider as ExtensionDrivenServerChannelProviderType,
-		);
+		this.trpcController.listenToServerChannelEvents(this.serverProvider);
 
 		// Start keep-alive listening
 		this.keepAlive.startListening();
 
 		// Initial discovery call
-		(this.serverProvider as ExtensionDrivenServerChannelProviderType)
-			.startServersDiscovering()
-			.catch((error) => {
-				this.logger.error(
-					"Error during initial server discovery and connection:",
-					error,
-				);
-			});
+		this.serverProvider.startServersDiscovering().catch((error) => {
+			this.logger.error(
+				"Error during initial server discovery and connection:",
+				error,
+			);
+		});
 
 		// Start observing browser state and publishing snapshots to the server.
 		this.publishBrowserState.start().catch((error) => {

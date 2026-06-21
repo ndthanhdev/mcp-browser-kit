@@ -12,12 +12,6 @@
 			"@mcp-browser-kit/core-extension/*": [
 				"../core-extension/src/*"
 			],
-			"@mcp-browser-kit/extension-driven-server-channel-provider": [
-				"../extension-driven-server-channel-provider/src/index.ts"
-			],
-			"@mcp-browser-kit/extension-driven-server-channel-provider/*": [
-				"../extension-driven-server-channel-provider/src/*"
-			],
 			"@mcp-browser-kit/core-utils": [
 				"../core-utils/src/index.ts"
 			],
@@ -29,9 +23,6 @@
 	"references": [
 		{
 			"path": "../core-extension"
-		},
-		{
-			"path": "../extension-driven-server-channel-provider"
 		},
 		{
 			"path": "../core-utils"
