@@ -17,6 +17,7 @@
  * `+` operator allows slashes.
  */
 
+import { shortChannelId } from "@mcp-browser-kit/core-utils";
 import type {
 	BrowserSnapshot,
 	BrowserSnapshotTabInfo,
@@ -28,14 +29,9 @@ export const CONTEXT_URI = "bk:///context";
 
 // ─── Short ID ────────────────────────────────────────────────────────────────
 
-/**
- * Strips the `channel:` prefix from a channelId, returning only the nanoid
- * portion (8 chars). Falls back to the raw value if the prefix is absent.
- */
-export const shortChannelId = (channelId: string): string => {
-	const colon = channelId.indexOf(":");
-	return colon >= 0 ? channelId.slice(colon + 1) : channelId;
-};
+// `shortChannelId` lives in core-utils so core-server can share it for routing.
+// Re-exported here so existing importers of this module keep working.
+export { shortChannelId };
 
 // ─── URI constructors ─────────────────────────────────────────────────────────
 

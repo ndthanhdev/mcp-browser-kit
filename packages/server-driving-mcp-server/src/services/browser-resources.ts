@@ -342,12 +342,11 @@ export class BrowserResources {
 
 		const browsers = entries.map((entry) => {
 			const { snapshot, channelId } = entry;
-			const extensionId = snapshot.extensionInfo?.extensionId ?? "";
+			const browserId = shortChannelId(channelId);
 
 			const windows = snapshot.windows.map((w) => ({
 				id: w.id,
 				focused: w.focused,
-				windowKey: extensionId ? `${extensionId}::${w.id}` : undefined,
 			}));
 
 			const tabs = snapshot.tabs.map((tab) => {
@@ -359,18 +358,11 @@ export class BrowserResources {
 					title: tab.title,
 					active: tab.active,
 					tabUri: tabBkUri(channelId, tab.id),
-					tabKey:
-						extensionId && windowId
-							? `${extensionId}::${windowId}::${tab.id}`
-							: undefined,
-					windowKey:
-						extensionId && windowId ? `${extensionId}::${windowId}` : undefined,
 				};
 			});
 
 			return {
-				channelId,
-				browserId: extensionId,
+				browserId,
 				status: snapshot.status,
 				browserInfo: snapshot.browserInfo,
 				extensionInfo: snapshot.extensionInfo,

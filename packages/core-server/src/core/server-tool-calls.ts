@@ -8,7 +8,10 @@ import type {
 	TabSpecificTool,
 } from "@mcp-browser-kit/core-extension";
 import type { MessageChannelRpcClient } from "@mcp-browser-kit/core-utils";
-import { isBrowserInternalUrl } from "@mcp-browser-kit/core-utils";
+import {
+	isBrowserInternalUrl,
+	shortChannelId,
+} from "@mcp-browser-kit/core-utils";
 import type {
 	HumanHintResponse,
 	HumanHintTabResult,
@@ -26,7 +29,6 @@ import type {
 	ServerToolCallsInputPort,
 } from "../input-ports";
 import { LoggerFactoryOutputPort } from "../output-ports";
-import { TabKey, WindowKey } from "../utils";
 import {
 	buildHumanMessage,
 	targetFromParams,
@@ -54,19 +56,21 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		this.logger.verbose("Getting browser context");
 
 		try {
-			const rpcClients = this.extensionChannelManager.getRpcClients();
+			const rpcClientEntries =
+				this.extensionChannelManager.getRpcClientEntries();
 			this.logger.verbose("Found RPC clients", {
-				rpcClients,
+				count: rpcClientEntries.length,
 			});
 
-			if (rpcClients.length === 0) {
+			if (rpcClientEntries.length === 0) {
 				this.logger.error("No browser connected");
 				throw new Error(
 					"No browser connected. Please make sure you have installed a suitable browser extension version and that it is enabled.",
 				);
 			}
 
-			const browsers = await this.getBrowserContextsFromClients(rpcClients);
+			const browsers =
+				await this.getBrowserContextsFromClients(rpcClientEntries);
 			this.logger.verbose("Found browsers", {
 				browsers,
 			});
@@ -81,16 +85,19 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 	};
 
 	private getBrowserContextsFromClients = async (
-		rpcClients: MessageChannelRpcClient<ExtensionToolCallInputPort>[],
+		rpcClientEntries: Array<
+			[
+				string,
+				MessageChannelRpcClient<ExtensionToolCallInputPort>,
+			]
+		>,
 	): Promise<BrowserContext[]> => {
 		const browsers: BrowserContext[] = [];
 
-		for (let i = 0; i < rpcClients.length; i++) {
-			const rpcClient = rpcClients[i];
-
+		for (const [channelId, rpcClient] of rpcClientEntries) {
 			try {
 				this.logger.verbose("Getting extension context from RPC client", {
-					rpcClient,
+					channelId,
 				});
 				const extensionContext = await rpcClient.call({
 					method: "getExtensionContext",
@@ -99,12 +106,15 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 				});
 
 				this.logger.info("Retrieved extension context", {
-					browserId: extensionContext.browserId,
+					browserId: shortChannelId(channelId),
 					browser: `${extensionContext.browserInfo.browserName} ${extensionContext.browserInfo.browserVersion}`,
 					tabs: extensionContext.availableTabs.length,
 				});
 
-				const browserContext = this.buildBrowserContext(extensionContext);
+				const browserContext = this.buildBrowserContext(
+					channelId,
+					extensionContext,
+				);
 				browsers.push(browserContext);
 			} catch (error) {
 				this.logger.error("Failed to get context from RPC client", error);
@@ -117,13 +127,14 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 	};
 
 	private buildBrowserContext = (
+		channelId: string,
 		extensionContext: ExtensionContext,
 	): BrowserContext => {
 		const windowsMap = this.groupTabsByWindow(extensionContext);
 		const browserWindows = this.buildBrowserWindows(windowsMap);
 
 		return {
-			browserId: extensionContext.browserId,
+			browserId: shortChannelId(channelId),
 			availableTools: extensionContext.availableTools,
 			browserWindows,
 		};
@@ -138,20 +149,18 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			const window = this.findWindowForTab(extensionContext, tab);
 			if (!window) continue;
 
-			const windowKey = this.createWindowKey(
-				extensionContext.browserId,
-				window.id,
-			);
-			const browserTab = this.createBrowserTabContext(
-				extensionContext.browserId,
-				window.id,
-				tab,
-			);
+			const browserTab: BrowserTabContext = {
+				windowId: window.id,
+				tabId: tab.id,
+				active: tab.active,
+				title: tab.title,
+				url: tab.url,
+			};
 
-			if (!windowsMap.has(windowKey)) {
-				windowsMap.set(windowKey, []);
+			if (!windowsMap.has(window.id)) {
+				windowsMap.set(window.id, []);
 			}
-			windowsMap.get(windowKey)?.push(browserTab);
+			windowsMap.get(window.id)?.push(browserTab);
 		}
 
 		return windowsMap;
@@ -167,45 +176,22 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		);
 	};
 
-	private createWindowKey = (instanceId: string, windowId: string): string => {
-		return WindowKey.from({
-			extensionId: instanceId,
-			windowId,
-		}).toString();
-	};
-
-	private createBrowserTabContext = (
-		instanceId: string,
-		windowId: string,
-		tab: ExtensionTabInfo,
-	): BrowserTabContext => {
-		const tabKey = TabKey.from({
-			extensionId: instanceId,
-			windowId,
-			tabId: tab.id,
-		}).toString();
-
-		return {
-			tabKey,
-			active: tab.active,
-			title: tab.title,
-			url: tab.url,
-		};
-	};
-
 	private buildBrowserWindows = (
 		windowsMap: Map<string, BrowserTabContext[]>,
 	): BrowserWindowContext[] => {
-		return Array.from(windowsMap.entries()).map(([windowKey, tabs]) => ({
-			windowKey,
+		return Array.from(windowsMap.entries()).map(([windowId, tabs]) => ({
+			windowId,
 			tabs,
 		}));
 	};
 
+	private tabCacheKey = (browserId: string, tabId: string): string =>
+		`${browserId}::${tabId}`;
+
 	/**
 	 * Sets the tab context cache with browser tab context information.
 	 * Creates or updates cache entries for all tabs with their basic information
-	 * (tabKey, active status, title, and URL).
+	 * (active status, title, and URL), keyed by browserId + tabId.
 	 * @param browsers - Array of browser contexts to extract tab information from
 	 */
 	private updateTabContextCache = (browsers: BrowserContext[]): void => {
@@ -217,10 +203,11 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		for (const browser of browsers) {
 			for (const window of browser.browserWindows) {
 				for (const tab of window.tabs) {
-					const existingContext = this.tabContextCache.get(tab.tabKey);
+					const cacheKey = this.tabCacheKey(browser.browserId, tab.tabId);
+					const existingContext = this.tabContextCache.get(cacheKey);
 
-					this.tabContextCache.set(tab.tabKey, tab);
-					this.logger.verbose(`Updating ${tab.tabKey}: ${tab.url}`);
+					this.tabContextCache.set(cacheKey, tab);
+					this.logger.verbose(`Updating ${cacheKey}: ${tab.url}`);
 					if (existingContext) {
 						// Update existing entry with latest tab information
 						// Create new cache entry with tab information
@@ -238,45 +225,45 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		);
 	};
 
-	private callRpcForTab = (async ({ method, args, extraArgs }) => {
-		const [tabKey, ...restArgs] = args;
+	/**
+	 * Resolves the RPC client for a tab and guards against internal browser
+	 * pages before any tab operation.
+	 * @param browserId - The short channel id identifying the browser
+	 * @param tabId - The native tab id
+	 */
+	private getTabRpc = async (
+		browserId: string,
+		tabId: string,
+	): Promise<MessageChannelRpcClient<TabSpecificTool>> => {
+		await this.ensureNotAnInternalBrowserPage(browserId, tabId);
 
-		// Ensure the tab is not an internal browser page before proceeding
-		await this.ensureNotAnInternalBrowserPage(tabKey);
-
-		const tabData = TabKey.parse(tabKey);
-		const rpcClient =
-			(await this.extensionChannelManager.getRpcClientByBrowserId(
-				tabData.extensionId,
-			)) as MessageChannelRpcClient<TabSpecificTool>;
-
-		return rpcClient.call({
-			method,
-			args: [
-				tabData.tabId,
-				...restArgs,
-			] as typeof args,
-			extraArgs,
-		});
-	}) as MessageChannelRpcClient<TabSpecificTool>["call"];
+		return this.extensionChannelManager.getRpcClientByBrowserId(
+			browserId,
+		) as unknown as MessageChannelRpcClient<TabSpecificTool>;
+	};
 
 	/**
 	 * Ensures that the tab is not an internal browser page.
 	 * Checks the URL from cache first, then falls back to fetching from extension context.
-	 * @param tabKey - The tab key to check
+	 * @param browserId - The short channel id identifying the browser
+	 * @param tabId - The native tab id
 	 * @throws Error if the tab is an internal browser page
 	 */
 	private ensureNotAnInternalBrowserPage = async (
-		tabKey: string,
+		browserId: string,
+		tabId: string,
 	): Promise<void> => {
-		this.logger.verbose(`Checking if tab is internal browser page: ${tabKey}`);
+		const cacheKey = this.tabCacheKey(browserId, tabId);
+		this.logger.verbose(
+			`Checking if tab is internal browser page: ${cacheKey}`,
+		);
 
 		// First, check if we have the URL in cache
-		const cachedContext = this.tabContextCache.get(tabKey);
+		const cachedContext = this.tabContextCache.get(cacheKey);
 		if (cachedContext?.url) {
 			if (isBrowserInternalUrl(cachedContext.url)) {
 				this.logger.warn(
-					`Tab ${tabKey} is an internal browser page: ${cachedContext.url}`,
+					`Tab ${cacheKey} is an internal browser page: ${cachedContext.url}`,
 				);
 				throw new Error(
 					`Cannot perform operation on internal browser page: ${cachedContext.url}`,
@@ -289,12 +276,13 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		try {
 			const context = await this.getContext();
 			for (const browser of context.browsers) {
+				if (browser.browserId !== browserId) continue;
 				for (const window of browser.browserWindows) {
-					const tab = window.tabs.find((t) => t.tabKey === tabKey);
+					const tab = window.tabs.find((t) => t.tabId === tabId);
 					if (tab) {
 						if (isBrowserInternalUrl(tab.url)) {
 							this.logger.warn(
-								`Tab ${tabKey} is an internal browser page: ${tab.url}`,
+								`Tab ${cacheKey} is an internal browser page: ${tab.url}`,
 							);
 							throw new Error(
 								`Cannot perform operation on internal browser page: ${tab.url}`,
@@ -306,8 +294,8 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			}
 
 			// Tab not found
-			this.logger.warn(`Tab not found: ${tabKey}`);
-			throw new Error(`Tab not found: ${tabKey}`);
+			this.logger.warn(`Tab not found: ${cacheKey}`);
+			throw new Error(`Tab not found: ${cacheKey}`);
 		} catch (error) {
 			this.logger.error(
 				"Failed to check if tab is internal browser page",
@@ -318,45 +306,37 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 	};
 
 	openTab = async (
-		windowKey: string,
+		browserId: string,
+		windowId: string,
 		url: string,
 	): Promise<{
-		tabKey: string;
-		windowKey: string;
+		browserId: string;
+		windowId: string;
+		tabId: string;
 	}> => {
-		this.logger.info(`Opening tab with URL: ${url} in window: ${windowKey}`);
+		this.logger.info(
+			`Opening tab with URL: ${url} in window: ${browserId}/${windowId}`,
+		);
 
 		try {
-			// Parse the windowKey to get windowId and instanceId
-			const windowData = WindowKey.parse(windowKey);
-
-			// Get the RPC client for this browser instance
 			const rpcClient =
-				await this.extensionChannelManager.getRpcClientByBrowserId(
-					windowData.extensionId,
-				);
+				this.extensionChannelManager.getRpcClientByBrowserId(browserId);
 
 			const result = await rpcClient.call({
 				method: "openTab",
 				args: [
 					url,
-					windowData.windowId,
+					windowId,
 				],
 				extraArgs: {},
 			});
 
 			this.logger.info("Tab opened successfully", result);
 
-			// Create tab key from the result
-			const tabKey = TabKey.from({
-				extensionId: windowData.extensionId,
+			return {
+				browserId,
 				windowId: result.windowId,
 				tabId: result.tabId,
-			}).toString();
-
-			return {
-				tabKey,
-				windowKey,
 			};
 		} catch (error) {
 			this.logger.error("Failed to open tab", error);
@@ -435,16 +415,21 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 	};
 
 	clickOnElement = async (
-		tabKey: string,
+		browserId: string,
+		_windowId: string,
+		tabId: string,
 		readablePath: string,
 	): Promise<void> => {
-		this.logger.info(`Clicking on element ${readablePath} in tab: ${tabKey}`);
+		this.logger.info(
+			`Clicking on element ${readablePath} in tab: ${browserId}/${tabId}`,
+		);
 
 		try {
-			await this.callRpcForTab({
+			const rpcClient = await this.getTabRpc(browserId, tabId);
+			await rpcClient.call({
 				method: "clickOnElement" as const,
 				args: [
-					tabKey,
+					tabId,
 					readablePath,
 				],
 				extraArgs: {},
@@ -458,19 +443,22 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 	};
 
 	fillTextToElement = async (
-		tabKey: string,
+		browserId: string,
+		_windowId: string,
+		tabId: string,
 		readablePath: string,
 		value: string,
 	): Promise<void> => {
 		this.logger.info(
-			`Filling text to element ${readablePath} in tab: ${tabKey}`,
+			`Filling text to element ${readablePath} in tab: ${browserId}/${tabId}`,
 		);
 
 		try {
-			await this.callRpcForTab({
+			const rpcClient = await this.getTabRpc(browserId, tabId);
+			await rpcClient.call({
 				method: "fillTextToElement" as const,
 				args: [
-					tabKey,
+					tabId,
 					readablePath,
 					value,
 				],
@@ -484,14 +472,19 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		}
 	};
 
-	captureTab = async (tabKey: string): Promise<Screenshot> => {
-		this.logger.info(`Capturing screenshot from tab: ${tabKey}`);
+	captureTab = async (
+		browserId: string,
+		_windowId: string,
+		tabId: string,
+	): Promise<Screenshot> => {
+		this.logger.info(`Capturing screenshot from tab: ${browserId}/${tabId}`);
 
 		try {
-			const screenshot = await this.callRpcForTab({
+			const rpcClient = await this.getTabRpc(browserId, tabId);
+			const screenshot = await rpcClient.call({
 				method: "captureTab" as const,
 				args: [
-					tabKey,
+					tabId,
 				],
 				extraArgs: {},
 			});
@@ -505,17 +498,22 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 	};
 
 	clickOnCoordinates = async (
-		tabKey: string,
+		browserId: string,
+		_windowId: string,
+		tabId: string,
 		x: number,
 		y: number,
 	): Promise<void> => {
-		this.logger.info(`Clicking on coordinates (${x}, ${y}) in tab: ${tabKey}`);
+		this.logger.info(
+			`Clicking on coordinates (${x}, ${y}) in tab: ${browserId}/${tabId}`,
+		);
 
 		try {
-			await this.callRpcForTab({
+			const rpcClient = await this.getTabRpc(browserId, tabId);
+			await rpcClient.call({
 				method: "clickOnCoordinates" as const,
 				args: [
-					tabKey,
+					tabId,
 					x,
 					y,
 				],
@@ -529,20 +527,25 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		}
 	};
 
-	closeTab = async (tabKey: string): Promise<void> => {
-		this.logger.info(`Closing tab: ${tabKey}`);
+	closeTab = async (
+		browserId: string,
+		_windowId: string,
+		tabId: string,
+	): Promise<void> => {
+		this.logger.info(`Closing tab: ${browserId}/${tabId}`);
 
 		try {
-			await this.callRpcForTab({
+			const rpcClient = await this.getTabRpc(browserId, tabId);
+			await rpcClient.call({
 				method: "closeTab" as const,
 				args: [
-					tabKey,
+					tabId,
 				],
 				extraArgs: {},
 			});
 
 			// Clear cached context for this tab
-			this.tabContextCache.delete(tabKey);
+			this.tabContextCache.delete(this.tabCacheKey(browserId, tabId));
 
 			this.logger.info("Tab closed successfully");
 		} catch (error) {
@@ -552,20 +555,23 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 	};
 
 	fillTextToCoordinates = async (
-		tabKey: string,
+		browserId: string,
+		_windowId: string,
+		tabId: string,
 		x: number,
 		y: number,
 		value: string,
 	): Promise<void> => {
 		this.logger.info(
-			`Filling text to coordinates (${x}, ${y}) in tab: ${tabKey}`,
+			`Filling text to coordinates (${x}, ${y}) in tab: ${browserId}/${tabId}`,
 		);
 
 		try {
-			await this.callRpcForTab({
+			const rpcClient = await this.getTabRpc(browserId, tabId);
+			await rpcClient.call({
 				method: "fillTextToCoordinates" as const,
 				args: [
-					tabKey,
+					tabId,
 					x,
 					y,
 					value,
@@ -581,15 +587,18 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 	};
 
 	getSelection = async (
-		tabKey: string,
+		browserId: string,
+		_windowId: string,
+		tabId: string,
 	): Promise<import("@mcp-browser-kit/core-extension").Selection> => {
-		this.logger.info(`Getting selection from tab: ${tabKey}`);
+		this.logger.info(`Getting selection from tab: ${browserId}/${tabId}`);
 
 		try {
-			const selection = await this.callRpcForTab({
+			const rpcClient = await this.getTabRpc(browserId, tabId);
+			const selection = await rpcClient.call({
 				method: "getSelection" as const,
 				args: [
-					tabKey,
+					tabId,
 				],
 				extraArgs: {},
 			});
@@ -603,19 +612,22 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 	};
 
 	hitEnterOnCoordinates = async (
-		tabKey: string,
+		browserId: string,
+		_windowId: string,
+		tabId: string,
 		x: number,
 		y: number,
 	): Promise<void> => {
 		this.logger.info(
-			`Hitting enter on coordinates (${x}, ${y}) in tab: ${tabKey}`,
+			`Hitting enter on coordinates (${x}, ${y}) in tab: ${browserId}/${tabId}`,
 		);
 
 		try {
-			await this.callRpcForTab({
+			const rpcClient = await this.getTabRpc(browserId, tabId);
+			await rpcClient.call({
 				method: "hitEnterOnCoordinates" as const,
 				args: [
-					tabKey,
+					tabId,
 					x,
 					y,
 				],
@@ -630,18 +642,21 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 	};
 
 	hitEnterOnElement = async (
-		tabKey: string,
+		browserId: string,
+		_windowId: string,
+		tabId: string,
 		readablePath: string,
 	): Promise<void> => {
 		this.logger.info(
-			`Hitting enter on element ${readablePath} in tab: ${tabKey}`,
+			`Hitting enter on element ${readablePath} in tab: ${browserId}/${tabId}`,
 		);
 
 		try {
-			await this.callRpcForTab({
+			const rpcClient = await this.getTabRpc(browserId, tabId);
+			await rpcClient.call({
 				method: "hitEnterOnElement" as const,
 				args: [
-					tabKey,
+					tabId,
 					readablePath,
 				],
 				extraArgs: {},
@@ -654,14 +669,22 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		}
 	};
 
-	invokeJsFn = async (tabKey: string, fnBodyCode: string): Promise<unknown> => {
-		this.logger.info(`Invoking JavaScript function in tab: ${tabKey}`);
+	invokeJsFn = async (
+		browserId: string,
+		_windowId: string,
+		tabId: string,
+		fnBodyCode: string,
+	): Promise<unknown> => {
+		this.logger.info(
+			`Invoking JavaScript function in tab: ${browserId}/${tabId}`,
+		);
 
 		try {
-			const result = await this.callRpcForTab({
+			const rpcClient = await this.getTabRpc(browserId, tabId);
+			const result = await rpcClient.call({
 				method: "invokeJsFn" as const,
 				args: [
-					tabKey,
+					tabId,
 					fnBodyCode,
 				],
 				extraArgs: {},
@@ -675,25 +698,19 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		}
 	};
 
-	/**
-	 * Gets the cached browser tab context for a tab
-	 * @param tabKey - The tab key
-	 * @returns The cached browser tab context or undefined if not cached
-	 */
-	getTabContext = (tabKey: string): BrowserTabContext | undefined => {
-		return this.tabContextCache.get(tabKey);
-	};
-
 	showHumanHint = async (
-		tabKey: string,
+		browserId: string,
+		_windowId: string,
+		tabId: string,
 		params: ShowHumanHintParams,
 	): Promise<HumanHintResponse> => {
 		this.logger.info("Showing human hint", {
-			tabKey,
+			browserId,
+			tabId,
 			action: params.action,
 		});
 
-		const tab = await this.resolveTabInfo(tabKey);
+		const tab = await this.resolveTabInfo(browserId, tabId);
 		const humanMessage = buildHumanMessage(
 			params.action,
 			params.message,
@@ -716,18 +733,12 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		}
 
 		try {
-			await this.ensureNotAnInternalBrowserPage(tabKey);
-
-			const tabData = TabKey.parse(tabKey);
-			const rpcClient =
-				await this.extensionChannelManager.getRpcClientByBrowserId(
-					tabData.extensionId,
-				);
+			const rpcClient = await this.getTabRpc(browserId, tabId);
 
 			const tabResult = (await rpcClient.call({
 				method: "showHumanHint",
 				args: [
-					tabData.tabId,
+					tabId,
 					params,
 					humanMessage,
 				],
@@ -748,7 +759,8 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		} catch (error) {
 			const reason = error instanceof Error ? error.message : String(error);
 			this.logger.error("Failed to show human hint", {
-				tabKey,
+				browserId,
+				tabId,
 				reason,
 			});
 			return {
@@ -766,12 +778,13 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 	};
 
 	private resolveTabInfo = async (
-		tabKey: string,
+		browserId: string,
+		tabId: string,
 	): Promise<{
 		title: string;
 		url: string;
 	}> => {
-		const cached = this.tabContextCache.get(tabKey);
+		const cached = this.tabContextCache.get(this.tabCacheKey(browserId, tabId));
 		if (cached)
 			return {
 				title: cached.title,
@@ -781,8 +794,9 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		try {
 			const context = await this.getContext();
 			for (const browser of context.browsers) {
+				if (browser.browserId !== browserId) continue;
 				for (const window of browser.browserWindows) {
-					const tab = window.tabs.find((t) => t.tabKey === tabKey);
+					const tab = window.tabs.find((t) => t.tabId === tabId);
 					if (tab)
 						return {
 							title: tab.title,

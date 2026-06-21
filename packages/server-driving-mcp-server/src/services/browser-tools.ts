@@ -21,7 +21,7 @@ import {
 	openTabOutputSchema,
 	openTabSchema,
 	selectionOutputSchema,
-	tabKeySchema,
+	tabRefSchema,
 } from "../utils/tool-schemas";
 
 @injectable()
@@ -55,24 +55,26 @@ export class BrowserTools {
 			{
 				title: "Capture tab screenshot",
 				description: this.toolDescriptionsInputPort.captureTabInstruction(),
-				inputSchema: tabKeySchema,
+				inputSchema: tabRefSchema,
 				outputSchema: captureTabOutputSchema,
 				annotations: {
 					readOnlyHint: true,
 					openWorldHint: true,
 				},
 			},
-			async ({ tabKey }) => {
+			async ({ browserId, windowId, tabId }) => {
 				this.logger.info("Executing captureTab", {
-					tabKey,
+					browserId,
+					tabId,
 				});
 				const overScreenshot = await over(() =>
-					this.toolsInputPort.captureTab(tabKey),
+					this.toolsInputPort.captureTab(browserId, windowId, tabId),
 				);
 
 				if (!overScreenshot.ok) {
 					this.logger.error("Failed to capture tab screenshot", {
-						tabKey,
+						browserId,
+						tabId,
 						reason: overScreenshot.reason,
 					});
 					return createOverResponse(captureTabOutputSchema, {
@@ -83,7 +85,8 @@ export class BrowserTools {
 
 				const screenshot = overScreenshot.value;
 				this.logger.verbose("Screenshot captured", {
-					tabKey,
+					browserId,
+					tabId,
 					width: screenshot.width,
 					height: screenshot.height,
 				});
@@ -121,17 +124,24 @@ export class BrowserTools {
 					openWorldHint: true,
 				},
 			},
-			async ({ tabKey, fnBodyCode }) => {
+			async ({ browserId, windowId, tabId, fnBodyCode }) => {
 				this.logger.info("Executing invokeJsFn", {
-					tabKey,
+					browserId,
+					tabId,
 				});
 				const overResult = await over(() =>
-					this.toolsInputPort.invokeJsFn(tabKey, fnBodyCode),
+					this.toolsInputPort.invokeJsFn(
+						browserId,
+						windowId,
+						tabId,
+						fnBodyCode,
+					),
 				);
 
 				if (!overResult.ok) {
 					this.logger.error("Failed to invoke JavaScript function", {
-						tabKey,
+						browserId,
+						tabId,
 						reason: overResult.reason,
 					});
 					return createOverResponse(invokeJsFnOutputSchema, {
@@ -142,7 +152,8 @@ export class BrowserTools {
 
 				const result = overResult.value;
 				this.logger.verbose("JavaScript function executed", {
-					tabKey,
+					browserId,
+					tabId,
 					hasResult: result !== undefined,
 				});
 				return createOverResponse(invokeJsFnOutputSchema, {
@@ -172,18 +183,20 @@ export class BrowserTools {
 					openWorldHint: true,
 				},
 			},
-			async ({ windowKey, url }) => {
+			async ({ browserId, windowId, url }) => {
 				this.logger.info("Executing openTab", {
-					windowKey,
+					browserId,
+					windowId,
 					url,
 				});
 				const overResult = await over(() =>
-					this.toolsInputPort.openTab(windowKey, url),
+					this.toolsInputPort.openTab(browserId, windowId, url),
 				);
 
 				if (!overResult.ok) {
 					this.logger.error("Failed to open tab", {
-						windowKey,
+						browserId,
+						windowId,
 						url,
 						reason: overResult.reason,
 					});
@@ -195,19 +208,21 @@ export class BrowserTools {
 
 				const result = overResult.value;
 				this.logger.verbose("Tab opened successfully", {
-					tabKey: result.tabKey,
-					windowKey: result.windowKey,
+					browserId: result.browserId,
+					windowId: result.windowId,
+					tabId: result.tabId,
 				});
 				return createOverResponse(
 					openTabOutputSchema,
 					{
 						ok: true,
 						value: {
-							tabKey: result.tabKey,
-							windowKey: result.windowKey,
+							browserId: result.browserId,
+							windowId: result.windowId,
+							tabId: result.tabId,
 						},
 					},
-					`Tab opened successfully. tabKey: ${result.tabKey}, windowKey: ${result.windowKey}`,
+					`Tab opened successfully. browserId: ${result.browserId}, windowId: ${result.windowId}, tabId: ${result.tabId}`,
 				);
 			},
 		);
@@ -221,7 +236,7 @@ export class BrowserTools {
 			{
 				title: "Close tab",
 				description: this.toolDescriptionsInputPort.closeTabInstruction(),
-				inputSchema: tabKeySchema,
+				inputSchema: tabRefSchema,
 				outputSchema: actionOutputSchema,
 				annotations: {
 					readOnlyHint: false,
@@ -230,17 +245,19 @@ export class BrowserTools {
 					openWorldHint: true,
 				},
 			},
-			async ({ tabKey }) => {
+			async ({ browserId, windowId, tabId }) => {
 				this.logger.info("Executing closeTab", {
-					tabKey,
+					browserId,
+					tabId,
 				});
 				const overResult = await over(() =>
-					this.toolsInputPort.closeTab(tabKey),
+					this.toolsInputPort.closeTab(browserId, windowId, tabId),
 				);
 
 				if (!overResult.ok) {
 					this.logger.error("Failed to close tab", {
-						tabKey,
+						browserId,
+						tabId,
 						reason: overResult.reason,
 					});
 					return createOverResponse(actionOutputSchema, {
@@ -250,7 +267,8 @@ export class BrowserTools {
 				}
 
 				this.logger.verbose("Tab closed successfully", {
-					tabKey,
+					browserId,
+					tabId,
 				});
 				return createOverResponse(
 					actionOutputSchema,
@@ -272,24 +290,26 @@ export class BrowserTools {
 			{
 				title: "Get text selection",
 				description: this.toolDescriptionsInputPort.getSelectionInstruction(),
-				inputSchema: tabKeySchema,
+				inputSchema: tabRefSchema,
 				outputSchema: selectionOutputSchema,
 				annotations: {
 					readOnlyHint: true,
 					openWorldHint: true,
 				},
 			},
-			async ({ tabKey }) => {
+			async ({ browserId, windowId, tabId }) => {
 				this.logger.info("Executing getSelection", {
-					tabKey,
+					browserId,
+					tabId,
 				});
 				const overResult = await over(() =>
-					this.toolsInputPort.getSelection(tabKey),
+					this.toolsInputPort.getSelection(browserId, windowId, tabId),
 				);
 
 				if (!overResult.ok) {
 					this.logger.error("Failed to get selection", {
-						tabKey,
+						browserId,
+						tabId,
 						reason: overResult.reason,
 					});
 					return createOverResponse(selectionOutputSchema, {
@@ -300,7 +320,8 @@ export class BrowserTools {
 
 				const selection = overResult.value;
 				this.logger.verbose("Selection retrieved successfully", {
-					tabKey,
+					browserId,
+					tabId,
 					hasSelection: Boolean(selection.selectedText),
 				});
 				return createOverResponse(selectionOutputSchema, {

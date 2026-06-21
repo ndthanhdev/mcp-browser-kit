@@ -14,13 +14,13 @@ test.describe("JavaScript Tools", () => {
 		test("returns document title", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"javascript-test",
 			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
-				tabKey,
+				...tab,
 				fnBodyCode: "return document.title;",
 			});
 
@@ -32,13 +32,13 @@ test.describe("JavaScript Tools", () => {
 		test("returns number value", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"javascript-test",
 			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
-				tabKey,
+				...tab,
 				fnBodyCode: "return 42;",
 			});
 
@@ -48,13 +48,13 @@ test.describe("JavaScript Tools", () => {
 		test("returns boolean value", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"javascript-test",
 			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
-				tabKey,
+				...tab,
 				fnBodyCode: "return true;",
 			});
 
@@ -64,13 +64,13 @@ test.describe("JavaScript Tools", () => {
 		test("returns array value", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"javascript-test",
 			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
-				tabKey,
+				...tab,
 				fnBodyCode: "return [1, 2, 3];",
 			});
 
@@ -84,13 +84,13 @@ test.describe("JavaScript Tools", () => {
 		test("returns object value", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"javascript-test",
 			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
-				tabKey,
+				...tab,
 				fnBodyCode: 'return { name: "test", value: 123 };',
 			});
 
@@ -103,13 +103,13 @@ test.describe("JavaScript Tools", () => {
 		test("returns null value", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"javascript-test",
 			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
-				tabKey,
+				...tab,
 				fnBodyCode: "return null;",
 			});
 
@@ -122,19 +122,19 @@ test.describe("JavaScript Tools", () => {
 		}) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"javascript-test",
 			);
 
 			const result1 = await mcpClientPage.callTool("invokeJsFn", {
-				tabKey,
+				...tab,
 				fnBodyCode: "return window.incrementCounter();",
 			});
 			expect(result1.structuredContent?.value?.result).toBe(1);
 
 			const result2 = await mcpClientPage.callTool("invokeJsFn", {
-				tabKey,
+				...tab,
 				fnBodyCode: "return window.incrementCounter();",
 			});
 			expect(result2.structuredContent?.value?.result).toBe(2);
@@ -146,13 +146,13 @@ test.describe("JavaScript Tools", () => {
 		}) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"javascript-test",
 			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
-				tabKey,
+				...tab,
 				fnBodyCode: 'return window.addMessage("Hello from test");',
 			});
 
@@ -167,13 +167,13 @@ test.describe("JavaScript Tools", () => {
 		}) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"javascript-test",
 			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
-				tabKey,
+				...tab,
 				fnBodyCode: "return window.computeSum(10, 25);",
 			});
 
@@ -186,13 +186,13 @@ test.describe("JavaScript Tools", () => {
 		}) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"javascript-test",
 			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
-				tabKey,
+				...tab,
 				fnBodyCode: `
 					const el = document.getElementById('dynamic-content');
 					el.textContent = 'Modified by test';
@@ -209,13 +209,13 @@ test.describe("JavaScript Tools", () => {
 		test("reads data attributes", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"javascript-test",
 			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
-				tabKey,
+				...tab,
 				fnBodyCode: `
 					const el = document.getElementById('data-element');
 					return {
@@ -236,13 +236,13 @@ test.describe("JavaScript Tools", () => {
 		test("modifies element styles", async ({ testAppPage, mcpClientPage }) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"javascript-test",
 			);
 
 			await mcpClientPage.callTool("invokeJsFn", {
-				tabKey,
+				...tab,
 				fnBodyCode: `
 					const el = document.getElementById('style-target');
 					el.style.backgroundColor = 'rgb(255, 0, 0)';
@@ -263,13 +263,13 @@ test.describe("JavaScript Tools", () => {
 		}) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"javascript-test",
 			);
 
 			const result = await mcpClientPage.callTool("invokeJsFn", {
-				tabKey,
+				...tab,
 				fnBodyCode: "return window.getTestData();",
 			});
 

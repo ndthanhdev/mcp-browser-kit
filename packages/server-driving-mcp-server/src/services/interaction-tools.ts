@@ -64,19 +64,27 @@ export class InteractionTools {
 					openWorldHint: true,
 				},
 			},
-			async ({ tabKey, x, y }) => {
+			async ({ browserId, windowId, tabId, x, y }) => {
 				this.logger.info("Executing clickOnCoordinates", {
-					tabKey,
+					browserId,
+					tabId,
 					x,
 					y,
 				});
 				const overClick = await over(() =>
-					this.toolsInputPort.clickOnCoordinates(tabKey, x, y),
+					this.toolsInputPort.clickOnCoordinates(
+						browserId,
+						windowId,
+						tabId,
+						x,
+						y,
+					),
 				);
 
 				if (!overClick.ok) {
 					this.logger.error("Failed to click on coordinates", {
-						tabKey,
+						browserId,
+						tabId,
 						x,
 						y,
 						reason: overClick.reason,
@@ -88,7 +96,8 @@ export class InteractionTools {
 				}
 
 				this.logger.verbose("Clicked on coordinates", {
-					tabKey,
+					browserId,
+					tabId,
 					x,
 					y,
 				});
@@ -122,19 +131,28 @@ export class InteractionTools {
 					openWorldHint: true,
 				},
 			},
-			async ({ tabKey, x, y, value }) => {
+			async ({ browserId, windowId, tabId, x, y, value }) => {
 				this.logger.info("Executing fillTextToCoordinates", {
-					tabKey,
+					browserId,
+					tabId,
 					x,
 					y,
 				});
 				const overFill = await over(() =>
-					this.toolsInputPort.fillTextToCoordinates(tabKey, x, y, value),
+					this.toolsInputPort.fillTextToCoordinates(
+						browserId,
+						windowId,
+						tabId,
+						x,
+						y,
+						value,
+					),
 				);
 
 				if (!overFill.ok) {
 					this.logger.error("Failed to fill text to coordinates", {
-						tabKey,
+						browserId,
+						tabId,
 						x,
 						y,
 						reason: overFill.reason,
@@ -146,7 +164,8 @@ export class InteractionTools {
 				}
 
 				this.logger.verbose("Filled text to coordinates", {
-					tabKey,
+					browserId,
+					tabId,
 					x,
 					y,
 					valueLength: value.length,
@@ -181,19 +200,27 @@ export class InteractionTools {
 					openWorldHint: true,
 				},
 			},
-			async ({ tabKey, x, y }) => {
+			async ({ browserId, windowId, tabId, x, y }) => {
 				this.logger.info("Executing hitEnterOnCoordinates", {
-					tabKey,
+					browserId,
+					tabId,
 					x,
 					y,
 				});
 				const overEnter = await over(() =>
-					this.toolsInputPort.hitEnterOnCoordinates(tabKey, x, y),
+					this.toolsInputPort.hitEnterOnCoordinates(
+						browserId,
+						windowId,
+						tabId,
+						x,
+						y,
+					),
 				);
 
 				if (!overEnter.ok) {
 					this.logger.error("Failed to hit enter on coordinates", {
-						tabKey,
+						browserId,
+						tabId,
 						x,
 						y,
 						reason: overEnter.reason,
@@ -205,7 +232,8 @@ export class InteractionTools {
 				}
 
 				this.logger.verbose("Hit enter on coordinates", {
-					tabKey,
+					browserId,
+					tabId,
 					x,
 					y,
 				});
@@ -239,18 +267,25 @@ export class InteractionTools {
 					openWorldHint: true,
 				},
 			},
-			async ({ tabKey, readablePath }) => {
+			async ({ browserId, windowId, tabId, readablePath }) => {
 				this.logger.info("Executing clickOnElement", {
-					tabKey,
+					browserId,
+					tabId,
 					readablePath,
 				});
 				const overClick = await over(() =>
-					this.toolsInputPort.clickOnElement(tabKey, readablePath),
+					this.toolsInputPort.clickOnElement(
+						browserId,
+						windowId,
+						tabId,
+						readablePath,
+					),
 				);
 
 				if (!overClick.ok) {
 					this.logger.error("Failed to click on element", {
-						tabKey,
+						browserId,
+						tabId,
 						readablePath,
 						reason: overClick.reason,
 					});
@@ -261,7 +296,8 @@ export class InteractionTools {
 				}
 
 				this.logger.verbose("Clicked on element", {
-					tabKey,
+					browserId,
+					tabId,
 					readablePath,
 				});
 				return createOverResponse(
@@ -294,18 +330,26 @@ export class InteractionTools {
 					openWorldHint: true,
 				},
 			},
-			async ({ tabKey, readablePath, value }) => {
+			async ({ browserId, windowId, tabId, readablePath, value }) => {
 				this.logger.info("Executing fillTextToElement", {
-					tabKey,
+					browserId,
+					tabId,
 					readablePath,
 				});
 				const overFill = await over(() =>
-					this.toolsInputPort.fillTextToElement(tabKey, readablePath, value),
+					this.toolsInputPort.fillTextToElement(
+						browserId,
+						windowId,
+						tabId,
+						readablePath,
+						value,
+					),
 				);
 
 				if (!overFill.ok) {
 					this.logger.error("Failed to fill text to element", {
-						tabKey,
+						browserId,
+						tabId,
 						readablePath,
 						reason: overFill.reason,
 					});
@@ -316,7 +360,8 @@ export class InteractionTools {
 				}
 
 				this.logger.verbose("Filled text to element", {
-					tabKey,
+					browserId,
+					tabId,
 					readablePath,
 					valueLength: value.length,
 				});
@@ -350,18 +395,25 @@ export class InteractionTools {
 					openWorldHint: true,
 				},
 			},
-			async ({ tabKey, readablePath }) => {
+			async ({ browserId, windowId, tabId, readablePath }) => {
 				this.logger.info("Executing hitEnterOnElement", {
-					tabKey,
+					browserId,
+					tabId,
 					readablePath,
 				});
 				const overEnter = await over(() =>
-					this.toolsInputPort.hitEnterOnElement(tabKey, readablePath),
+					this.toolsInputPort.hitEnterOnElement(
+						browserId,
+						windowId,
+						tabId,
+						readablePath,
+					),
 				);
 
 				if (!overEnter.ok) {
 					this.logger.error("Failed to hit enter on element", {
-						tabKey,
+						browserId,
+						tabId,
 						readablePath,
 						reason: overEnter.reason,
 					});
@@ -372,7 +424,8 @@ export class InteractionTools {
 				}
 
 				this.logger.verbose("Hit enter on element", {
-					tabKey,
+					browserId,
+					tabId,
 					readablePath,
 				});
 				return createOverResponse(

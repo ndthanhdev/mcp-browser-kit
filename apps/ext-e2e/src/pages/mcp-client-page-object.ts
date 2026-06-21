@@ -37,6 +37,19 @@ export type TypedCallToolResult<T extends McpToolName> = Omit<
 	structuredContent?: ServerToolOverResult<T>;
 };
 
+/** Identifies a tab: browserId + windowId + tabId, sourced from context. */
+export interface TabRef {
+	browserId: string;
+	windowId: string;
+	tabId: string;
+}
+
+/** Identifies a window: browserId + windowId. */
+export interface WindowRef {
+	browserId: string;
+	windowId: string;
+}
+
 export class McpClientPageObject {
 	private client: Client;
 	private clientTransport:
@@ -191,7 +204,10 @@ export class McpClientPageObject {
 		return JSON.parse(first.text) as T;
 	}
 
-	async readAllSnapshotElementsViaTool(tabKey: string): Promise<
+	async readAllSnapshotElementsViaTool(ref: {
+		browserId: string;
+		tabId: string;
+	}): Promise<
 		[
 			string,
 			string,
@@ -210,7 +226,8 @@ export class McpClientPageObject {
 			totalPages: number;
 		};
 		const first = await this.callToolJson<SnapshotPage>("getReadableElements", {
-			tabKey,
+			browserId: ref.browserId,
+			tabId: ref.tabId,
 		});
 		const allElements = [
 			...first.data,
@@ -461,49 +478,67 @@ export class McpClientPageObject {
 		};
 	}
 
-	private tabKeyFrom(data: {
-		extensionInfo: {
-			extensionId: string;
-		};
-		tab: {
-			id: string;
-			windowId: string;
-		};
-	}): string {
-		return `${data.extensionInfo.extensionId}::${data.tab.windowId}::${data.tab.id}`;
+	/**
+	 * Extracts the browserId (short channel id) from a tab resource URI of the
+	 * form `bk:///browsers/<browserId>/tabs/<tabId>`.
+	 */
+	private browserIdFromUri(uri: string): string {
+		return uri.match(/\/browsers\/([^/]+)\/tabs\//)?.[1] ?? "";
 	}
 
-	private windowKeyFrom(data: {
-		extensionInfo: {
-			extensionId: string;
+	private tabRefFrom(
+		uri: string,
+		data: {
+			tab: {
+				id: string;
+				windowId: string;
+			};
+		},
+	): TabRef {
+		return {
+			browserId: this.browserIdFromUri(uri),
+			windowId: data.tab.windowId,
+			tabId: data.tab.id,
 		};
-		tab: {
-			windowId: string;
-		};
-	}): string {
-		return `${data.extensionInfo.extensionId}::${data.tab.windowId}`;
 	}
 
-	async getFirstWindowKey(timeout = 10000): Promise<string> {
+	private windowRefFrom(
+		uri: string,
+		data: {
+			tab: {
+				windowId: string;
+			};
+		},
+	): WindowRef {
+		return {
+			browserId: this.browserIdFromUri(uri),
+			windowId: data.tab.windowId,
+		};
+	}
+
+	async getFirstWindowRef(timeout = 10000): Promise<WindowRef> {
 		const { expect } = await import("@playwright/test");
-		let windowKey = "";
+		let windowRef: WindowRef | undefined;
 		await expect(async () => {
 			const resources = await this.listResources();
 			for (const uri of this.listTabResourceUris(resources)) {
 				const data = await this.readTabResourceData(uri);
 				if (data) {
-					windowKey = this.windowKeyFrom(data);
+					windowRef = this.windowRefFrom(uri, data);
 					return;
 				}
 			}
-			expect(windowKey).not.toBe("");
+			expect(windowRef).toBeDefined();
 		}).toPass({
 			timeout,
 			intervals: [
 				500,
 			],
 		});
-		return windowKey;
+		if (!windowRef) {
+			throw new Error("No window found");
+		}
+		return windowRef;
 	}
 
 	async findTabUriByUrl(urlPattern: string): Promise<string | null> {
@@ -521,30 +556,33 @@ export class McpClientPageObject {
 		page: Page,
 		urlPattern: string,
 		timeout = 10000,
-	): Promise<string> {
+	): Promise<TabRef> {
 		const { expect } = await import("@playwright/test");
 		await page.waitForURL(`**/*${urlPattern}*`, {
 			timeout,
 		});
 		await page.waitForLoadState("networkidle");
-		let tabKey = "";
+		let tabRef: TabRef | undefined;
 		await expect(async () => {
 			const resources = await this.listResources();
 			for (const uri of this.listTabResourceUris(resources)) {
 				const data = await this.readTabResourceData(uri);
 				if (data?.tab.url.includes(urlPattern)) {
-					tabKey = this.tabKeyFrom(data);
+					tabRef = this.tabRefFrom(uri, data);
 					return;
 				}
 			}
-			expect(tabKey).not.toBe("");
+			expect(tabRef).toBeDefined();
 		}).toPass({
 			timeout,
 			intervals: [
 				500,
 			],
 		});
-		return tabKey;
+		if (!tabRef) {
+			throw new Error(`No tab found for url pattern: ${urlPattern}`);
+		}
+		return tabRef;
 	}
 
 	async waitForTabUriByUrl(

@@ -16,7 +16,7 @@ test.describe("Click Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"click-test",
 			);
@@ -31,7 +31,7 @@ test.describe("Click Tools", () => {
 			expectToBeDefined(primaryButtonPath);
 
 			await mcpClientPage.callTool("clickOnElement", {
-				tabKey,
+				...tab,
 				readablePath: primaryButtonPath,
 			});
 
@@ -46,7 +46,7 @@ test.describe("Click Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"click-test",
 			);
@@ -61,7 +61,7 @@ test.describe("Click Tools", () => {
 			expectToBeDefined(nestedButtonPath);
 
 			await mcpClientPage.callTool("clickOnElement", {
-				tabKey,
+				...tab,
 				readablePath: nestedButtonPath,
 			});
 
@@ -77,7 +77,7 @@ test.describe("Click Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"click-test",
 			);
@@ -90,7 +90,7 @@ test.describe("Click Tools", () => {
 			const centerY = buttonBox.y + buttonBox.height / 2;
 
 			await mcpClientPage.callTool("clickOnCoordinates", {
-				tabKey,
+				...tab,
 				x: centerX,
 				y: centerY,
 			});
@@ -104,7 +104,7 @@ test.describe("Click Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"click-test",
 			);
@@ -114,7 +114,7 @@ test.describe("Click Tools", () => {
 			expectToBeDefined(centerButtonBox);
 
 			await mcpClientPage.callTool("clickOnCoordinates", {
-				tabKey,
+				...tab,
 				x: centerButtonBox.x + centerButtonBox.width / 2,
 				y: centerButtonBox.y + centerButtonBox.height / 2,
 			});

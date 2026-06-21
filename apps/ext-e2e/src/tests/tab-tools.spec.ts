@@ -17,19 +17,24 @@ test.describe("Tab Tools", () => {
 		}) => {
 			await testAppPage.navigateToHome();
 
-			const windowKey = await mcpClientPage.getFirstWindowKey();
-			expectToBeDefined(windowKey);
+			const windowRef = await mcpClientPage.getFirstWindowRef();
+			expectToBeDefined(windowRef);
 
 			const newPagePromise = context.waitForEvent("page");
 			const openResult = await mcpClientPage.callTool("openTab", {
-				windowKey,
+				...windowRef,
 				url: "http://localhost:3000/click-test",
 			});
 			const newPage = await newPagePromise;
 			await newPage.waitForLoadState("networkidle");
 
-			expect(openResult.structuredContent?.value?.tabKey).toBeDefined();
-			expect(openResult.structuredContent?.value?.windowKey).toBe(windowKey);
+			expect(openResult.structuredContent?.value?.tabId).toBeDefined();
+			expect(openResult.structuredContent?.value?.browserId).toBe(
+				windowRef.browserId,
+			);
+			expect(openResult.structuredContent?.value?.windowId).toBe(
+				windowRef.windowId,
+			);
 
 			const clickTestUri = await mcpClientPage.waitForTabUriByUrl(
 				newPage,
@@ -38,19 +43,19 @@ test.describe("Tab Tools", () => {
 			expect(clickTestUri).toBeTruthy();
 		});
 
-		test("returns correct tabKey for new tab", async ({
+		test("returns correct tabId for new tab", async ({
 			context,
 			testAppPage,
 			mcpClientPage,
 		}) => {
 			await testAppPage.navigateToHome();
 
-			const windowKey = await mcpClientPage.getFirstWindowKey();
-			expectToBeDefined(windowKey);
+			const windowRef = await mcpClientPage.getFirstWindowRef();
+			expectToBeDefined(windowRef);
 
 			const newPagePromise = context.waitForEvent("page");
 			await mcpClientPage.callTool("openTab", {
-				windowKey,
+				...windowRef,
 				url: "http://localhost:3000/form-test",
 			});
 			const newPage = await newPagePromise;
@@ -75,24 +80,26 @@ test.describe("Tab Tools", () => {
 		}) => {
 			await testAppPage.navigateToHome();
 
-			const windowKey = await mcpClientPage.getFirstWindowKey();
-			expectToBeDefined(windowKey);
+			const windowRef = await mcpClientPage.getFirstWindowRef();
+			expectToBeDefined(windowRef);
 
 			const newPagePromise = context.waitForEvent("page");
 			const openResult = await mcpClientPage.callTool("openTab", {
-				windowKey,
+				...windowRef,
 				url: "http://localhost:3000/text-test",
 			});
 			const newPage = await newPagePromise;
 			await newPage.waitForLoadState("networkidle");
-			const newTabKey = openResult.structuredContent?.value?.tabKey;
-			expectToBeDefined(newTabKey);
+			const newTab = openResult.structuredContent?.value;
+			expectToBeDefined(newTab);
 
 			const uriBeforeClose = await mcpClientPage.findTabUriByUrl("text-test");
 			expect(uriBeforeClose).toBeTruthy();
 
 			await mcpClientPage.callTool("closeTab", {
-				tabKey: newTabKey,
+				browserId: newTab.browserId,
+				windowId: newTab.windowId,
+				tabId: newTab.tabId,
 			});
 
 			await expect(async () => {
@@ -115,14 +122,14 @@ test.describe("Tab Tools", () => {
 		}) => {
 			await testAppPage.navigateToClickTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"click-test",
 			);
-			expectToBeDefined(tabKey);
+			expectToBeDefined(tab);
 
 			const captureResult = await mcpClientPage.callTool("captureTab", {
-				tabKey,
+				...tab,
 			});
 			const screenshot = captureResult.structuredContent?.value;
 
@@ -139,14 +146,14 @@ test.describe("Tab Tools", () => {
 		}) => {
 			await testAppPage.navigateToHome();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"localhost",
 			);
-			expectToBeDefined(tabKey);
+			expectToBeDefined(tab);
 
 			const captureResult = await mcpClientPage.callTool("captureTab", {
-				tabKey,
+				...tab,
 			});
 			const screenshot = captureResult.structuredContent?.value;
 
@@ -162,14 +169,14 @@ test.describe("Tab Tools", () => {
 		}) => {
 			await testAppPage.navigateToJavaScriptTest();
 
-			const tabKey = await mcpClientPage.waitForTabByUrl(
+			const tab = await mcpClientPage.waitForTabByUrl(
 				testAppPage.page,
 				"javascript-test",
 			);
-			expectToBeDefined(tabKey);
+			expectToBeDefined(tab);
 
 			const captureResult = await mcpClientPage.callTool("captureTab", {
-				tabKey,
+				...tab,
 			});
 			const screenshot = captureResult.structuredContent?.value;
 
@@ -187,29 +194,29 @@ test.describe("Tab Tools", () => {
 		}) => {
 			await testAppPage.navigateToHome();
 
-			const windowKey = await mcpClientPage.getFirstWindowKey();
-			expectToBeDefined(windowKey);
+			const windowRef = await mcpClientPage.getFirstWindowRef();
+			expectToBeDefined(windowRef);
 
 			const newPage1Promise = context.waitForEvent("page");
 			const tab1Result = await mcpClientPage.callTool("openTab", {
-				windowKey,
+				...windowRef,
 				url: "http://localhost:3000/click-test",
 			});
 			const newPage1 = await newPage1Promise;
 			await newPage1.waitForLoadState("load");
-			const tab1Key = tab1Result.structuredContent?.value?.tabKey;
+			const tab1 = tab1Result.structuredContent?.value;
 
 			const newPage2Promise = context.waitForEvent("page");
 			const tab2Result = await mcpClientPage.callTool("openTab", {
-				windowKey,
+				...windowRef,
 				url: "http://localhost:3000/form-test",
 			});
 			const newPage2 = await newPage2Promise;
 			await newPage2.waitForLoadState("load");
-			const tab2Key = tab2Result.structuredContent?.value?.tabKey;
+			const tab2 = tab2Result.structuredContent?.value;
 
-			expectToBeDefined(tab1Key);
-			expectToBeDefined(tab2Key);
+			expectToBeDefined(tab1);
+			expectToBeDefined(tab2);
 
 			const tabUri1 = await mcpClientPage.waitForTabUriByUrl(
 				newPage1,
@@ -230,10 +237,14 @@ test.describe("Tab Tools", () => {
 			expect(text2).toContain("Form Test");
 
 			await mcpClientPage.callTool("closeTab", {
-				tabKey: tab1Key,
+				browserId: tab1.browserId,
+				windowId: tab1.windowId,
+				tabId: tab1.tabId,
 			});
 			await mcpClientPage.callTool("closeTab", {
-				tabKey: tab2Key,
+				browserId: tab2.browserId,
+				windowId: tab2.windowId,
+				tabId: tab2.tabId,
 			});
 
 			await expect(async () => {
