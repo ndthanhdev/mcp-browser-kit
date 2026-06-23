@@ -1,6 +1,11 @@
 import { Container } from "inversify";
-import { PublishBrowserStateUseCase, ToolCallHandlersUseCase } from "../core";
 import {
+	ExtensionBootstrapUseCase,
+	PublishBrowserStateUseCase,
+	ToolCallHandlersUseCase,
+} from "../core";
+import {
+	ExtensionBootstrapInputPort,
 	ExtensionToolCallInputPort,
 	PublishBrowserStateInputPort,
 } from "../input-ports";
@@ -18,6 +23,10 @@ export const createCoreExtensionContainer = () => {
 	container
 		.bind<PublishBrowserStateInputPort>(PublishBrowserStateInputPort)
 		.to(PublishBrowserStateUseCase);
+
+	container
+		.bind<ExtensionBootstrapInputPort>(ExtensionBootstrapInputPort)
+		.to(ExtensionBootstrapUseCase);
 
 	return container;
 };

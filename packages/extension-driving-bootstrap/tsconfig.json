@@ -1,0 +1,40 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"include": [
+		"**/*"
+	],
+	"compilerOptions": {
+		"outDir": "../../.moon/cache/types/packages/extension-driving-bootstrap",
+		"paths": {
+			"@mcp-browser-kit/core-extension": [
+				"../core-extension/src/index.ts"
+			],
+			"@mcp-browser-kit/core-extension/*": [
+				"../core-extension/src/*"
+			],
+			"@mcp-browser-kit/core-utils": [
+				"../core-utils/src/index.ts"
+			],
+			"@mcp-browser-kit/core-utils/*": [
+				"../core-utils/src/*"
+			],
+			"@mcp-browser-kit/helper-extension-keep-alive": [
+				"../helper-extension-keep-alive/src/index.ts"
+			],
+			"@mcp-browser-kit/helper-extension-keep-alive/*": [
+				"../helper-extension-keep-alive/src/*"
+			]
+		}
+	},
+	"references": [
+		{
+			"path": "../core-extension"
+		},
+		{
+			"path": "../core-utils"
+		},
+		{
+			"path": "../helper-extension-keep-alive"
+		}
+	]
+}

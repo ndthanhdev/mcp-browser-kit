@@ -1,4 +1,5 @@
 import type {
+	Func,
 	HumanHintTabResult,
 	ShowHumanHintParams,
 } from "@mcp-browser-kit/types";
@@ -52,6 +53,10 @@ export interface BrowserDriverOutputPort {
 		humanMessage: string,
 	): Promise<HumanHintTabResult>;
 	invokeJsFn(tabId: string, fnBodyCode: string): Promise<unknown>;
+	/** Establish the RPC link to tab content scripts; returns an unlink function. */
+	linkRpc(): Func;
+	/** Tear down the RPC link to tab content scripts. */
+	unlinkRpc(): void;
 }
 
 export const BrowserDriverOutputPort = Symbol("BrowserDriverOutputPort");

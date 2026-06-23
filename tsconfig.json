@@ -28,6 +28,9 @@
 	],
 	"references": [
 		{
+			"path": "./apps/ext-e2e"
+		},
+		{
 			"path": "./apps/ext-e2e-test-app"
 		},
 		{
@@ -35,6 +38,9 @@
 		},
 		{
 			"path": "./apps/m3"
+		},
+		{
+			"path": "./apps/server"
 		},
 		{
 			"path": "./etc/scripts"
@@ -58,6 +64,9 @@
 			"path": "./packages/extension-driven-server-channel-provider"
 		},
 		{
+			"path": "./packages/extension-driving-bootstrap"
+		},
+		{
 			"path": "./packages/extension-driving-trpc-controller"
 		},
 		{
@@ -70,16 +79,10 @@
 			"path": "./packages/server-driven-trpc-channel-provider"
 		},
 		{
+			"path": "./packages/server-driving-mcp-server"
+		},
+		{
 			"path": "./packages/types"
-		},
-		{
-			"path": "apps/ext-e2e"
-		},
-		{
-			"path": "apps/server"
-		},
-		{
-			"path": "packages/server-driving-mcp-server"
 		}
 	]
 }
