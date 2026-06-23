@@ -1,10 +1,4 @@
-- [System Overview](#system-overview)
-- [Server Core Architecture (Level 0)](#server-core-architecture-level-0)
-- [Server Architecture (Level 0)](#server-architecture-level-0)
-- [Extension Core Architecture (Level 0)](#extension-core-architecture-level-0)
-- [Extension Architecture (Level 0)](#extension-architecture-level-0)
-
-# System Overview
+# L0 - System Overview
 
 ```mermaid
 ---
@@ -30,11 +24,11 @@ flowchart TB
   Windows -.-|"1-n"| Tabs
 ```
 
-# Server Core Architecture (Level 0)
+# L1 - Server Core
 
 ```mermaid
 ---
-title: Server Core Architecture
+title: Server Core
 ---
 flowchart TD
   subgraph ServerDriving["Driving"]
@@ -74,11 +68,11 @@ flowchart TD
 
 ```
 
-# Server Architecture (Level 0)
+# L1 - Server
 
 ```mermaid
 ---
-title: Server Architecture (Level 0)
+title: Server
 ---
 flowchart TD
   McpServerController
@@ -108,103 +102,239 @@ flowchart TD
   McpServerController --> ExtensionChannelProviderOutputPort
 ```
 
-# Extension Core Architecture (Level 0)
+# L1 - Extension Core
 
 ```mermaid
 ---
-title: Extension Core Architecture
+title: Extension Core
 ---
-flowchart TD
+flowchart 
   subgraph Driving["Driving"]
+    direction LR
     ExtensionToolCall
-    BrowserAgent
     ExtensionBootstrap
+    BrowserAgent
   end
-  subgraph ExtensionCore["Core"]
-    subgraph UseCases["Use Cases"]
-      ExtensionToolCallUseCases
-      PublishBrowserStateUseCase
-      BrowserAgentUseCases
-    end
+  subgraph Core["Core (Use Cases)"]
+    direction LR
+    ExtensionToolCallUseCases
+    PublishBrowserStateUseCase
+    BrowserAgentUseCases
   end
   subgraph Driven["Driven"]
+    direction LR
     BrowserDriver
     BrowserStateSource
+    ServerChannelProvider
+    ServerEventSink
     LlmProvider
-    subgraph ExtensionDrivenServerChannelProvider["ExtensionDrivenServerChannelProvider (adapter)"]
-      ServerChannelProvider
-      ServerEventSink
-    end
     LoggerProvider
   end
 
-  %% From Driving
-  ExtensionToolCall --> ExtensionToolCallUseCases
-  BrowserAgent --> BrowserAgentUseCases
-  ExtensionBootstrap --> PublishBrowserStateUseCase
-  %% From Core
-  ExtensionToolCallUseCases --> BrowserDriver
-  BrowserAgentUseCases --> LlmProvider
-  BrowserAgentUseCases --> BrowserDriver
-  %% Observability
-  BrowserStateSource --> PublishBrowserStateUseCase
-  PublishBrowserStateUseCase --> BrowserDriver
-  PublishBrowserStateUseCase --> ServerEventSink
+  Driving --> Core --> Driven
 
-  %% Planned (not yet implemented)
   classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
   class BrowserAgent,BrowserAgentUseCases,LlmProvider planned;
 ```
 
-# Extension Architecture (Level 0)
+## L2 - Extension Tool Calls
 
 ```mermaid
 ---
-title: M3 Architecture
+title: Extension Core — Tool Calls
 ---
-flowchart TD
-  subgraph Background["Background"]
-    ExtensionBootstrap["ExtensionBootstrap"]
-    ExtensionTrpcController["ExtensionTrpcController"]
-    CoreExtension
+flowchart TB
+  subgraph Driving["Driving"]
+    ExtensionToolCall
   end
+  subgraph Core["Core"]
+    ExtensionToolCallUseCases
+  end
+  subgraph Driven["Driven"]
+    BrowserDriver
+  end
+  ExtensionToolCall --> ExtensionToolCallUseCases
+  ExtensionToolCallUseCases --> BrowserDriver
+```
 
-  subgraph Tab
+## L2 - Browser-State Publishing
+
+```mermaid
+---
+title: Extension Core — Browser-State Publishing
+---
+flowchart TB
+  subgraph Driving["Driving"]
+    ExtensionBootstrap
+  end
+  subgraph Core["Core"]
+    PublishBrowserStateUseCase
+  end
+  subgraph Driven["Driven"]
+    BrowserStateSource
+    BrowserDriver
+    ServerEventSink
+  end
+  ExtensionBootstrap --> PublishBrowserStateUseCase
+  PublishBrowserStateUseCase --> BrowserStateSource
+  PublishBrowserStateUseCase --> BrowserDriver
+  PublishBrowserStateUseCase --> ServerEventSink
+```
+
+## L2 - Browser Agent (planned)
+
+```mermaid
+---
+title: Extension Core — Browser Agent (planned)
+---
+flowchart TB
+  subgraph Driving["Driving"]
+    BrowserAgent
+  end
+  subgraph Core["Core"]
+    BrowserAgentUseCases
+    ExtensionToolCallUseCases
+  end
+  subgraph Driven["Driven"]
+    LlmProvider
+    BrowserDriver
+  end
+  BrowserAgent --> BrowserAgentUseCases
+  BrowserAgentUseCases --> LlmProvider
+  BrowserAgentUseCases --> ExtensionToolCallUseCases
+  ExtensionToolCallUseCases --> BrowserDriver
+
+  classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
+  class BrowserAgent,BrowserAgentUseCases,LlmProvider planned;
+```
+
+# L1 - Extension Architecture
+
+All components grouped by runtime (the deployment "layers"); the channel sub-diagrams below detail
+each cross-runtime link. `CoreExtension` internals are in
+[Extension Core Architecture](#extension-core-architecture-level-0).
+
+```mermaid
+---
+title: Extension Architecture
+---
+flowchart TB
+  subgraph AgentUi["apps/agent-ui (single SPA)"]
+    direction LR
+    AgentApp
+    UseAgentClient
+  end
+  subgraph Background["Background SW"]
+    subgraph BgDriving["Driving"]
+      direction LR
+      ExtensionBootstrap
+      ExtensionTrpcController
+      AgentRpcController
+    end
+    subgraph BgCore["Core"]
+      CoreExtension
+    end
+    subgraph BgDriven["Driven"]
+      direction LR
+      BrowserDriver
+      ServerChannelProvider
+      ExtensionDrivenLlmProvider
+    end
+    BgDriving --> BgCore --> BgDriven
+  end
+  subgraph Tab["Content script (Tab)"]
+    direction LR
     TabRpcServer
     TabContentMutationObserver
   end
-  subgraph BrowserDriver["BrowserDriver"]
-    TabRpcClient
-    BrowserStateSource
-  end
+  Server["MCP Server"]
 
-  subgraph ExtensionDriving["ExtensionDriving"]
-    ExtensionToolCalls
-  end
+  AgentUi -->|"runtime.connect: mbk:agent"| Background
+  Background <-->|"tab RPC"| Tab
+  Background <-->|"tRPC channel"| Server
 
-  subgraph ExtensionDriven["ExtensionDriven"]
-    BrowserDriver
-    ServerChannelProvider
-    LlmProvider
-  end
-
-  subgraph CoreExtension["CoreExtension"]
-    ExtensionDriving
-    Core
-    ExtensionDriven
-  end
-
-  ExtensionBootstrap --> ExtensionTrpcController
-  ExtensionBootstrap -->|"publish browser state"| Core
-  ExtensionBootstrap -->|"discover servers"| ServerChannelProvider
-  ExtensionTrpcController -----> ServerChannelProvider
-  ExtensionTrpcController ---> ExtensionToolCalls
-  ExtensionDriving --> Core
-  Core --> ExtensionDriven
-  TabRpcClient --> TabRpcServer
-  TabContentMutationObserver -->|"mbk.tabContent.changed"| BrowserStateSource
-
-  %% Planned (not yet implemented)
   classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class LlmProvider planned;
+  class AgentUi,AgentApp,UseAgentClient,AgentRpcController,ExtensionDrivenLlmProvider planned;
+```
+
+## L2 - Channel — Background ⇄ Tab
+
+```mermaid
+---
+title: Channel — Background ⇄ Tab
+---
+flowchart TB
+  subgraph BG["Background SW"]
+    subgraph Driven["Driven"]
+      direction LR
+      TabRpcClient
+      BrowserStateSource
+    end
+  end
+  subgraph TabRt["Content script (Tab)"]
+    TabRpcServer
+    TabContentMutationObserver
+  end
+
+  TabRpcClient -->|"tabs.sendMessage (defer)"| TabRpcServer
+  TabRpcServer -->|"runtime.onMessage (resolve)"| TabRpcClient
+  TabContentMutationObserver -->|"mbk.tabContent.changed"| BrowserStateSource
+```
+
+## L2 - Channel — Background ⇄ MCP Server
+
+```mermaid
+---
+title: Channel — Background ⇄ MCP Server
+---
+flowchart TB
+  subgraph BG["Background SW"]
+    subgraph Driving["Driving"]
+      ExtensionTrpcController
+    end
+    subgraph Driven["Driven"]
+      ServerChannelProvider
+    end
+  end
+  Server["MCP Server"]
+
+  ExtensionTrpcController -->|"tool calls + discovery"| ServerChannelProvider
+  ServerChannelProvider <-->|"tRPC channel"| Server
+```
+
+## L2 - Browser Agent Architecture
+
+```mermaid
+---
+title: Browser Agent Architecture
+---
+flowchart TD
+  subgraph AgentUi["apps/agent-ui (UI runtime)"]
+    AgentApp["AgentApp"]
+  end
+
+  subgraph BackgroundSW["Background service worker"]
+    subgraph Driving["Driving"]
+      AgentRpcController["AgentRpcController"]
+    end
+    subgraph Core["Core"]
+      BrowserAgentUseCases["BrowserAgentUseCases"]
+      ExtensionToolCallUseCases["ExtensionToolCallUseCases"]
+    end
+    subgraph Driven["Driven"]
+      direction LR
+      LlmProvider["LlmProviderOutputPort"]
+      BrowserDriver["BrowserDriverOutputPort"]
+    end
+  end
+
+  AgentApp -->|"messages"| AgentRpcController
+  AgentRpcController -->|"progress events"| AgentApp
+  AgentRpcController --> BrowserAgentUseCases
+  BrowserAgentUseCases --> LlmProvider
+  BrowserAgentUseCases --> ExtensionToolCallUseCases
+  ExtensionToolCallUseCases --> BrowserDriver
+
+  classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
+  class AgentApp,AgentApp,AgentRpcController,BrowserAgentUseCases,LlmProvider planned;
 ```
