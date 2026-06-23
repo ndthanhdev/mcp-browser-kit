@@ -64,6 +64,12 @@
 			],
 			"@mcp-browser-kit/extension-driving-trpc-controller/*": [
 				"../../packages/extension-driving-trpc-controller/src/*"
+			],
+			"@mcp-browser-kit/extension-driving-bootstrap": [
+				"../../packages/extension-driving-bootstrap/src/index.ts"
+			],
+			"@mcp-browser-kit/extension-driving-bootstrap/*": [
+				"../../packages/extension-driving-bootstrap/src/*"
 			]
 		},
 		"outDir": "../../.moon/cache/types/apps/m2"
@@ -99,6 +105,9 @@
 		},
 		{
 			"path": "../../packages/extension-driving-trpc-controller"
+		},
+		{
+			"path": "../../packages/extension-driving-bootstrap"
 		},
 		{
 			"path": "../server"

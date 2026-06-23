@@ -117,6 +117,7 @@ flowchart
   end
   subgraph Core["Core (Use Cases)"]
     direction LR
+    ExtensionBootstrapUseCase
     ExtensionToolCallUseCases
     PublishBrowserStateUseCase
     BrowserAgentUseCases
@@ -168,6 +169,7 @@ flowchart TB
     ExtensionBootstrap
   end
   subgraph Core["Core"]
+    ExtensionBootstrapUseCase
     PublishBrowserStateUseCase
   end
   subgraph Driven["Driven"]
@@ -175,7 +177,8 @@ flowchart TB
     BrowserDriver
     ServerEventSink
   end
-  ExtensionBootstrap --> PublishBrowserStateUseCase
+  ExtensionBootstrap --> ExtensionBootstrapUseCase
+  ExtensionBootstrapUseCase --> PublishBrowserStateUseCase
   PublishBrowserStateUseCase --> BrowserStateSource
   PublishBrowserStateUseCase --> BrowserDriver
   PublishBrowserStateUseCase --> ServerEventSink

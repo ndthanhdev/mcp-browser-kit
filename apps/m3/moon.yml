@@ -9,6 +9,7 @@ dependsOn:
 - extension-driving-trpc-controller
 - core-utils
 - helper-extension-keep-alive
+- extension-driving-bootstrap
 tags:
 - tsup
 - extension

@@ -1162,6 +1162,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mcp-browser-kit/extension-driving-bootstrap@workspace:packages/extension-driving-bootstrap":
+  version: 0.0.0-use.local
+  resolution: "@mcp-browser-kit/extension-driving-bootstrap@workspace:packages/extension-driving-bootstrap"
+  languageName: unknown
+  linkType: soft
+
 "@mcp-browser-kit/extension-driving-trpc-controller@workspace:packages/extension-driving-trpc-controller":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/extension-driving-trpc-controller@workspace:packages/extension-driving-trpc-controller"
