@@ -121,6 +121,7 @@ flowchart
     ExtensionToolCallUseCases
     PublishBrowserStateUseCase
     BrowserAgentUseCases
+    AgentSessionRegistry
   end
   subgraph Driven["Driven"]
     direction LR
@@ -135,7 +136,7 @@ flowchart
   Driving --> Core --> Driven
 
   classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class BrowserAgent,BrowserAgentUseCases,LlmProvider planned;
+  class BrowserAgent,BrowserAgentUseCases,AgentSessionRegistry,LlmProvider planned;
 ```
 
 ## L2 - Extension Tool Calls
@@ -186,6 +187,15 @@ flowchart TB
 
 ## L2 - Browser Agent (planned)
 
+The Browser Agent is a **single agent that owns many sessions**. `BrowserAgentUseCases`
+wraps one AI SDK v7 [`HarnessAgent`](https://ai-sdk.dev/v7/docs/ai-sdk-harnesses/harness-agent)
+held as a DI singleton ("construct the agent once; it holds configuration, not a live
+session"). Each `AgentSession` maps to a harness session that owns its own conversation
+history; an `AgentSessionRegistry` tracks the live set (peer of the server core's
+`BrowserStateRegistry`). `session.detach()` → resume state + `createSession({ resumeFrom })`
+is the seam for persisting sessions across service-worker eviction (adapter deferred).
+`LlmProvider` remains the Driven node, realized by the harness/model adapter (rename deferred).
+
 ```mermaid
 ---
 title: Extension Core — Browser Agent (planned)
@@ -196,19 +206,21 @@ flowchart TB
   end
   subgraph Core["Core"]
     BrowserAgentUseCases
+    AgentSessionRegistry
     ExtensionToolCallUseCases
   end
   subgraph Driven["Driven"]
     LlmProvider
     BrowserDriver
   end
-  BrowserAgent --> BrowserAgentUseCases
+  BrowserAgent -->|"createSession / sendMessage / cancel"| BrowserAgentUseCases
+  BrowserAgentUseCases -->|"owns N sessions"| AgentSessionRegistry
   BrowserAgentUseCases --> LlmProvider
   BrowserAgentUseCases --> ExtensionToolCallUseCases
   ExtensionToolCallUseCases --> BrowserDriver
 
   classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class BrowserAgent,BrowserAgentUseCases,LlmProvider planned;
+  class BrowserAgent,BrowserAgentUseCases,AgentSessionRegistry,LlmProvider planned;
 ```
 
 # L1 - Extension Architecture
@@ -322,6 +334,7 @@ flowchart TD
     end
     subgraph Core["Core"]
       BrowserAgentUseCases["BrowserAgentUseCases"]
+      AgentSessionRegistry["AgentSessionRegistry"]
       ExtensionToolCallUseCases["ExtensionToolCallUseCases"]
     end
     subgraph Driven["Driven"]
@@ -331,13 +344,14 @@ flowchart TD
     end
   end
 
-  AgentApp -->|"messages"| AgentRpcController
-  AgentRpcController -->|"progress events"| AgentApp
+  AgentApp -->|"createSession / sendMessage / cancel"| AgentRpcController
+  AgentRpcController -->|"progress events (per session)"| AgentApp
   AgentRpcController --> BrowserAgentUseCases
+  BrowserAgentUseCases -->|"owns N sessions"| AgentSessionRegistry
   BrowserAgentUseCases --> LlmProvider
   BrowserAgentUseCases --> ExtensionToolCallUseCases
   ExtensionToolCallUseCases --> BrowserDriver
 
   classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class AgentApp,AgentApp,AgentRpcController,BrowserAgentUseCases,LlmProvider planned;
+  class AgentApp,AgentRpcController,BrowserAgentUseCases,AgentSessionRegistry,LlmProvider planned;
 ```

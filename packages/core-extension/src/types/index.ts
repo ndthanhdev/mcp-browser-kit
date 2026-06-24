@@ -1,3 +1,6 @@
+export * from "./agent-event";
+export * from "./agent-message";
+export * from "./agent-session";
 export * from "./browser-info";
 export * from "./extension-context";
 export * from "./extension-info";
