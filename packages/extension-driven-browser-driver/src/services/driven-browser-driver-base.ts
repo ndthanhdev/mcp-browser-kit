@@ -149,6 +149,24 @@ export abstract class DrivenBrowserDriverBase
 		});
 	};
 
+	getElementHtmlByReadablePath = (
+		tabId: string,
+		readablePath: string,
+	): Promise<string> => {
+		this.logger.verbose(
+			`Getting element HTML by readable path: ${readablePath} in tab: ${tabId}`,
+		);
+		return this.tabRpcService.tabRpcClient.call({
+			method: "dom.getElementHtmlByReadablePath",
+			args: [
+				readablePath,
+			],
+			extraArgs: {
+				tabId,
+			},
+		});
+	};
+
 	focusOnCoordinates = (tabId: string, x: number, y: number): Promise<void> => {
 		this.logger.verbose(
 			`Focusing on coordinates (${x}, ${y}) in tab: ${tabId}`,

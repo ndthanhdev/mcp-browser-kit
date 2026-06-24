@@ -130,6 +130,22 @@ export class TabDomTools {
 		this.logger.verbose("Click on element completed");
 	};
 
+	getElementHtmlByReadablePath = async (
+		readablePath: string,
+	): Promise<string> => {
+		this.logger.info(`Getting HTML for element at path: ${readablePath}`);
+
+		const element = this.contextStore.getElementFromPath(readablePath);
+		if (!element) {
+			this.logger.warn(`Element not found at path: ${readablePath}`);
+			throw new Error(`Element not found at path: ${readablePath}`);
+		}
+
+		const html = element.outerHTML;
+		this.logger.verbose(`Retrieved element HTML (${html.length} characters)`);
+		return html;
+	};
+
 	fillTextToElementByReadablePath = async (
 		readablePath: string,
 		value: string,

@@ -221,14 +221,25 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 		].join("\n");
 	};
 
+	getReadableElementHtmlInstruction = (): string => {
+		return [
+			"Get the outerHTML of a single element by readablePath.",
+			"When: you need the exact markup (attributes, classes, nested structure) of one element — equivalent to reading {tabUri}/readable-element-html/<readablePath>.",
+			"How: get readablePath from a readable-elements tuple (first field); browserId and tabId from getContext or bk:///context.",
+			"Requires: browserId, tabId, readablePath (dot-separated tree index e.g. 0.2.1, not a CSS selector).",
+			"Returns: { snapshotId, data (HTML), hasNextPage, nextPageNumber, totalPages }.",
+			"Pagination: if hasNextPage is true, call getSnapshotPage with the returned snapshotId, type readable-element-html, and nextPageNumber.",
+		].join("\n");
+	};
+
 	getSnapshotPageInstruction = (): string => {
 		return [
-			"Get a continuation page for a readable-text or readable-elements snapshot.",
-			"When: a previous getReadableText or getReadableElements call returned hasNextPage=true.",
+			"Get a continuation page for a readable-text, readable-elements, or readable-element-html snapshot.",
+			"When: a previous getReadableText, getReadableElements, or getReadableElementHtml call returned hasNextPage=true.",
 			"How: use the snapshotId and nextPageNumber from the previous response.",
-			"Requires: snapshotId, type (readable-text | readable-elements), pageNumber.",
+			"Requires: snapshotId, type (readable-text | readable-elements | readable-element-html), pageNumber.",
 			"Returns: same shape as the original call — { snapshotId, data, hasNextPage, nextPageNumber, totalPages }.",
-			"Avoid: calling without first fetching page 1 via getReadableText or getReadableElements.",
+			"Avoid: calling without first fetching page 1 via getReadableText, getReadableElements, or getReadableElementHtml.",
 		].join("\n");
 	};
 
@@ -248,7 +259,8 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"bk:///browsers/<shortId>/tabs/<tabId> — tab metadata (shortId is the browserId)",
 			"bk:///browsers/<shortId>/tabs/<tabId>/readable-text — readable text snapshot (page 1 only)",
 			"bk:///browsers/<shortId>/tabs/<tabId>/readable-elements — readable elements snapshot (page 1 only)",
-			"bk:///snapshot-types/<type>/snapshots/<snapshotId>/pages/<N> — page 2+ for both readable-text and readable-elements (use snapshotId from page 1)",
+			"bk:///browsers/<shortId>/tabs/<tabId>/readable-element-html/<readablePath> — outerHTML of one element (page 1 only)",
+			"bk:///snapshot-types/<type>/snapshots/<snapshotId>/pages/<N> — page 2+ for readable-text, readable-elements, and readable-element-html (use snapshotId from page 1)",
 		].join("\n");
 	};
 
@@ -284,6 +296,18 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"Returns JSON with snapshotId, data ([path, role, text, value?] tuples), hasNextPage, nextPageNumber, totalPages.",
 			"path is a dot-separated tree index (e.g. 0.2.1) — use as readablePath, not a CSS selector.",
 			"Page 2+: bk:///snapshot-types/readable-elements/snapshots/<snapshotId>/pages/<nextPageNumber>.",
+		].join(" ");
+	};
+
+	tabReadableElementHtmlDescription = (
+		tabId: string,
+		readablePath: string,
+	): string => {
+		return [
+			`outerHTML of element ${readablePath} in tab ${tabId}.`,
+			"Returns JSON with snapshotId, data (HTML), hasNextPage, nextPageNumber, totalPages.",
+			"readablePath is a dot-separated tree index (e.g. 0.2.1) from a readable-elements tuple, not a CSS selector.",
+			"Page 2+: bk:///snapshot-types/readable-element-html/snapshots/<snapshotId>/pages/<nextPageNumber>.",
 		].join(" ");
 	};
 
