@@ -64,6 +64,16 @@ export const readableElementTextInputSchema = {
 	value: z.string().describe("Text to enter into the input field"),
 };
 
+/** Identifies a single element for an HTML read: browserId + tabId + readablePath. */
+export const tabReadableElementHtmlSchema = {
+	...tabReadRefSchema,
+	readablePath: z
+		.string()
+		.describe(
+			"Dot-separated tree path (e.g. 0.2.1) — first element of a [path, role, text, value?] tuple from readable-elements; not a CSS selector",
+		),
+};
+
 export const invokeJsFnSchema = {
 	...tabRefSchema,
 	fnBodyCode: z
@@ -194,8 +204,11 @@ export const snapshotPageSchema = {
 		.enum([
 			"readable-text",
 			"readable-elements",
+			"readable-element-html",
 		])
-		.describe("Content type: readable-text or readable-elements"),
+		.describe(
+			"Content type: readable-text, readable-elements, or readable-element-html",
+		),
 	pageNumber: z
 		.number()
 		.int()

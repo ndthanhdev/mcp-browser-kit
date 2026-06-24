@@ -20,6 +20,7 @@ export interface McpDescriptionsInputPort {
 	getContextInstruction(): string;
 	getReadableTextInstruction(): string;
 	getReadableElementsInstruction(): string;
+	getReadableElementHtmlInstruction(): string;
 	getSnapshotPageInstruction(): string;
 
 	// Resource descriptions
@@ -37,6 +38,10 @@ export interface McpDescriptionsInputPort {
 	): string;
 	tabReadableTextDescription(tabId: string): string;
 	tabReadableElementsDescription(tabId: string): string;
+	tabReadableElementHtmlDescription(
+		tabId: string,
+		readablePath: string,
+	): string;
 }
 
 export const McpDescriptionsInputPort = Symbol.for("McpDescriptionsInputPort");

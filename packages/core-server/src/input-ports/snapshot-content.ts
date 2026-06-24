@@ -24,6 +24,18 @@ export interface SnapshotContentInputPort {
 	): Promise<SnapshotResult<ReadableElementRecord[]>>;
 
 	/**
+	 * Same as `getReadableTextPage` but for the `outerHTML` of the single element
+	 * identified by `readablePath` (the dot-separated tree index from a
+	 * readable-elements tuple).
+	 */
+	getReadableElementHtmlPage(
+		channelId: string,
+		tabId: string,
+		readablePath: string,
+		pageNumber?: number,
+	): Promise<SnapshotResult<string>>;
+
+	/**
 	 * Evicts cached pages. When `tabId` is provided only entries for that tab
 	 * are removed; otherwise all entries for the browser channel are cleared.
 	 */
@@ -35,7 +47,7 @@ export interface SnapshotContentInputPort {
 	 */
 	getSnapshotPage(
 		snapshotId: string,
-		type: "readable-text" | "readable-elements",
+		type: "readable-text" | "readable-elements" | "readable-element-html",
 		pageNumber: number,
 	): Promise<SnapshotResult<any>>;
 }

@@ -3,9 +3,34 @@ import { treeToPathValueArray } from "@mcp-browser-kit/core-utils/tree";
 import type { ReadableElementRecord } from "../types";
 
 /**
+ * Extracts the current form value of an element, if it has one.
+ * @returns The element's value (or "checked" for checked checkboxes/radios),
+ *   or "" for elements without a meaningful value.
+ */
+function getElementValue(element: globalThis.Element): string {
+	if (element instanceof globalThis.HTMLInputElement) {
+		if (element.type === "checkbox" || element.type === "radio") {
+			return element.checked ? "checked" : "";
+		}
+		return element.value;
+	}
+
+	if (
+		element instanceof globalThis.HTMLTextAreaElement ||
+		element instanceof globalThis.HTMLSelectElement
+	) {
+		return element.value;
+	}
+
+	return "";
+}
+
+/**
  * Converts a tree of DOM elements to an array of ReadableElementRecords
  * @param tree - TreeNode structure containing DOM elements
- * @returns Array of ReadableElementRecord objects with path, accessibleRole, and accessibleText
+ * @returns Array of ReadableElementRecord tuples with path, accessibleRole,
+ *   accessibleText, and an optional value (appended only when the element has
+ *   a non-empty form value)
  */
 export function toElementRecords(
 	tree: TreeNode<globalThis.Element>,
@@ -28,10 +53,19 @@ export function toElementRecords(
 			element.textContent?.trim() ??
 			"";
 
-		return [
+		const record: ReadableElementRecord = [
 			path,
 			accessibleRole,
 			accessibleText,
 		];
+
+		// Append the current form value only when present, keeping the tuple at
+		// 3 elements for everything without a value.
+		const value = getElementValue(element);
+		if (value) {
+			record.push(value);
+		}
+
+		return record;
 	});
 }

@@ -496,6 +496,24 @@ export class BrowserResources {
 			};
 		}
 
+		if (parsed.type === "tab-readable-element-html") {
+			const result = await this.snapshotContent.getReadableElementHtmlPage(
+				parsed.channelId,
+				parsed.tabId,
+				parsed.readablePath,
+				1,
+			);
+			return {
+				contents: [
+					{
+						uri: uri.toString(),
+						mimeType: "application/json",
+						text: JSON.stringify(result, null, 2),
+					},
+				],
+			};
+		}
+
 		const windowId = findWindowIdForTab(entry.snapshot, parsed.tabId);
 		const contentChangedAt =
 			entry.snapshot.contentChangedAt?.[parsed.tabId] ?? undefined;

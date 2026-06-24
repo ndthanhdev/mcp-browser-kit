@@ -47,6 +47,10 @@ export interface BrowserDriverOutputPort {
 		tabId: string,
 		readableTreePath: string,
 	): Promise<void>;
+	getElementHtmlByReadablePath(
+		tabId: string,
+		readableTreePath: string,
+	): Promise<string>;
 	showHumanHint(
 		tabId: string,
 		params: ShowHumanHintParams,

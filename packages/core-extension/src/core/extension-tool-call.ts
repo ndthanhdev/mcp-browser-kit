@@ -167,4 +167,22 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 			throw error;
 		}
 	};
+
+	getElementHtml = async (tabId: string, readablePath: string) => {
+		this.logger.info(
+			`Getting element HTML from tab: ${tabId}, path: ${readablePath}`,
+		);
+
+		try {
+			const html = await this.browserDriver.getElementHtmlByReadablePath(
+				tabId,
+				readablePath,
+			);
+			this.logger.info("Retrieved element HTML successfully");
+			return html;
+		} catch (error) {
+			this.logger.error("Failed to get element HTML", error);
+			throw error;
+		}
+	};
 }

@@ -27,6 +27,7 @@ export interface TabSpecificTool {
 	loadTabContext(tabId: string): Promise<TabContext>;
 	getReadableElements: (tabId: string) => Promise<ReadableElementRecord[]>;
 	getReadableText: (tabId: string) => Promise<string>;
+	getElementHtml: (tabId: string, readablePath: string) => Promise<string>;
 	getSelection(tabId: string): Promise<Selection>;
 	hitEnterOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
 	hitEnterOnElement(tabId: string, readablePath: string): Promise<void>;
