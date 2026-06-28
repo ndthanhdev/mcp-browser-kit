@@ -27,7 +27,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"",
 			"Tool selection by manifestVersion:",
 			"- MV2: all tools; prefer element tools; invokeJsFn only as last resort",
-			"- MV3: clickOnElement, fillTextToElement, hitEnterOnElement, openTab, closeTab, getSelection, showHumanHint",
+			"- MV3: clickOnElement, fillTextToElement, hitEnterOnElement, scrollPage, openTab, closeTab, getSelection, showHumanHint",
 			"- MV3 blocked: captureTab, invokeJsFn; avoid coordinate tools (no screenshot source for x/y)",
 			"",
 			"Error recovery:",
@@ -140,6 +140,17 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"Requires: browserId, windowId, tabId, fnBodyCode.",
 			"Returns: value.result = whatever you return (must be JSON-serializable).",
 			"Avoid: on manifestVersion 3; wrapping in function () { ... }.",
+		].join("\n");
+	};
+
+	scrollPageInstruction = (): string => {
+		return [
+			"Scroll the page viewport in a direction.",
+			"When: target content or elements are off-screen; reveal more of the page before reading or interacting. Works on MV2 and MV3 (no screenshot needed).",
+			"How: direction is up/down/left/right; optional amount in pixels — omit it to scroll ~one viewport (a page). browserId, windowId, tabId from bk:///context.",
+			"Requires: browserId, windowId, tabId, direction.",
+			"Returns: ok=true once scrolled. Already at that edge (nothing to scroll) is still ok=true.",
+			"Avoid: assuming new elements exist — re-read readable-elements after scrolling, snapshots go stale.",
 		].join("\n");
 	};
 

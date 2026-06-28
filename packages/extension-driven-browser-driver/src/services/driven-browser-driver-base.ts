@@ -8,6 +8,7 @@ import type {
 	ExtensionTabInfo,
 	ExtensionWindowInfo,
 	Screenshot,
+	ScrollDirection,
 	Selection,
 	TabContext,
 } from "@mcp-browser-kit/core-extension/types";
@@ -108,6 +109,27 @@ export abstract class DrivenBrowserDriverBase
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.getSelection",
 			args: [],
+			extraArgs: {
+				tabId,
+			},
+		});
+	};
+
+	// Scroll Methods
+	scrollPage = (
+		tabId: string,
+		direction: ScrollDirection,
+		amount?: number,
+	): Promise<void> => {
+		this.logger.verbose(
+			`Scrolling ${direction}${amount != null ? ` by ${amount}px` : ""} in tab: ${tabId}`,
+		);
+		return this.tabRpcService.tabRpcClient.call({
+			method: "dom.scrollPage",
+			args: [
+				direction,
+				amount,
+			],
 			extraArgs: {
 				tabId,
 			},

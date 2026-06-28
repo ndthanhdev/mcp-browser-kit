@@ -12,6 +12,7 @@ import type {
 	ExtensionContext,
 	ExtensionToolName,
 	Screenshot,
+	ScrollDirection,
 	Selection,
 } from "../types";
 
@@ -106,6 +107,14 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 
 	clickOnCoordinates = (tabId: string, x: number, y: number): Promise<void> => {
 		return this.browserDriver.clickOnCoordinates(tabId, x, y);
+	};
+
+	scrollPage = (
+		tabId: string,
+		direction: ScrollDirection,
+		amount?: number,
+	): Promise<void> => {
+		return this.browserDriver.scrollPage(tabId, direction, amount);
 	};
 
 	fillTextToCoordinates = async (

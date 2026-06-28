@@ -1,4 +1,7 @@
-import type { Selection } from "@mcp-browser-kit/core-extension";
+import type {
+	ScrollDirection,
+	Selection,
+} from "@mcp-browser-kit/core-extension";
 import type { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
 import { LoggerFactoryOutputPort as LoggerFactoryOutputPortSymbol } from "@mcp-browser-kit/core-extension/output-ports";
 import type { Logger } from "@mcp-browser-kit/types";
@@ -54,6 +57,14 @@ export class TabDomTools {
 	) {
 		this.logger = this.loggerFactory.create("TabDomTools");
 	}
+
+	scrollPage = async (direction: ScrollDirection, amount?: number) => {
+		this.logger.info(
+			`Scrolling ${direction}${amount != null ? ` by ${amount}px` : ""}`,
+		);
+		dom.scrollPage(direction, amount ?? undefined);
+		this.logger.verbose("Scroll completed");
+	};
 
 	clickOnCoordinates = async (x: number, y: number) => {
 		this.logger.info(`Clicking on coordinates (${x}, ${y})`);

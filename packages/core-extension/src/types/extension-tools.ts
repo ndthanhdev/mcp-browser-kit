@@ -8,11 +8,19 @@ import type { Screenshot } from "./screenshot";
 import type { Selection } from "./selection";
 import type { TabContext } from "./tab-context";
 
+/** Direction the viewport is scrolled by the `scrollPage` tool. */
+export type ScrollDirection = "up" | "down" | "left" | "right";
+
 export interface TabSpecificTool {
 	captureTab(tabId: string): Promise<Screenshot>;
 	clickOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
 	clickOnElement(tabId: string, readablePath: string): Promise<void>;
 	closeTab(tabId: string): Promise<void>;
+	scrollPage(
+		tabId: string,
+		direction: ScrollDirection,
+		amount?: number,
+	): Promise<void>;
 	fillTextToCoordinates(
 		tabId: string,
 		x: number,

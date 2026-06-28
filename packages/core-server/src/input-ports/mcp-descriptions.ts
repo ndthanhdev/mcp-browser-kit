@@ -11,6 +11,7 @@ export interface McpDescriptionsInputPort {
 	fillTextToReadableElementInstruction(): string;
 	hitEnterOnReadableElementInstruction(): string;
 	invokeJsFnInstruction(): string;
+	scrollPageInstruction(): string;
 	closeTabInstruction(): string;
 	getSelectionInstruction(): string;
 	openTabInstruction(): string;
