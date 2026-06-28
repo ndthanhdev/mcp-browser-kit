@@ -11,6 +11,7 @@ export class TestAppPage extends BasePage {
 	readonly javascriptTestUrl = `${TEST_APP_BASE_URL}/javascript-test`;
 	readonly fallbackTestUrl = `${TEST_APP_BASE_URL}/fallback-test`;
 	readonly snapshotTestUrl = `${TEST_APP_BASE_URL}/snapshot-test`;
+	readonly scrollTestUrl = `${TEST_APP_BASE_URL}/scroll-test`;
 
 	readonly pageTitle: Locator;
 
@@ -45,6 +46,11 @@ export class TestAppPage extends BasePage {
 
 	async navigateToSnapshotTest() {
 		await this.goto(this.snapshotTestUrl);
+		await super.waitForPageLoad(this.getByTestId("page-title"));
+	}
+
+	async navigateToScrollTest() {
+		await this.goto(this.scrollTestUrl);
 		await super.waitForPageLoad(this.getByTestId("page-title"));
 	}
 
@@ -103,6 +109,13 @@ export class TestAppPage extends BasePage {
 			mousedownCount: this.getByTestId("mousedown-count"),
 			standardButton: this.getByTestId("standard-button"),
 			standardClickCount: this.getByTestId("standard-click-count"),
+		};
+	}
+
+	getScrollTestLocators() {
+		return {
+			scrollY: this.getByTestId("scroll-y"),
+			scrollX: this.getByTestId("scroll-x"),
 		};
 	}
 

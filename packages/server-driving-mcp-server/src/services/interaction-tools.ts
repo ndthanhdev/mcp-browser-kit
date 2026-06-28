@@ -19,6 +19,7 @@ import {
 	coordinateTextInputSchema,
 	readableElementSchema,
 	readableElementTextInputSchema,
+	scrollPageSchema,
 } from "../utils/tool-schemas";
 
 @injectable()
@@ -44,6 +45,74 @@ export class InteractionTools {
 		this.registerClickOnElement(server);
 		this.registerFillTextToElement(server);
 		this.registerHitEnterOnElement(server);
+
+		this.registerScrollPage(server);
+	}
+
+	private registerScrollPage(server: McpServer): void {
+		this.logger.verbose("Registering tool: scrollPage");
+		registerTool(
+			server,
+			"scrollPage",
+			{
+				title: "Scroll the page",
+				description: this.toolDescriptionsInputPort.scrollPageInstruction(),
+				inputSchema: scrollPageSchema,
+				outputSchema: actionOutputSchema,
+				annotations: {
+					readOnlyHint: false,
+					destructiveHint: false,
+					idempotentHint: false,
+					openWorldHint: true,
+				},
+			},
+			async ({ browserId, windowId, tabId, direction, amount }) => {
+				this.logger.info("Executing scrollPage", {
+					browserId,
+					tabId,
+					direction,
+					amount,
+				});
+				const overScroll = await over(() =>
+					this.toolsInputPort.scrollPage(
+						browserId,
+						windowId,
+						tabId,
+						direction,
+						amount,
+					),
+				);
+
+				if (!overScroll.ok) {
+					this.logger.error("Failed to scroll page", {
+						browserId,
+						tabId,
+						direction,
+						amount,
+						reason: overScroll.reason,
+					});
+					return createOverResponse(actionOutputSchema, {
+						ok: false,
+						reason: String(overScroll.reason),
+					});
+				}
+
+				this.logger.verbose("Scrolled page", {
+					browserId,
+					tabId,
+					direction,
+					amount,
+				});
+				return createOverResponse(
+					actionOutputSchema,
+					{
+						ok: true,
+						value: {},
+					},
+					"Done",
+				);
+			},
+		);
 	}
 
 	private registerClickOnCoordinates(server: McpServer): void {

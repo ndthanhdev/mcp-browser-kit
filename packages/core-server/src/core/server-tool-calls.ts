@@ -5,6 +5,7 @@ import type {
 	ExtensionWindowInfo,
 	ReadableElementRecord,
 	Screenshot,
+	ScrollDirection,
 	TabSpecificTool,
 } from "@mcp-browser-kit/core-extension";
 import type { MessageChannelRpcClient } from "@mcp-browser-kit/core-utils";
@@ -523,6 +524,36 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			this.logger.info("Clicked on coordinates successfully");
 		} catch (error) {
 			this.logger.error("Failed to click on coordinates", error);
+			throw error;
+		}
+	};
+
+	scrollPage = async (
+		browserId: string,
+		_windowId: string,
+		tabId: string,
+		direction: ScrollDirection,
+		amount?: number,
+	): Promise<void> => {
+		this.logger.info(
+			`Scrolling ${direction}${amount != null ? ` by ${amount}px` : ""} in tab: ${browserId}/${tabId}`,
+		);
+
+		try {
+			const rpcClient = await this.getTabRpc(browserId, tabId);
+			await rpcClient.call({
+				method: "scrollPage" as const,
+				args: [
+					tabId,
+					direction,
+					amount,
+				],
+				extraArgs: {},
+			});
+
+			this.logger.info("Scrolled page successfully");
+		} catch (error) {
+			this.logger.error("Failed to scroll page", error);
 			throw error;
 		}
 	};

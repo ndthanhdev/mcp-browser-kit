@@ -90,6 +90,24 @@ export const openTabSchema = {
 		.describe("URL to open, including scheme (e.g. https://example.com)"),
 };
 
+export const scrollPageSchema = {
+	...tabRefSchema,
+	direction: z
+		.enum([
+			"up",
+			"down",
+			"left",
+			"right",
+		])
+		.describe("Direction to scroll the viewport"),
+	amount: z
+		.number()
+		.int()
+		.positive()
+		.optional()
+		.describe("Pixels to scroll; defaults to ~one viewport when omitted"),
+};
+
 export const showHumanHintInputSchema = {
 	...tabRefSchema,
 	action: z
@@ -236,6 +254,7 @@ type ServerToolOverSchemaMap = {
 	clickOnElement: typeof actionOutputSchema;
 	fillTextToElement: typeof actionOutputSchema;
 	hitEnterOnElement: typeof actionOutputSchema;
+	scrollPage: typeof actionOutputSchema;
 	showHumanHint: typeof showHumanHintOutputSchema;
 };
 

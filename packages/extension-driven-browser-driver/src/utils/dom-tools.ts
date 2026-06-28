@@ -1,3 +1,4 @@
+import type { ScrollDirection } from "@mcp-browser-kit/core-extension/types";
 import delay from "delay";
 import { playClickAnimationOnElement } from "./animation-tools";
 
@@ -61,6 +62,40 @@ export const performAndVerify = async (
 		]);
 	} finally {
 		observer.disconnect();
+	}
+};
+
+/**
+ * Scrolls the viewport one step in `direction`. The step is `amount` pixels
+ * when provided, otherwise ~90% of the viewport along the relevant axis (one
+ * "page"). Uses an instant scroll so the resulting position can be read back
+ * synchronously. Being already clamped at the requested edge is a no-op success;
+ * a failure to move when there is still room throws.
+ */
+export const scrollPage = (direction: ScrollDirection, amount?: number) => {
+	const el = document.scrollingElement ?? document.documentElement;
+	const horizontal = direction === "left" || direction === "right";
+	const step =
+		amount ?? Math.round((horizontal ? innerWidth : innerHeight) * 0.9);
+	const sign = direction === "up" || direction === "left" ? -1 : 1;
+
+	const before = horizontal ? el.scrollLeft : el.scrollTop;
+	window.scrollBy({
+		left: horizontal ? sign * step : 0,
+		top: horizontal ? 0 : sign * step,
+		behavior: "instant",
+	});
+	const after = horizontal ? el.scrollLeft : el.scrollTop;
+
+	if (after === before) {
+		const atEdge =
+			sign < 0
+				? before <= 0
+				: before + (horizontal ? el.clientWidth : el.clientHeight) >=
+					(horizontal ? el.scrollWidth : el.scrollHeight) - 1;
+		if (!atEdge) {
+			throw new Error(`scrollPage(${direction}): no movement`);
+		}
 	}
 };
 
