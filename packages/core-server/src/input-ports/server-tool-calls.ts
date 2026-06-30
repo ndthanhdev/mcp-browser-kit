@@ -124,6 +124,14 @@ export type ServerToolCallsInputPort = {
 		direction: ScrollDirection,
 		amount?: number,
 	) => Promise<void>;
+	scrollElement: (
+		browserId: string,
+		windowId: string,
+		tabId: string,
+		readablePath: string,
+		direction: ScrollDirection,
+		amount?: number,
+	) => Promise<void>;
 	showHumanHint: (
 		browserId: string,
 		windowId: string,
@@ -186,6 +194,11 @@ export type ServerToolArgsMap = {
 		url: string;
 	};
 	scrollPage: TabRef & {
+		direction: ScrollDirection;
+		amount?: number;
+	};
+	scrollElement: TabRef & {
+		readablePath: string;
 		direction: ScrollDirection;
 		amount?: number;
 	};

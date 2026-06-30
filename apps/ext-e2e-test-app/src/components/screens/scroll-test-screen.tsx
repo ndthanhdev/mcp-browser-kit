@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TestScreenLayout } from "../layouts/test-screen-layout";
 
 export function meta() {
@@ -12,6 +12,8 @@ export function meta() {
 export function ScrollTestScreen() {
 	const [scrollX, setScrollX] = useState(0);
 	const [scrollY, setScrollY] = useState(0);
+	const [containerScrollTop, setContainerScrollTop] = useState(0);
+	const containerRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -36,6 +38,9 @@ export function ScrollTestScreen() {
 					<p data-testid="scroll-x" className="m-0">
 						scrollX: {scrollX}
 					</p>
+					<p data-testid="container-scroll-top" className="m-0">
+						containerScrollTop: {containerScrollTop}
+					</p>
 				</div>
 
 				<h1 data-testid="page-title" className="text-3xl font-bold mb-6">
@@ -46,6 +51,44 @@ export function ScrollTestScreen() {
 					This page overflows both vertically and horizontally so scrollPage can
 					be exercised in every direction.
 				</p>
+
+				{/* Scrollable container with its own scrollbar (for scrollElement) */}
+				<div
+					ref={containerRef}
+					aria-label="Scrollable list"
+					data-testid="scroll-container"
+					onScroll={(e) =>
+						setContainerScrollTop(Math.round(e.currentTarget.scrollTop))
+					}
+					className="mb-8 overflow-auto bg-green-100 rounded border border-green-400"
+					style={{
+						height: "200px",
+					}}
+				>
+					<button
+						type="button"
+						data-testid="container-top-button"
+						className="m-2"
+					>
+						Container top button
+					</button>
+					<div
+						style={{
+							minHeight: "1500px",
+						}}
+					>
+						<p className="p-2">Top of scrollable container</p>
+						<p
+							data-testid="container-bottom-marker"
+							className="p-2"
+							style={{
+								marginTop: "1400px",
+							}}
+						>
+							Bottom of scrollable container
+						</p>
+					</div>
+				</div>
 
 				{/* Wide block to create horizontal overflow */}
 				<div

@@ -116,6 +116,7 @@ export class TestAppPage extends BasePage {
 		return {
 			scrollY: this.getByTestId("scroll-y"),
 			scrollX: this.getByTestId("scroll-x"),
+			containerScrollTop: this.getByTestId("container-scroll-top"),
 		};
 	}
 

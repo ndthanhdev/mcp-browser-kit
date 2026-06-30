@@ -136,6 +136,28 @@ export abstract class DrivenBrowserDriverBase
 		});
 	};
 
+	scrollElement = (
+		tabId: string,
+		readableTreePath: string,
+		direction: ScrollDirection,
+		amount?: number,
+	): Promise<void> => {
+		this.logger.verbose(
+			`Scrolling element ${readableTreePath} ${direction}${amount != null ? ` by ${amount}px` : ""} in tab: ${tabId}`,
+		);
+		return this.tabRpcService.tabRpcClient.call({
+			method: "dom.scrollElement",
+			args: [
+				readableTreePath,
+				direction,
+				amount,
+			],
+			extraArgs: {
+				tabId,
+			},
+		});
+	};
+
 	// Interaction Methods (Click/Focus)
 	clickOnCoordinates = (tabId: string, x: number, y: number): Promise<void> => {
 		this.logger.verbose(

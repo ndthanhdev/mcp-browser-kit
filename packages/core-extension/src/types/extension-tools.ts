@@ -21,6 +21,12 @@ export interface TabSpecificTool {
 		direction: ScrollDirection,
 		amount?: number,
 	): Promise<void>;
+	scrollElement(
+		tabId: string,
+		readablePath: string,
+		direction: ScrollDirection,
+		amount?: number,
+	): Promise<void>;
 	fillTextToCoordinates(
 		tabId: string,
 		x: number,

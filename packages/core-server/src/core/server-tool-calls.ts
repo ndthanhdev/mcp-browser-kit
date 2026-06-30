@@ -558,6 +558,38 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		}
 	};
 
+	scrollElement = async (
+		browserId: string,
+		_windowId: string,
+		tabId: string,
+		readablePath: string,
+		direction: ScrollDirection,
+		amount?: number,
+	): Promise<void> => {
+		this.logger.info(
+			`Scrolling element ${readablePath} ${direction}${amount != null ? ` by ${amount}px` : ""} in tab: ${browserId}/${tabId}`,
+		);
+
+		try {
+			const rpcClient = await this.getTabRpc(browserId, tabId);
+			await rpcClient.call({
+				method: "scrollElement" as const,
+				args: [
+					tabId,
+					readablePath,
+					direction,
+					amount,
+				],
+				extraArgs: {},
+			});
+
+			this.logger.info("Scrolled element successfully");
+		} catch (error) {
+			this.logger.error("Failed to scroll element", error);
+			throw error;
+		}
+	};
+
 	closeTab = async (
 		browserId: string,
 		_windowId: string,

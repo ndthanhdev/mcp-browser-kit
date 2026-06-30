@@ -117,6 +117,20 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 		return this.browserDriver.scrollPage(tabId, direction, amount);
 	};
 
+	scrollElement = (
+		tabId: string,
+		readablePath: string,
+		direction: ScrollDirection,
+		amount?: number,
+	): Promise<void> => {
+		return this.browserDriver.scrollElement(
+			tabId,
+			readablePath,
+			direction,
+			amount,
+		);
+	};
+
 	fillTextToCoordinates = async (
 		tabId: string,
 		x: number,

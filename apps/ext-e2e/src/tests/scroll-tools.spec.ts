@@ -140,4 +140,124 @@ test.describe("Scroll Tools", () => {
 		expect(result.structuredContent?.ok).toBe(true);
 		expect(await readScroll(locators.scrollY)).toBe(0);
 	});
+
+	test.describe("scrollElement", () => {
+		test("scrolls a scrollable container without moving the page", async ({
+			testAppPage,
+			mcpClientPage,
+		}) => {
+			await testAppPage.navigateToScrollTest();
+			const tab = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"scroll-test",
+			);
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				testAppPage.page,
+				"scroll-test",
+			);
+
+			const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
+			const containerPath = elements.find((el) =>
+				el[2]?.includes("Scrollable list"),
+			)?.[0];
+			expect(containerPath).toBeDefined();
+
+			const locators = testAppPage.getScrollTestLocators();
+			expect(await readScroll(locators.containerScrollTop)).toBe(0);
+
+			const result = await mcpClientPage.callTool("scrollElement", {
+				...tab,
+				readablePath: containerPath as string,
+				direction: "down",
+			});
+			expect(result.structuredContent?.ok).toBe(true);
+
+			await expect
+				.poll(() => readScroll(locators.containerScrollTop))
+				.toBeGreaterThan(50);
+			// The page itself must not have scrolled.
+			expect(await readScroll(locators.scrollY)).toBe(0);
+		});
+
+		test("scrolls the container by an explicit pixel amount", async ({
+			testAppPage,
+			mcpClientPage,
+		}) => {
+			await testAppPage.navigateToScrollTest();
+			const tab = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"scroll-test",
+			);
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				testAppPage.page,
+				"scroll-test",
+			);
+
+			const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
+			const containerPath = elements.find((el) =>
+				el[2]?.includes("Scrollable list"),
+			)?.[0];
+			expect(containerPath).toBeDefined();
+
+			const locators = testAppPage.getScrollTestLocators();
+
+			const result = await mcpClientPage.callTool("scrollElement", {
+				...tab,
+				readablePath: containerPath as string,
+				direction: "down",
+				amount: 200,
+			});
+			expect(result.structuredContent?.ok).toBe(true);
+
+			await expect
+				.poll(() => readScroll(locators.containerScrollTop))
+				.toBeGreaterThan(190);
+			expect(await readScroll(locators.containerScrollTop)).toBeLessThanOrEqual(
+				210,
+			);
+		});
+
+		test("scrolls the container back up toward the top", async ({
+			testAppPage,
+			mcpClientPage,
+		}) => {
+			await testAppPage.navigateToScrollTest();
+			const tab = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"scroll-test",
+			);
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				testAppPage.page,
+				"scroll-test",
+			);
+
+			const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
+			const containerPath = elements.find((el) =>
+				el[2]?.includes("Scrollable list"),
+			)?.[0];
+			expect(containerPath).toBeDefined();
+
+			const locators = testAppPage.getScrollTestLocators();
+
+			await mcpClientPage.callTool("scrollElement", {
+				...tab,
+				readablePath: containerPath as string,
+				direction: "down",
+				amount: 400,
+			});
+			await expect
+				.poll(() => readScroll(locators.containerScrollTop))
+				.toBeGreaterThan(300);
+
+			const result = await mcpClientPage.callTool("scrollElement", {
+				...tab,
+				readablePath: containerPath as string,
+				direction: "up",
+				amount: 400,
+			});
+			expect(result.structuredContent?.ok).toBe(true);
+
+			await expect.poll(() => readScroll(locators.containerScrollTop)).toBe(0);
+		});
+	});
 });
