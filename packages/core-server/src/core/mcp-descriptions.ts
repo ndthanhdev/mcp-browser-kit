@@ -27,7 +27,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"",
 			"Tool selection by manifestVersion:",
 			"- MV2: all tools; prefer element tools; invokeJsFn only as last resort",
-			"- MV3: clickOnElement, fillTextToElement, hitEnterOnElement, scrollPage, openTab, closeTab, getSelection, showHumanHint",
+			"- MV3: clickOnElement, fillTextToElement, hitEnterOnElement, scrollPage, scrollElement, openTab, closeTab, getSelection, showHumanHint",
 			"- MV3 blocked: captureTab, invokeJsFn; avoid coordinate tools (no screenshot source for x/y)",
 			"",
 			"Error recovery:",
@@ -151,6 +151,17 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"Requires: browserId, windowId, tabId, direction.",
 			"Returns: ok=true once scrolled. Already at that edge (nothing to scroll) is still ok=true.",
 			"Avoid: assuming new elements exist — re-read readable-elements after scrolling, snapshots go stale.",
+		].join("\n");
+	};
+
+	scrollElementInstruction = (): string => {
+		return [
+			"Scroll inside a scrollable element (a panel, list, or any container with its own scrollbar).",
+			"When: content lives in a scrollable region that scrollPage (whole viewport) does not move — e.g. a chat panel or a long list inside a div. Works on MV2 and MV3 (no screenshot needed).",
+			"How: readablePath from a readable-elements tuple; direction is up/down/left/right; optional amount in pixels — omit it to scroll ~90% of the element's size. The element at readablePath is scrolled, or its nearest scrollable ancestor when it isn't itself scrollable (so you can target an interactive child inside the panel). browserId, windowId, tabId from bk:///context.",
+			"Requires: browserId, windowId, tabId, readablePath, direction.",
+			"Returns: ok=true once scrolled. Already at that edge, or no scrollable container found (nothing to scroll), is still ok=true.",
+			"Avoid: using for whole-page scrolling — use scrollPage instead; re-read readable-elements after scrolling, snapshots go stale.",
 		].join("\n");
 	};
 

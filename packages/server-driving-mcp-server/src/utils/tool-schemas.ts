@@ -108,6 +108,26 @@ export const scrollPageSchema = {
 		.describe("Pixels to scroll; defaults to ~one viewport when omitted"),
 };
 
+export const scrollElementSchema = {
+	...readableElementSchema,
+	direction: z
+		.enum([
+			"up",
+			"down",
+			"left",
+			"right",
+		])
+		.describe("Direction to scroll the element"),
+	amount: z
+		.number()
+		.int()
+		.positive()
+		.optional()
+		.describe(
+			"Pixels to scroll; defaults to ~one element height/width when omitted",
+		),
+};
+
 export const showHumanHintInputSchema = {
 	...tabRefSchema,
 	action: z
@@ -255,6 +275,7 @@ type ServerToolOverSchemaMap = {
 	fillTextToElement: typeof actionOutputSchema;
 	hitEnterOnElement: typeof actionOutputSchema;
 	scrollPage: typeof actionOutputSchema;
+	scrollElement: typeof actionOutputSchema;
 	showHumanHint: typeof showHumanHintOutputSchema;
 };
 

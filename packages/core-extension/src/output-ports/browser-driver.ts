@@ -36,6 +36,12 @@ export interface BrowserDriverOutputPort {
 		direction: ScrollDirection,
 		amount?: number,
 	): Promise<void>;
+	scrollElement(
+		tabId: string,
+		readableTreePath: string,
+		direction: ScrollDirection,
+		amount?: number,
+	): Promise<void>;
 	clickOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
 	focusOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
 	fillTextToFocusedElement(tabId: string, value: string): Promise<void>;

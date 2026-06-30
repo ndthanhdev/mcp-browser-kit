@@ -19,6 +19,7 @@ import {
 	coordinateTextInputSchema,
 	readableElementSchema,
 	readableElementTextInputSchema,
+	scrollElementSchema,
 	scrollPageSchema,
 } from "../utils/tool-schemas";
 
@@ -47,6 +48,7 @@ export class InteractionTools {
 		this.registerHitEnterOnElement(server);
 
 		this.registerScrollPage(server);
+		this.registerScrollElement(server);
 	}
 
 	private registerScrollPage(server: McpServer): void {
@@ -100,6 +102,83 @@ export class InteractionTools {
 				this.logger.verbose("Scrolled page", {
 					browserId,
 					tabId,
+					direction,
+					amount,
+				});
+				return createOverResponse(
+					actionOutputSchema,
+					{
+						ok: true,
+						value: {},
+					},
+					"Done",
+				);
+			},
+		);
+	}
+
+	private registerScrollElement(server: McpServer): void {
+		this.logger.verbose("Registering tool: scrollElement");
+		registerTool(
+			server,
+			"scrollElement",
+			{
+				title: "Scroll an element",
+				description: this.toolDescriptionsInputPort.scrollElementInstruction(),
+				inputSchema: scrollElementSchema,
+				outputSchema: actionOutputSchema,
+				annotations: {
+					readOnlyHint: false,
+					destructiveHint: false,
+					idempotentHint: false,
+					openWorldHint: true,
+				},
+			},
+			async ({
+				browserId,
+				windowId,
+				tabId,
+				readablePath,
+				direction,
+				amount,
+			}) => {
+				this.logger.info("Executing scrollElement", {
+					browserId,
+					tabId,
+					readablePath,
+					direction,
+					amount,
+				});
+				const overScroll = await over(() =>
+					this.toolsInputPort.scrollElement(
+						browserId,
+						windowId,
+						tabId,
+						readablePath,
+						direction,
+						amount,
+					),
+				);
+
+				if (!overScroll.ok) {
+					this.logger.error("Failed to scroll element", {
+						browserId,
+						tabId,
+						readablePath,
+						direction,
+						amount,
+						reason: overScroll.reason,
+					});
+					return createOverResponse(actionOutputSchema, {
+						ok: false,
+						reason: String(overScroll.reason),
+					});
+				}
+
+				this.logger.verbose("Scrolled element", {
+					browserId,
+					tabId,
+					readablePath,
 					direction,
 					amount,
 				});

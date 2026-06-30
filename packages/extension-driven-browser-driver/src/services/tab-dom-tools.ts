@@ -66,6 +66,25 @@ export class TabDomTools {
 		this.logger.verbose("Scroll completed");
 	};
 
+	scrollElement = async (
+		readablePath: string,
+		direction: ScrollDirection,
+		amount?: number,
+	) => {
+		this.logger.info(
+			`Scrolling element at path: ${readablePath} ${direction}${amount != null ? ` by ${amount}px` : ""}`,
+		);
+
+		const element = this.contextStore.getElementFromPath(readablePath);
+		if (!element) {
+			this.logger.warn(`Element not found at path: ${readablePath}`);
+			return;
+		}
+
+		dom.scrollElement(element, direction, amount ?? undefined);
+		this.logger.verbose("Scroll element completed");
+	};
+
 	clickOnCoordinates = async (x: number, y: number) => {
 		this.logger.info(`Clicking on coordinates (${x}, ${y})`);
 		await this.animation.playClickAnimation(x, y);

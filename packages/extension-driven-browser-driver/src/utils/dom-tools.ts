@@ -99,6 +99,72 @@ export const scrollPage = (direction: ScrollDirection, amount?: number) => {
 	}
 };
 
+/**
+ * True when `el` can actually scroll along the given axis: its computed
+ * overflow allows scrolling and its scroll size exceeds its client size.
+ */
+const isScrollable = (el: HTMLElement, horizontal: boolean): boolean => {
+	const style = getComputedStyle(el);
+	const overflow = horizontal ? style.overflowX : style.overflowY;
+	const canOverflow = overflow === "auto" || overflow === "scroll";
+	const sizeExceeds = horizontal
+		? el.scrollWidth > el.clientWidth
+		: el.scrollHeight > el.clientHeight;
+	return canOverflow && sizeExceeds;
+};
+
+/**
+ * Scrolls a scrollable element one step in `direction`. Resolves the actual
+ * scroll target by walking up from `element` to the nearest scrollable ancestor
+ * (falling back to `element` itself), so callers can target an interactive child
+ * inside a panel rather than the container. The step is `amount` pixels when
+ * provided, otherwise ~90% of the target's client size along the relevant axis.
+ * Uses an instant scroll so the position can be read back synchronously. Being
+ * already clamped at the requested edge (or a non-scrollable target) is a no-op
+ * success; a failure to move when there is still room throws.
+ */
+export const scrollElement = (
+	element: HTMLElement,
+	direction: ScrollDirection,
+	amount?: number,
+) => {
+	const horizontal = direction === "left" || direction === "right";
+
+	let candidate: HTMLElement | null = element;
+	while (
+		candidate &&
+		candidate !== document.body &&
+		!isScrollable(candidate, horizontal)
+	) {
+		candidate = candidate.parentElement;
+	}
+	const target = candidate ?? element;
+
+	const step =
+		amount ??
+		Math.round((horizontal ? target.clientWidth : target.clientHeight) * 0.9);
+	const sign = direction === "up" || direction === "left" ? -1 : 1;
+
+	const before = horizontal ? target.scrollLeft : target.scrollTop;
+	target.scrollBy({
+		left: horizontal ? sign * step : 0,
+		top: horizontal ? 0 : sign * step,
+		behavior: "instant",
+	});
+	const after = horizontal ? target.scrollLeft : target.scrollTop;
+
+	if (after === before) {
+		const atEdge =
+			sign < 0
+				? before <= 0
+				: before + (horizontal ? target.clientWidth : target.clientHeight) >=
+					(horizontal ? target.scrollWidth : target.scrollHeight) - 1;
+		if (!atEdge) {
+			throw new Error(`scrollElement(${direction}): no movement`);
+		}
+	}
+};
+
 export const clickOnCoordinates = (x: number, y: number) => {
 	const element = document.elementFromPoint(x, y);
 	if (element && element instanceof HTMLElement) {
