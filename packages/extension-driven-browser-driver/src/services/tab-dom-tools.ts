@@ -1,4 +1,7 @@
-import type { Selection } from "@mcp-browser-kit/core-extension";
+import type {
+	ScrollDirection,
+	Selection,
+} from "@mcp-browser-kit/core-extension";
 import type { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
 import { LoggerFactoryOutputPort as LoggerFactoryOutputPortSymbol } from "@mcp-browser-kit/core-extension/output-ports";
 import type { Logger } from "@mcp-browser-kit/types";
@@ -54,6 +57,33 @@ export class TabDomTools {
 	) {
 		this.logger = this.loggerFactory.create("TabDomTools");
 	}
+
+	scrollPage = async (direction: ScrollDirection, amount?: number) => {
+		this.logger.info(
+			`Scrolling ${direction}${amount != null ? ` by ${amount}px` : ""}`,
+		);
+		dom.scrollPage(direction, amount ?? undefined);
+		this.logger.verbose("Scroll completed");
+	};
+
+	scrollElement = async (
+		readablePath: string,
+		direction: ScrollDirection,
+		amount?: number,
+	) => {
+		this.logger.info(
+			`Scrolling element at path: ${readablePath} ${direction}${amount != null ? ` by ${amount}px` : ""}`,
+		);
+
+		const element = this.contextStore.getElementFromPath(readablePath);
+		if (!element) {
+			this.logger.warn(`Element not found at path: ${readablePath}`);
+			return;
+		}
+
+		dom.scrollElement(element, direction, amount ?? undefined);
+		this.logger.verbose("Scroll element completed");
+	};
 
 	clickOnCoordinates = async (x: number, y: number) => {
 		this.logger.info(`Clicking on coordinates (${x}, ${y})`);
@@ -128,6 +158,22 @@ export class TabDomTools {
 			},
 		);
 		this.logger.verbose("Click on element completed");
+	};
+
+	getElementHtmlByReadablePath = async (
+		readablePath: string,
+	): Promise<string> => {
+		this.logger.info(`Getting HTML for element at path: ${readablePath}`);
+
+		const element = this.contextStore.getElementFromPath(readablePath);
+		if (!element) {
+			this.logger.warn(`Element not found at path: ${readablePath}`);
+			throw new Error(`Element not found at path: ${readablePath}`);
+		}
+
+		const html = element.outerHTML;
+		this.logger.verbose(`Retrieved element HTML (${html.length} characters)`);
+		return html;
 	};
 
 	fillTextToElementByReadablePath = async (

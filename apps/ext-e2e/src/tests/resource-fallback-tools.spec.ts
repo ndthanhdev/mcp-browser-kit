@@ -200,6 +200,7 @@ test.describe("Resource Fallback Tools", () => {
 						string,
 						string,
 						string,
+						string?,
 					][]
 				>
 			>("getReadableElements", {
@@ -214,10 +215,16 @@ test.describe("Resource Fallback Tools", () => {
 
 			const tuple = result.data[0];
 			expect(Array.isArray(tuple)).toBe(true);
-			expect(tuple.length).toBe(3);
+			// 3 elements normally; an optional 4th (value) is present only when
+			// the element has a current form value.
+			expect(tuple.length).toBeGreaterThanOrEqual(3);
+			expect(tuple.length).toBeLessThanOrEqual(4);
 			expect(typeof tuple[0]).toBe("string");
 			expect(typeof tuple[1]).toBe("string");
 			expect(typeof tuple[2]).toBe("string");
+			if (tuple.length === 4) {
+				expect(typeof tuple[3]).toBe("string");
+			}
 		});
 
 		test("element paths work with interaction tools", async ({
@@ -267,6 +274,7 @@ test.describe("Resource Fallback Tools", () => {
 						string,
 						string,
 						string,
+						string?,
 					][]
 				>
 			>("getReadableElements", {
@@ -282,6 +290,7 @@ test.describe("Resource Fallback Tools", () => {
 					string,
 					string,
 					string,
+					string?,
 				][]
 			>;
 
@@ -292,6 +301,7 @@ test.describe("Resource Fallback Tools", () => {
 				expect(toolResult.data[i][0]).toBe(resourceResult.data[i][0]);
 				expect(toolResult.data[i][1]).toBe(resourceResult.data[i][1]);
 				expect(toolResult.data[i][2]).toBe(resourceResult.data[i][2]);
+				expect(toolResult.data[i][3]).toBe(resourceResult.data[i][3]);
 			}
 		});
 	});
@@ -314,6 +324,7 @@ test.describe("Resource Fallback Tools", () => {
 						string,
 						string,
 						string,
+						string?,
 					][]
 				>
 			>("getReadableElements", {
@@ -330,6 +341,7 @@ test.describe("Resource Fallback Tools", () => {
 						string,
 						string,
 						string,
+						string?,
 					][]
 				>
 			>("getSnapshotPage", {

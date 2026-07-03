@@ -14,7 +14,11 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
 import { findWindowIdForTab, tabBkUri } from "../utils/browser-resource-uris";
-import { snapshotPageSchema, tabReadRefSchema } from "../utils/tool-schemas";
+import {
+	snapshotPageSchema,
+	tabReadableElementHtmlSchema,
+	tabReadRefSchema,
+} from "../utils/tool-schemas";
 
 /**
  * Fallback MCP tools that expose the same data as the bk:/// resources.
@@ -41,6 +45,7 @@ export class ResourceFallbackTools {
 		this.registerGetContext(server);
 		this.registerGetReadableText(server);
 		this.registerGetReadableElements(server);
+		this.registerGetReadableElementHtml(server);
 		this.registerGetSnapshotPage(server);
 	}
 
@@ -183,6 +188,71 @@ export class ResourceFallbackTools {
 					this.logger.error("Failed to get readable elements", {
 						browserId,
 						tabId,
+						reason: overResult.reason,
+					});
+					return {
+						content: [
+							{
+								type: "text" as const,
+								text: JSON.stringify(
+									{
+										ok: false,
+										reason: String(overResult.reason),
+									},
+									null,
+									2,
+								),
+							},
+						],
+					};
+				}
+
+				return {
+					content: [
+						{
+							type: "text" as const,
+							text: JSON.stringify(overResult.value, null, 2),
+						},
+					],
+				};
+			},
+		);
+	}
+
+	private registerGetReadableElementHtml(server: McpServer): void {
+		this.logger.verbose("Registering tool: getReadableElementHtml");
+		server.registerTool(
+			"getReadableElementHtml",
+			{
+				title: "Get readable element HTML",
+				description: this.mcpDescriptions.getReadableElementHtmlInstruction(),
+				inputSchema: tabReadableElementHtmlSchema,
+				annotations: {
+					readOnlyHint: true,
+					openWorldHint: true,
+				},
+			},
+			async ({ browserId, tabId, readablePath }) => {
+				this.logger.info("Executing getReadableElementHtml", {
+					browserId,
+					tabId,
+					readablePath,
+				});
+				const overResult = await over(async () => {
+					const channelId = this.resolveChannelId(browserId);
+					return this.snapshotContent.getReadableElementHtmlPage(
+						channelId,
+						tabId,
+						readablePath,
+						1,
+					);
+				});
+
+				if (!overResult.ok) {
+					this.logger.error("Failed to get readable element HTML", {
+						browserId,
+						tabId,
+						readablePath,
 						reason: overResult.reason,
 					});
 					return {

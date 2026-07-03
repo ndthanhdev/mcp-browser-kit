@@ -8,6 +8,7 @@ import type {
 	ExtensionTabInfo,
 	ExtensionWindowInfo,
 	Screenshot,
+	ScrollDirection,
 	Selection,
 	TabContext,
 } from "@mcp-browser-kit/core-extension/types";
@@ -114,6 +115,49 @@ export abstract class DrivenBrowserDriverBase
 		});
 	};
 
+	// Scroll Methods
+	scrollPage = (
+		tabId: string,
+		direction: ScrollDirection,
+		amount?: number,
+	): Promise<void> => {
+		this.logger.verbose(
+			`Scrolling ${direction}${amount != null ? ` by ${amount}px` : ""} in tab: ${tabId}`,
+		);
+		return this.tabRpcService.tabRpcClient.call({
+			method: "dom.scrollPage",
+			args: [
+				direction,
+				amount,
+			],
+			extraArgs: {
+				tabId,
+			},
+		});
+	};
+
+	scrollElement = (
+		tabId: string,
+		readableTreePath: string,
+		direction: ScrollDirection,
+		amount?: number,
+	): Promise<void> => {
+		this.logger.verbose(
+			`Scrolling element ${readableTreePath} ${direction}${amount != null ? ` by ${amount}px` : ""} in tab: ${tabId}`,
+		);
+		return this.tabRpcService.tabRpcClient.call({
+			method: "dom.scrollElement",
+			args: [
+				readableTreePath,
+				direction,
+				amount,
+			],
+			extraArgs: {
+				tabId,
+			},
+		});
+	};
+
 	// Interaction Methods (Click/Focus)
 	clickOnCoordinates = (tabId: string, x: number, y: number): Promise<void> => {
 		this.logger.verbose(
@@ -142,6 +186,24 @@ export abstract class DrivenBrowserDriverBase
 			method: "dom.clickOnElementByReadablePath",
 			args: [
 				readableTreePath,
+			],
+			extraArgs: {
+				tabId,
+			},
+		});
+	};
+
+	getElementHtmlByReadablePath = (
+		tabId: string,
+		readablePath: string,
+	): Promise<string> => {
+		this.logger.verbose(
+			`Getting element HTML by readable path: ${readablePath} in tab: ${tabId}`,
+		);
+		return this.tabRpcService.tabRpcClient.call({
+			method: "dom.getElementHtmlByReadablePath",
+			args: [
+				readablePath,
 			],
 			extraArgs: {
 				tabId,

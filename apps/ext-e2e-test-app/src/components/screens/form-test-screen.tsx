@@ -198,6 +198,29 @@ export function FormTestScreen() {
 					</form>
 				</section>
 
+				<section className="mb-8">
+					<h2 className="text-2xl font-bold mb-4">Preferences</h2>
+					<label className="block mb-2">
+						<input
+							type="checkbox"
+							data-testid="subscribe-checkbox"
+							aria-label="Subscribe to newsletter"
+							defaultChecked
+							className="mr-2"
+						/>
+						Subscribe to newsletter
+					</label>
+					<label className="block">
+						<input
+							type="checkbox"
+							data-testid="marketing-checkbox"
+							aria-label="Receive marketing emails"
+							className="mr-2"
+						/>
+						Receive marketing emails
+					</label>
+				</section>
+
 				<section>
 					<h2 className="text-2xl font-bold mb-4">Current Form State</h2>
 					<div

@@ -57,9 +57,17 @@ export const tabReadableElementsBkUri = (
 ): string =>
 	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}/tabs/${tabId}/readable-elements`;
 
+/** `bk:///browsers/<shortId>/tabs/<tabId>/readable-element-html/<readablePath>` */
+export const tabReadableElementHtmlBkUri = (
+	channelId: string,
+	tabId: string,
+	readablePath: string,
+): string =>
+	`${BK_URI_PREFIX}browsers/${shortChannelId(channelId)}/tabs/${tabId}/readable-element-html/${readablePath}`;
+
 /** `bk:///snapshot-types/<type>/snapshots/<snapshotId>/pages/<page>` */
 export const snapshotPageBkUri = (
-	type: "readable-text" | "readable-elements",
+	type: "readable-text" | "readable-elements" | "readable-element-html",
 	snapshotId: string,
 	page: number,
 ): string =>
@@ -88,8 +96,17 @@ export type ParsedBkResource =
 			tabId: string;
 	  }
 	| {
+			type: "tab-readable-element-html";
+			channelId: string;
+			tabId: string;
+			readablePath: string;
+	  }
+	| {
 			type: "snapshot-page";
-			contentType: "readable-text" | "readable-elements";
+			contentType:
+				| "readable-text"
+				| "readable-elements"
+				| "readable-element-html";
 			snapshotId: string;
 			pageNumber: number;
 	  };
@@ -116,10 +133,13 @@ export const parseBkResourceId = (
 ): ParsedBkResource | undefined => {
 	if (resourceId.startsWith("snapshot-types/")) {
 		const match = resourceId.match(
-			/^snapshot-types\/(readable-text|readable-elements)\/snapshots\/([^/]+)\/pages\/(\d+)$/,
+			/^snapshot-types\/(readable-text|readable-elements|readable-element-html)\/snapshots\/([^/]+)\/pages\/(\d+)$/,
 		);
 		if (match) {
-			const contentType = match[1] as "readable-text" | "readable-elements";
+			const contentType = match[1] as
+				| "readable-text"
+				| "readable-elements"
+				| "readable-element-html";
 			const snapshotId = match[2];
 			const pageNumber = Number(match[3]);
 			if (pageNumber >= 1) {
@@ -180,6 +200,18 @@ export const parseBkResourceId = (
 				channelId,
 				tabId,
 			};
+		}
+		const elementHtmlPrefix = "readable-element-html/";
+		if (suffix.startsWith(elementHtmlPrefix)) {
+			const readablePath = suffix.slice(elementHtmlPrefix.length);
+			if (readablePath) {
+				return {
+					type: "tab-readable-element-html",
+					channelId,
+					tabId,
+					readablePath,
+				};
+			}
 		}
 		return;
 	}

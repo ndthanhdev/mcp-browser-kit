@@ -12,6 +12,7 @@ import type {
 	ExtensionContext,
 	ExtensionToolName,
 	Screenshot,
+	ScrollDirection,
 	Selection,
 } from "../types";
 
@@ -108,6 +109,28 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 		return this.browserDriver.clickOnCoordinates(tabId, x, y);
 	};
 
+	scrollPage = (
+		tabId: string,
+		direction: ScrollDirection,
+		amount?: number,
+	): Promise<void> => {
+		return this.browserDriver.scrollPage(tabId, direction, amount);
+	};
+
+	scrollElement = (
+		tabId: string,
+		readablePath: string,
+		direction: ScrollDirection,
+		amount?: number,
+	): Promise<void> => {
+		return this.browserDriver.scrollElement(
+			tabId,
+			readablePath,
+			direction,
+			amount,
+		);
+	};
+
 	fillTextToCoordinates = async (
 		tabId: string,
 		x: number,
@@ -164,6 +187,24 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 			return tabContext.textContent;
 		} catch (error) {
 			this.logger.error("Failed to get readable text", error);
+			throw error;
+		}
+	};
+
+	getElementHtml = async (tabId: string, readablePath: string) => {
+		this.logger.info(
+			`Getting element HTML from tab: ${tabId}, path: ${readablePath}`,
+		);
+
+		try {
+			const html = await this.browserDriver.getElementHtmlByReadablePath(
+				tabId,
+				readablePath,
+			);
+			this.logger.info("Retrieved element HTML successfully");
+			return html;
+		} catch (error) {
+			this.logger.error("Failed to get element HTML", error);
 			throw error;
 		}
 	};

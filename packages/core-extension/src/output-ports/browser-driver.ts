@@ -9,6 +9,7 @@ import type {
 	ExtensionTabInfo,
 	ExtensionWindowInfo,
 	Screenshot,
+	ScrollDirection,
 	Selection,
 	TabContext,
 } from "../types";
@@ -30,6 +31,17 @@ export interface BrowserDriverOutputPort {
 	closeTab(tabId: string): Promise<void>;
 	captureTab(tabId: string): Promise<Screenshot>;
 	getSelection(tabId: string): Promise<Selection>;
+	scrollPage(
+		tabId: string,
+		direction: ScrollDirection,
+		amount?: number,
+	): Promise<void>;
+	scrollElement(
+		tabId: string,
+		readableTreePath: string,
+		direction: ScrollDirection,
+		amount?: number,
+	): Promise<void>;
 	clickOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
 	focusOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
 	fillTextToFocusedElement(tabId: string, value: string): Promise<void>;
@@ -47,6 +59,10 @@ export interface BrowserDriverOutputPort {
 		tabId: string,
 		readableTreePath: string,
 	): Promise<void>;
+	getElementHtmlByReadablePath(
+		tabId: string,
+		readableTreePath: string,
+	): Promise<string>;
 	showHumanHint(
 		tabId: string,
 		params: ShowHumanHintParams,

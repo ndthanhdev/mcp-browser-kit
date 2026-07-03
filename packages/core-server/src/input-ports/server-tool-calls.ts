@@ -1,6 +1,7 @@
 import type {
 	ExtensionToolName,
 	ReadableElementRecord,
+	ScrollDirection,
 	Selection,
 } from "@mcp-browser-kit/core-extension";
 import type {
@@ -116,6 +117,21 @@ export type ServerToolCallsInputPort = {
 		windowId: string;
 		tabId: string;
 	}>;
+	scrollPage: (
+		browserId: string,
+		windowId: string,
+		tabId: string,
+		direction: ScrollDirection,
+		amount?: number,
+	) => Promise<void>;
+	scrollElement: (
+		browserId: string,
+		windowId: string,
+		tabId: string,
+		readablePath: string,
+		direction: ScrollDirection,
+		amount?: number,
+	) => Promise<void>;
 	showHumanHint: (
 		browserId: string,
 		windowId: string,
@@ -176,6 +192,15 @@ export type ServerToolArgsMap = {
 		browserId: string;
 		windowId: string;
 		url: string;
+	};
+	scrollPage: TabRef & {
+		direction: ScrollDirection;
+		amount?: number;
+	};
+	scrollElement: TabRef & {
+		readablePath: string;
+		direction: ScrollDirection;
+		amount?: number;
 	};
 	showHumanHint: TabRef & {
 		action: ShowHumanHintParams["action"];

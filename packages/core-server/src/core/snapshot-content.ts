@@ -14,7 +14,16 @@ const SNAPSHOT_CAP = 50;
 
 const snapshotIdGenerator = createPrefixId("snapshot");
 
-type ContentType = "readable-text" | "readable-elements";
+type ContentType =
+	| "readable-text"
+	| "readable-elements"
+	| "readable-element-html";
+
+const elementHtmlCacheKey = (
+	channelId: string,
+	tabId: string,
+	readablePath: string,
+): string => `${channelId}::${tabId}::readable-element-html::${readablePath}`;
 
 interface CachedPages<T> {
 	snapshotId: string;
@@ -175,9 +184,45 @@ export class SnapshotContentUseCases implements SnapshotContentInputPort {
 		);
 	}
 
+	async getReadableElementHtmlPage(
+		channelId: string,
+		tabId: string,
+		readablePath: string,
+		pageNumber = 1,
+	): Promise<SnapshotResult<string>> {
+		const key = elementHtmlCacheKey(channelId, tabId, readablePath);
+
+		if (pageNumber === 1) {
+			const html = await this.fetchElementHtml(channelId, tabId, readablePath);
+			const pages = splitText(html, PAGE_SIZE_CHARS);
+			const snapshotId = snapshotIdGenerator.generate();
+			const cached: CachedPages<string> = {
+				snapshotId,
+				channelId,
+				tabId,
+				type: "readable-element-html",
+				pages,
+				totalPages: pages.length,
+			};
+			this.cache.set(key, cached);
+			this.cacheBySnapshotId.set(snapshotId, cached);
+			this.evictIfOverCap();
+			this.logger.verbose("Cached readable-element-html", {
+				channelId,
+				tabId,
+				readablePath,
+				totalPages: cached.totalPages,
+				snapshotId: cached.snapshotId,
+			});
+			return buildResult(cached, 1);
+		}
+
+		return this.getFromCache<string>(key, pageNumber, "readable-element-html");
+	}
+
 	async getSnapshotPage(
 		snapshotId: string,
-		type: "readable-text" | "readable-elements",
+		type: ContentType,
 		pageNumber: number,
 	): Promise<SnapshotResult<any>> {
 		const cached = this.cacheBySnapshotId.get(snapshotId);
@@ -203,6 +248,14 @@ export class SnapshotContentUseCases implements SnapshotContentInputPort {
 		if (tabId) {
 			this.cache.delete(cacheKey(channelId, tabId, "readable-text"));
 			this.cache.delete(cacheKey(channelId, tabId, "readable-elements"));
+			// Element-html entries are keyed per readablePath, so purge by prefix.
+			const elementHtmlPrefix = `${channelId}::${tabId}::readable-element-html::`;
+			for (const [key, cached] of this.cache.entries()) {
+				if (key.startsWith(elementHtmlPrefix)) {
+					this.cacheBySnapshotId.delete(cached.snapshotId);
+					this.cache.delete(key);
+				}
+			}
 			this.logger.verbose("Invalidated latest-snapshot pointer for tab", {
 				channelId,
 				tabId,
@@ -280,6 +333,22 @@ export class SnapshotContentUseCases implements SnapshotContentInputPort {
 			] as never,
 			extraArgs: {},
 		}) as Promise<ReadableElementRecord[]>;
+	}
+
+	private async fetchElementHtml(
+		channelId: string,
+		tabId: string,
+		readablePath: string,
+	): Promise<string> {
+		const rpcClient = this.getRpcClient(channelId);
+		return rpcClient.call({
+			method: "getElementHtml" as keyof ExtensionToolCallInputPort,
+			args: [
+				tabId,
+				readablePath,
+			] as never,
+			extraArgs: {},
+		}) as Promise<string>;
 	}
 
 	private getRpcClient(channelId: string) {
