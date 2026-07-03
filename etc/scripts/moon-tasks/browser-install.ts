@@ -27,6 +27,13 @@ process.env.PLAYWRIGHT_BROWSERS_PATH = browsersPath;
 const cacheDir = path.join(workspaceRoot, ".tmp", "pw-dl");
 await fs.ensureDir(cacheDir);
 
+// `playwright install` starts by pruning "unused" browsers from
+// PLAYWRIGHT_BROWSERS_PATH — and it considers our manually-extracted builds
+// unused (they lack Playwright's install marker), so it deletes them. We only
+// call it to scrape the CDN url, so point it at a throwaway path to keep the
+// prune away from the browsers we extract into browsersPath.
+const resolveDir = path.join(workspaceRoot, ".tmp", "pw-resolve");
+
 // executablePath() reads PLAYWRIGHT_BROWSERS_PATH, so require after setting it.
 const require = createRequire(import.meta.url);
 const pw = require("@playwright/test");
@@ -89,7 +96,11 @@ async function resolveDownloadUrl(name: string): Promise<string> {
 				name,
 			],
 			{
-				env: process.env,
+				env: {
+					...process.env,
+					// biome-ignore lint/style/useNamingConvention: env var name
+					PLAYWRIGHT_BROWSERS_PATH: resolveDir,
+				},
 				detached: true,
 			},
 		);
