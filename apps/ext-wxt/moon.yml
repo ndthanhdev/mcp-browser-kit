@@ -1,0 +1,10 @@
+$schema: https://moonrepo.dev/schemas/project.json
+language: typescript
+tags:
+- wxt
+tasks:
+  build:
+    deps:
+    - ~:wxt-build
+toolchains:
+  default: node
