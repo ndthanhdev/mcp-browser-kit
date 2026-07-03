@@ -11,7 +11,8 @@ import { fileURLToPath } from "node:url";
 // PLAYWRIGHT_BROWSERS_PATH. Playwright's own extractor deadlocks on this
 // project's btrfs .tmp (worker thread wedges in an uninterruptible write and
 // the process becomes unkillable), so we let Playwright resolve the CDN URL,
-// download the zip ourselves, and extract with python3 (sequential, reliable).
+// download the zip ourselves, and extract with adm-zip (sequential, main-thread,
+// preserves the executable bit on the browser binaries).
 
 $.verbose = false;
 
@@ -29,6 +30,7 @@ await fs.ensureDir(cacheDir);
 // executablePath() reads PLAYWRIGHT_BROWSERS_PATH, so require after setting it.
 const require = createRequire(import.meta.url);
 const pw = require("@playwright/test");
+const AdmZip = require("adm-zip");
 
 const targets: {
 	name: string;
@@ -141,15 +143,11 @@ async function downloadTo(url: string, dest: string): Promise<void> {
 
 async function extractZip(zip: string, destDir: string): Promise<void> {
 	await fs.ensureDir(destDir);
-	const py = [
-		"import zipfile, os, sys",
-		"z, dst = sys.argv[1], sys.argv[2]",
-		"zf = zipfile.ZipFile(z)",
-		"zf.extractall(dst)",
-		"for i in zf.infolist():",
-		"    mode = (i.external_attr >> 16) & 0o777",
-		"    fp = os.path.join(dst, i.filename)",
-		"    if mode and os.path.exists(fp): os.chmod(fp, mode)",
-	].join("\n");
-	await $`python3 -c ${py} ${zip} ${destDir}`;
+	// keepOriginalPermission restores the executable bit stored in each entry's
+	// external attributes, so the extracted browser binaries stay runnable.
+	new AdmZip(zip).extractAllTo(
+		destDir,
+		/* overwrite */ true,
+		/* keepOriginalPermission */ true,
+	);
 }

@@ -1285,6 +1285,7 @@ __metadata:
   dependencies:
     "@playwright/test": "npm:^1.58.2"
     "@types/fs-extra": "npm:^11.0.4"
+    adm-zip: "npm:^0.5.16"
     fs-extra: "npm:^11.3.3"
     luxon: "npm:^3.7.2"
     tsx: "npm:^4.21.0"
@@ -4114,10 +4115,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"adm-zip@npm:~0.5.x":
-  version: 0.5.16
-  resolution: "adm-zip@npm:0.5.16"
-  checksum: 10c0/6f10119d4570c7ba76dcf428abb8d3f69e63f92e51f700a542b43d4c0130373dd2ddfc8f85059f12d4a843703a90c3970cfd17876844b4f3f48bf042bfa6b49f
+"adm-zip@npm:^0.5.16, adm-zip@npm:~0.5.x":
+  version: 0.5.18
+  resolution: "adm-zip@npm:0.5.18"
+  checksum: 10c0/9b734aa7126a01913baec02bf495d086b5d7e63315522b7087620e3fc8279c8ebd65109da4d99f16fcf873d87522ae6ffd913aef65449fd22c68777b772685e9
   languageName: node
   linkType: hard
 
