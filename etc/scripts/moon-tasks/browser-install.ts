@@ -83,6 +83,19 @@ for (const target of targets) {
 	echo(chalk.green(`✔ ${target.name} installed`));
 }
 
+// The extracted binaries still need OS-level shared libraries (libnss3, libgbm,
+// libasound2, …) to launch — without them chromium dies immediately with
+// "Target page, context or browser has been closed". `playwright install-deps`
+// apt-installs those without downloading any browser, so it's safe on the btrfs
+// .tmp. Only meaningful on the Debian/Ubuntu CI image (runs as root); dev
+// machines already have the libs and may not use apt, so gate on CI.
+if (process.env.CI) {
+	echo("• installing system dependencies (playwright install-deps)");
+	await $({
+		verbose: true,
+	})`yarn exec playwright install-deps ${targets.map((t) => t.name)}`;
+}
+
 // Ask Playwright for the CDN url by scraping `playwright install`'s output, then
 // kill it BEFORE it downloads — so it never reaches the stalling extraction step.
 async function resolveDownloadUrl(name: string): Promise<string> {
