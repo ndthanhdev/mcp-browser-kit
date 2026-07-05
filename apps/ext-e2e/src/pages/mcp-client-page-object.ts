@@ -138,45 +138,17 @@ export class McpClientPageObject {
 	}
 
 	async disconnect() {
-		// TEMP INSTRUMENTATION — identify which teardown await blocks.
-		// Each step is raced against a 5s timeout and does NOT rethrow, so a single
-		// run logs the status of every step instead of hanging 30s on the first.
-		// Look for a `→ <name>` with no matching `✓ <name>` (it logged `✗ ... 5s`).
-		const t0 = Date.now();
-		const step = async (name: string, fn: () => Promise<void> | void) => {
-			const s = Date.now();
-			console.error(`[disconnect-probe] → ${name}`);
-			let timer: ReturnType<typeof setTimeout> | undefined;
-			const timeout = new Promise<never>((_, rej) => {
-				timer = setTimeout(
-					() => rej(new Error(`${name} did not settle in 5000ms`)),
-					5000,
-				);
-			});
-			try {
-				await Promise.race([
-					Promise.resolve(fn()),
-					timeout,
-				]);
-				console.error(`[disconnect-probe] ✓ ${name} (${Date.now() - s}ms)`);
-			} catch (err) {
-				console.error(
-					`[disconnect-probe] ✗ ${name} after ${Date.now() - s}ms: ${err}`,
-				);
-			} finally {
-				clearTimeout(timer);
-			}
-		};
-
-		await step("client.close", () => this.client.close());
-		await step("mcpServer.stop", () => this.mcpServer?.stop());
-		await step("trpcServer.stop", () => this.trpcServer?.stop());
+		await this.client.close();
+		// Detach the BrowserResources onChange listener before tearing down the
+		// server, otherwise it keeps firing sendResourceUpdated into the closed
+		// transport (the "sendResourceUpdated failed" log spam).
+		await this.mcpServer?.stop();
+		await this.trpcServer?.stop();
 		this.browserStateLifecycle?.stop();
 		this.browserStateLifecycle = null;
 		this.mcpServer = null;
 		this.clientTransport = null;
 		this.serverTransport = null;
-		console.error(`[disconnect-probe] done total ${Date.now() - t0}ms`);
 	}
 
 	async listTools() {
