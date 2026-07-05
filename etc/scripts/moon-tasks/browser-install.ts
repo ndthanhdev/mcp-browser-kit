@@ -16,13 +16,12 @@ import { workDirs } from "@mcp-browser-kit/scripts/utils/work-dirs";
 
 $.verbose = false;
 
-const workspaceRoot = workDirs.path;
 const browsersPath =
 	process.env.PLAYWRIGHT_BROWSERS_PATH ??
-	path.join(workspaceRoot, ".tmp", "browsers");
+	path.join(workDirs.path, ".tmp", "browsers");
 process.env.PLAYWRIGHT_BROWSERS_PATH = browsersPath;
 
-const cacheDir = path.join(workspaceRoot, ".tmp", "pw-dl");
+const cacheDir = path.join(workDirs.path, ".tmp", "pw-dl");
 await fs.ensureDir(cacheDir);
 
 // `playwright install` starts by pruning "unused" browsers from
@@ -30,7 +29,7 @@ await fs.ensureDir(cacheDir);
 // unused (they lack Playwright's install marker), so it deletes them. We only
 // call it to scrape the CDN url, so point it at a throwaway path to keep the
 // prune away from the browsers we extract into browsersPath.
-const resolveDir = path.join(workspaceRoot, ".tmp", "pw-resolve");
+const resolveDir = path.join(workDirs.path, ".tmp", "pw-resolve");
 
 // executablePath() reads PLAYWRIGHT_BROWSERS_PATH, so require after setting it.
 const require = createRequire(import.meta.url);
@@ -63,7 +62,7 @@ for (const target of targets) {
 	const zipPath = path.join(cacheDir, `${rev}.zip`);
 
 	if (await fs.pathExists(zipPath)) {
-		echo(`• using cached ${path.relative(workspaceRoot, zipPath)}`);
+		echo(`• using cached ${path.relative(workDirs.path, zipPath)}`);
 	} else {
 		const url = await resolveDownloadUrl(target.name);
 		echo(`⇣ downloading ${target.name} from ${url}`);
@@ -71,7 +70,7 @@ for (const target of targets) {
 	}
 
 	echo(
-		`⇡ extracting ${target.name} → ${path.relative(workspaceRoot, destDir)}`,
+		`⇡ extracting ${target.name} → ${path.relative(workDirs.path, destDir)}`,
 	);
 	await extractZip(zipPath, destDir);
 
