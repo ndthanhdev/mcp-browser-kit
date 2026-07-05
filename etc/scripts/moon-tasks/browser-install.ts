@@ -17,11 +17,10 @@ import { workDirs } from "@mcp-browser-kit/scripts/utils/work-dirs";
 $.verbose = false;
 
 const browsersPath =
-	process.env.PLAYWRIGHT_BROWSERS_PATH ??
-	path.join(workDirs.path, ".tmp", "browsers");
+	process.env.PLAYWRIGHT_BROWSERS_PATH ?? workDirs.tmp.browsers.path;
 process.env.PLAYWRIGHT_BROWSERS_PATH = browsersPath;
 
-const cacheDir = path.join(workDirs.path, ".tmp", "pw-dl");
+const cacheDir = workDirs.tmp.pwDl.path;
 await fs.ensureDir(cacheDir);
 
 // `playwright install` starts by pruning "unused" browsers from
@@ -29,7 +28,7 @@ await fs.ensureDir(cacheDir);
 // unused (they lack Playwright's install marker), so it deletes them. We only
 // call it to scrape the CDN url, so point it at a throwaway path to keep the
 // prune away from the browsers we extract into browsersPath.
-const resolveDir = path.join(workDirs.path, ".tmp", "pw-resolve");
+const resolveDir = workDirs.tmp.pwResolve.path;
 
 // executablePath() reads PLAYWRIGHT_BROWSERS_PATH, so require after setting it.
 const require = createRequire(import.meta.url);

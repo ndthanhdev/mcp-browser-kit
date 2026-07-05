@@ -18,6 +18,10 @@ const etc = path.resolve(root, "etc");
 const workflowRuntime = path.resolve(etc, "workflow-runtime");
 const scripts = path.resolve(etc, "scripts");
 const release = path.resolve(target, "release");
+const tmp = path.resolve(root, ".tmp");
+const tmpBrowsers = path.resolve(tmp, "browsers");
+const tmpPwDl = path.resolve(tmp, "pw-dl");
+const tmpPwResolve = path.resolve(tmp, "pw-resolve");
 
 export const workDirs = {
 	target: {
@@ -50,6 +54,18 @@ export const workDirs = {
 		},
 		workflowRuntime: {
 			path: workflowRuntime,
+		},
+	},
+	tmp: {
+		path: tmp,
+		browsers: {
+			path: tmpBrowsers,
+		},
+		pwDl: {
+			path: tmpPwDl,
+		},
+		pwResolve: {
+			path: tmpPwResolve,
 		},
 	},
 	path: root,
