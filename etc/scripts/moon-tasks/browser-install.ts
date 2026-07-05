@@ -5,7 +5,7 @@ import { createWriteStream } from "node:fs";
 import { createRequire } from "node:module";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { fileURLToPath } from "node:url";
+import { workDirs } from "@mcp-browser-kit/scripts/utils/work-dirs";
 
 // Installs the Playwright-pinned Chromium and Firefox builds into
 // PLAYWRIGHT_BROWSERS_PATH. Playwright's own extractor deadlocks on this
@@ -16,9 +16,7 @@ import { fileURLToPath } from "node:url";
 
 $.verbose = false;
 
-const scriptDir = path.dirname(fileURLToPath(import.meta.url));
-const workspaceRoot =
-	process.env.MOON_WORKSPACE_ROOT ?? path.resolve(scriptDir, "../../..");
+const workspaceRoot = workDirs.path;
 const browsersPath =
 	process.env.PLAYWRIGHT_BROWSERS_PATH ??
 	path.join(workspaceRoot, ".tmp", "browsers");

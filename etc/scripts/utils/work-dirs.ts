@@ -4,7 +4,11 @@ import * as path from "node:path";
 
 $.verbose = true;
 
-const root = path.resolve(import.meta.dirname, "../../../");
+// Moon sets this to the workspace root at task runtime; fall back to path
+// math so the script still works when run standalone (not via a moon task).
+const root =
+	process.env.MOON_WORKSPACE_ROOT ??
+	path.resolve(import.meta.dirname, "../../../");
 const target = path.resolve(root, "target");
 const apps = path.resolve(root, "apps");
 const m2 = path.resolve(apps, "m2");
