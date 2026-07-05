@@ -1,11 +1,11 @@
 language: typescript
 tasks:
-  playwright-install:
+  browser-install:
     toolchain: node
     preset: utility
     env:
-      PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/playwright/browsers
-    script: playwright install --with-deps
+      PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/browsers
+    script: yarn dlx tsx $projectRoot/moon-tasks/browser-install.ts
   git-shallow-remove:
     preset: utility
     script: $projectRoot/moon-tasks/git-shallow-remove.ts

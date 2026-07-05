@@ -1,0 +1,105 @@
+$schema: https://moonrepo.dev/schemas/tasks.json
+fileGroups:
+  wxt-config:
+  - wxt.config.ts
+  - web-ext.config.ts
+  wxt-sources:
+  - src/**/*
+  - entrypoints/**/*
+  wxt-assets:
+  - assets/**/*
+  - public/**/*
+  wxt-prepared:
+  - .wxt/**/*
+  wxt-output:
+  - .output/**/*
+tasks:
+  wxt-install-browser:
+    toolchain: node
+    preset: utility
+    deps:
+    - scripts:browser-install
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/browsers
+    script: |
+      CHROME="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")"
+      FIREFOX="$(node -e "console.log(require('@playwright/test').firefox.executablePath())")"
+      printf 'import { defineWebExtConfig } from "wxt";\n\nexport default defineWebExtConfig({\n\tbinaries: {\n\t\tchrome: "%s",\n\t\tfirefox: "%s",\n\t},\n});\n' "$CHROME" "$FIREFOX" > web-ext.config.ts
+  wxt-prepare:
+    toolchain: node
+    script: wxt prepare
+    inputs:
+    - '@group(wxt-config)'
+    - '@group(wxt-sources)'
+    outputs:
+    - '@group(wxt-prepared)'
+  wxt-dev:
+    toolchain: node
+    preset: server
+    script: wxt
+    inputs:
+    - '@group(wxt-config)'
+    - '@group(wxt-sources)'
+    - '@group(wxt-assets)'
+  wxt-build:
+    toolchain: node
+    options:
+      runDepsInParallel: false
+    deps:
+    - wxt-prepare
+    script: wxt build
+    inputs:
+    - '@group(wxt-config)'
+    - '@group(wxt-sources)'
+    - '@group(wxt-assets)'
+    outputs:
+    - '@group(wxt-output)'
+  wxt-zip:
+    toolchain: node
+    options:
+      runDepsInParallel: false
+    deps:
+    - wxt-prepare
+    script: wxt zip
+    inputs:
+    - '@group(wxt-config)'
+    - '@group(wxt-sources)'
+    - '@group(wxt-assets)'
+    outputs:
+    - '@group(wxt-output)'
+  wxt-dev-firefox:
+    toolchain: node
+    preset: server
+    script: wxt -b firefox
+    inputs:
+    - '@group(wxt-config)'
+    - '@group(wxt-sources)'
+    - '@group(wxt-assets)'
+  wxt-build-firefox:
+    toolchain: node
+    options:
+      runDepsInParallel: false
+    deps:
+    - wxt-prepare
+    script: wxt build -b firefox
+    inputs:
+    - '@group(wxt-config)'
+    - '@group(wxt-sources)'
+    - '@group(wxt-assets)'
+    outputs:
+    - '@group(wxt-output)'
+  wxt-zip-firefox:
+    toolchain: node
+    options:
+      runDepsInParallel: false
+    deps:
+    - wxt-prepare
+    script: wxt zip -b firefox
+    inputs:
+    - '@group(wxt-config)'
+    - '@group(wxt-sources)'
+    - '@group(wxt-assets)'
+    outputs:
+    - '@group(wxt-output)'
+inheritedBy:
+  tag: wxt
