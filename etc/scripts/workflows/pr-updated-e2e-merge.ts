@@ -24,7 +24,7 @@ await $`${[
 	"true",
 	"with-moon-task",
 	"--task",
-	"scripts:playwright-install",
+	"scripts:browser-install",
 	"with-moon-task",
 	"--task",
 	"ext-e2e:merge-reports",

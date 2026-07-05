@@ -67,7 +67,7 @@ async function resolveDefer(
 		input: {
 			id: string;
 			isOk: boolean;
-			result: unknown;
+			result?: unknown;
 			channelId: string;
 		};
 	},
@@ -110,7 +110,10 @@ export const createDeferRouter = (container: Container) => {
 				z.object({
 					id: z.string(),
 					isOk: z.boolean(),
-					result: z.any(),
+					// Zod v4 rejects `undefined` for required fields even with z.any();
+					// void-returning tool calls (click, scroll, fillText, closeTab, ...)
+					// resolve with `result: undefined`, so this must be optional.
+					result: z.any().optional(),
 					channelId: channelIdSchema,
 				}),
 			)

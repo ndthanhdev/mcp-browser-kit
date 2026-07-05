@@ -16,7 +16,7 @@ if (!process.env.NODE_OPTIONS?.includes(swcRequire)) {
 // Set browser path for Playwright extension debugging
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= path.resolve(
 	__dirname,
-	"../../.tmp/playwright/browsers",
+	"../../.tmp/browsers",
 );
 
 const shardIndex = Number(process.env.PW_SHARD_INDEX);
