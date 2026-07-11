@@ -1,3 +1,9 @@
+import {
+	type BooleanFlagKey,
+	getDefaultValue,
+	type NumberFlagKey,
+	type StringFlagKey,
+} from "@mcp-browser-kit/core-feature-flags";
 import { OpenFeature, TypedInMemoryProvider } from "@openfeature/web-sdk";
 import type { Container } from "inversify";
 import { injectable } from "inversify";
@@ -18,19 +24,25 @@ export class DrivenFeatureFlagsOpenFeatureWeb {
 		);
 	}
 
-	async getBooleanValue(
-		flagKey: string,
-		defaultValue: boolean,
-	): Promise<boolean> {
-		return OpenFeature.getClient().getBooleanValue(flagKey, defaultValue);
+	async getBooleanValue(flagKey: BooleanFlagKey): Promise<boolean> {
+		return OpenFeature.getClient().getBooleanValue(
+			flagKey,
+			getDefaultValue(flagKey),
+		);
 	}
 
-	async getStringValue(flagKey: string, defaultValue: string): Promise<string> {
-		return OpenFeature.getClient().getStringValue(flagKey, defaultValue);
+	async getStringValue(flagKey: StringFlagKey): Promise<string> {
+		return OpenFeature.getClient().getStringValue(
+			flagKey,
+			getDefaultValue(flagKey),
+		);
 	}
 
-	async getNumberValue(flagKey: string, defaultValue: number): Promise<number> {
-		return OpenFeature.getClient().getNumberValue(flagKey, defaultValue);
+	async getNumberValue(flagKey: NumberFlagKey): Promise<number> {
+		return OpenFeature.getClient().getNumberValue(
+			flagKey,
+			getDefaultValue(flagKey),
+		);
 	}
 
 	static setupContainer(container: Container, serviceIdentifier: symbol): void {
