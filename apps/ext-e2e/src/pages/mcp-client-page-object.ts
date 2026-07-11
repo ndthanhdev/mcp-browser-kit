@@ -139,9 +139,16 @@ export class McpClientPageObject {
 
 	async disconnect() {
 		await this.client.close();
+		// Detach the BrowserResources onChange listener before tearing down the
+		// server, otherwise it keeps firing sendResourceUpdated into the closed
+		// transport (the "sendResourceUpdated failed" log spam).
+		await this.mcpServer?.stop();
 		await this.trpcServer?.stop();
 		this.browserStateLifecycle?.stop();
 		this.browserStateLifecycle = null;
+		this.mcpServer = null;
+		this.clientTransport = null;
+		this.serverTransport = null;
 	}
 
 	async listTools() {
