@@ -4,7 +4,9 @@ dependsOn:
 - core-extension
 - core-server
 - extension-driven-browser-driver
+- driven-feature-flags
 - driven-logger-factory
+- core-feature-flags
 - extension-driven-server-channel-provider
 - extension-driving-trpc-controller
 - core-utils

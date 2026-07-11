@@ -9,6 +9,9 @@
 		},
 		{
 			"path": "../core-utils"
+		},
+		{
+			"path": "../core-feature-flags"
 		}
 	],
 	"compilerOptions": {
@@ -16,6 +19,12 @@
 		"paths": {
 			"@mcp-browser-kit/core-utils/*": [
 				"../core-utils/src/*"
+			],
+			"@mcp-browser-kit/core-feature-flags": [
+				"../core-feature-flags/src/index.ts"
+			],
+			"@mcp-browser-kit/core-feature-flags/*": [
+				"../core-feature-flags/src/*"
 			],
 			"@mcp-browser-kit/core-utils": [
 				"../core-utils/src/index.ts"

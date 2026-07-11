@@ -2,6 +2,7 @@ import { inject, injectable } from "inversify";
 import type { ExtensionBootstrapInputPort } from "../input-ports/extension-bootstrap";
 import { PublishBrowserStateInputPort } from "../input-ports/publish-browser-state";
 import { BrowserDriverOutputPort } from "../output-ports/browser-driver";
+import { FeatureFlagsOutputPort } from "../output-ports/feature-flags";
 import { LoggerFactoryOutputPort } from "../output-ports/logger-factory";
 import { ServerChannelProviderOutputPort } from "../output-ports/server-channel-provider";
 
@@ -21,6 +22,8 @@ export class ExtensionBootstrapUseCase implements ExtensionBootstrapInputPort {
 		private readonly serverProvider: ServerChannelProviderOutputPort,
 		@inject(PublishBrowserStateInputPort)
 		private readonly publishBrowserState: PublishBrowserStateInputPort,
+		@inject(FeatureFlagsOutputPort)
+		private readonly featureFlags: FeatureFlagsOutputPort,
 		@inject(LoggerFactoryOutputPort)
 		loggerFactory: LoggerFactoryOutputPort,
 	) {
@@ -29,6 +32,11 @@ export class ExtensionBootstrapUseCase implements ExtensionBootstrapInputPort {
 
 	start = async (): Promise<void> => {
 		this.logger.info("Starting extension...");
+
+		// Ready the feature flags provider before anything else may need to read flags.
+		await this.featureFlags.start().catch((error) => {
+			this.logger.error("Error starting feature flags provider:", error);
+		});
 
 		// Link RPC for the browser driver (tab content scripts).
 		this.browserDriver.linkRpc();

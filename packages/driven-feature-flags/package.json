@@ -1,0 +1,4 @@
+{
+	"name": "@mcp-browser-kit/driven-feature-flags",
+	"packageManager": "yarn@4.10.3"
+}
