@@ -23,7 +23,7 @@ jobs:
           workdir: ./etc/workflow-runtime
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
 
@@ -61,7 +61,7 @@ jobs:
           workdir: ./etc/workflow-runtime
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
 
@@ -100,7 +100,7 @@ jobs:
           workdir: ./etc/workflow-runtime
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
 
@@ -108,7 +108,7 @@ jobs:
         run: yarn install
 
       - name: Download blob reports
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           pattern: e2e-blob-*
           merge-multiple: true

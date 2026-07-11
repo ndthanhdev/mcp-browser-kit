@@ -1,8 +1,10 @@
 import {
 	createCoreExtensionContainer,
+	FeatureFlagsOutputPort,
 	LoggerFactoryOutputPort,
 	ServerChannelProviderOutputPort,
 } from "@mcp-browser-kit/core-extension";
+import { DrivenFeatureFlagsOpenFeatureWeb } from "@mcp-browser-kit/driven-feature-flags/web";
 import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
 import { DrivenBrowserStateSource } from "@mcp-browser-kit/extension-driven-browser-driver";
 import { DrivenBrowserDriverM3 } from "@mcp-browser-kit/extension-driven-browser-driver/m3";
@@ -17,6 +19,10 @@ const container = createCoreExtensionContainer();
 DrivenLoggerFactoryConsolaBrowser.setupContainer(
 	container,
 	LoggerFactoryOutputPort,
+);
+DrivenFeatureFlagsOpenFeatureWeb.setupContainer(
+	container,
+	FeatureFlagsOutputPort,
 );
 DrivenBrowserDriverM3.setupContainer(container);
 DrivenBrowserStateSource.setupContainer(container);

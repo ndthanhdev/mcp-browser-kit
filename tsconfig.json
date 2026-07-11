@@ -58,6 +58,12 @@
 			"path": "./packages/core-utils"
 		},
 		{
+			"path": "./packages/driven-feature-flags"
+		},
+		{
+			"path": "./packages/core-feature-flags"
+		},
+		{
 			"path": "./packages/driven-logger-factory"
 		},
 		{

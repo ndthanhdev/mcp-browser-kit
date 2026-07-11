@@ -3,7 +3,9 @@ language: typescript
 dependsOn:
 - core-extension
 - extension-driven-browser-driver
+- driven-feature-flags
 - driven-logger-factory
+- core-feature-flags
 - extension-driven-server-channel-provider
 - core-utils
 - helper-extension-keep-alive
