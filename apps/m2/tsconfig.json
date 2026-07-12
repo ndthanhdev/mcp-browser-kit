@@ -65,11 +65,11 @@
 			"@mcp-browser-kit/extension-driving-trpc-controller/*": [
 				"../../packages/extension-driving-trpc-controller/src/*"
 			],
-			"@mcp-browser-kit/extension-driving-bootstrap": [
-				"../../packages/extension-driving-bootstrap/src/index.ts"
+			"@mcp-browser-kit/extension-driving-lifecycle": [
+				"../../packages/extension-driving-lifecycle/src/index.ts"
 			],
-			"@mcp-browser-kit/extension-driving-bootstrap/*": [
-				"../../packages/extension-driving-bootstrap/src/*"
+			"@mcp-browser-kit/extension-driving-lifecycle/*": [
+				"../../packages/extension-driving-lifecycle/src/*"
 			],
 			"@mcp-browser-kit/driven-feature-flags": [
 				"../../packages/driven-feature-flags/src/index.ts"
@@ -116,7 +116,7 @@
 			"path": "../../packages/extension-driven-server-channel-provider"
 		},
 		{
-			"path": "../../packages/extension-driving-bootstrap"
+			"path": "../../packages/extension-driving-lifecycle"
 		},
 		{
 			"path": "../../packages/extension-driving-trpc-controller"

@@ -1,4 +1,4 @@
-export interface ExtensionBootstrapInputPort {
+export interface ExtensionLifecycleInputPort {
 	/**
 	 * Start the extension: link the tab RPC transport, begin server discovery,
 	 * and start the downstream use cases (browser-state publishing, and future
@@ -7,6 +7,6 @@ export interface ExtensionBootstrapInputPort {
 	start(): Promise<void>;
 }
 
-export const ExtensionBootstrapInputPort = Symbol(
-	"ExtensionBootstrapInputPort",
+export const ExtensionLifecycleInputPort = Symbol(
+	"ExtensionLifecycleInputPort",
 );

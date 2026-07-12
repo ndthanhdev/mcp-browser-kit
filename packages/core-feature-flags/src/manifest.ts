@@ -44,6 +44,12 @@ export const featureFlagsManifest = {
 		defaultValue: false,
 		description: "Placeholder flag proving the OpenFeature wiring end-to-end.",
 	},
+	"browser-agent": {
+		flagType: "boolean",
+		defaultValue: true,
+		description:
+			"Gates exposure of the in-browser LLM agent (settings UI + BrowserAgentInputPort). Currently only read by apps/ext-wxt; m2/m3 have no consumer for it.",
+	},
 } as const satisfies Record<string, FlagEntry>;
 
 /**
