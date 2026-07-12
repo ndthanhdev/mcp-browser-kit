@@ -52,6 +52,7 @@ flowchart TD
     ConfigProvider["ConfigProvider"]
     ExtensionChannelProvider
     LoggerProvider["LoggerProvider"]
+    FeatureFlagsOutputPort["FeatureFlagsOutputPort"]
   end
 
   %% From Driving
@@ -65,6 +66,7 @@ flowchart TD
   ExtensionChannelManager --> ExtensionChannelProvider
   BrowserStateRegistry --> ExtensionChannelProvider
   ToolDescriptionUseCases --> ConfigProvider
+  ServerCore -.->|"lifecycle start()"| FeatureFlagsOutputPort
 
 ```
 
@@ -131,9 +133,11 @@ flowchart
     ServerEventSink
     LlmProvider
     LoggerProvider
+    FeatureFlagsOutputPort
   end
 
   Driving --> Core --> Driven
+  Core -.->|"lifecycle start()"| FeatureFlagsOutputPort
 
   classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
   class BrowserAgent,BrowserAgentUseCases,AgentSessionRegistry,LlmProvider planned;
