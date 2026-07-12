@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import type { ExtensionBootstrapInputPort } from "../input-ports/extension-bootstrap";
+import type { ExtensionLifecycleInputPort } from "../input-ports/extension-lifecycle";
 import { PublishBrowserStateInputPort } from "../input-ports/publish-browser-state";
 import { BrowserDriverOutputPort } from "../output-ports/browser-driver";
 import { FeatureFlagsOutputPort } from "../output-ports/feature-flags";
@@ -12,7 +12,7 @@ import { ServerChannelProviderOutputPort } from "../output-ports/server-channel-
  * discovery, then start browser-state publishing (and future use cases).
  */
 @injectable()
-export class ExtensionBootstrapUseCase implements ExtensionBootstrapInputPort {
+export class ExtensionLifecycleUseCase implements ExtensionLifecycleInputPort {
 	private readonly logger;
 
 	constructor(
@@ -27,7 +27,7 @@ export class ExtensionBootstrapUseCase implements ExtensionBootstrapInputPort {
 		@inject(LoggerFactoryOutputPort)
 		loggerFactory: LoggerFactoryOutputPort,
 	) {
-		this.logger = loggerFactory.create("ExtensionBootstrapUseCase");
+		this.logger = loggerFactory.create("ExtensionLifecycleUseCase");
 	}
 
 	start = async (): Promise<void> => {

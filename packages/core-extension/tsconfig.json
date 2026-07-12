@@ -16,6 +16,10 @@
 	],
 	"compilerOptions": {
 		"outDir": "../../.moon/cache/types/packages/core-extension",
+		"lib": [
+			"dom",
+			"ESNext"
+		],
 		"paths": {
 			"@mcp-browser-kit/core-utils/*": [
 				"../core-utils/src/*"

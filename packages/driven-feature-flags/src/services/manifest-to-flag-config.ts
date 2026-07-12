@@ -1,3 +1,4 @@
+import type { BooleanFlagKey } from "@mcp-browser-kit/core-feature-flags";
 import { featureFlagsManifest } from "@mcp-browser-kit/core-feature-flags";
 
 type FlagConfig = {
@@ -5,6 +6,14 @@ type FlagConfig = {
 	defaultVariant: string;
 	disabled: boolean;
 };
+
+/**
+ * Per-app deviations from the manifest's global default, e.g. a boolean flag
+ * that a given app's composition root wants resolved differently than the
+ * shared manifest default (the manifest itself has no per-app targeting).
+ */
+export type FeatureFlagOverrides = Partial<Record<BooleanFlagKey, boolean>>;
+export const FeatureFlagOverrides = Symbol("FeatureFlagOverrides");
 
 /**
  * Translates the shared flag manifest (flagType + defaultValue) into the
@@ -15,18 +24,23 @@ type FlagConfig = {
  * `packages/core-feature-flags/src/manifest.ts`), so no separate validation call
  * is needed here.
  */
-export function manifestToFlagConfig(): Record<string, FlagConfig> {
+export function manifestToFlagConfig(
+	overrides: FeatureFlagOverrides = {},
+): Record<string, FlagConfig> {
 	const config: Record<string, FlagConfig> = {};
 
 	for (const [key, entry] of Object.entries(featureFlagsManifest)) {
 		switch (entry.flagType) {
 			case "boolean": {
+				const value =
+					(overrides as Record<string, boolean | undefined>)[key] ??
+					entry.defaultValue;
 				config[key] = {
 					variants: {
 						on: true,
 						off: false,
 					},
-					defaultVariant: entry.defaultValue ? "on" : "off",
+					defaultVariant: value ? "on" : "off",
 					disabled: false,
 				};
 				break;

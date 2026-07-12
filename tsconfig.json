@@ -70,10 +70,13 @@
 			"path": "./packages/extension-driven-browser-driver"
 		},
 		{
+			"path": "./packages/extension-driven-llm-provider"
+		},
+		{
 			"path": "./packages/extension-driven-server-channel-provider"
 		},
 		{
-			"path": "./packages/extension-driving-bootstrap"
+			"path": "./packages/extension-driving-lifecycle"
 		},
 		{
 			"path": "./packages/extension-driving-trpc-controller"

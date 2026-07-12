@@ -1,5 +1,5 @@
 import {
-	ExtensionBootstrapInputPort,
+	ExtensionLifecycleInputPort,
 	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-extension";
 import { KeepAlive } from "@mcp-browser-kit/helper-extension-keep-alive";
@@ -8,23 +8,23 @@ import { inject, injectable } from "inversify";
 
 /**
  * Driving component that triggers extension startup. The app composition root
- * resolves this and calls `bootstrap()`. It performs the runtime startup steps
+ * resolves this and calls `start()`. It performs the runtime startup steps
  * that are not part of the core orchestration (keep-alive listening) and then
- * delegates to the bootstrap use case.
+ * delegates to the lifecycle use case.
  */
 @injectable()
-export class ExtensionBootstrap {
+export class ExtensionLifecycle {
 	private readonly logger: ReturnType<LoggerFactoryOutputPort["create"]>;
 
 	constructor(
-		@inject(ExtensionBootstrapInputPort)
-		private readonly bootstrapUseCase: ExtensionBootstrapInputPort,
+		@inject(ExtensionLifecycleInputPort)
+		private readonly lifecycleUseCase: ExtensionLifecycleInputPort,
 		@inject(KeepAlive)
 		private readonly keepAlive: KeepAlive,
 		@inject(LoggerFactoryOutputPort)
 		loggerFactory: LoggerFactoryOutputPort,
 	) {
-		this.logger = loggerFactory.create("ExtensionBootstrap");
+		this.logger = loggerFactory.create("ExtensionLifecycle");
 	}
 
 	static setupContainer(container: Container): void {
@@ -33,21 +33,21 @@ export class ExtensionBootstrap {
 
 		// Register the driving component itself.
 		container
-			.bind<ExtensionBootstrap>(ExtensionBootstrap)
-			.to(ExtensionBootstrap);
+			.bind<ExtensionLifecycle>(ExtensionLifecycle)
+			.to(ExtensionLifecycle);
 	}
 
-	bootstrap(): void {
-		this.logger.info("Bootstrapping ExtensionBootstrap...");
+	start(): void {
+		this.logger.info("Starting ExtensionLifecycle...");
 
 		// Start keep-alive listening (runtime startup concern).
 		this.keepAlive.startListening();
 
-		// Delegate to the bootstrap use case (starts the other use cases).
-		this.bootstrapUseCase.start().catch((error) => {
-			this.logger.error("Error during extension bootstrap:", error);
+		// Delegate to the lifecycle use case (starts the other use cases).
+		this.lifecycleUseCase.start().catch((error) => {
+			this.logger.error("Error during extension lifecycle start:", error);
 		});
 
-		this.logger.info("ExtensionBootstrap bootstrap complete");
+		this.logger.info("ExtensionLifecycle start complete");
 	}
 }
