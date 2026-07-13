@@ -22,6 +22,54 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ai-sdk/gateway@npm:4.0.0-beta.113":
+  version: 4.0.0-beta.113
+  resolution: "@ai-sdk/gateway@npm:4.0.0-beta.113"
+  dependencies:
+    "@ai-sdk/provider": "npm:4.0.0-beta.20"
+    "@ai-sdk/provider-utils": "npm:5.0.0-beta.50"
+    "@vercel/oidc": "npm:3.2.0"
+  peerDependencies:
+    zod: ^3.25.76 || ^4.1.8
+  checksum: 10c0/c05edd046d72089b4008e38ea8dce672bb1baa59dccc366c04ac19ba82c48840e537617375b77de0d78da06815b830a1ea221035a9235b88c788258ba60907ae
+  languageName: node
+  linkType: hard
+
+"@ai-sdk/openai-compatible@npm:3.0.0-beta.58":
+  version: 3.0.0-beta.58
+  resolution: "@ai-sdk/openai-compatible@npm:3.0.0-beta.58"
+  dependencies:
+    "@ai-sdk/provider": "npm:4.0.0-beta.20"
+    "@ai-sdk/provider-utils": "npm:5.0.0-beta.50"
+  peerDependencies:
+    zod: ^3.25.76 || ^4.1.8
+  checksum: 10c0/dfb50fa299f17ab4d163e8d936830d17456ea4a9cbbf24b8e1b8ca8a9838972260465d82dda3184416a0a405965dea13aca60a2a28cb6cedc0ed85d41aae2d70
+  languageName: node
+  linkType: hard
+
+"@ai-sdk/provider-utils@npm:5.0.0-beta.50":
+  version: 5.0.0-beta.50
+  resolution: "@ai-sdk/provider-utils@npm:5.0.0-beta.50"
+  dependencies:
+    "@ai-sdk/provider": "npm:4.0.0-beta.20"
+    "@standard-schema/spec": "npm:^1.1.0"
+    "@workflow/serde": "npm:4.1.0"
+    eventsource-parser: "npm:^3.0.8"
+  peerDependencies:
+    zod: ^3.25.76 || ^4.1.8
+  checksum: 10c0/468bf711d3cbdbf0c96cc8ca6338e26e66318608d55b40abf4eb50af3d08b684a29e00e404a490b9763e0de841a48016e107e7f4cff17fa96a438165f97d3189
+  languageName: node
+  linkType: hard
+
+"@ai-sdk/provider@npm:4.0.0-beta.20":
+  version: 4.0.0-beta.20
+  resolution: "@ai-sdk/provider@npm:4.0.0-beta.20"
+  dependencies:
+    json-schema: "npm:^0.4.0"
+  checksum: 10c0/8603402601bfea2ea457204c246aad26447ed0f771bdb9126586e26c2b12f2b6d31000a2b65469fab84effd9375c95191f908c9440845fbdccd5d48d9d4c58b2
+  languageName: node
+  linkType: hard
+
 "@aklinker1/rollup-plugin-visualizer@npm:5.12.0":
   version: 5.12.0
   resolution: "@aklinker1/rollup-plugin-visualizer@npm:5.12.0"
@@ -1181,6 +1229,9 @@ __metadata:
 "@mcp-browser-kit/core-extension@workspace:packages/core-extension":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/core-extension@workspace:packages/core-extension"
+  dependencies:
+    ai: "npm:7.0.0-beta.186"
+    zod: "npm:^4.3.6"
   languageName: unknown
   linkType: soft
 
@@ -1241,15 +1292,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mcp-browser-kit/extension-driven-llm-provider@workspace:packages/extension-driven-llm-provider":
+  version: 0.0.0-use.local
+  resolution: "@mcp-browser-kit/extension-driven-llm-provider@workspace:packages/extension-driven-llm-provider"
+  dependencies:
+    "@ai-sdk/openai-compatible": "npm:3.0.0-beta.58"
+    ai: "npm:7.0.0-beta.186"
+    zod: "npm:^4.3.6"
+  languageName: unknown
+  linkType: soft
+
 "@mcp-browser-kit/extension-driven-server-channel-provider@workspace:packages/extension-driven-server-channel-provider":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/extension-driven-server-channel-provider@workspace:packages/extension-driven-server-channel-provider"
   languageName: unknown
   linkType: soft
 
-"@mcp-browser-kit/extension-driving-bootstrap@workspace:packages/extension-driving-bootstrap":
+"@mcp-browser-kit/extension-driving-lifecycle@workspace:packages/extension-driving-lifecycle":
   version: 0.0.0-use.local
-  resolution: "@mcp-browser-kit/extension-driving-bootstrap@workspace:packages/extension-driving-bootstrap"
+  resolution: "@mcp-browser-kit/extension-driving-lifecycle@workspace:packages/extension-driving-lifecycle"
   languageName: unknown
   linkType: soft
 
@@ -3244,6 +3305,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@standard-schema/spec@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@standard-schema/spec@npm:1.1.0"
+  checksum: 10c0/d90f55acde4b2deb983529c87e8025fa693de1a5e8b49ecc6eb84d1fd96328add0e03d7d551442156c7432fd78165b2c26ff561b970a9a881f046abb78d6a526
+  languageName: node
+  linkType: hard
+
 "@swc-node/core@npm:^1.14.1":
   version: 1.14.1
   resolution: "@swc-node/core@npm:1.14.1"
@@ -3918,6 +3986,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vercel/oidc@npm:3.2.0":
+  version: 3.2.0
+  resolution: "@vercel/oidc@npm:3.2.0"
+  checksum: 10c0/98318d3236f58c296616c8c2e1655b268c7bf58525bcd985adac7af6d900e05fc610f6f03ce2ff4bdcd3df7885a40c0ca44fdc761f122dcfe15a78c2756b0243
+  languageName: node
+  linkType: hard
+
 "@vitejs/plugin-react@npm:^4.4.1 || ^5.0.0":
   version: 5.2.0
   resolution: "@vitejs/plugin-react@npm:5.2.0"
@@ -3957,6 +4032,13 @@ __metadata:
   version: 1.0.3
   resolution: "@webext-core/match-patterns@npm:1.0.3"
   checksum: 10c0/eb219006f03420ef2221d17b07b28923078ca817cf2f4f5cf031856137c102b0c0f75ce1c18627514e767fcc672cf6a673c2bbb3a0a20c322ff3c1d6b6bb9920
+  languageName: node
+  linkType: hard
+
+"@workflow/serde@npm:4.1.0":
+  version: 4.1.0
+  resolution: "@workflow/serde@npm:4.1.0"
+  checksum: 10c0/8ec68cd9448b486bc8244d1f2b33d64d4af4b0fc18d33417699ce29345b21e4359d880c5ea5d66872def4576c0cddcfa2a63282d1f4d661c455663c075595e81
   languageName: node
   linkType: hard
 
@@ -4134,6 +4216,19 @@ __metadata:
   version: 7.1.4
   resolution: "agent-base@npm:7.1.4"
   checksum: 10c0/c2c9ab7599692d594b6a161559ada307b7a624fa4c7b03e3afdb5a5e31cd0e53269115b620fcab024c5ac6a6f37fa5eb2e004f076ad30f5f7e6b8b671f7b35fe
+  languageName: node
+  linkType: hard
+
+"ai@npm:7.0.0-beta.186":
+  version: 7.0.0-beta.186
+  resolution: "ai@npm:7.0.0-beta.186"
+  dependencies:
+    "@ai-sdk/gateway": "npm:4.0.0-beta.113"
+    "@ai-sdk/provider": "npm:4.0.0-beta.20"
+    "@ai-sdk/provider-utils": "npm:5.0.0-beta.50"
+  peerDependencies:
+    zod: ^3.25.76 || ^4.1.8
+  checksum: 10c0/7e653f91108871e3f88c9a2bfb55deaaaa9fe87fadc9a04a267934fbd50d948cb5d6ca192e5f46d02de753d82acb69e01ac8746023c9840987fbf2363f97aeb0
   languageName: node
   linkType: hard
 
@@ -6056,10 +6151,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eventsource-parser@npm:^3.0.0, eventsource-parser@npm:^3.0.1":
-  version: 3.0.6
-  resolution: "eventsource-parser@npm:3.0.6"
-  checksum: 10c0/70b8ccec7dac767ef2eca43f355e0979e70415701691382a042a2df8d6a68da6c2fca35363669821f3da876d29c02abe9b232964637c1b6635c940df05ada78a
+"eventsource-parser@npm:^3.0.0, eventsource-parser@npm:^3.0.1, eventsource-parser@npm:^3.0.8":
+  version: 3.1.0
+  resolution: "eventsource-parser@npm:3.1.0"
+  checksum: 10c0/5ab4c6c9a2a042be0b387b6d03810eb580bac4ce90e299ede56458125a97ffe3af8145b2740089fc898a96cfa5aae792ee79f2a06257fba2776b0e7bce037071
   languageName: node
   linkType: hard
 
@@ -7439,6 +7534,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"json-schema@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "json-schema@npm:0.4.0"
+  checksum: 10c0/d4a637ec1d83544857c1c163232f3da46912e971d5bf054ba44fdb88f07d8d359a462b4aec46f2745efbc57053365608d88bc1d7b1729f7b4fc3369765639ed3
+  languageName: node
+  linkType: hard
+
 "json-stable-stringify-without-jsonify@npm:^1.0.1":
   version: 1.0.1
   resolution: "json-stable-stringify-without-jsonify@npm:1.0.1"
@@ -8342,15 +8444,15 @@ __metadata:
   linkType: hard
 
 "morgan@npm:^1.10.1":
-  version: 1.10.1
-  resolution: "morgan@npm:1.10.1"
+  version: 1.11.0
+  resolution: "morgan@npm:1.11.0"
   dependencies:
     basic-auth: "npm:~2.0.1"
     debug: "npm:2.6.9"
     depd: "npm:~2.0.0"
-    on-finished: "npm:~2.3.0"
+    on-finished: "npm:~2.4.1"
     on-headers: "npm:~1.1.0"
-  checksum: 10c0/2ecd68504d29151b516a6233839e4f27ae0312acc4dbcb1fe84ff9b5db0eb9b25f31258a931dcf689184b4858839572095fcc62eef3cbd7339287d59f1424346
+  checksum: 10c0/1d8c67bdeb34dc4112f5b6cbff0d5b4ef14bfdcb9f67a7ae67fc7a77282c18dd493a11dc8dff1ff2e285c1846947cfdc3698fdceb1fa7bea2a09fe6cb754455d
   languageName: node
   linkType: hard
 
@@ -8621,21 +8723,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"on-finished@npm:^2.4.1":
+"on-finished@npm:^2.4.1, on-finished@npm:~2.4.1":
   version: 2.4.1
   resolution: "on-finished@npm:2.4.1"
   dependencies:
     ee-first: "npm:1.1.1"
   checksum: 10c0/46fb11b9063782f2d9968863d9cbba33d77aa13c17f895f56129c274318b86500b22af3a160fe9995aa41317efcd22941b6eba747f718ced08d9a73afdb087b4
-  languageName: node
-  linkType: hard
-
-"on-finished@npm:~2.3.0":
-  version: 2.3.0
-  resolution: "on-finished@npm:2.3.0"
-  dependencies:
-    ee-first: "npm:1.1.1"
-  checksum: 10c0/c904f9e518b11941eb60279a3cbfaf1289bd0001f600a950255b1dede9fe3df8cd74f38483550b3bb9485165166acb5db500c3b4c4337aec2815c88c96fcc2ea
   languageName: node
   linkType: hard
 

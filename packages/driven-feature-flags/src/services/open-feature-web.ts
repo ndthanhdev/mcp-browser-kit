@@ -6,8 +6,11 @@ import {
 } from "@mcp-browser-kit/core-feature-flags";
 import { OpenFeature, TypedInMemoryProvider } from "@openfeature/web-sdk";
 import type { Container } from "inversify";
-import { injectable } from "inversify";
-import { manifestToFlagConfig } from "./manifest-to-flag-config";
+import { inject, injectable } from "inversify";
+import {
+	FeatureFlagOverrides,
+	manifestToFlagConfig,
+} from "./manifest-to-flag-config";
 
 /**
  * `TypedInMemoryProvider`'s exported type is generic and expects `as const` literals for full
@@ -18,9 +21,16 @@ type FlagConfiguration = ConstructorParameters<typeof TypedInMemoryProvider>[0];
 
 @injectable()
 export class DrivenFeatureFlagsOpenFeatureWeb {
+	constructor(
+		@inject(FeatureFlagOverrides)
+		private readonly overrides: FeatureFlagOverrides,
+	) {}
+
 	async start(): Promise<void> {
 		await OpenFeature.setProviderAndWait(
-			new TypedInMemoryProvider(manifestToFlagConfig() as FlagConfiguration),
+			new TypedInMemoryProvider(
+				manifestToFlagConfig(this.overrides) as FlagConfiguration,
+			),
 		);
 	}
 
@@ -45,7 +55,14 @@ export class DrivenFeatureFlagsOpenFeatureWeb {
 		);
 	}
 
-	static setupContainer(container: Container, serviceIdentifier: symbol): void {
+	static setupContainer(
+		container: Container,
+		serviceIdentifier: symbol,
+		overrides: FeatureFlagOverrides = {},
+	): void {
+		container
+			.bind<FeatureFlagOverrides>(FeatureFlagOverrides)
+			.toConstantValue(overrides);
 		container.bind(serviceIdentifier).to(DrivenFeatureFlagsOpenFeatureWeb);
 	}
 }

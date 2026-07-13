@@ -1,1 +1,1 @@
-export * from "./extension-tab-bootstrap";
+export * from "./extension-tab-lifecycle";

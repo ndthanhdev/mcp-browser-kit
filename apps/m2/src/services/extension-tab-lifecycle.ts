@@ -10,7 +10,7 @@ import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 
 @injectable()
-export class ExtensionTabBootstrap {
+export class ExtensionTabLifecycle {
 	private logger: ReturnType<LoggerFactoryOutputPort["create"]>;
 	private readonly mutationObserver = new TabContentMutationObserver();
 
@@ -22,7 +22,7 @@ export class ExtensionTabBootstrap {
 		@inject(LoggerFactoryOutputPort)
 		loggerFactory: LoggerFactoryOutputPort,
 	) {
-		this.logger = loggerFactory.create("ExtensionTabBootstrap");
+		this.logger = loggerFactory.create("ExtensionTabLifecycle");
 	}
 
 	static setupContainer(container: Container): void {
@@ -38,14 +38,14 @@ export class ExtensionTabBootstrap {
 		// Register KeepAlive service
 		container.bind<KeepAlive>(KeepAlive).to(KeepAlive);
 
-		// Register ExtensionTabBootstrap service
+		// Register ExtensionTabLifecycle service
 		container
-			.bind<ExtensionTabBootstrap>(ExtensionTabBootstrap)
-			.to(ExtensionTabBootstrap);
+			.bind<ExtensionTabLifecycle>(ExtensionTabLifecycle)
+			.to(ExtensionTabLifecycle);
 	}
 
-	bootstrap(): void {
-		this.logger.info("Bootstrapping ExtensionTabBootstrap...");
+	start(): void {
+		this.logger.info("Starting ExtensionTabLifecycle...");
 
 		// Set up tab tools in global scope using the instance
 		this.tabToolsSetup.setUpTabTools();
@@ -59,6 +59,6 @@ export class ExtensionTabBootstrap {
 		// Start observing DOM mutations and pinging the background.
 		this.mutationObserver.start();
 
-		this.logger.info("ExtensionTabBootstrap bootstrap complete");
+		this.logger.info("ExtensionTabLifecycle start complete");
 	}
 }

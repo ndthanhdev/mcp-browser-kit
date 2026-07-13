@@ -30,11 +30,12 @@ flowchart TB
 ---
 title: Server Core
 ---
-flowchart TD
+flowchart LR
   subgraph ServerDriving["Driving"]
+    ToolDescriptions
     ServerToolCalls
     ManageChannels
-    ToolDescriptions
+    ServerLifecycle
     ObserveBrowserState
   end
 
@@ -43,9 +44,10 @@ flowchart TD
       ServerToolCallUseCases
       ManageChannelUseCases
       ToolDescriptionUseCases
+      ServerLifecycleUseCases
+      BrowserStateRegistryUseCases
     end
     ExtensionChannelManager
-    BrowserStateRegistry
   end
 
   subgraph ServerDriven["Driven"]
@@ -59,14 +61,16 @@ flowchart TD
   ServerToolCalls --> ServerToolCallUseCases
   ToolDescriptions --> ToolDescriptionUseCases
   ManageChannels --> ManageChannelUseCases
-  ObserveBrowserState --> BrowserStateRegistry
+  ObserveBrowserState --> BrowserStateRegistryUseCases
+  ServerLifecycle --> ServerLifecycleUseCases
   %% From Core
   ServerToolCallUseCases--> ExtensionChannelManager
   ManageChannelUseCases --> ExtensionChannelManager
   ExtensionChannelManager --> ExtensionChannelProvider
-  BrowserStateRegistry --> ExtensionChannelProvider
+  BrowserStateRegistryUseCases --> ExtensionChannelProvider
   ToolDescriptionUseCases --> ConfigProvider
-  ServerCore -.->|"lifecycle start()"| FeatureFlagsOutputPort
+  ServerLifecycleUseCases --> BrowserStateRegistry
+  ServerCore -.-> FeatureFlagsOutputPort
 
 ```
 
@@ -110,16 +114,16 @@ flowchart TD
 ---
 title: Extension Core
 ---
-flowchart 
+flowchart LR
   subgraph Driving["Driving"]
     direction LR
     ExtensionToolCall
-    ExtensionBootstrap
+    ExtensionLifecycle
     BrowserAgent
   end
   subgraph Core["Core (Use Cases)"]
     direction LR
-    ExtensionBootstrapUseCase
+    ExtensionLifecycleUseCase
     ExtensionToolCallUseCases
     PublishBrowserStateUseCase
     BrowserAgentUseCases
@@ -134,13 +138,13 @@ flowchart
     LlmProvider
     LoggerProvider
     FeatureFlagsOutputPort
+    ExtensionLifecycleOutputPort
   end
 
   Driving --> Core --> Driven
-  Core -.->|"lifecycle start()"| FeatureFlagsOutputPort
 
   classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class BrowserAgent,BrowserAgentUseCases,AgentSessionRegistry,LlmProvider planned;
+  class BrowserAgent planned;
 ```
 
 ## L2 - Extension Tool Calls
@@ -171,10 +175,10 @@ title: Extension Core — Browser-State Publishing
 ---
 flowchart TB
   subgraph Driving["Driving"]
-    ExtensionBootstrap
+    ExtensionLifecycle
   end
   subgraph Core["Core"]
-    ExtensionBootstrapUseCase
+    ExtensionLifecycleUseCase
     PublishBrowserStateUseCase
   end
   subgraph Driven["Driven"]
@@ -182,23 +186,14 @@ flowchart TB
     BrowserDriver
     ServerEventSink
   end
-  ExtensionBootstrap --> ExtensionBootstrapUseCase
-  ExtensionBootstrapUseCase --> PublishBrowserStateUseCase
+  ExtensionLifecycle --> ExtensionLifecycleUseCase
+  ExtensionLifecycleUseCase --> PublishBrowserStateUseCase
   PublishBrowserStateUseCase --> BrowserStateSource
   PublishBrowserStateUseCase --> BrowserDriver
   PublishBrowserStateUseCase --> ServerEventSink
 ```
 
-## L2 - Browser Agent (planned)
-
-The Browser Agent is a **single agent that owns many sessions**. `BrowserAgentUseCases`
-wraps one AI SDK v7 [`HarnessAgent`](https://ai-sdk.dev/v7/docs/ai-sdk-harnesses/harness-agent)
-held as a DI singleton ("construct the agent once; it holds configuration, not a live
-session"). Each `AgentSession` maps to a harness session that owns its own conversation
-history; an `AgentSessionRegistry` tracks the live set (peer of the server core's
-`BrowserStateRegistry`). `session.detach()` → resume state + `createSession({ resumeFrom })`
-is the seam for persisting sessions across service-worker eviction (adapter deferred).
-`LlmProvider` remains the Driven node, realized by the harness/model adapter (rename deferred).
+## L2 - Browser Agent
 
 ```mermaid
 ---
@@ -224,7 +219,7 @@ flowchart TB
   ExtensionToolCallUseCases --> BrowserDriver
 
   classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class BrowserAgent,BrowserAgentUseCases,AgentSessionRegistry,LlmProvider planned;
+  class BrowserAgent planned;
 ```
 
 # L1 - Extension Architecture
@@ -246,7 +241,7 @@ flowchart TB
   subgraph Background["Background SW"]
     subgraph BgDriving["Driving"]
       direction LR
-      ExtensionBootstrap
+      ExtensionLifecycle
       ExtensionTrpcController
       AgentRpcController
     end
@@ -273,7 +268,7 @@ flowchart TB
   Background <-->|"tRPC channel"| Server
 
   classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class AgentUi,AgentApp,UseAgentClient,AgentRpcController,ExtensionDrivenLlmProvider planned;
+  class AgentUi,AgentApp,UseAgentClient,AgentRpcController planned;
 ```
 
 ## L2 - Channel — Background ⇄ Tab
@@ -357,5 +352,5 @@ flowchart TD
   ExtensionToolCallUseCases --> BrowserDriver
 
   classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class AgentApp,AgentRpcController,BrowserAgentUseCases,AgentSessionRegistry,LlmProvider planned;
+  class AgentApp,AgentRpcController planned;
 ```
