@@ -207,33 +207,151 @@ const formatLogOutput = (logObj: LogObject): string => {
 	return isBadge ? `\n${line}\n` : line;
 };
 
+// CSS color mapping for browser DevTools `%c` styling. Browser consoles do
+// not render raw ANSI escape codes (unlike a terminal) — they print the
+// literal escape bytes as garbled text. The native way to style browser
+// console output is the `%c` format specifier, which consumes one CSS style
+// string per occurrence, in order.
+const CSS_COLORS: Record<string, string> = {
+	gray: "color: #888888",
+	cyan: "color: #0891b2",
+	red: "color: #dc2626",
+	green: "color: #16a34a",
+	yellow: "color: #ca8a04",
+	magenta: "color: #c026d3",
+	black: "color: #000000",
+};
+
+const CSS_BADGES: Record<string, string> = {
+	red: "background: #dc2626; color: #fff; border-radius: 3px; padding: 0 4px",
+	yellow:
+		"background: #ca8a04; color: #fff; border-radius: 3px; padding: 0 4px",
+	cyan: "background: #0891b2; color: #fff; border-radius: 3px; padding: 0 4px",
+	green: "background: #16a34a; color: #fff; border-radius: 3px; padding: 0 4px",
+	magenta:
+		"background: #c026d3; color: #fff; border-radius: 3px; padding: 0 4px",
+};
+
+const getCssColor = (color = "gray") => CSS_COLORS[color] || CSS_COLORS.gray;
+const getCssBadge = (color = "red") => CSS_BADGES[color] || CSS_BADGES.red;
+
+type BrowserSegment = {
+	text: string;
+	style: string;
+};
+
+// Builds a console.log-compatible (%c format string, style args, trailing
+// args) triple. Browser consoles style output via sequential %c placeholders
+// rather than nested ANSI escapes, so segments are flattened (no nested
+// coloring like the terminal `[gray tag inside gray brackets]` above).
+const buildBrowserLogOutput = (
+	logObj: LogObject,
+): {
+	format: string;
+	styles: string[];
+	extraArgs: unknown[];
+} => {
+	const typeColor =
+		TYPE_COLOR_MAP[logObj.type] || LEVEL_COLOR_MAP[logObj.level] || "gray";
+	const isBadge = logObj.level < 2;
+
+	const segments: BrowserSegment[] = [];
+
+	const right = [
+		logObj.tag,
+		formatDate(logObj.date),
+	]
+		.filter(Boolean)
+		.join(" ");
+	if (right) {
+		segments.push({
+			text: `[${right}]`,
+			style: getCssColor("gray"),
+		});
+		segments.push({
+			text: " ",
+			style: "",
+		});
+	}
+
+	if (isBadge) {
+		segments.push({
+			text: ` ${logObj.type.toUpperCase()} `,
+			style: getCssBadge(typeColor),
+		});
+		segments.push({
+			text: " ",
+			style: "",
+		});
+	} else {
+		const type =
+			typeof TYPE_ICONS[logObj.type] === "string"
+				? TYPE_ICONS[logObj.type]
+				: logObj.type;
+		if (type) {
+			segments.push({
+				text: type,
+				style: getCssColor(typeColor),
+			});
+			segments.push({
+				text: " ",
+				style: "",
+			});
+		}
+	}
+
+	// Only string args are folded into the styled message text. Non-string
+	// args (Errors, objects) are passed through untouched so DevTools can
+	// render them as live, expandable inspectors instead of flat JSON text.
+	const stringArgs = logObj.args.filter(
+		(arg): arg is string => typeof arg === "string",
+	);
+	const extraArgs = logObj.args.filter((arg) => typeof arg !== "string");
+
+	segments.push({
+		text: stringArgs.join(" "),
+		style: "",
+	});
+
+	return {
+		format: segments.map((segment) => `%c${segment.text}`).join(""),
+		styles: segments.map((segment) => segment.style),
+		extraArgs,
+	};
+};
+
 // Enhanced reporter with fancy formatting for browser console
 class FancyBrowserReporter implements ConsolaReporter {
 	log(logObj: LogObject) {
-		const output = formatLogOutput(logObj);
+		const { format, styles, extraArgs } = buildBrowserLogOutput(logObj);
+		const args = [
+			format,
+			...styles,
+			...extraArgs,
+		];
 
 		// Use appropriate console method based on log level/type
 		switch (logObj.type) {
 			case "error":
 			case "fatal":
 			case "fail":
-				console.error(output);
+				console.error(...args);
 				break;
 			case "warn":
-				console.warn(output);
+				console.warn(...args);
 				break;
 			case "info":
 			case "success":
 			case "ready":
-				console.info(output);
+				console.info(...args);
 				break;
 			case "debug":
 			case "trace":
 			case "verbose":
-				console.debug(output);
+				console.debug(...args);
 				break;
 			default:
-				console.log(output);
+				console.log(...args);
 		}
 	}
 }
