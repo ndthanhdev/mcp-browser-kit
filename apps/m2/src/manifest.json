@@ -9,6 +9,7 @@
 		"activeTab",
 		"scripting",
 		"storage",
+		"webNavigation",
 		"<all_urls>",
 		"*://localhost:*/*",
 		"*://127.0.0.1:*/*"
@@ -24,7 +25,8 @@
 			"js": [
 				"bootstrap-extension-tab.js"
 			],
-			"run_at": "document_start"
+			"run_at": "document_start",
+			"all_frames": true
 		}
 	],
 	"background": {
