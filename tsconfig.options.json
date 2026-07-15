@@ -7,6 +7,7 @@
 		"emitDeclarationOnly": true,
 		"incremental": true,
 		"moduleResolution": "node",
+		"resolveJsonModule": true,
 		"verbatimModuleSyntax": false,
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,

@@ -99,7 +99,9 @@ export class ServerDrivenTrpcChannelProvider
 
 		return new Promise<void>((resolve) => {
 			this.logger.info("Stopping tRPC channel provider");
-			this.handler?.broadcastReconnectNotification();
+			// Do NOT broadcastReconnectNotification here: on shutdown we don't want
+			// clients (e.g. an MV3 service worker that auto-reconnects) to re-dial the
+			// sockets we're trying to close.
 			for (const client of this.wss?.clients ?? []) {
 				client.terminate();
 			}
@@ -112,6 +114,12 @@ export class ServerDrivenTrpcChannelProvider
 					this.handler = null;
 					resolve();
 				});
+				// http.Server.close() waits for all connections to drain and never
+				// force-closes keep-alive / active sockets. A still-connected extension
+				// (health-check GETs + WS upgrades) would otherwise keep close() pending
+				// until the ~30s WS keepalive reaps it. Forcibly drop them so close()
+				// completes promptly. (Node >=18.2)
+				this.httpServer?.closeAllConnections();
 			});
 		});
 	}

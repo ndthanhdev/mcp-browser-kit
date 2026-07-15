@@ -1,7 +1,8 @@
 import { inject, injectable } from "inversify";
-import type { ExtensionBootstrapInputPort } from "../input-ports/extension-bootstrap";
+import type { ExtensionLifecycleInputPort } from "../input-ports/extension-lifecycle";
 import { PublishBrowserStateInputPort } from "../input-ports/publish-browser-state";
 import { BrowserDriverOutputPort } from "../output-ports/browser-driver";
+import { FeatureFlagsOutputPort } from "../output-ports/feature-flags";
 import { LoggerFactoryOutputPort } from "../output-ports/logger-factory";
 import { ServerChannelProviderOutputPort } from "../output-ports/server-channel-provider";
 
@@ -11,7 +12,7 @@ import { ServerChannelProviderOutputPort } from "../output-ports/server-channel-
  * discovery, then start browser-state publishing (and future use cases).
  */
 @injectable()
-export class ExtensionBootstrapUseCase implements ExtensionBootstrapInputPort {
+export class ExtensionLifecycleUseCase implements ExtensionLifecycleInputPort {
 	private readonly logger;
 
 	constructor(
@@ -21,14 +22,21 @@ export class ExtensionBootstrapUseCase implements ExtensionBootstrapInputPort {
 		private readonly serverProvider: ServerChannelProviderOutputPort,
 		@inject(PublishBrowserStateInputPort)
 		private readonly publishBrowserState: PublishBrowserStateInputPort,
+		@inject(FeatureFlagsOutputPort)
+		private readonly featureFlags: FeatureFlagsOutputPort,
 		@inject(LoggerFactoryOutputPort)
 		loggerFactory: LoggerFactoryOutputPort,
 	) {
-		this.logger = loggerFactory.create("ExtensionBootstrapUseCase");
+		this.logger = loggerFactory.create("ExtensionLifecycleUseCase");
 	}
 
 	start = async (): Promise<void> => {
 		this.logger.info("Starting extension...");
+
+		// Ready the feature flags provider before anything else may need to read flags.
+		await this.featureFlags.start().catch((error) => {
+			this.logger.error("Error starting feature flags provider:", error);
+		});
 
 		// Link RPC for the browser driver (tab content scripts).
 		this.browserDriver.linkRpc();

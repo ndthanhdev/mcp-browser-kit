@@ -34,6 +34,9 @@
 			"path": "./apps/ext-e2e-test-app"
 		},
 		{
+			"path": "./apps/ext-wxt"
+		},
+		{
 			"path": "./apps/m2"
 		},
 		{
@@ -55,16 +58,25 @@
 			"path": "./packages/core-utils"
 		},
 		{
+			"path": "./packages/driven-feature-flags"
+		},
+		{
+			"path": "./packages/core-feature-flags"
+		},
+		{
 			"path": "./packages/driven-logger-factory"
 		},
 		{
 			"path": "./packages/extension-driven-browser-driver"
 		},
 		{
+			"path": "./packages/extension-driven-llm-provider"
+		},
+		{
 			"path": "./packages/extension-driven-server-channel-provider"
 		},
 		{
-			"path": "./packages/extension-driving-bootstrap"
+			"path": "./packages/extension-driving-lifecycle"
 		},
 		{
 			"path": "./packages/extension-driving-trpc-controller"

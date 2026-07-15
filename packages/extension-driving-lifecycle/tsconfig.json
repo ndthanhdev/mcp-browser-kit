@@ -4,7 +4,7 @@
 		"**/*"
 	],
 	"compilerOptions": {
-		"outDir": "../../.moon/cache/types/packages/extension-driving-bootstrap",
+		"outDir": "../../.moon/cache/types/packages/extension-driving-lifecycle",
 		"paths": {
 			"@mcp-browser-kit/core-extension": [
 				"../core-extension/src/index.ts"
