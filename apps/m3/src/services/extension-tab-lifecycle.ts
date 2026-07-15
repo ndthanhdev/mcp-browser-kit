@@ -1,6 +1,7 @@
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension";
 import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
 import {
+	FrameCorrelationResponder,
 	TabContentMutationObserver,
 	TabToolsSetup,
 } from "@mcp-browser-kit/extension-driven-browser-driver";
@@ -13,6 +14,7 @@ import { inject, injectable } from "inversify";
 export class ExtensionTabLifecycle {
 	private logger: ReturnType<LoggerFactoryOutputPort["create"]>;
 	private readonly mutationObserver = new TabContentMutationObserver();
+	private readonly frameCorrelationResponder = new FrameCorrelationResponder();
 
 	constructor(
 		@inject(TabToolsSetup)
@@ -58,6 +60,9 @@ export class ExtensionTabLifecycle {
 
 		// Start observing DOM mutations and pinging the background.
 		this.mutationObserver.start();
+
+		// Start responding to frame-correlation pings from a parent frame.
+		this.frameCorrelationResponder.start();
 
 		this.logger.info("ExtensionTabLifecycle start complete");
 	}

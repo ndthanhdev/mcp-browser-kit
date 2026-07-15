@@ -12,6 +12,8 @@ export class TestAppPage extends BasePage {
 	readonly fallbackTestUrl = `${TEST_APP_BASE_URL}/fallback-test`;
 	readonly snapshotTestUrl = `${TEST_APP_BASE_URL}/snapshot-test`;
 	readonly scrollTestUrl = `${TEST_APP_BASE_URL}/scroll-test`;
+	readonly iframeTestUrl = `${TEST_APP_BASE_URL}/iframe-test`;
+	readonly popupTestUrl = `${TEST_APP_BASE_URL}/popup-test`;
 
 	readonly pageTitle: Locator;
 
@@ -57,6 +59,21 @@ export class TestAppPage extends BasePage {
 	async navigateToJavaScriptTest() {
 		await this.goto(this.javascriptTestUrl);
 		await super.waitForPageLoad(this.getByTestId("page-info"));
+	}
+
+	async navigateToIframeTest() {
+		await this.goto(this.iframeTestUrl);
+		await super.waitForPageLoad(this.getByTestId("outer-button"));
+	}
+
+	async navigateToIframeTestCrossOrigin() {
+		await this.goto(`${this.iframeTestUrl}?crossOrigin=1`);
+		await super.waitForPageLoad(this.getByTestId("outer-button"));
+	}
+
+	async navigateToPopupTest() {
+		await this.goto(this.popupTestUrl);
+		await super.waitForPageLoad(this.getByTestId("open-popup-button"));
 	}
 
 	async navigateToFallbackTest() {
@@ -128,6 +145,23 @@ export class TestAppPage extends BasePage {
 			dynamicContent: this.getByTestId("dynamic-content"),
 			styleTarget: this.getByTestId("style-target"),
 			dataElement: this.getByTestId("data-element"),
+		};
+	}
+
+	getIframeTestLocators() {
+		return {
+			testIframe: this.getByTestId("test-iframe"),
+			outerButton: this.getByTestId("outer-button"),
+			outerClickCount: this.getByTestId("outer-click-count"),
+			iframeClickCountMirror: this.getByTestId("iframe-click-count-mirror"),
+		};
+	}
+
+	getPopupTestLocators() {
+		return {
+			openPopupButton: this.getByTestId("open-popup-button"),
+			openerButton: this.getByTestId("opener-button"),
+			openerClickCount: this.getByTestId("opener-click-count"),
 		};
 	}
 }
