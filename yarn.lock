@@ -1240,6 +1240,7 @@ __metadata:
     "@modelcontextprotocol/sdk": "npm:^1.27.0"
     "@types/data-urls": "npm:^3.0.4"
     "@types/ws": "npm:^8.18.1"
+    citty: "npm:^0.2.2"
     data-urls: "npm:^6.0.1"
     tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.3"
@@ -4372,6 +4373,13 @@ __metadata:
   bin:
     print-chrome-path: bin/print-chrome-path.cjs
   checksum: 10c0/3598bedecf70e42babada1df4f1bfa37071906973044737ff91d0e9ab53c4fac8cabd7489edb8bd4fcd83a70ae50c671265453d62f612419b745bfab63875817
+  languageName: node
+  linkType: hard
+
+"citty@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "citty@npm:0.2.2"
+  checksum: 10c0/c896c9dcd187d2a16685706d11428dcdec9eb59aa13fe50aff7b12e1d3521f1bf434d6a5316fe75a341f8ba5ce1d2beceb84f7f261d018985a73d3f6f2a793e3
   languageName: node
   linkType: hard
 

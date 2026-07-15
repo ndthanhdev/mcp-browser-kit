@@ -27,6 +27,31 @@ https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
    	}
    }
    ```
+   By default the server use `stdio` transport, alternatively you can use `http` transport:
+
+   ```bash
+   npx @mcp-browser-kit/server@latest --transport http
+   # optional flags (defaults shown):
+   #   --http-host 127.0.0.1
+   #   --http-port 21082
+   ```
+
+   Then point your MCP client at the URL instead of a `command`:
+
+   ```json
+   {
+   	"mcpServers": {
+   		"browser-kit": {
+   			"url": "http://127.0.0.1:21082/mcp"
+   		}
+   	}
+   }
+   ```
+
+   > **Security**: there's no auth yet, so `--http-host` defaults to
+   > `127.0.0.1` (loopback only). Only pass `--http-host 0.0.0.0` (or a LAN
+   > address) if you understand that anyone who can reach that host/port can
+   > control your browser.
 
 2. Choose the right extension build for your browser:
 
@@ -87,7 +112,7 @@ https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
 
 > **Note for Alpha stage**: Consider using a separate browser profile or dedicated browser instance with this MCP to prevent sensitive data from being unintentionally exposed to AI model providers.
 
-> **Security**: BrowserKit currently lacks authentication for incoming requests. Keep ports 59089 and 2769-2799 on your device network only.
+> **Security**: BrowserKit currently lacks authentication for incoming requests. Keep ports 21082 and 2769-2799 on your device network only.
 
 ## Hosted deployment
 

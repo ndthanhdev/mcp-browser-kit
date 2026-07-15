@@ -15,6 +15,23 @@
 			"transport": {
 				"type": "stdio"
 			}
+		},
+		{
+			"registryType": "npm",
+			"identifier": "@mcp-browser-kit/server",
+			"version": "0.0.0",
+			"transport": {
+				"type": "streamable-http",
+				"url": "http://127.0.0.1:21082/mcp"
+			},
+			"runtimeArguments": [
+				{
+					"type": "named",
+					"name": "--transport",
+					"value": "http",
+					"isRequired": true
+				}
+			]
 		}
 	]
 }
