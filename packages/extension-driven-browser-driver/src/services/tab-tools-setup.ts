@@ -87,8 +87,12 @@ export class TabToolsSetup {
 		this.channel = new EmitteryMessageChannel<DeferData, ResolveData>();
 		this.logger.verbose("Created EmitteryMessageChannel");
 
-		// Initialize the RPC server with tab tools
-		this.rpcServer = new MessageChannelRpcServer(this.tabTools);
+		// Initialize the RPC server with tab tools. Queued dispatch serializes
+		// concurrent tool calls against this tab's shared mutable state (tab
+		// context, DOM mutation observers, human-hint overlay).
+		this.rpcServer = new MessageChannelRpcServer(this.tabTools, {
+			dispatchMode: "queue",
+		});
 		this.logger.verbose("Created MessageChannelRpcServer with tab tools");
 
 		// Connect the server to the EmitteryMessageChannel
