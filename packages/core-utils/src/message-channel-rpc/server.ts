@@ -6,15 +6,36 @@ import type {
 	ResolveMessage,
 } from "./types/message-channel-rpc";
 
+/**
+ * Controls how concurrently-arriving `defer` messages are dispatched:
+ * - "queue": run one at a time, in arrival order (safe against shared
+ *   mutable state, e.g. tab context, DOM mutation observers, overlays).
+ * - "parallel": run each message as soon as it arrives, with no ordering
+ *   guarantees between them.
+ */
+export type RpcDispatchMode = "queue" | "parallel";
+
 export class MessageChannelRpcServer<
 	T extends {},
 	U extends ExtractProcedures<T> = ExtractProcedures<T>,
 > {
 	private procedures: U;
 	private unsubscribe?: () => void;
+	private readonly dispatchMode: RpcDispatchMode;
+	// Serializes handleDefer calls per instance when dispatchMode is "queue",
+	// so concurrently-arriving messages run one at a time instead of
+	// interleaving. handleDefer always resolves (never rejects), so this
+	// chain can't get stuck.
+	private queue: Promise<unknown> = Promise.resolve();
 
-	constructor(procedures: U) {
+	constructor(
+		procedures: U,
+		options?: {
+			dispatchMode?: RpcDispatchMode;
+		},
+	) {
 		this.procedures = procedures;
+		this.dispatchMode = options?.dispatchMode ?? "parallel";
 	}
 
 	startListen = (channel: MessageChannelRpcServerType) => {
@@ -22,9 +43,16 @@ export class MessageChannelRpcServer<
 		this.stopListen();
 
 		this.unsubscribe = channel.incoming.on("defer", (message: DeferMessage) => {
-			this.handleDefer(message).then((result) => {
-				channel.outgoing.emit("resolve", result);
-			});
+			const run = () =>
+				this.handleDefer(message).then((result) => {
+					channel.outgoing.emit("resolve", result);
+				});
+
+			if (this.dispatchMode === "queue") {
+				this.queue = this.queue.then(run);
+			} else {
+				run();
+			}
 		});
 
 		return this.unsubscribe;
