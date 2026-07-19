@@ -4,14 +4,14 @@ const TAB_CONTENT_CHANGED_KIND = "mbk.tabContent.changed";
 const DEFAULT_DEBOUNCE_MS = 500;
 
 /**
- * Content-script helper: installs a top-frame MutationObserver, debounces
- * bursts, and posts a `mbk.tabContent.changed` runtime message. The
- * background-side `DrivenBrowserStateSource` listens for these messages.
+ * Content-script helper: installs a MutationObserver in this frame,
+ * debounces bursts, and posts a `mbk.tabContent.changed` runtime message.
+ * The background-side `DrivenBrowserStateSource` listens for these messages
+ * (not frame-scoped, so any frame's message reaches it).
  *
- * Top-frame only by design:
- *   - Cross-origin iframes cannot install observers anyway.
- *   - Same-origin iframes are rare enough, and observing them would
- *     multiply noise without clear value in v1.
+ * Runs in every frame (all_frames: true), not just the top frame — content
+ * inside a same- or cross-origin `<iframe>` is now part of the aggregated
+ * readable-elements snapshot, so its mutations must invalidate the cache too.
  */
 export class TabContentMutationObserver {
 	private observer: MutationObserver | null = null;
@@ -24,10 +24,6 @@ export class TabContentMutationObserver {
 
 	start = (): void => {
 		if (this.observer) {
-			return;
-		}
-		// Top-frame only.
-		if (typeof window !== "undefined" && window.top !== window.self) {
 			return;
 		}
 		if (typeof document === "undefined") {

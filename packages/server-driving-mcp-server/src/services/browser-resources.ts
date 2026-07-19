@@ -52,6 +52,17 @@ interface BrowserFingerprint {
 	browserName: string;
 }
 
+/**
+ * Per-registration (per-`McpServer`) known-state tracker. Created fresh in
+ * each `register()` call so concurrent registrations (e.g. one per HTTP
+ * session) diff independently instead of sharing mutable instance state.
+ */
+interface ResourceRegistrationState {
+	knownChannelIds: Set<string>;
+	knownTabsByChannel: Map<string, Map<string, TabFingerprint>>;
+	knownBrowserFingerprint: Map<string, BrowserFingerprint>;
+}
+
 const tabFingerprintOf = (
 	tab: BrowserSnapshotTabInfo,
 	snapshot: BrowserSnapshot,
@@ -109,15 +120,6 @@ const browserFingerprintsEqual = (
 @injectable()
 export class BrowserResources {
 	private readonly logger;
-	private readonly knownChannelIds = new Set<string>();
-	private readonly knownTabsByChannel = new Map<
-		string,
-		Map<string, TabFingerprint>
-	>();
-	private readonly knownBrowserFingerprint = new Map<
-		string,
-		BrowserFingerprint
-	>();
 
 	constructor(
 		@inject(LoggerFactoryOutputPort)
@@ -136,11 +138,14 @@ export class BrowserResources {
 	 * Register resources on the given MCP server and start pushing live updates
 	 * in response to browser-state changes. Returns an unsubscribe function
 	 * that detaches the listener and clears internal state.
+	 *
+	 * Each call gets its own independent known-state tracker, so registering
+	 * on multiple `McpServer` instances (e.g. one per HTTP session) is safe.
 	 */
 	register(server: McpServer): () => void {
 		this.logger.verbose("Registering browser resources");
 
-		this.seedKnownState();
+		const state = this.seedKnownState();
 
 		this.registerContextResource(server);
 		this.registerBkTemplateResource(server);
@@ -159,6 +164,7 @@ export class BrowserResources {
 		const unsubscribe = this.observeBrowserState.onChange((channelId) => {
 			try {
 				this.handleChange(
+					state,
 					server,
 					channelId,
 					this.observeBrowserState.getBrowser(channelId),
@@ -172,35 +178,42 @@ export class BrowserResources {
 		});
 
 		this.logger.info("Browser resources registered", {
-			initialChannels: this.knownChannelIds.size,
+			initialChannels: state.knownChannelIds.size,
 		});
 
 		return () => {
 			unsubscribe();
-			this.knownChannelIds.clear();
-			this.knownTabsByChannel.clear();
-			this.knownBrowserFingerprint.clear();
+			state.knownChannelIds.clear();
+			state.knownTabsByChannel.clear();
+			state.knownBrowserFingerprint.clear();
 			this.logger.verbose("Browser resources unsubscribed");
 		};
 	}
 
-	private seedKnownState(): void {
-		this.knownChannelIds.clear();
-		this.knownTabsByChannel.clear();
-		this.knownBrowserFingerprint.clear();
+	private seedKnownState(): ResourceRegistrationState {
+		const knownChannelIds = new Set<string>();
+		const knownTabsByChannel = new Map<string, Map<string, TabFingerprint>>();
+		const knownBrowserFingerprint = new Map<string, BrowserFingerprint>();
+
 		for (const entry of this.observeBrowserState.listBrowsers()) {
 			if (entry.snapshot.status === "offline") continue;
-			this.knownChannelIds.add(entry.channelId);
+			knownChannelIds.add(entry.channelId);
 			const tabMap = new Map<string, TabFingerprint>();
 			for (const tab of entry.snapshot.tabs) {
 				tabMap.set(tab.id, tabFingerprintOf(tab, entry.snapshot));
 			}
-			this.knownTabsByChannel.set(entry.channelId, tabMap);
-			this.knownBrowserFingerprint.set(
+			knownTabsByChannel.set(entry.channelId, tabMap);
+			knownBrowserFingerprint.set(
 				entry.channelId,
 				browserFingerprintOf(entry.snapshot),
 			);
 		}
+
+		return {
+			knownChannelIds,
+			knownTabsByChannel,
+			knownBrowserFingerprint,
+		};
 	}
 
 	// ────────────────────────────────────────────────────────────────────────
@@ -622,6 +635,7 @@ export class BrowserResources {
 	// ────────────────────────────────────────────────────────────────────────
 
 	private handleChange(
+		state: ResourceRegistrationState,
 		server: McpServer,
 		channelId: string,
 		entry:
@@ -632,19 +646,19 @@ export class BrowserResources {
 			  }
 			| undefined,
 	): void {
-		const wasKnown = this.knownChannelIds.has(channelId);
+		const wasKnown = state.knownChannelIds.has(channelId);
 		const prevTabMap =
-			this.knownTabsByChannel.get(channelId) ??
+			state.knownTabsByChannel.get(channelId) ??
 			new Map<string, TabFingerprint>();
-		const prevBrowserFp = this.knownBrowserFingerprint.get(channelId);
+		const prevBrowserFp = state.knownBrowserFingerprint.get(channelId);
 
 		if (entry === undefined) {
-			this.handleEviction(server, channelId, wasKnown, prevTabMap);
+			this.handleEviction(state, server, channelId, wasKnown, prevTabMap);
 			return;
 		}
 
 		if (entry.snapshot.status === "offline") {
-			this.handleOffline(server, channelId, wasKnown, prevTabMap);
+			this.handleOffline(state, server, channelId, wasKnown, prevTabMap);
 			return;
 		}
 
@@ -661,23 +675,24 @@ export class BrowserResources {
 		}
 		if (!wasKnown) {
 			this.safeSendListChanged(server);
-			this.knownChannelIds.add(channelId);
+			state.knownChannelIds.add(channelId);
 		}
-		this.knownTabsByChannel.set(channelId, currentTabMap);
-		this.knownBrowserFingerprint.set(channelId, currentBrowserFp);
+		state.knownTabsByChannel.set(channelId, currentTabMap);
+		state.knownBrowserFingerprint.set(channelId, currentBrowserFp);
 	}
 
 	private handleOffline(
+		state: ResourceRegistrationState,
 		server: McpServer,
 		channelId: string,
 		wasKnown: boolean,
 		prevTabMap: Map<string, TabFingerprint>,
 	): void {
 		if (wasKnown) {
-			this.knownChannelIds.delete(channelId);
+			state.knownChannelIds.delete(channelId);
 		}
-		this.knownTabsByChannel.delete(channelId);
-		this.knownBrowserFingerprint.delete(channelId);
+		state.knownTabsByChannel.delete(channelId);
+		state.knownBrowserFingerprint.delete(channelId);
 
 		for (const tabId of prevTabMap.keys()) {
 			this.safeSendUpdated(server, tabBkUri(channelId, tabId));
@@ -690,13 +705,14 @@ export class BrowserResources {
 	}
 
 	private handleEviction(
+		state: ResourceRegistrationState,
 		server: McpServer,
 		channelId: string,
 		wasKnown: boolean,
 		prevTabMap: Map<string, TabFingerprint>,
 	): void {
 		if (wasKnown) {
-			this.knownChannelIds.delete(channelId);
+			state.knownChannelIds.delete(channelId);
 		}
 		this.snapshotContent.invalidateCache(channelId);
 		for (const tabId of prevTabMap.keys()) {
@@ -704,8 +720,8 @@ export class BrowserResources {
 			this.safeSendUpdated(server, tabReadableTextBkUri(channelId, tabId));
 			this.safeSendUpdated(server, tabReadableElementsBkUri(channelId, tabId));
 		}
-		this.knownTabsByChannel.delete(channelId);
-		this.knownBrowserFingerprint.delete(channelId);
+		state.knownTabsByChannel.delete(channelId);
+		state.knownBrowserFingerprint.delete(channelId);
 		this.safeSendUpdated(server, browserBkUri(channelId));
 		this.safeSendListChanged(server);
 	}

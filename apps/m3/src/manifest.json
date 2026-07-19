@@ -10,7 +10,8 @@
 		"tabCapture",
 		"scripting",
 		"alarms",
-		"storage"
+		"storage",
+		"webNavigation"
 	],
 	"host_permissions": [
 		"http://*/*",
@@ -27,7 +28,8 @@
 			"js": [
 				"bootstrap-extension-tab.js"
 			],
-			"run_at": "document_start"
+			"run_at": "document_start",
+			"all_frames": true
 		}
 	],
 	"background": {

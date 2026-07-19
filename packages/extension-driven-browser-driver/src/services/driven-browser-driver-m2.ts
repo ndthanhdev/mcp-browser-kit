@@ -7,6 +7,8 @@ import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import * as backgroundToolsM2 from "../utils/background-tools-m2";
 import { DrivenBrowserDriverBase } from "./driven-browser-driver-base";
+import { FrameCorrelationService } from "./frame-correlation-service";
+import { FrameRegistryService } from "./frame-registry-service";
 import { TabRpcService } from "./tab-rpc-service";
 import { TabToolsSetup } from "./tab-tools-setup";
 
@@ -18,6 +20,13 @@ export class DrivenBrowserDriverM2 extends DrivenBrowserDriverBase {
 	static setupContainer(container: Container): void {
 		// Setup TabRpcService and its dependencies
 		container.bind<TabRpcService>(TabRpcService).to(TabRpcService);
+		container
+			.bind<FrameRegistryService>(FrameRegistryService)
+			.to(FrameRegistryService);
+		container
+			.bind<FrameCorrelationService>(FrameCorrelationService)
+			.to(FrameCorrelationService)
+			.inSingletonScope();
 
 		// M2 browser driver
 		container
@@ -34,8 +43,18 @@ export class DrivenBrowserDriverM2 extends DrivenBrowserDriverBase {
 		loggerFactory: LoggerFactoryOutputPort,
 		@inject(TabRpcService)
 		tabRpcService: TabRpcService,
+		@inject(FrameRegistryService)
+		frameRegistry: FrameRegistryService,
+		@inject(FrameCorrelationService)
+		frameCorrelation: FrameCorrelationService,
 	) {
-		super(loggerFactory, tabRpcService, "DrivenBrowserDriverM2");
+		super(
+			loggerFactory,
+			tabRpcService,
+			frameRegistry,
+			frameCorrelation,
+			"DrivenBrowserDriverM2",
+		);
 	}
 
 	captureTab = (tabId: string): Promise<Screenshot> => {

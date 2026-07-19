@@ -1387,6 +1387,7 @@ __metadata:
     "@modelcontextprotocol/sdk": "npm:^1.27.0"
     "@types/data-urls": "npm:^3.0.4"
     "@types/ws": "npm:^8.18.1"
+    citty: "npm:^0.2.2"
     data-urls: "npm:^6.0.1"
     tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.3"
