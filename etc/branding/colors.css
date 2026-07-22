@@ -1,0 +1,393 @@
+/* MCP Browser Kit brand color tokens. Source of truth: colors.json */
+
+:root {
+	/* Primitive tokens: raw, hue-named palettes */
+	--color-emerald-50: #ecfdf5;
+	--color-emerald-100: #d1fae5;
+	--color-emerald-200: #a7f3d0;
+	--color-emerald-300: #6ee7b7;
+	--color-emerald-400: #34d399;
+	--color-emerald-500: #10b981;
+	--color-emerald-600: #059669;
+	--color-emerald-700: #047857;
+	--color-emerald-800: #065f46;
+	--color-emerald-900: #064e3b;
+
+	--color-violet-50: #f5f3ff;
+	--color-violet-100: #ede9fe;
+	--color-violet-200: #ddd6fe;
+	--color-violet-300: #c4b5fd;
+	--color-violet-400: #a78bfa;
+	--color-violet-500: #8b5cf6;
+	--color-violet-600: #7c3aed;
+	--color-violet-700: #6d28d9;
+	--color-violet-800: #5b21b6;
+	--color-violet-900: #4c1d95;
+
+	--color-frost-0: #ffffff;
+	--color-frost-50: #f8fafc;
+	--color-frost-100: #f1f5f9;
+	--color-frost-200: #e2e8f0;
+	--color-frost-300: #cbd5e1;
+	--color-frost-400: #94a3b8;
+	--color-frost-500: #64748b;
+	--color-frost-600: #475569;
+	--color-frost-700: #334155;
+	--color-frost-800: #1e293b;
+	--color-frost-900: #0f172a;
+	--color-frost-950: #020617;
+
+	--color-green-50: #f0fdf4;
+	--color-green-100: #dcfce7;
+	--color-green-200: #bbf7d0;
+	--color-green-300: #86efac;
+	--color-green-400: #4ade80;
+	--color-green-500: #22c55e;
+	--color-green-600: #16a34a;
+	--color-green-700: #15803d;
+	--color-green-800: #166534;
+	--color-green-900: #14532d;
+
+	--color-amber-50: #fffbeb;
+	--color-amber-100: #fef3c7;
+	--color-amber-200: #fde68a;
+	--color-amber-300: #fcd34d;
+	--color-amber-400: #fbbf24;
+	--color-amber-500: #f59e0b;
+	--color-amber-600: #d97706;
+	--color-amber-700: #b45309;
+	--color-amber-800: #92400e;
+	--color-amber-900: #78350f;
+
+	--color-red-50: #fef2f2;
+	--color-red-100: #fee2e2;
+	--color-red-200: #fecaca;
+	--color-red-300: #fca5a5;
+	--color-red-400: #f87171;
+	--color-red-500: #ef4444;
+	--color-red-600: #dc2626;
+	--color-red-700: #b91c1c;
+	--color-red-800: #991b1b;
+	--color-red-900: #7f1d1d;
+
+	/* Semantic tokens (light theme), aliased from primitives above */
+	--color-primary: var(--color-emerald-600);
+	--color-secondary: var(--color-violet-600);
+	--color-success: var(--color-green-600);
+	--color-warning: var(--color-amber-600);
+	--color-danger: var(--color-red-600);
+	--color-background: var(--color-frost-0);
+	--color-surface: var(--color-frost-50);
+	--color-surface-elevated: var(--color-frost-0);
+	--color-border: var(--color-frost-200);
+	--color-text-primary: var(--color-frost-900);
+	--color-text-secondary: var(--color-frost-600);
+	--color-text-inverse: var(--color-frost-0);
+	--color-link: var(--color-emerald-600);
+	--color-focus-ring: var(--color-emerald-400);
+
+	/*
+	 * Interaction states, derived from the semantic base vars above via color-mix().
+	 * Because they reference the base var (not a literal color), they adapt
+	 * automatically when [data-theme="dark"] overrides the base var below —
+	 * no per-theme duplication needed.
+	 */
+	--color-primary-hover: color-mix(
+		in srgb,
+		var(--color-primary) 8%,
+		transparent
+	);
+	--color-primary-selected: color-mix(
+		in srgb,
+		var(--color-primary) 12%,
+		transparent
+	);
+	--color-primary-focus-visible: color-mix(
+		in srgb,
+		var(--color-primary) 30%,
+		transparent
+	);
+	--color-primary-outlined-border: color-mix(
+		in srgb,
+		var(--color-primary) 50%,
+		transparent
+	);
+
+	--color-secondary-hover: color-mix(
+		in srgb,
+		var(--color-secondary) 8%,
+		transparent
+	);
+	--color-secondary-selected: color-mix(
+		in srgb,
+		var(--color-secondary) 12%,
+		transparent
+	);
+	--color-secondary-focus-visible: color-mix(
+		in srgb,
+		var(--color-secondary) 30%,
+		transparent
+	);
+	--color-secondary-outlined-border: color-mix(
+		in srgb,
+		var(--color-secondary) 50%,
+		transparent
+	);
+
+	--color-success-hover: color-mix(
+		in srgb,
+		var(--color-success) 8%,
+		transparent
+	);
+	--color-success-selected: color-mix(
+		in srgb,
+		var(--color-success) 12%,
+		transparent
+	);
+	--color-success-focus-visible: color-mix(
+		in srgb,
+		var(--color-success) 30%,
+		transparent
+	);
+	--color-success-outlined-border: color-mix(
+		in srgb,
+		var(--color-success) 50%,
+		transparent
+	);
+
+	--color-warning-hover: color-mix(
+		in srgb,
+		var(--color-warning) 8%,
+		transparent
+	);
+	--color-warning-selected: color-mix(
+		in srgb,
+		var(--color-warning) 12%,
+		transparent
+	);
+	--color-warning-focus-visible: color-mix(
+		in srgb,
+		var(--color-warning) 30%,
+		transparent
+	);
+	--color-warning-outlined-border: color-mix(
+		in srgb,
+		var(--color-warning) 50%,
+		transparent
+	);
+
+	--color-danger-hover: color-mix(in srgb, var(--color-danger) 8%, transparent);
+	--color-danger-selected: color-mix(
+		in srgb,
+		var(--color-danger) 12%,
+		transparent
+	);
+	--color-danger-focus-visible: color-mix(
+		in srgb,
+		var(--color-danger) 30%,
+		transparent
+	);
+	--color-danger-outlined-border: color-mix(
+		in srgb,
+		var(--color-danger) 50%,
+		transparent
+	);
+
+	--color-background-hover: color-mix(
+		in srgb,
+		var(--color-background) 8%,
+		transparent
+	);
+	--color-background-selected: color-mix(
+		in srgb,
+		var(--color-background) 12%,
+		transparent
+	);
+	--color-background-focus-visible: color-mix(
+		in srgb,
+		var(--color-background) 30%,
+		transparent
+	);
+	--color-background-outlined-border: color-mix(
+		in srgb,
+		var(--color-background) 50%,
+		transparent
+	);
+
+	--color-surface-hover: color-mix(
+		in srgb,
+		var(--color-surface) 8%,
+		transparent
+	);
+	--color-surface-selected: color-mix(
+		in srgb,
+		var(--color-surface) 12%,
+		transparent
+	);
+	--color-surface-focus-visible: color-mix(
+		in srgb,
+		var(--color-surface) 30%,
+		transparent
+	);
+	--color-surface-outlined-border: color-mix(
+		in srgb,
+		var(--color-surface) 50%,
+		transparent
+	);
+
+	--color-surface-elevated-hover: color-mix(
+		in srgb,
+		var(--color-surface-elevated) 8%,
+		transparent
+	);
+	--color-surface-elevated-selected: color-mix(
+		in srgb,
+		var(--color-surface-elevated) 12%,
+		transparent
+	);
+	--color-surface-elevated-focus-visible: color-mix(
+		in srgb,
+		var(--color-surface-elevated) 30%,
+		transparent
+	);
+	--color-surface-elevated-outlined-border: color-mix(
+		in srgb,
+		var(--color-surface-elevated) 50%,
+		transparent
+	);
+
+	--color-border-hover: color-mix(in srgb, var(--color-border) 8%, transparent);
+	--color-border-selected: color-mix(
+		in srgb,
+		var(--color-border) 12%,
+		transparent
+	);
+	--color-border-focus-visible: color-mix(
+		in srgb,
+		var(--color-border) 30%,
+		transparent
+	);
+	--color-border-outlined-border: color-mix(
+		in srgb,
+		var(--color-border) 50%,
+		transparent
+	);
+
+	--color-text-primary-hover: color-mix(
+		in srgb,
+		var(--color-text-primary) 8%,
+		transparent
+	);
+	--color-text-primary-selected: color-mix(
+		in srgb,
+		var(--color-text-primary) 12%,
+		transparent
+	);
+	--color-text-primary-focus-visible: color-mix(
+		in srgb,
+		var(--color-text-primary) 30%,
+		transparent
+	);
+	--color-text-primary-outlined-border: color-mix(
+		in srgb,
+		var(--color-text-primary) 50%,
+		transparent
+	);
+
+	--color-text-secondary-hover: color-mix(
+		in srgb,
+		var(--color-text-secondary) 8%,
+		transparent
+	);
+	--color-text-secondary-selected: color-mix(
+		in srgb,
+		var(--color-text-secondary) 12%,
+		transparent
+	);
+	--color-text-secondary-focus-visible: color-mix(
+		in srgb,
+		var(--color-text-secondary) 30%,
+		transparent
+	);
+	--color-text-secondary-outlined-border: color-mix(
+		in srgb,
+		var(--color-text-secondary) 50%,
+		transparent
+	);
+
+	--color-text-inverse-hover: color-mix(
+		in srgb,
+		var(--color-text-inverse) 8%,
+		transparent
+	);
+	--color-text-inverse-selected: color-mix(
+		in srgb,
+		var(--color-text-inverse) 12%,
+		transparent
+	);
+	--color-text-inverse-focus-visible: color-mix(
+		in srgb,
+		var(--color-text-inverse) 30%,
+		transparent
+	);
+	--color-text-inverse-outlined-border: color-mix(
+		in srgb,
+		var(--color-text-inverse) 50%,
+		transparent
+	);
+
+	--color-link-hover: color-mix(in srgb, var(--color-link) 8%, transparent);
+	--color-link-selected: color-mix(in srgb, var(--color-link) 12%, transparent);
+	--color-link-focus-visible: color-mix(
+		in srgb,
+		var(--color-link) 30%,
+		transparent
+	);
+	--color-link-outlined-border: color-mix(
+		in srgb,
+		var(--color-link) 50%,
+		transparent
+	);
+
+	--color-focus-ring-hover: color-mix(
+		in srgb,
+		var(--color-focus-ring) 8%,
+		transparent
+	);
+	--color-focus-ring-selected: color-mix(
+		in srgb,
+		var(--color-focus-ring) 12%,
+		transparent
+	);
+	--color-focus-ring-focus-visible: color-mix(
+		in srgb,
+		var(--color-focus-ring) 30%,
+		transparent
+	);
+	--color-focus-ring-outlined-border: color-mix(
+		in srgb,
+		var(--color-focus-ring) 50%,
+		transparent
+	);
+}
+
+:root[data-theme="dark"] {
+	/*
+	 * Semantic tokens (dark theme), aliased from the same primitives.
+	 * The interaction-state vars above recompute automatically from these.
+	 */
+	--color-primary: var(--color-emerald-400);
+	--color-secondary: var(--color-violet-400);
+	--color-success: var(--color-green-400);
+	--color-warning: var(--color-amber-400);
+	--color-danger: var(--color-red-400);
+	--color-background: var(--color-frost-950);
+	--color-surface: var(--color-frost-900);
+	--color-surface-elevated: var(--color-frost-800);
+	--color-border: var(--color-frost-700);
+	--color-text-primary: var(--color-frost-50);
+	--color-text-secondary: var(--color-frost-400);
+	--color-text-inverse: var(--color-frost-950);
+	--color-link: var(--color-emerald-300);
+	--color-focus-ring: var(--color-emerald-400);
+}

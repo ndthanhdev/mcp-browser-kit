@@ -5,7 +5,18 @@ import { defineConfig } from "wxt";
 export default defineConfig({
 	modules: [
 		"@wxt-dev/module-react",
+		"@wxt-dev/auto-icons",
 	],
+	autoIcons: {
+		baseIconPath: "assets/icon.svg",
+		sizes: [
+			16,
+			32,
+			48,
+			96,
+			128,
+		],
+	},
 	manifest: {
 		// Firefox requires an explicit extension ID for MV3.
 		// biome-ignore lint/style/useNamingConvention: required WebExtension manifest key
