@@ -38,26 +38,42 @@ async function* deferSubscription(
 	const channel = extensionChannelProvider.openChannel(channelId);
 	logger.verbose(`Channel opened: ${channelId}`);
 
-	let defer = Promise.withResolvers<DeferMessage>();
+	// Buffers defer messages in a FIFO queue rather than a single promise slot,
+	// so concurrently-arriving messages (e.g. two tools/call requests
+	// dispatched in parallel) are all forwarded in arrival order instead of
+	// silently dropping any message that arrives before the previous one is
+	// consumed by the loop below.
+	const pendingMessages: DeferMessage[] = [];
+	let notifyArrival = Promise.withResolvers<void>();
 
 	const unsubscribe = channel.outgoing.on("defer", (message: DeferMessage) => {
 		logger.verbose(`Received defer message on channel ${channelId}:`, message);
-		defer.resolve(message);
-		defer = Promise.withResolvers<DeferMessage>();
+		pendingMessages.push(message);
+		notifyArrival.resolve();
 	});
 
 	let stopped = false;
+	let abortError: Error | undefined;
 	if (signal) {
 		signal.onabort = () => {
 			logger.info(`Subscription aborted for channel: ${channelId}`);
 			stopped = true;
+			abortError = new Error("Client closed subscription");
 			unsubscribe();
-			defer.reject(new Error("Client closed subscription"));
+			notifyArrival.resolve();
 			extensionChannelProvider.closeChannel(channelId);
 		};
 	}
 	while (!stopped) {
-		yield await defer.promise;
+		if (pendingMessages.length === 0) {
+			await notifyArrival.promise;
+			notifyArrival = Promise.withResolvers<void>();
+			continue;
+		}
+		yield pendingMessages.shift() as DeferMessage;
+	}
+	if (abortError) {
+		throw abortError;
 	}
 	logger.info(`Subscription ended for channel: ${channelId}`);
 }

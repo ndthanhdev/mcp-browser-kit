@@ -6,7 +6,7 @@ export default defineConfig({
 		"src/bootstrap-extension.ts",
 	],
 	splitting: false,
-	sourcemap: "inline",
+	sourcemap: true,
 	clean: true,
 	format: [
 		"esm",
