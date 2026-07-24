@@ -35,11 +35,39 @@ const command = [
 	"$FIREFOX_API_SECRET",
 	"--channel",
 	channel,
-].join(" ");
+];
+
+// AMO requires a summary, categories, and license for an extension's first
+// listed version, even if the extension already exists as unlisted.
+if (channel === "listed") {
+	const manifestJson = await fse.readJSON(
+		path.resolve(projectRoot, "src/manifest.json"),
+	);
+
+	const amoMetadataPath = path.resolve(
+		projectRoot,
+		"target/extension/tmp/amo-metadata.json",
+	);
+	await fse.outputJSON(amoMetadataPath, {
+		summary: {
+			"en-US": manifestJson.description,
+		},
+		categories: [
+			"other",
+		],
+		version: {
+			license: "MIT",
+		},
+	});
+
+	command.push("--amo-metadata", amoMetadataPath);
+}
+
+const commandString = command.join(" ");
 
 await $({
 	quote: R.identity<string>,
-})`${command}`;
+})`${commandString}`;
 
 const signedFile = await glob(`${signArtifactTmpDir}/*`);
 
