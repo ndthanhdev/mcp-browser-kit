@@ -35,33 +35,11 @@ const command = [
 	"$FIREFOX_API_SECRET",
 	"--channel",
 	channel,
+	// Listing fields AMO cannot derive from manifest.json; a listed version is
+	// rejected without them.
+	"--amo-metadata",
+	path.resolve(projectRoot, "amo-metadata.json"),
 ];
-
-// AMO requires a summary, categories, and license for an extension's first
-// listed version, even if the extension already exists as unlisted.
-if (channel === "listed") {
-	const manifestJson = await fse.readJSON(
-		path.resolve(projectRoot, "src/manifest.json"),
-	);
-
-	const amoMetadataPath = path.resolve(
-		projectRoot,
-		"target/extension/tmp/amo-metadata.json",
-	);
-	await fse.outputJSON(amoMetadataPath, {
-		summary: {
-			"en-US": manifestJson.description,
-		},
-		categories: [
-			"other",
-		],
-		version: {
-			license: "MIT",
-		},
-	});
-
-	command.push("--amo-metadata", amoMetadataPath);
-}
 
 const commandString = command.join(" ");
 
