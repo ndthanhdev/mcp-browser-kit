@@ -8,6 +8,7 @@ import type { Logger } from "@mcp-browser-kit/types";
 import { inject, injectable } from "inversify";
 import { config } from "../config";
 import * as dom from "../utils/dom-tools";
+import { CORRELATE_MESSAGE_TYPE } from "../utils/frame-correlation";
 import { TabAnimationTools } from "./tab-animation-tools";
 import { TabContextStore } from "./tab-context-store";
 
@@ -15,6 +16,16 @@ interface Strategy {
 	label: string;
 	act: () => Promise<void>;
 }
+
+export type HitTargetResolution =
+	| {
+			kind: "element";
+	  }
+	| {
+			kind: "iframe";
+			localX: number;
+			localY: number;
+	  };
 
 /**
  * Iterates `strategies` in order. Runs dom.performAndVerify for each strategy.
@@ -83,6 +94,38 @@ export class TabDomTools {
 
 		dom.scrollElement(element, direction, amount ?? undefined);
 		this.logger.verbose("Scroll element completed");
+	};
+
+	/**
+	 * Reports whether (x, y) lands on a real element in this frame, or on an
+	 * `<iframe>` that must be resolved to a specific child frame first. Never
+	 * clicks the `<iframe>` element itself — see `clickOnCoordinates`.
+	 */
+	resolveHitTarget = (
+		x: number,
+		y: number,
+		correlationNonce: string,
+	): HitTargetResolution => {
+		this.logger.verbose(`Resolving hit target at (${x}, ${y})`);
+		const element = document.elementFromPoint(x, y);
+		if (element instanceof HTMLIFrameElement) {
+			element.contentWindow?.postMessage(
+				{
+					type: CORRELATE_MESSAGE_TYPE,
+					nonce: correlationNonce,
+				},
+				"*",
+			);
+			const rect = element.getBoundingClientRect();
+			return {
+				kind: "iframe",
+				localX: x - rect.left,
+				localY: y - rect.top,
+			};
+		}
+		return {
+			kind: "element",
+		};
 	};
 
 	clickOnCoordinates = async (x: number, y: number) => {

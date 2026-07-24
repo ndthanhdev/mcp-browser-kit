@@ -1,0 +1,22 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"include": [
+		"**/*"
+	],
+	"references": [
+		{
+			"path": "../core-feature-flags"
+		}
+	],
+	"compilerOptions": {
+		"outDir": "../../.moon/cache/types/packages/driven-feature-flags",
+		"paths": {
+			"@mcp-browser-kit/core-feature-flags": [
+				"../core-feature-flags/src/index.ts"
+			],
+			"@mcp-browser-kit/core-feature-flags/*": [
+				"../core-feature-flags/src/*"
+			]
+		}
+	}
+}

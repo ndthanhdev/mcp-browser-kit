@@ -1,0 +1,9 @@
+{
+	"name": "@mcp-browser-kit/extension-driven-llm-provider",
+	"packageManager": "yarn@4.10.3",
+	"dependencies": {
+		"@ai-sdk/openai-compatible": "3.0.0-beta.58",
+		"ai": "7.0.0-beta.186",
+		"zod": "^4.3.6"
+	}
+}

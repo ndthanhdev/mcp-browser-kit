@@ -1,5 +1,11 @@
 $schema: https://moonrepo.dev/schemas/project.json
 language: typescript
+dependsOn:
+- core-extension
+- driven-feature-flags
+- core-feature-flags
+- core-utils
+- types
 tags:
 - wxt
 tasks:

@@ -5,6 +5,7 @@
 	"type": "module",
 	"packageManager": "yarn@4.10.3",
 	"dependencies": {
+		"citty": "^0.2.2",
 		"data-urls": "^6.0.1",
 		"ws": "^8.19.0"
 	},

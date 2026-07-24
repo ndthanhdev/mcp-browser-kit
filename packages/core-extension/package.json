@@ -1,4 +1,8 @@
 {
 	"name": "@mcp-browser-kit/core-extension",
-	"packageManager": "yarn@4.10.3"
+	"packageManager": "yarn@4.10.3",
+	"dependencies": {
+		"ai": "7.0.0-beta.186",
+		"zod": "^4.3.6"
+	}
 }

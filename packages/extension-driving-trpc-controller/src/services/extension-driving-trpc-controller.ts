@@ -92,7 +92,12 @@ export class ExtensionDrivingTrpcController {
 			// Get or create a persistent RPC server for this channel
 			let rpcServer = this.rpcServers.get(channel.channelId);
 			if (!rpcServer) {
-				rpcServer = new MessageChannelRpcServer(this._toolCallHandlers);
+				// Parallel dispatch: requests to different tabs/targets shouldn't be
+				// serialized behind one another at this hop. Per-tab serialization
+				// is enforced downstream by the tab's own RPC server.
+				rpcServer = new MessageChannelRpcServer(this._toolCallHandlers, {
+					dispatchMode: "parallel",
+				});
 				this.rpcServers.set(channel.channelId, rpcServer);
 				this.logger.info("New persistent MessageChannelRpcServer created", {
 					channelId: channel.channelId,

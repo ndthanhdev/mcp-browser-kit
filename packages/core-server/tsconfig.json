@@ -8,6 +8,9 @@
 			"path": "../core-extension"
 		},
 		{
+			"path": "../core-feature-flags"
+		},
+		{
 			"path": "../types"
 		},
 		{
@@ -22,6 +25,12 @@
 			],
 			"@mcp-browser-kit/core-extension/*": [
 				"../core-extension/src/*"
+			],
+			"@mcp-browser-kit/core-feature-flags": [
+				"../core-feature-flags/src/index.ts"
+			],
+			"@mcp-browser-kit/core-feature-flags/*": [
+				"../core-feature-flags/src/*"
 			],
 			"@mcp-browser-kit/types": [
 				"../types/src/index.ts"

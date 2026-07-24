@@ -17,6 +17,7 @@ import type { TabTools } from "./tab-tools";
 type DeferMessageWithTabId = DeferMessage & {
 	extraArgs?: {
 		tabId: string;
+		frameId?: string;
 	};
 };
 
@@ -27,6 +28,7 @@ export class TabRpcService {
 		TabTools,
 		{
 			tabId: string;
+			frameId?: string;
 		}
 	>();
 	private _unlink: Func | undefined;
@@ -64,6 +66,7 @@ export class TabRpcService {
 	private handleOutgoingMessage = async (message: DeferMessage) => {
 		const deferMessage = message as DeferMessageWithTabId;
 		const tabId = deferMessage.extraArgs?.tabId;
+		const frameId = deferMessage.extraArgs?.frameId;
 
 		if (!tabId) {
 			this.logger.warn("Message missing tabId, skipping:", message.id);
@@ -71,14 +74,28 @@ export class TabRpcService {
 		}
 
 		try {
-			this.logger.verbose("Sending message to tab:", tabId, deferMessage);
+			this.logger.verbose(
+				"Sending message to tab:",
+				tabId,
+				"frame:",
+				frameId ?? "(unspecified)",
+				deferMessage,
+			);
 			const response = await browser.tabs.sendMessage(
 				Number(tabId),
 				deferMessage,
+				frameId != null
+					? {
+							frameId: Number(frameId),
+						}
+					: undefined,
 			);
 			this.handleTabMessage(response as ResolveMessage);
 		} catch (error) {
-			this.logger.error(`Failed to send message to tab ${tabId}:`, error);
+			this.logger.error(
+				`Failed to send message to tab ${tabId} frame ${frameId ?? "(unspecified)"}:`,
+				error,
+			);
 		}
 	};
 

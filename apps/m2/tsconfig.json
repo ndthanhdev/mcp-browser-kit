@@ -65,11 +65,23 @@
 			"@mcp-browser-kit/extension-driving-trpc-controller/*": [
 				"../../packages/extension-driving-trpc-controller/src/*"
 			],
-			"@mcp-browser-kit/extension-driving-bootstrap": [
-				"../../packages/extension-driving-bootstrap/src/index.ts"
+			"@mcp-browser-kit/extension-driving-lifecycle": [
+				"../../packages/extension-driving-lifecycle/src/index.ts"
 			],
-			"@mcp-browser-kit/extension-driving-bootstrap/*": [
-				"../../packages/extension-driving-bootstrap/src/*"
+			"@mcp-browser-kit/extension-driving-lifecycle/*": [
+				"../../packages/extension-driving-lifecycle/src/*"
+			],
+			"@mcp-browser-kit/driven-feature-flags": [
+				"../../packages/driven-feature-flags/src/index.ts"
+			],
+			"@mcp-browser-kit/driven-feature-flags/*": [
+				"../../packages/driven-feature-flags/src/*"
+			],
+			"@mcp-browser-kit/core-feature-flags": [
+				"../../packages/core-feature-flags/src/index.ts"
+			],
+			"@mcp-browser-kit/core-feature-flags/*": [
+				"../../packages/core-feature-flags/src/*"
 			]
 		},
 		"outDir": "../../.moon/cache/types/apps/m2"
@@ -89,25 +101,31 @@
 			"path": "../../packages/core-server"
 		},
 		{
-			"path": "../../packages/extension-driven-browser-driver"
+			"path": "../../packages/core-utils"
+		},
+		{
+			"path": "../../packages/driven-feature-flags"
 		},
 		{
 			"path": "../../packages/driven-logger-factory"
 		},
 		{
+			"path": "../../packages/extension-driven-browser-driver"
+		},
+		{
 			"path": "../../packages/extension-driven-server-channel-provider"
 		},
 		{
-			"path": "../../packages/core-utils"
-		},
-		{
-			"path": "../../packages/helper-extension-keep-alive"
+			"path": "../../packages/extension-driving-lifecycle"
 		},
 		{
 			"path": "../../packages/extension-driving-trpc-controller"
 		},
 		{
-			"path": "../../packages/extension-driving-bootstrap"
+			"path": "../../packages/core-feature-flags"
+		},
+		{
+			"path": "../../packages/helper-extension-keep-alive"
 		},
 		{
 			"path": "../server"

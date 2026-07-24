@@ -37,6 +37,27 @@ const testScreens = [
 		description:
 			"Test text and element snapshot tools and snapshot resource URIs",
 	},
+	{
+		path: "/fallback-test",
+		title: "Fallback Test",
+		description:
+			"Test fallback click strategies when element.click() has no effect",
+	},
+	{
+		path: "/scroll-test",
+		title: "Scroll Test",
+		description: "Test scroll tools: scrollPage, scrollElement",
+	},
+	{
+		path: "/iframe-test",
+		title: "Iframe Test",
+		description: "Test tool behavior with content inside an <iframe>",
+	},
+	{
+		path: "/popup-test",
+		title: "Popup Test",
+		description: "Test tool behavior with a window.open() popup window",
+	},
 ];
 
 export function HomeScreen() {

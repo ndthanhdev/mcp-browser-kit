@@ -3,7 +3,9 @@ language: typescript
 dependsOn:
 - core-server
 - core-utils
+- driven-feature-flags
 - driven-logger-factory
+- core-feature-flags
 - server-driven-trpc-channel-provider
 - server-driving-mcp-server
 tags:

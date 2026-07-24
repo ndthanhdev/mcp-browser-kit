@@ -1,16 +1,16 @@
 import { Container } from "inversify";
-import { ExtensionTabBootstrap } from "./services/extension-tab-bootstrap";
+import { ExtensionTabLifecycle } from "./services/extension-tab-lifecycle";
 
 // Create and configure the dependency injection container for tab context
 const tabContainer = new Container({
 	defaultScope: "Singleton",
 });
 
-// Setup ExtensionTabBootstrap service (includes browser driver setup)
-ExtensionTabBootstrap.setupContainer(tabContainer);
+// Setup ExtensionTabLifecycle service (includes browser driver setup)
+ExtensionTabLifecycle.setupContainer(tabContainer);
 
-// Resolve and bootstrap ExtensionTabBootstrap service
-const extensionTabBootstrap = tabContainer.get<ExtensionTabBootstrap>(
-	ExtensionTabBootstrap,
+// Resolve and start ExtensionTabLifecycle service
+const extensionTabLifecycle = tabContainer.get<ExtensionTabLifecycle>(
+	ExtensionTabLifecycle,
 );
-extensionTabBootstrap.bootstrap();
+extensionTabLifecycle.start();

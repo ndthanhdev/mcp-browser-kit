@@ -10,6 +10,9 @@ await fse.emptyDir(`${projectRoot}/target/extension/`);
 await fse.copy(
 	`${projectRoot}/target/tsup/dist/`,
 	`${projectRoot}/target/extension/tmp/extension/`,
+	{
+		filter: (src) => !src.endsWith(".map"),
+	},
 );
 await fse.copy(
 	`${projectRoot}/src/manifest.json`,

@@ -3,62 +3,42 @@ import {
 	LoggerFactoryOutputPort,
 	type LoggerFactoryOutputPort as LoggerFactoryOutputPortInterface,
 } from "@mcp-browser-kit/core-server";
-import {
-	McpDescriptionsInputPort,
-	type McpDescriptionsInputPort as McpDescriptionsInputPortInterface,
-} from "@mcp-browser-kit/core-server/input-ports";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import { BrowserResources } from "./browser-resources";
 import { BrowserTools } from "./browser-tools";
+import { CliConfig } from "./cli-config";
 import { HumanHintTools } from "./human-hint-tools";
 import { InteractionTools } from "./interaction-tools";
+import { McpHttpTransport } from "./mcp-http-transport";
+import { McpServerFactory } from "./mcp-server-factory";
 import { ResourceFallbackTools } from "./resource-fallback-tools";
 
 @injectable()
 export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 	readonly name = "ServerDrivingMcpServer";
-	private logger;
+	private readonly logger;
 	private server: McpServer | null = null;
 	private transport: StdioServerTransport | null = null;
 	private unsubscribeResources: (() => void) | null = null;
 
 	constructor(
 		@inject(LoggerFactoryOutputPort)
-		private readonly loggerFactory: LoggerFactoryOutputPortInterface,
-		@inject(BrowserTools)
-		private readonly browserTools: BrowserTools,
-		@inject(InteractionTools)
-		private readonly interactionTools: InteractionTools,
-		@inject(HumanHintTools)
-		private readonly humanHintTools: HumanHintTools,
-		@inject(BrowserResources)
-		private readonly browserResources: BrowserResources,
-		@inject(ResourceFallbackTools)
-		private readonly resourceFallbackTools: ResourceFallbackTools,
-		@inject(McpDescriptionsInputPort)
-		private readonly mcpDescriptions: McpDescriptionsInputPortInterface,
+		loggerFactory: LoggerFactoryOutputPortInterface,
+		@inject(McpServerFactory)
+		private readonly mcpServerFactory: McpServerFactory,
+		@inject(McpHttpTransport)
+		private readonly httpTransport: McpHttpTransport,
+		@inject(CliConfig)
+		private readonly cliConfig: CliConfig,
 	) {
-		this.logger = this.loggerFactory.create("mcpServer");
+		this.logger = loggerFactory.create("mcpServer");
 	}
 
 	getServer(): McpServer | null {
 		return this.server;
-	}
-
-	private createMcpServerInstance(): McpServer {
-		this.logger.verbose("Creating MCP server instance");
-		return new McpServer(
-			{
-				name: "MCP Browser Kit",
-				version: "1.0.0",
-			},
-			{
-				instructions: this.mcpDescriptions.serverInstructions(),
-			},
-		);
 	}
 
 	private setupEventHandlers(): void {
@@ -76,29 +56,14 @@ export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 		try {
 			this.logger.info("Initializing MCP Browser Kit Server");
 
-			this.server = this.createMcpServerInstance();
-
-			this.logger.verbose("Registering browser tools");
-			this.browserTools.register(this.server);
-
-			this.logger.verbose("Registering interaction tools");
-			this.interactionTools.register(this.server);
-
-			this.logger.verbose("Registering human hint tools");
-			this.humanHintTools.register(this.server);
-
-			this.logger.verbose("Registering resource fallback tools");
-			this.resourceFallbackTools.register(this.server);
-
-			this.logger.verbose("Registering browser resources");
-			this.unsubscribeResources = this.browserResources.register(this.server);
-
-			this.setupEventHandlers();
+			const { server, unsubscribeResources } = this.mcpServerFactory.create();
+			this.server = server;
+			this.unsubscribeResources = unsubscribeResources;
 
 			this.logger.info(
 				"All MCP server tools and resources registered successfully",
 			);
-			return this.server;
+			return server;
 		} catch (error) {
 			this.logger.error("Failed to initialize MCP server", {
 				error: error instanceof Error ? error.message : String(error),
@@ -130,14 +95,26 @@ export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 		}
 	}
 
-	/** Lifecycle: initialize and begin listening on stdio. */
+	/** Lifecycle: initialize and begin listening on the configured transport. */
 	async start(): Promise<void> {
+		this.setupEventHandlers();
+
+		if (this.cliConfig.getTransportMode() === "http") {
+			await this.httpTransport.start(
+				this.cliConfig.getHttpHost(),
+				this.cliConfig.getHttpPort(),
+			);
+			return;
+		}
+
 		await this.initMcpServer();
 		await this.listenOnStdio();
 	}
 
-	/** Lifecycle: close the MCP server and its transport. */
+	/** Lifecycle: close the MCP server(s) and transport(s). */
 	async stop(): Promise<void> {
+		await this.httpTransport.stop();
+
 		if (this.unsubscribeResources) {
 			try {
 				this.logger.verbose("Unsubscribing browser resources");
@@ -173,6 +150,9 @@ export class ServerDrivingMcpServer implements LifecycleParticipantOutputPort {
 		container.bind<HumanHintTools>(HumanHintTools).toSelf();
 		container.bind<BrowserResources>(BrowserResources).toSelf();
 		container.bind<ResourceFallbackTools>(ResourceFallbackTools).toSelf();
+		container.bind<CliConfig>(CliConfig).toSelf();
+		container.bind<McpServerFactory>(McpServerFactory).toSelf();
+		container.bind<McpHttpTransport>(McpHttpTransport).toSelf();
 
 		container.bind<ServerDrivingMcpServer>(ServerDrivingMcpServer).toSelf();
 

@@ -74,6 +74,23 @@ export default defineConfig<ExtContextOptions>({
 				NODE_OPTIONS: "",
 			},
 		},
+		{
+			// Serves the same ext-e2e-test-app build bound to a different
+			// host:port than the primary webServer above, giving real
+			// cross-origin coverage (127.0.0.1:3001 vs localhost:3000) with no
+			// extra infra. `react-router-build` is cached, so this is a no-op
+			// once the primary webServer's build has already run.
+			command:
+				"moon run ext-e2e-test-app:react-router-build && yarn serve -s build/client -l tcp://127.0.0.1:3001",
+			cwd: path.resolve(__dirname, "../ext-e2e-test-app"),
+			url: "http://127.0.0.1:3001",
+			timeout: 30000,
+			reuseExistingServer: !process.env.CI,
+			env: {
+				// biome-ignore lint/style/useNamingConvention: prevent @swc-node/register from leaking into the webServer child process
+				NODE_OPTIONS: "",
+			},
+		},
 	],
 
 	projects: [

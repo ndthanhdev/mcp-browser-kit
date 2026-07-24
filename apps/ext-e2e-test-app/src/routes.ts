@@ -9,6 +9,9 @@ const routes = [
 	route("fallback-test", "pages/fallback-test.tsx"),
 	route("snapshot-test", "pages/snapshot-test.tsx"),
 	route("scroll-test", "pages/scroll-test.tsx"),
+	route("iframe-test", "pages/iframe-test.tsx"),
+	route("iframe-test/inner", "pages/iframe-test-inner.tsx"),
+	route("popup-test", "pages/popup-test.tsx"),
 ] satisfies RouteConfig;
 
 export default routes;

@@ -20,5 +20,20 @@ tasks:
     - '@group(assets)'
     - '@group(sources)'
     - '@group(tsup-config)'
+  mcp-inspector-http:
+    toolchain: node
+    preset: server
+    deps:
+    - build
+    script: |
+      node $projectRoot/target/tsup/dist/main.js --transport http --http-port 21082 &
+      SERVER_PID=$!
+      trap "kill $SERVER_PID 2>/dev/null" EXIT
+      sleep 1
+      DANGEROUSLY_OMIT_AUTH=true yarn dlx @modelcontextprotocol/inspector --transport http --server-url http://127.0.0.1:21082/mcp
+    inputs:
+    - '@group(assets)'
+    - '@group(sources)'
+    - '@group(tsup-config)'
 inheritedBy:
   tag: mcp

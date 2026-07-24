@@ -1,7 +1,10 @@
 import {
 	createCoreServerContainer,
+	FeatureFlagsOutputPort,
+	LifecycleParticipantOutputPort,
 	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-server";
+import { DrivenFeatureFlagsOpenFeatureServer } from "@mcp-browser-kit/driven-feature-flags/server";
 import { DrivenLoggerFactoryConsolaError } from "@mcp-browser-kit/driven-logger-factory";
 import { ServerDrivenTrpcChannelProvider } from "@mcp-browser-kit/server-driven-trpc-channel-provider";
 import { ServerDrivingMcpServer } from "@mcp-browser-kit/server-driving-mcp-server";
@@ -11,6 +14,12 @@ export const container = createCoreServerContainer();
 DrivenLoggerFactoryConsolaError.setupContainer(
 	container,
 	LoggerFactoryOutputPort,
+);
+
+DrivenFeatureFlagsOpenFeatureServer.setupContainer(
+	container,
+	FeatureFlagsOutputPort,
+	LifecycleParticipantOutputPort,
 );
 
 ServerDrivenTrpcChannelProvider.setupContainer(container);
