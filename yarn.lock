@@ -6517,7 +6517,7 @@ __metadata:
     isbot: "npm:^5.1.35"
     react: "npm:^19.2.7"
     react-dom: "npm:^19.2.7"
-    react-router: "npm:8.1.0"
+    react-router: "npm:8.3.0"
     serve: "npm:^14.2.5"
     tailwindcss: "npm:^4.1.18"
     typescript: "npm:^5.9.3"
@@ -9919,9 +9919,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:8.1.0":
-  version: 8.1.0
-  resolution: "react-router@npm:8.1.0"
+"react-router@npm:8.3.0":
+  version: 8.3.0
+  resolution: "react-router@npm:8.3.0"
   dependencies:
     cookie-es: "npm:^3.1.1"
   peerDependencies:
@@ -9930,7 +9930,7 @@ __metadata:
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: 10c0/28c336a5c32ad011a305b82fb27ae1abb892a971591618d3dcb4c8ff3fef3440c215e2b9b365217dd43774db4b3d526c4a95e5d3faecacf42ed9356402bab03f
+  checksum: 10c0/c1277d6a75ff1b77e759bc0142e3257b6cea1eb683595a64a19d7fb341a7b9ba30c81ef8fc426e437c7fbec043bde683462b2463a055b0f58c8e5ad19cdee2ad
   languageName: node
   linkType: hard
 
