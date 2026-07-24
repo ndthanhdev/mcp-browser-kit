@@ -35,11 +35,17 @@ const command = [
 	"$FIREFOX_API_SECRET",
 	"--channel",
 	channel,
-].join(" ");
+	// Listing fields AMO cannot derive from manifest.json; a listed version is
+	// rejected without them.
+	"--amo-metadata",
+	path.resolve(projectRoot, "amo-metadata.json"),
+];
+
+const commandString = command.join(" ");
 
 await $({
 	quote: R.identity<string>,
-})`${command}`;
+})`${commandString}`;
 
 const signedFile = await glob(`${signArtifactTmpDir}/*`);
 
