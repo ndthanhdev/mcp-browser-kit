@@ -3,7 +3,7 @@ import "zx/globals";
 import { workDirs } from "@mcp-browser-kit/scripts/utils/work-dirs";
 import fse from "fs-extra";
 import * as R from "ramda";
-import { getProjectRoot } from "../utils/get-envs";
+import { getFirefoxChannel, getProjectRoot } from "../utils/get-envs";
 import { getExtensionName } from "../utils/get-extension-name";
 
 $.verbose = true;
@@ -19,6 +19,9 @@ const signArtifactTmpDir = path.resolve(
 const distDir = path.resolve(projectRoot, "target/extension/dist");
 const extensionName = await getExtensionName(projectRoot);
 
+const channel = getFirefoxChannel();
+console.log(`Signing for Firefox channel "${channel}"`);
+
 const command = [
 	"web-ext",
 	"sign",
@@ -31,7 +34,7 @@ const command = [
 	"--api-secret",
 	"$FIREFOX_API_SECRET",
 	"--channel",
-	"unlisted",
+	channel,
 ].join(" ");
 
 await $({
