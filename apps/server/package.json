@@ -7,7 +7,7 @@
 	"dependencies": {
 		"citty": "^0.2.2",
 		"data-urls": "^6.0.1",
-		"ws": "^8.19.0"
+		"ws": "^8.21.0"
 	},
 	"devDependencies": {
 		"@modelcontextprotocol/inspector": "^0.20.0",
