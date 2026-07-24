@@ -5,6 +5,7 @@ enum EnvVars {
 	WorkspaceRoot = "WORKSPACE_ROOT",
 	FirefoxApiKey = "FIREFOX_API_KEY",
 	FirefoxApiSecret = "FIREFOX_API_SECRET",
+	FirefoxChannel = "FIREFOX_CHANNEL",
 	YarnNpmAuthToken = "YARN_NPM_AUTH_TOKEN",
 	ReleaseTag = "RELEASE_TAG",
 }
@@ -23,6 +24,18 @@ export const getWorkspaceRoot = () => getEnv(EnvVars.WorkspaceRoot);
 export const getFirefoxApiKey = () => getEnv(EnvVars.FirefoxApiKey);
 
 export const getFirefoxApiSecret = () => getEnv(EnvVars.FirefoxApiSecret);
+
+export const getFirefoxChannel = (): "listed" | "unlisted" => {
+	const env = cleanEnv(process.env, {
+		[EnvVars.FirefoxChannel]: str({
+			choices: [
+				"listed",
+				"unlisted",
+			],
+		}),
+	});
+	return env[EnvVars.FirefoxChannel];
+};
 
 export const getYarnNpmAuthToken = () => getEnv(EnvVars.YarnNpmAuthToken);
 

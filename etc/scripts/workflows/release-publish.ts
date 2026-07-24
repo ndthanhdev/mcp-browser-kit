@@ -1,6 +1,7 @@
 #!/usr/bin/env -S yarn dlx tsx
 import "zx/globals";
 import fse from "fs-extra";
+import { resolveFirefoxChannel, resolveReleaseTag } from "../utils/release-tag";
 import { workDirs } from "../utils/work-dirs";
 
 $.verbose = true;
@@ -8,6 +9,12 @@ $.verbose = true;
 await fse.emptyDir(workDirs.target.release.path);
 
 cd(workDirs.etc.workflowRuntime.path);
+
+const releaseTag = await resolveReleaseTag();
+const firefoxChannel = resolveFirefoxChannel(releaseTag);
+console.log(
+	`Resolved release tag "${releaseTag}" to Firefox channel "${firefoxChannel}"`,
+);
 
 const hasNpmToken = Boolean(process.env.YARN_NPM_AUTH_TOKEN);
 
@@ -80,6 +87,11 @@ await $`${[
 				process.env.RELEASE_TAG,
 			]
 		: []),
+	"with-env-variable",
+	"--name",
+	"FIREFOX_CHANNEL",
+	"--value",
+	firefoxChannel,
 	"with-moon-task",
 	"--task",
 	"scripts:versions-patch",
