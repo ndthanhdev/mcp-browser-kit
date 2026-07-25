@@ -5,8 +5,8 @@ MCP Browser Kit: an MCP server that lets AI assistants observe and control local
 ## Tech stack
 
 - **Language:** TypeScript (ESM, `target` ES2024), strict project references
-- **Runtime:** Node `^22.14.0`
-- **Package manager:** Yarn `4.10.3` (Yarn Berry workspaces) — never use npm or pnpm
+- **Runtime:** Node `^26`
+- **Package manager:** Yarn `4.17.1` (Yarn Berry workspaces) — never use npm or pnpm
 - **Monorepo orchestrator:** [moon](https://moonrepo.dev) (`moon run`, `moon check`)
 - **Toolchain version manager:** proto (`.prototools`)
 - **Lint/format:** Biome (not ESLint/Prettier)

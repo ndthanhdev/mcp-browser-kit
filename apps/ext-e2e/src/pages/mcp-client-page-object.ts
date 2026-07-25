@@ -205,7 +205,7 @@ export class McpClientPageObject {
 	): Promise<T> {
 		const result = await this.callToolRaw(name, args);
 		const first = result.content[0];
-		if (!first || first.type !== "text") {
+		if (first?.type !== "text") {
 			throw new Error(`Tool ${name} returned no text content`);
 		}
 		return JSON.parse(first.text) as T;

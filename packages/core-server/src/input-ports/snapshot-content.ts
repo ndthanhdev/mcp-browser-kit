@@ -49,7 +49,7 @@ export interface SnapshotContentInputPort {
 		snapshotId: string,
 		type: "readable-text" | "readable-elements" | "readable-element-html",
 		pageNumber: number,
-	): Promise<SnapshotResult<any>>;
+	): Promise<SnapshotResult<unknown>>;
 }
 
 export const SnapshotContentInputPort = Symbol("SnapshotContentInputPort");

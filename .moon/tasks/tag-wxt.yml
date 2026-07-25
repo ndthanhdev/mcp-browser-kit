@@ -58,8 +58,9 @@ tasks:
     toolchain: node
     options:
       runDepsInParallel: false
+    # Shares the .output directory with wxt-build, so it must not run alongside it
     deps:
-    - wxt-prepare
+    - wxt-build
     script: wxt zip
     inputs:
     - '@group(wxt-config)'
@@ -92,8 +93,9 @@ tasks:
     toolchain: node
     options:
       runDepsInParallel: false
+    # Shares the .output directory with wxt-build-firefox, so it must not run alongside it
     deps:
-    - wxt-prepare
+    - wxt-build-firefox
     script: wxt zip -b firefox
     inputs:
     - '@group(wxt-config)'

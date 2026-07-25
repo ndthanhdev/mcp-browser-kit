@@ -25,7 +25,7 @@ export const test = extContextTest.extend<
 		await use(playwrightPage);
 	},
 	mcpClientPage: async ({ context }, use) => {
-		// biome-ignore lint/complexity/noVoid: intentional Playwright fixture dependency declaration
+		// Declares the fixture dependency on `context` without using its value
 		void context;
 		const mcpClientPage = new McpClientPageObject();
 		await use(mcpClientPage);

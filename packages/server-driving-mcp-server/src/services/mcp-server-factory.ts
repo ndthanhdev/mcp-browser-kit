@@ -27,6 +27,7 @@ export interface McpServerInstance {
 export class McpServerFactory {
 	private readonly logger;
 
+	// biome-ignore lint/complexity/useMaxParams: constructor injection of the registrars this factory wires up
 	constructor(
 		@inject(LoggerFactoryOutputPort)
 		loggerFactory: LoggerFactoryOutputPortInterface,
