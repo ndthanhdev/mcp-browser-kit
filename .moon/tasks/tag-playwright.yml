@@ -16,6 +16,11 @@ tasks:
     env:
       PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/browsers
       NODE_OPTIONS: --require @swc-node/register
+      # Playwright's transform parses TypeScript with the TC39 decorators
+      # proposal, which rejects the InversifyJS constructor parameter
+      # decorators in the workspace sources. The async loader leaves the
+      # require hook to @swc-node/register, which honours experimentalDecorators.
+      PLAYWRIGHT_FORCE_ASYNC_LOADER: "1"
     script: playwright test
     inputs:
     - '@group(playwright-tests)'

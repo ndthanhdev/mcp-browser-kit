@@ -224,7 +224,7 @@ export class SnapshotContentUseCases implements SnapshotContentInputPort {
 		snapshotId: string,
 		type: ContentType,
 		pageNumber: number,
-	): Promise<SnapshotResult<any>> {
+	): Promise<SnapshotResult<unknown>> {
 		const cached = this.cacheBySnapshotId.get(snapshotId);
 		if (!cached) {
 			throw new Error(

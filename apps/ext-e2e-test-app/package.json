@@ -2,7 +2,6 @@
 	"name": "ext-e2e-test-app",
 	"private": true,
 	"type": "module",
-	"packageManager": "yarn@4.10.3",
 	"scripts": {
 		"build": "react-router build",
 		"dev": "react-router dev",
@@ -20,7 +19,7 @@
 	"devDependencies": {
 		"@react-router/dev": "8.1.0",
 		"@tailwindcss/vite": "^4.1.18",
-		"@types/node": "^24.10.13",
+		"@types/node": "^26.1.1",
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
 		"serve": "^14.2.5",

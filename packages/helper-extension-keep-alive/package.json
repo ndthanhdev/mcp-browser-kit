@@ -1,4 +1,3 @@
 {
-	"name": "@mcp-browser-kit/helper-extension-keep-alive",
-	"packageManager": "yarn@4.10.3"
+	"name": "@mcp-browser-kit/helper-extension-keep-alive"
 }

@@ -1,7 +1,6 @@
 {
 	"name": "@mcp-browser-kit/scripts",
 	"type": "module",
-	"packageManager": "yarn@4.10.3",
 	"dependencies": {
 		"luxon": "^3.7.2"
 	},

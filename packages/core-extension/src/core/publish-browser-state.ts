@@ -175,7 +175,6 @@ export class PublishBrowserStateUseCase
 				break;
 			default: {
 				const _exhaustive: never = hint;
-				// biome-ignore lint/complexity/noVoid: intentional exhaustive check
 				void _exhaustive;
 			}
 		}

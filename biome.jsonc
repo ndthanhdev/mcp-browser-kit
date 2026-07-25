@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.4.15/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.5.5/schema.json",
 	"vcs": {
 		"enabled": false,
 		"clientKind": "git",
@@ -13,6 +13,8 @@
 			"!**/cache",
 			"!**/etc/submodules",
 			"!**/.tmp",
+			"!**/.wxt",
+			"!**/.output",
 			"!**/.react-router",
 			"!**/build",
 			"!**/dist"

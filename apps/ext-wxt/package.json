@@ -2,7 +2,6 @@
 	"name": "@mcp-browser-kit/ext-wxt",
 	"private": true,
 	"type": "module",
-	"packageManager": "yarn@4.10.3",
 	"scripts": {
 		"dev": "wxt",
 		"dev:firefox": "wxt -b firefox",

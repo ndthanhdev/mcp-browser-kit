@@ -1,4 +1,3 @@
 {
-	"name": "@mcp-browser-kit/driven-logger-factory",
-	"packageManager": "yarn@4.10.3"
+	"name": "@mcp-browser-kit/driven-logger-factory"
 }

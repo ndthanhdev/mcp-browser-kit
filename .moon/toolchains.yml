@@ -3,9 +3,9 @@ javascript:
   packageManager: yarn
   syncProjectWorkspaceDependencies: false
 node:
-  version: ^22.14.0
+  version: ^26
 yarn:
-  version: 4.10.3
+  version: 4.17.1
 typescript:
   syncProjectReferences: true
   syncProjectReferencesToPaths: true
