@@ -14,6 +14,8 @@ fileGroups:
   - target/extension/tmp/extension/vendors/**/*
   extension-dist:
   - target/extension/dist/**/*
+  amo-metadata:
+  - amo-metadata.json
 tasks:
   extension-copy-assets:
     deps:
@@ -56,5 +58,6 @@ tasks:
     - '@group(extension-assets)'
     - '@group(extension-manifest)'
     - '@group(extension-vendors)'
+    - '@group(amo-metadata)'
 inheritedBy:
   tag: extension

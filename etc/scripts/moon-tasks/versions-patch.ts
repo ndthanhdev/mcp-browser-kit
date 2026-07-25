@@ -3,38 +3,15 @@ import "zx/globals";
 import { workDirs } from "@mcp-browser-kit/scripts/utils/work-dirs";
 import fse from "fs-extra";
 import semver from "semver";
-import simpleGit from "simple-git";
-import { getReleaseTag } from "../utils/get-envs";
+import { resolveReleaseTag, V0_TAG_PATTERN } from "../utils/release-tag";
 
-let rawTag = getReleaseTag();
-
-if (rawTag) {
-	console.log(`Using RELEASE_TAG from environment: "${rawTag}"`);
-} else {
-	console.log("RELEASE_TAG not set, falling back to git tag lookup...");
-	const git = simpleGit(workDirs.path);
-	const tagOutput = await git.raw([
-		"tag",
-		"--points-at",
-		"HEAD",
-		"--sort=-creatordate",
-	]);
-	const tags = tagOutput.trim().split("\n").filter(Boolean);
-
-	if (tags.length === 0) {
-		console.error("No git tag found on HEAD.");
-		process.exit(1);
-	}
-
-	rawTag = tags[0];
-	console.log(`Found git tag "${rawTag}"`);
-}
+const rawTag = await resolveReleaseTag();
 
 // V0 tags use the format v0.yyMMd.dhhmm-ss (e.g., v0.26032.00830-05).
 // These contain leading zeros which makes them invalid semver, so we parse them manually.
 // Release tags use standard semver (e.g., v1.2.3).
 
-const v0Match = rawTag.match(/^v(0\.\d{5}\.\d{5})-(\d{2})$/);
+const v0Match = rawTag.match(V0_TAG_PATTERN);
 
 // Replace leading zeros with 9 to produce valid version segments
 // that preserve the original string length (e.g., "00830" → "99830", "05" → "95").
