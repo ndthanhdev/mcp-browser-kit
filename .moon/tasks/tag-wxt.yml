@@ -38,6 +38,8 @@ tasks:
   wxt-dev:
     toolchain: node
     preset: server
+    deps:
+    - wxt-install-browser
     script: wxt
     inputs:
     - '@group(wxt-config)'
@@ -73,6 +75,8 @@ tasks:
   wxt-dev-firefox:
     toolchain: node
     preset: server
+    deps:
+    - wxt-install-browser
     script: wxt -b firefox
     inputs:
     - '@group(wxt-config)'
