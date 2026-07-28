@@ -1,5 +1,6 @@
 {
 	"name": "@mcp-browser-kit/ext-wxt",
+	"version": "0.0.0",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -23,6 +24,7 @@
 		"@wxt-dev/module-react": "1.1.5",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.5",
+		"web-ext": "^9.3.0",
 		"wxt": "^0.20.27"
 	}
 }

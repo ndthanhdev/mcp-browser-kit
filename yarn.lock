@@ -1519,6 +1519,7 @@ __metadata:
     react-dom: "npm:^19.2.7"
     typescript: "npm:^5.9.3"
     vite: "npm:^7.3.5"
+    web-ext: "npm:^9.3.0"
     wxt: "npm:^0.20.27"
   languageName: unknown
   linkType: soft
