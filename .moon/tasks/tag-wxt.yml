@@ -13,6 +13,8 @@ fileGroups:
   - .wxt/**/*
   wxt-output:
   - .output/**/*
+  wxt-extension-dist:
+  - target/extension/dist/**/*
 tasks:
   wxt-install-browser:
     toolchain: node
@@ -36,6 +38,8 @@ tasks:
   wxt-dev:
     toolchain: node
     preset: server
+    deps:
+    - wxt-install-browser
     script: wxt
     inputs:
     - '@group(wxt-config)'
@@ -71,6 +75,8 @@ tasks:
   wxt-dev-firefox:
     toolchain: node
     preset: server
+    deps:
+    - wxt-install-browser
     script: wxt -b firefox
     inputs:
     - '@group(wxt-config)'
@@ -103,5 +109,34 @@ tasks:
     - '@group(wxt-assets)'
     outputs:
     - '@group(wxt-output)'
+  wxt-collect-chrome:
+    toolchain: node
+    options:
+      runDepsInParallel: false
+    deps:
+    - wxt-zip
+    script: $workspaceRoot/etc/scripts/moon-tasks/wxt-collect-chrome.ts
+    env:
+      PROJECT_ROOT: $projectRoot
+    inputs:
+    - '@group(wxt-config)'
+    - '@group(wxt-sources)'
+    - '@group(wxt-assets)'
+    outputs:
+    - '@group(wxt-extension-dist)'
+  wxt-sign-firefox:
+    toolchain: node
+    preset: utility
+    options:
+      runDepsInParallel: false
+    deps:
+    - wxt-build-firefox
+    script: $workspaceRoot/etc/scripts/moon-tasks/wxt-sign-firefox.ts
+    env:
+      PROJECT_ROOT: $projectRoot
+    inputs:
+    - '@group(wxt-config)'
+    - '@group(wxt-sources)'
+    - '@group(wxt-assets)'
 inheritedBy:
   tag: wxt

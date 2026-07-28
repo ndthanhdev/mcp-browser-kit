@@ -1,5 +1,14 @@
+import fs from "node:fs";
 import path from "node:path";
 import { defineConfig } from "wxt";
+
+// Patched by scripts:versions-patch at release time. Kept out of package.json
+// because the 4-part extension version is not valid semver.
+const { version } = JSON.parse(
+	fs.readFileSync(path.resolve(__dirname, "version.json"), "utf8"),
+) as {
+	version: string;
+};
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -18,6 +27,7 @@ export default defineConfig({
 		],
 	},
 	manifest: {
+		version,
 		// Firefox requires an explicit extension ID for MV3.
 		// biome-ignore lint/style/useNamingConvention: required WebExtension manifest key
 		browser_specific_settings: {

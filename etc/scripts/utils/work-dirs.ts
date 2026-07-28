@@ -14,6 +14,7 @@ const apps = path.resolve(root, "apps");
 const m2 = path.resolve(apps, "m2");
 const m3 = path.resolve(apps, "m3");
 const server = path.resolve(apps, "server");
+const extWxt = path.resolve(apps, "ext-wxt");
 const etc = path.resolve(root, "etc");
 const workflowRuntime = path.resolve(etc, "workflow-runtime");
 const scripts = path.resolve(etc, "scripts");
@@ -45,6 +46,9 @@ export const workDirs = {
 		},
 		server: {
 			path: server,
+		},
+		extWxt: {
+			path: extWxt,
 		},
 	},
 	etc: {

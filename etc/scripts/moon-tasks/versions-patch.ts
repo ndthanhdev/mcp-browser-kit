@@ -51,6 +51,7 @@ console.log(`Server version: ${serverVersion}`);
 const extensionFiles = [
 	path.resolve(workDirs.apps.m2.path, "src/manifest.json"),
 	path.resolve(workDirs.apps.m3.path, "src/manifest.json"),
+	path.resolve(workDirs.apps.extWxt.path, "version.json"),
 ];
 
 const serverFiles = [
