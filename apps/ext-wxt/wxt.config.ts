@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { chromium, firefox } from "@playwright/test";
 import { defineConfig } from "wxt";
 
 // Patched by scripts:versions-patch at release time. Kept out of package.json
@@ -10,8 +11,27 @@ const { version } = JSON.parse(
 	version: string;
 };
 
+// Browser binaries for `wxt dev`, resolved from the Playwright-pinned builds
+// that scripts:browser-install places in PLAYWRIGHT_BROWSERS_PATH
+// (.tmp/browsers). executablePath() only computes a path — it doesn't check the
+// file exists — and WXT loads this config for `build`/`zip` too, which never
+// launch a browser. Omit anything absent so web-ext falls back to its own
+// browser discovery.
+const resolveBinaries = (): Record<string, string> => {
+	const candidates: Record<string, string> = {
+		chrome: chromium.executablePath(),
+		firefox: firefox.executablePath(),
+	};
+	return Object.fromEntries(
+		Object.entries(candidates).filter(([, binary]) => fs.existsSync(binary)),
+	);
+};
+
 // See https://wxt.dev/api/config.html
 export default defineConfig({
+	webExt: {
+		binaries: resolveBinaries(),
+	},
 	modules: [
 		"@wxt-dev/module-react",
 		"@wxt-dev/auto-icons",

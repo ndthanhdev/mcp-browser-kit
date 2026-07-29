@@ -11,6 +11,6 @@ tags:
 tasks:
   build:
     deps:
-    - ~:wxt-collect-chrome
+    - ~:wxt-zip
 toolchains:
   default: node

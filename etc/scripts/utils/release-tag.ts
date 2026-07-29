@@ -7,8 +7,13 @@ import { getReleaseTag } from "./get-envs";
 // Release tags use standard semver (e.g., v1.2.3).
 export const V0_TAG_PATTERN = /^v(0\.\d{5}\.\d{5})-(\d{2})$/;
 
+// A prod release is a real semver tag (v1.2.3 and up). v0 tags are the
+// beta/nightly channel.
+export const isProdRelease = (tag: string): boolean =>
+	!V0_TAG_PATTERN.test(tag);
+
 export const resolveFirefoxChannel = (tag: string): "listed" | "unlisted" =>
-	V0_TAG_PATTERN.test(tag) ? "unlisted" : "listed";
+	isProdRelease(tag) ? "listed" : "unlisted";
 
 export const resolveReleaseTag = async (): Promise<string> => {
 	const rawTag = getReleaseTag();

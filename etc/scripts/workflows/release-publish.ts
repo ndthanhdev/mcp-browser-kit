@@ -1,7 +1,11 @@
 #!/usr/bin/env -S yarn dlx tsx
 import "zx/globals";
 import fse from "fs-extra";
-import { resolveFirefoxChannel, resolveReleaseTag } from "../utils/release-tag";
+import {
+	isProdRelease,
+	resolveFirefoxChannel,
+	resolveReleaseTag,
+} from "../utils/release-tag";
 import { workDirs } from "../utils/work-dirs";
 
 $.verbose = true;
@@ -15,6 +19,33 @@ const firefoxChannel = resolveFirefoxChannel(releaseTag);
 console.log(
 	`Resolved release tag "${releaseTag}" to Firefox channel "${firefoxChannel}"`,
 );
+
+// The ext-wxt "-next" artifacts (mcp-browser-kit-next-m2.xpi /
+// mcp-browser-kit-next-m3.zip) are a beta-channel preview of the next
+// extension. A prod release must not ship them, so both the collect and the
+// sign step are dropped from the pipeline on a non-v0 tag.
+const isProd = isProdRelease(releaseTag);
+console.log(
+	isProd
+		? `Prod release "${releaseTag}": skipping -next beta artifacts`
+		: `Beta release "${releaseTag}": building -next artifacts`,
+);
+
+const nextCollectArgs = isProd
+	? []
+	: [
+			"with-moon-task",
+			"--task",
+			"ext-wxt:wxt-collect-chrome",
+		];
+
+const nextSignArgs = isProd
+	? []
+	: [
+			"with-moon-task",
+			"--task",
+			"ext-wxt:wxt-sign-firefox",
+		];
 
 const hasNpmToken = Boolean(process.env.YARN_NPM_AUTH_TOKEN);
 
@@ -101,6 +132,7 @@ await $`${[
 	"with-moon-task",
 	"--task",
 	":build",
+	...nextCollectArgs,
 	"with-secret-variable",
 	"--name",
 	"FIREFOX_API_KEY",
@@ -114,9 +146,7 @@ await $`${[
 	"with-moon-task",
 	"--task",
 	"m2:extension-sign-firefox",
-	"with-moon-task",
-	"--task",
-	"ext-wxt:wxt-sign-firefox",
+	...nextSignArgs,
 	...npmAuthArgs,
 	"with-moon-task",
 	"--task",
