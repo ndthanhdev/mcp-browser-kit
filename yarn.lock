@@ -1511,6 +1511,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/ext-wxt@workspace:apps/ext-wxt"
   dependencies:
+    "@playwright/test": "npm:^1.58.2"
     "@types/react": "npm:^19.2.14"
     "@types/react-dom": "npm:^19.2.3"
     "@wxt-dev/auto-icons": "npm:^1.1.1"

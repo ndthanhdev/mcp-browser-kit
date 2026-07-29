@@ -19,7 +19,9 @@ const signArtifactTmpDir = path.resolve(
 const distDir = path.resolve(projectRoot, "target/extension/dist");
 
 // This extension ships on the beta channel only, so it is always signed as
-// unlisted regardless of the release tag. Unlisted submissions need no
+// unlisted. The release pipeline skips this task entirely on a prod tag (see
+// the isProdRelease guard in workflows/release-publish.ts), so there is no
+// release-tag branch to make here. Unlisted submissions need no
 // amo-metadata.json, but they do require an explicit gecko id (set in
 // wxt.config.ts).
 const channel = "unlisted";
