@@ -38,6 +38,10 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
           FIREFOX_API_KEY: ${{ secrets.FIREFOX_API_KEY }}
           FIREFOX_API_SECRET: ${{ secrets.FIREFOX_API_SECRET }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           # YARN_NPM_AUTH_TOKEN: ${{ secrets.YARN_NPM_AUTH_TOKEN }}
 
       - name: Upload target directory

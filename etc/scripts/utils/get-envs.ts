@@ -6,6 +6,10 @@ enum EnvVars {
 	FirefoxApiKey = "FIREFOX_API_KEY",
 	FirefoxApiSecret = "FIREFOX_API_SECRET",
 	FirefoxChannel = "FIREFOX_CHANNEL",
+	ChromeClientId = "CHROME_CLIENT_ID",
+	ChromeClientSecret = "CHROME_CLIENT_SECRET",
+	ChromeRefreshToken = "CHROME_REFRESH_TOKEN",
+	ChromeExtensionId = "CHROME_EXTENSION_ID",
 	YarnNpmAuthToken = "YARN_NPM_AUTH_TOKEN",
 	ReleaseTag = "RELEASE_TAG",
 }
@@ -36,6 +40,14 @@ export const getFirefoxChannel = (): "listed" | "unlisted" => {
 	});
 	return env[EnvVars.FirefoxChannel];
 };
+
+export const getChromeClientId = () => getEnv(EnvVars.ChromeClientId);
+
+export const getChromeClientSecret = () => getEnv(EnvVars.ChromeClientSecret);
+
+export const getChromeRefreshToken = () => getEnv(EnvVars.ChromeRefreshToken);
+
+export const getChromeExtensionId = () => getEnv(EnvVars.ChromeExtensionId);
 
 export const getYarnNpmAuthToken = () => getEnv(EnvVars.YarnNpmAuthToken);
 
