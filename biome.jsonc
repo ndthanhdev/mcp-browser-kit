@@ -77,6 +77,14 @@
 				"useSingleVarDeclarator": "error",
 				"noUnusedTemplateLiteral": "error",
 				"useNumberNamespace": "error",
+				"useFilenamingConvention": {
+					"level": "error",
+					"options": {
+						"filenameCases": [
+							"kebab-case"
+						]
+					}
+				},
 				"noInferrableTypes": "error",
 				"noUselessElse": "error",
 				"useNamingConvention": {
