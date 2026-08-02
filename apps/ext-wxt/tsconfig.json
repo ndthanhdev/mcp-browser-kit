@@ -7,6 +7,14 @@
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,
 		"paths": {
+			// Declaring `paths` here replaces the block WXT generates in
+			// .wxt/tsconfig.json, so WXT's own `@/*` srcDir alias is restated.
+			"@/*": [
+				"./*"
+			],
+			"@mcp-browser-kit/branding/*": [
+				"../../etc/branding/*"
+			],
 			"@mcp-browser-kit/core-extension": [
 				"../../packages/core-extension/src/index.ts"
 			],
