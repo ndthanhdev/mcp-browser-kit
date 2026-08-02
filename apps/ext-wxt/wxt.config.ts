@@ -48,7 +48,11 @@ export default defineConfig({
 	},
 	manifest: {
 		version,
-		// Firefox requires an explicit extension ID for MV3.
+		// The action has no popup: clicking it opens the sidepanel instead (see
+		// entrypoints/background.ts). WXT only emits this key alongside a popup
+		// entrypoint, so declare it explicitly or `action.onClicked` never fires.
+		action: {},
+		// Firefox requires an explicit extension ID to sign the add-on.
 		// biome-ignore lint/style/useNamingConvention: required WebExtension manifest key
 		browser_specific_settings: {
 			gecko: {
@@ -57,6 +61,15 @@ export default defineConfig({
 		},
 	},
 	vite: () => ({
+		server: {
+			fs: {
+				// `wxt dev` serves from this app dir; the branding tokens live at the
+				// workspace root, which Vite would otherwise refuse to read.
+				allow: [
+					path.resolve(__dirname, "../.."),
+				],
+			},
+		},
 		resolve: {
 			alias: {
 				// @mcp-browser-kit/* packages have no `main`/`exports` field — the monorepo
@@ -74,6 +87,12 @@ export default defineConfig({
 				"@mcp-browser-kit/core-extension": path.resolve(
 					__dirname,
 					"../../packages/core-extension/src/index.ts",
+				),
+				// Brand design tokens and logos. Lives outside this app, so it needs
+				// an alias for both Vite and tsconfig `paths` to resolve it.
+				"@mcp-browser-kit/branding": path.resolve(
+					__dirname,
+					"../../etc/branding",
 				),
 			},
 		},
