@@ -28,7 +28,7 @@ const isProd = isProdRelease(releaseTag);
 console.log(
 	isProd
 		? `Prod release "${releaseTag}": skipping -next beta artifacts`
-		: `Beta release "${releaseTag}": building -next artifacts`,
+		: `Beta release "${releaseTag}": building -next artifacts, skipping the Chrome Web Store publish`,
 );
 
 const nextCollectArgs = isProd
@@ -46,6 +46,29 @@ const nextSignArgs = isProd
 			"--task",
 			"ext-wxt:wxt-sign-firefox",
 		];
+
+// The Chrome Web Store has no equivalent of the Firefox `unlisted` channel, so
+// a v0 beta tag never reaches it; its m3 zip is only attached to the GitHub
+// Release. Prod tags upload the zip and publish it for review.
+const chromePublishArgs = isProd
+	? [
+			...[
+				"CHROME_CLIENT_ID",
+				"CHROME_CLIENT_SECRET",
+				"CHROME_REFRESH_TOKEN",
+				"CHROME_EXTENSION_ID",
+			].flatMap((name) => [
+				"with-secret-variable",
+				"--name",
+				name,
+				"--secret",
+				`env:${name}`,
+			]),
+			"with-moon-task",
+			"--task",
+			"m3:extension-publish-chrome",
+		]
+	: [];
 
 const hasNpmToken = Boolean(process.env.YARN_NPM_AUTH_TOKEN);
 
@@ -147,6 +170,7 @@ await $`${[
 	"--task",
 	"m2:extension-sign-firefox",
 	...nextSignArgs,
+	...chromePublishArgs,
 	...npmAuthArgs,
 	"with-moon-task",
 	"--task",

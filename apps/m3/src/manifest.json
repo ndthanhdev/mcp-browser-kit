@@ -6,18 +6,11 @@
 	"description": "Allow MCP Browser Kit to interact with this browser.",
 	"permissions": [
 		"tabs",
-		"activeTab",
-		"tabCapture",
-		"scripting",
-		"alarms",
-		"storage",
 		"webNavigation"
 	],
 	"host_permissions": [
 		"http://*/*",
-		"https://*/*",
-		"*://localhost:*/*",
-		"*://127.0.0.1:*/*"
+		"https://*/*"
 	],
 	"content_security_policy": {},
 	"icons": {

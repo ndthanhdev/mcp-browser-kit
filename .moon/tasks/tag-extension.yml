@@ -59,5 +59,15 @@ tasks:
     - '@group(extension-manifest)'
     - '@group(extension-vendors)'
     - '@group(amo-metadata)'
+  extension-publish-chrome:
+    toolchain: node
+    preset: utility
+    deps:
+    - extension-build
+    script: $workspaceRoot/etc/scripts/moon-tasks/extension-publish-chrome.ts
+    env:
+      PROJECT_ROOT: $projectRoot
+    inputs:
+    - '@group(extension-dist)'
 inheritedBy:
   tag: extension
