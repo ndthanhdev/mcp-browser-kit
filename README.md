@@ -1,5 +1,7 @@
 # MCP Browser Kit
 
+[![MCP Toplist](https://mcptoplist.com/badge/glama%2Fndthanhdev%2Fmcp-browser-kit.svg)](https://mcptoplist.com/server/glama%2Fndthanhdev%2Fmcp-browser-kit)
+
 [![NPM Version](https://img.shields.io/npm/v/%40mcp-browser-kit%2Fserver)](https://www.npmjs.com/package/@mcp-browser-kit/server)
 [![Firefox Add-on](https://img.shields.io/amo/v/mcp-browserkit-m2?logo=firefoxbrowser&logoColor=white&label=Firefox%20Add-on)](https://addons.mozilla.org/en-US/firefox/addon/mcp-browserkit-m2/)
 [![Workspace Updated](https://github.com/ndthanhdev/mcp-browser-kit/actions/workflows/workspace-updated.yml/badge.svg)](https://github.com/ndthanhdev/mcp-browser-kit/actions/workflows/workspace-updated.yml)
