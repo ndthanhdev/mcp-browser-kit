@@ -1675,6 +1675,7 @@ __metadata:
     "@wxt-dev/module-react": "npm:1.1.5"
     react: "npm:^19.2.7"
     react-dom: "npm:^19.2.7"
+    react-router: "npm:8.1.0"
     typescript: "npm:^5.9.3"
     vite: "npm:^7.3.5"
     web-ext: "npm:^9.3.0"

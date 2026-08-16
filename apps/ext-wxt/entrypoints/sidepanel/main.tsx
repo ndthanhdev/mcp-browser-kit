@@ -1,7 +1,8 @@
 import React from "react";
 import ReactDom from "react-dom/client";
+import { RouterProvider } from "react-router";
+import { router } from "@/routes/router";
 import { MbkThemeProvider } from "@/theme/mbk-theme-provider";
-import App from "./app.tsx";
 
 const root = document.getElementById("root");
 if (!root) {
@@ -11,7 +12,7 @@ if (!root) {
 ReactDom.createRoot(root).render(
 	<React.StrictMode>
 		<MbkThemeProvider>
-			<App />
+			<RouterProvider router={router} />
 		</MbkThemeProvider>
 	</React.StrictMode>,
 );
