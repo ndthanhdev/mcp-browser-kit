@@ -212,8 +212,8 @@ flowchart TB
     LlmProvider
     BrowserDriver
   end
-  BrowserAgent -->|"createSession / sendMessage / cancel"| BrowserAgentUseCases
-  BrowserAgentUseCases -->|"owns N sessions"| AgentSessionRegistry
+  BrowserAgent --> BrowserAgentUseCases
+  BrowserAgentUseCases --> AgentSessionRegistry
   BrowserAgentUseCases --> LlmProvider
   BrowserAgentUseCases --> ExtensionToolCallUseCases
   ExtensionToolCallUseCases --> BrowserDriver
