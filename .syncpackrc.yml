@@ -4,3 +4,4 @@ source:
   - apps/*/package.json
   - packages/*/package.json
   - etc/scripts/package.json
+  - etc/storybook/package.json

@@ -1,0 +1,35 @@
+$schema: https://moonrepo.dev/schemas/tasks.json
+fileGroups:
+  storybook-config:
+  - .storybook/**/*
+  - vite-aliases.ts
+  - tsconfig.json
+  storybook-stories:
+  # Stories live next to the components they document, across the whole
+  # workspace; this Storybook aggregates them rather than owning them.
+  - /apps/*/**/*.stories.ts
+  - /apps/*/**/*.stories.tsx
+  - /apps/*/**/*.mdx
+  - /packages/*/**/*.stories.ts
+  - /packages/*/**/*.stories.tsx
+  - /packages/*/**/*.mdx
+  storybook-output:
+  - target/storybook/**/*
+tasks:
+  storybook-dev:
+    toolchain: node
+    preset: server
+    script: storybook dev -p 6006 --no-open
+    inputs:
+    - '@group(storybook-config)'
+    - '@group(storybook-stories)'
+  storybook-build:
+    toolchain: node
+    script: storybook build -o target/storybook
+    inputs:
+    - '@group(storybook-config)'
+    - '@group(storybook-stories)'
+    outputs:
+    - '@group(storybook-output)'
+inheritedBy:
+  tag: storybook

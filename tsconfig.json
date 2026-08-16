@@ -49,6 +49,9 @@
 			"path": "./etc/scripts"
 		},
 		{
+			"path": "./etc/storybook"
+		},
+		{
 			"path": "./packages/core-extension"
 		},
 		{

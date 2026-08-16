@@ -1,0 +1,26 @@
+$schema: https://moonrepo.dev/schemas/project.json
+language: typescript
+project:
+  description: Aggregated Storybook for every story across apps/* and packages/*
+  title: '@mcp-browser-kit/storybook'
+dependsOn:
+# Everything the alias map in vite-aliases.ts can resolve to.
+#
+# ext-wxt is deliberately absent even though its stories are aggregated here:
+# Storybook reads its source directly, and its tsconfig is WXT-owned (not
+# `composite`), so it cannot be a TypeScript project reference. Its `@/*` alias
+# is covered by the `paths` entry in tsconfig.json instead.
+- core-extension
+- core-feature-flags
+- core-utils
+- driven-feature-flags
+- types
+tags:
+- biome
+- storybook
+toolchains:
+  default: node
+tasks:
+  build:
+    deps:
+    - ~:storybook-build
