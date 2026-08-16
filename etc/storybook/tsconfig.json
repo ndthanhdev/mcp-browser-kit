@@ -1,0 +1,74 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"outDir": "../../.moon/cache/types/etc/storybook",
+		"jsx": "react-jsx",
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"lib": [
+			"ESNext",
+			"DOM",
+			"DOM.Iterable"
+		],
+		"types": [
+			"node",
+			"vite/client"
+		],
+		"paths": {
+			"@/*": [
+				"../../apps/ext-wxt/*"
+			],
+			"@mcp-browser-kit/core-extension": [
+				"../../packages/core-extension/src/index.ts"
+			],
+			"@mcp-browser-kit/core-extension/*": [
+				"../../packages/core-extension/src/*"
+			],
+			"@mcp-browser-kit/core-feature-flags": [
+				"../../packages/core-feature-flags/src/index.ts"
+			],
+			"@mcp-browser-kit/core-feature-flags/*": [
+				"../../packages/core-feature-flags/src/*"
+			],
+			"@mcp-browser-kit/core-utils": [
+				"../../packages/core-utils/src/index.ts"
+			],
+			"@mcp-browser-kit/core-utils/*": [
+				"../../packages/core-utils/src/*"
+			],
+			"@mcp-browser-kit/driven-feature-flags": [
+				"../../packages/driven-feature-flags/src/index.ts"
+			],
+			"@mcp-browser-kit/driven-feature-flags/*": [
+				"../../packages/driven-feature-flags/src/*"
+			],
+			"@mcp-browser-kit/types": [
+				"../../packages/types/src/index.ts"
+			],
+			"@mcp-browser-kit/types/*": [
+				"../../packages/types/src/*"
+			]
+		}
+	},
+	"include": [
+		"**/*"
+	],
+	"references": [
+		{
+			"path": "../../packages/core-extension"
+		},
+		{
+			"path": "../../packages/core-feature-flags"
+		},
+		{
+			"path": "../../packages/core-utils"
+		},
+		{
+			"path": "../../packages/driven-feature-flags"
+		},
+		{
+			"path": "../../packages/types"
+		}
+	]
+}

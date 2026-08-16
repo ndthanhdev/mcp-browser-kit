@@ -1,0 +1,27 @@
+{
+	"name": "@mcp-browser-kit/storybook",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "storybook dev -p 6006 --no-open",
+		"build": "storybook build -o target/storybook"
+	},
+	"dependencies": {
+		"@emotion/react": "^11.14.0",
+		"@emotion/styled": "^11.14.0",
+		"@mui/icons-material": "^9.2.0",
+		"@mui/material": "^9.2.0",
+		"react": "^19.2.7",
+		"react-dom": "^19.2.7"
+	},
+	"devDependencies": {
+		"@storybook/addon-a11y": "^10.5.8",
+		"@storybook/addon-docs": "^10.5.8",
+		"@storybook/react-vite": "^10.5.8",
+		"@types/react": "^19.2.14",
+		"@types/react-dom": "^19.2.3",
+		"storybook": "^10.5.8",
+		"typescript": "^5.9.3",
+		"vite": "^7.3.5"
+	}
+}
