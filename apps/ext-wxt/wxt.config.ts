@@ -52,6 +52,22 @@ export default defineConfig({
 		// entrypoints/background.ts). WXT only emits this key alongside a popup
 		// entrypoint, so declare it explicitly or `action.onClicked` never fires.
 		action: {},
+		// Hosts the LLM providers talk to from the background service worker.
+		// None of these send CORS headers, and a service worker's `fetch` is
+		// subject to CORS like any other — a host permission is what exempts it.
+		//
+		// github.com + api.github.com: the Copilot device flow and its token
+		// exchange. The wildcard Copilot host covers Copilot Enterprise and
+		// proxied accounts, whose API base URL is returned by the token exchange
+		// rather than known ahead of time.
+		// biome-ignore lint/style/useNamingConvention: required WebExtension manifest key
+		host_permissions: [
+			"https://github.com/*",
+			"https://api.github.com/*",
+			"https://api.githubcopilot.com/*",
+			"https://*.githubcopilot.com/*",
+			"https://openrouter.ai/*",
+		],
 		// Firefox requires an explicit extension ID to sign the add-on.
 		// biome-ignore lint/style/useNamingConvention: required WebExtension manifest key
 		browser_specific_settings: {

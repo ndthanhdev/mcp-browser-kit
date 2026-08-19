@@ -50,6 +50,12 @@ export const featureFlagsManifest = {
 		description:
 			"Gates exposure of the in-browser LLM agent (settings UI + BrowserAgentInputPort). Currently only read by apps/ext-wxt; m2/m3 have no consumer for it.",
 	},
+	"copilot-provider": {
+		flagType: "boolean",
+		defaultValue: false,
+		description:
+			"Gates the GitHub Copilot LLM provider. Defaults OFF and must stay that way: Copilot exposes no third-party API, so the adapter presents an editor's OAuth client id to an undocumented endpoint, which is contrary to the Copilot terms of service and may get accounts rate-limited or flagged. Requires the `browser-agent` flag as well.",
+	},
 } as const satisfies Record<string, FlagEntry>;
 
 /**
