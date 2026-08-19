@@ -1,63 +1,129 @@
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import {
 	type LlmProviderDescriptor,
 	LlmProviderOutputPort,
 	type LlmProviderOutputPort as LlmProviderOutputPortType,
 } from "@mcp-browser-kit/core-extension/output-ports";
 import type { LanguageModel } from "ai";
-import { type Container, injectable } from "inversify";
+import { type Container, injectable, multiInject } from "inversify";
 import {
-	AGENT_MODELS,
-	DEFAULT_MODEL_ID,
+	parseCompositeModelId,
 	readAgentSettings,
+	toCompositeModelId,
 } from "./agent-settings-storage";
+import type { LlmProviderStrategy } from "./providers/llm-provider-strategy";
+import { OpenRouterProvider } from "./providers/openrouter-provider";
 
-/** OpenRouter's OpenAI-compatible endpoint. */
-const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+/** Multi-inject token collecting every registered {@link LlmProviderStrategy}. */
+export const LlmProviderStrategyToken = Symbol("LlmProviderStrategy");
 
 /**
- * Driven adapter realizing {@link LlmProviderOutputPortType} with OpenRouter —
- * one API key fronts many models (Claude, GPT, …). OpenRouter is OpenAI-API
- * compatible, so it is reached through `@ai-sdk/openai-compatible` (version-matched
- * to `ai@7-beta`); the dedicated `@openrouter/ai-sdk-provider` still targets the
- * AI SDK v6 provider spec and is incompatible with this `ai` version.
+ * Driven adapter realizing {@link LlmProviderOutputPortType} as a *registry* over
+ * several {@link LlmProviderStrategy} implementations rather than a single
+ * hardcoded vendor.
  *
- * Pure JS (no sandbox/subprocess), so unlike the previous `@ai-sdk/harness`
- * adapter it runs in the MV3 background service worker and IS wired into the
- * extension container. The API key + selected model are read from extension
- * storage (`chrome.storage.local`, via `webextension-polyfill`), populated by the
- * settings page under `apps/`.
+ * The port speaks in flat `providerId` strings; this adapter treats those as
+ * composite `"<providerId>:<modelId>"` ids, because model ids are only unique
+ * within a provider (both OpenRouter and Copilot expose a `gpt-4o`). That keeps
+ * the port — and therefore `BrowserAgentUseCase` — unaware that more than one
+ * vendor exists.
+ *
+ * Pure JS (no sandbox/subprocess), so it runs in the MV3 background service
+ * worker. Credentials and the selected model are read from extension storage
+ * (`chrome.storage.local` via `webextension-polyfill`), written by the settings
+ * page in `apps/ext-wxt`.
  */
 @injectable()
 export class DrivenLlmProvider implements LlmProviderOutputPortType {
-	/** Bind this adapter to {@link LlmProviderOutputPort}. */
+	/**
+	 * Bind the registry and its default strategies. Providers that are gated
+	 * (e.g. Copilot) are bound by the composition root instead, so an app can
+	 * decide which vendors it ships.
+	 */
 	static setupContainer(container: Container): void {
+		container
+			.bind<LlmProviderStrategy>(LlmProviderStrategyToken)
+			.to(OpenRouterProvider);
 		container
 			.bind<LlmProviderOutputPortType>(LlmProviderOutputPort)
 			.to(DrivenLlmProvider);
 	}
 
-	listProviders = (): LlmProviderDescriptor[] =>
-		AGENT_MODELS.map((model) => ({
-			id: model.id,
-			label: model.label,
-		}));
+	constructor(
+		@multiInject(LlmProviderStrategyToken)
+		private readonly strategies: LlmProviderStrategy[],
+	) {}
+
+	private strategyById = (
+		providerId: string,
+	): LlmProviderStrategy | undefined =>
+		this.strategies.find((strategy) => strategy.id === providerId);
+
+	/**
+	 * Every model across every *configured* provider, as composite ids.
+	 *
+	 * A provider that throws while listing (expired token, network down) is
+	 * skipped rather than failing the whole list — otherwise one broken vendor
+	 * hides the working ones and the settings UI shows nothing.
+	 */
+	listProviders = async (): Promise<LlmProviderDescriptor[]> => {
+		const perProvider = await Promise.all(
+			this.strategies.map(async (strategy) => {
+				try {
+					if (!(await strategy.isConfigured())) {
+						return [];
+					}
+					const models = await strategy.listModels();
+					return models.map((model) => ({
+						id: toCompositeModelId(strategy.id, model.id),
+						label: `${model.label} · ${strategy.label}`,
+					}));
+				} catch {
+					return [];
+				}
+			}),
+		);
+		return perProvider.flat();
+	};
 
 	getModel = async (providerId?: string): Promise<LanguageModel> => {
-		const settings = await readAgentSettings();
-		const apiKey = settings.openRouterApiKey;
-		if (!apiKey) {
+		const composite = providerId ?? (await this.resolveSelectedModel());
+		if (!composite) {
 			throw new Error(
-				"OpenRouter API key is not set. Open the extension settings to add it.",
+				"No language model is configured. Open the extension settings to sign in to a provider.",
 			);
 		}
-		const modelId = providerId ?? settings.modelId ?? DEFAULT_MODEL_ID;
-		const openrouter = createOpenAICompatible({
-			name: "openrouter",
-			// biome-ignore lint/style/useNamingConvention: `baseURL` is the provider's required option key.
-			baseURL: OPENROUTER_BASE_URL,
-			apiKey,
-		});
-		return openrouter(modelId);
+		const parsed = parseCompositeModelId(composite);
+		if (!parsed) {
+			throw new Error(
+				`Malformed model id "${composite}" — expected "<provider>:<model>".`,
+			);
+		}
+		const strategy = this.strategyById(parsed.providerId);
+		if (!strategy) {
+			throw new Error(`Unknown LLM provider "${parsed.providerId}".`);
+		}
+		return strategy.createModel(parsed.modelId);
 	};
+
+	/**
+	 * The persisted selection, or the first configured provider's default. The
+	 * fallback matters on first run after signing in: the user has credentials
+	 * but has not opened the model dropdown yet.
+	 */
+	private async resolveSelectedModel(): Promise<string | undefined> {
+		const { selectedModel } = await readAgentSettings();
+		if (selectedModel) {
+			return selectedModel;
+		}
+		for (const strategy of this.strategies) {
+			if (!(await strategy.isConfigured())) {
+				continue;
+			}
+			const modelId = await strategy.defaultModelId();
+			if (modelId) {
+				return toCompositeModelId(strategy.id, modelId);
+			}
+		}
+		return undefined;
+	}
 }
