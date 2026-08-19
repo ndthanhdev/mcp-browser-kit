@@ -1,8 +1,12 @@
 {
 	"name": "@mcp-browser-kit/extension-driven-llm-provider",
+	"type": "module",
 	"dependencies": {
 		"@ai-sdk/openai-compatible": "3.0.0-beta.58",
 		"ai": "7.0.0-beta.186",
 		"zod": "^4.3.6"
+	},
+	"devDependencies": {
+		"vitest": "^4.1.11"
 	}
 }
