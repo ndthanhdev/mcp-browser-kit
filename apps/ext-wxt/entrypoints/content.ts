@@ -1,4 +1,3 @@
-import "core-js/proposals";
 import { DrivenBrowserDriverM2 } from "@mcp-browser-kit/extension-driven-browser-driver/m2";
 import { DrivenBrowserDriverM3 } from "@mcp-browser-kit/extension-driven-browser-driver/m3";
 import { ExtensionTabLifecycle } from "@mcp-browser-kit/helper-extension-tab-lifecycle";
@@ -15,6 +14,12 @@ import { ExtensionTabLifecycle } from "@mcp-browser-kit/helper-extension-tab-lif
  * `all_frames` + `document_start` mirror `apps/m3`: iframe tools need every
  * frame, and running at `document_start` means the mutation observer sees the
  * page's own initial render rather than starting mid-load.
+ *
+ * Note there is deliberately no `import "core-js/proposals"` here, unlike
+ * `background.ts`. This script is injected into every frame of every page, so
+ * its size is paid over and over; core-js costs 161 KB and buys nothing, since
+ * `reflect-metadata` — the only part the DI decorators need — arrives via
+ * inversify regardless. `apps/m3`'s equivalent entry has never imported it.
  */
 export default defineContentScript({
 	matches: [
