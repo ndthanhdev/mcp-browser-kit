@@ -142,9 +142,6 @@ flowchart LR
   end
 
   Driving --> Core --> Driven
-
-  classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class BrowserAgent planned;
 ```
 
 ## L2 - Extension Tool Calls
@@ -197,7 +194,7 @@ flowchart TB
 
 ```mermaid
 ---
-title: Extension Core — Browser Agent (planned)
+title: Extension Core — Browser Agent
 ---
 flowchart TB
   subgraph Driving["Driving"]
@@ -217,9 +214,6 @@ flowchart TB
   BrowserAgentUseCases --> LlmProvider
   BrowserAgentUseCases --> ExtensionToolCallUseCases
   ExtensionToolCallUseCases --> BrowserDriver
-
-  classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class BrowserAgent planned;
 ```
 
 # L1 - Extension Architecture
@@ -233,7 +227,7 @@ each cross-runtime link. `CoreExtension` internals are in
 title: Extension Architecture
 ---
 flowchart TB
-  subgraph AgentUi["apps/agent-ui (single SPA)"]
+  subgraph AgentUi["apps/ext-wxt sidepanel"]
     direction LR
     AgentApp
     UseAgentClient
@@ -266,9 +260,6 @@ flowchart TB
   AgentUi -->|"runtime.connect: mbk:agent"| Background
   Background <-->|"tab RPC"| Tab
   Background <-->|"tRPC channel"| Server
-
-  classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class AgentUi,AgentApp,UseAgentClient,AgentRpcController planned;
 ```
 
 ## L2 - Channel — Background ⇄ Tab
@@ -323,8 +314,8 @@ flowchart TB
 title: Browser Agent Architecture
 ---
 flowchart TD
-  subgraph AgentUi["apps/agent-ui (UI runtime)"]
-    AgentApp["AgentApp"]
+  subgraph AgentUi["apps/ext-wxt sidepanel"]
+    AgentApp["ChatPage / useAgentThread"]
   end
 
   subgraph BackgroundSW["Background service worker"]
@@ -350,7 +341,31 @@ flowchart TD
   BrowserAgentUseCases --> LlmProvider
   BrowserAgentUseCases --> ExtensionToolCallUseCases
   ExtensionToolCallUseCases --> BrowserDriver
-
-  classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class AgentApp,AgentRpcController planned;
 ```
+
+`AgentRpcController` is `@mcp-browser-kit/extension-driving-agent-rpc`. The
+sidepanel and the background are separate documents, so it bridges them over a
+single `browser.runtime` port named `mbk:agent`, multiplexed by frame key: RPC
+`defer`/`resolve` frames for the imperative calls, pushed `agentEvent` frames for
+the progress stream (`subscribe` takes a callback and cannot cross a port).
+
+Two MV3 constraints shape it. Each connected UI gets its own transport and its
+own agent subscription, torn down on disconnect, because the sidepanel is opened
+and closed constantly. And because an idle service worker is evicted after ~30s
+— taking the in-memory session registry with it — reconnection is lazy rather
+than eager (reconnecting on disconnect would simply revive the worker) and
+signals `onReconnect` so the UI re-hydrates from `listSessions`/`getHistory`
+instead of trusting its cache.
+
+`LlmProviderOutputPort` is realized by
+`@mcp-browser-kit/extension-driven-llm-provider`, a registry over per-vendor
+strategies. The port speaks in flat ids; the registry treats them as composite
+`"<providerId>:<modelId>"`, because model ids are only unique within a vendor.
+Two strategies ship:
+
+- **OpenRouter** — one API key, many models, via `@ai-sdk/openai-compatible`.
+- **GitHub Copilot** — gated behind the `copilot-provider` feature flag, which
+  defaults to **off**. GitHub publishes no third-party API for Copilot
+  subscriptions, so this signs in as an editor would; that is contrary to the
+  Copilot terms of service. The impersonation details are confined to
+  `providers/copilot/constants.ts`.

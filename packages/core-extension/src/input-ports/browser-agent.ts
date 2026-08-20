@@ -13,27 +13,27 @@ export type AgentUnsubscribe = () => void;
 
 /**
  * Driving contract for the Browser Agent (the `BrowserAgentUseCases` node in
- * `docs/architecture.md`). The `AgentRpcController` driving adapter is the only
- * caller: it translates `mbk:agent` channel messages into these methods and
- * forwards every {@link AgentProgressEvent} from `subscribe` back to the
- * `apps/agent-ui` SPA.
+ * `docs/architecture.md`).
  *
- * This is a *single* agent that owns *many* sessions. The implementation (a
- * later, non-driving pass) wraps one AI SDK v7 `HarnessAgent` held as a DI
- * singleton — "construct the agent once; it holds configuration, not a live
- * session". Each method maps onto the harness:
+ * Realized by {@link import("../core").BrowserAgentUseCase}, which wraps the AI
+ * SDK v7 `ToolLoopAgent`. Its only caller is the `AgentRpcController` driving
+ * adapter (`@mcp-browser-kit/extension-driving-agent-rpc`), which translates
+ * `mbk:agent` port messages into these methods and forwards every
+ * {@link AgentProgressEvent} from `subscribe` to the `apps/ext-wxt` sidepanel.
  *
- * - `createSession`  → `await agent.createSession({ resumeFrom? })`
- * - `sendMessage`    → `agent.stream({ session, prompt })`, parts → events
- * - `cancel`         → `session.stop()` (session stays usable)
- * - `endSession`     → `session.destroy()`
- * - `getHistory`     → the harness session's native conversation history
- * - persistence seam → `session.detach()` → resume state + `createSession({ resumeFrom })`
+ * This is a *single* agent that owns *many* sessions. The agent object itself is
+ * stateless, so each {@link AgentSession} owns its own transcript in the use
+ * case's registry, and a fresh `ToolLoopAgent` is built per turn so that turn's
+ * tools — which close over the session's event sink and target tab — take
+ * effect.
  *
- * It reasons via the planned `LlmProviderOutputPort` (realized by the harness/
- * model adapter) and acts via the existing `ExtensionToolCallInputPort` →
- * `BrowserDriverOutputPort`. Those collaborators are out of scope here — this
- * file fixes only the boundary the driving layer depends on.
+ * It reasons via {@link import("../output-ports").LlmProviderOutputPort} and
+ * acts via {@link ExtensionToolCallInputPort}.
+ *
+ * One lifetime caveat callers must handle: sessions live in memory in the MV3
+ * background service worker, which is evicted when idle. A session id is not
+ * durable across worker restarts, so a UI holding one must be prepared for
+ * `getSession` to return `undefined`.
  */
 export interface BrowserAgentInputPort {
 	// --- Session lifecycle ---

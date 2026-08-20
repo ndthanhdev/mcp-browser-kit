@@ -109,6 +109,35 @@ https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
   4.  Select the unpacked extension folder
   5.  Click `Install` to install the extension
 
+## Browser Agent (experimental)
+
+The `ext-wxt` extension includes an in-browser agent: a sidepanel chat that
+drives your browser through the same tools the MCP server exposes. It runs
+entirely in the extension — the MCP server is not involved.
+
+Open the sidepanel, click the gear icon, and configure a model provider:
+
+- **OpenRouter** — paste an API key from
+  [openrouter.ai/keys](https://openrouter.ai/keys). One key fronts Claude, GPT,
+  Gemini and others.
+- **GitHub Copilot** — off by default, behind the `copilot-provider` feature
+  flag.
+
+> **On the Copilot provider**: GitHub publishes no third-party API for Copilot
+> subscriptions. Reaching one requires signing in as an editor would, against an
+> undocumented endpoint. That is contrary to the Copilot terms of service, it can
+> break without notice, and accounts using it may be rate-limited or flagged. It
+> is disabled by default and deliberately not recommended. Prefer OpenRouter, or
+> [GitHub Models](https://models.github.ai) if you want a supported GitHub path.
+
+Only models that support tool calling are offered — the agent is a tool loop, so
+a model without tool calling would hold a conversation but never touch the
+browser.
+
+Agent sessions are held in memory in the extension's background worker, which
+browsers evict when idle. Chats do not survive that; this is an alpha-stage
+limitation, not a design goal.
+
 # User Notes
 
 > **Note for Alpha stage**: Consider using a separate browser profile or dedicated browser instance with this MCP to prevent sensitive data from being unintentionally exposed to AI model providers.
