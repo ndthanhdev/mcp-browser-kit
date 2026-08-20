@@ -39,6 +39,18 @@
 			"@mcp-browser-kit/driven-logger-factory/*": [
 				"../../packages/driven-logger-factory/src/*"
 			],
+			"@mcp-browser-kit/helper-extension-keep-alive": [
+				"../../packages/helper-extension-keep-alive/src/index.ts"
+			],
+			"@mcp-browser-kit/helper-extension-keep-alive/*": [
+				"../../packages/helper-extension-keep-alive/src/*"
+			],
+			"@mcp-browser-kit/helper-extension-tab-lifecycle": [
+				"../../packages/helper-extension-tab-lifecycle/src/index.ts"
+			],
+			"@mcp-browser-kit/helper-extension-tab-lifecycle/*": [
+				"../../packages/helper-extension-tab-lifecycle/src/*"
+			],
 			"@mcp-browser-kit/core-extension": [
 				"../../packages/core-extension/src/index.ts"
 			],
@@ -72,6 +84,12 @@
 		}
 	},
 	"references": [
+		{
+			"path": "../../packages/helper-extension-keep-alive"
+		},
+		{
+			"path": "../../packages/helper-extension-tab-lifecycle"
+		},
 		{
 			"path": "../../packages/extension-driven-browser-driver"
 		},

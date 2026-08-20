@@ -11,6 +11,12 @@
 			"@mcp-browser-kit/server/*": [
 				"../server/src/*"
 			],
+			"@mcp-browser-kit/helper-extension-tab-lifecycle": [
+				"../../packages/helper-extension-tab-lifecycle/src/index.ts"
+			],
+			"@mcp-browser-kit/helper-extension-tab-lifecycle/*": [
+				"../../packages/helper-extension-tab-lifecycle/src/*"
+			],
 			"@mcp-browser-kit/core-extension": [
 				"../../packages/core-extension/src/index.ts"
 			],
@@ -94,6 +100,9 @@
 		"../../../packages/extension-driven-browser-driver/src/**/*"
 	],
 	"references": [
+		{
+			"path": "../../packages/helper-extension-tab-lifecycle"
+		},
 		{
 			"path": "../../packages/core-extension"
 		},

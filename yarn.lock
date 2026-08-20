@@ -1966,6 +1966,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mcp-browser-kit/helper-extension-tab-lifecycle@workspace:packages/helper-extension-tab-lifecycle":
+  version: 0.0.0-use.local
+  resolution: "@mcp-browser-kit/helper-extension-tab-lifecycle@workspace:packages/helper-extension-tab-lifecycle"
+  languageName: unknown
+  linkType: soft
+
 "@mcp-browser-kit/m2@workspace:apps/m2":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/m2@workspace:apps/m2"

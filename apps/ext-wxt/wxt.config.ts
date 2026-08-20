@@ -40,6 +40,8 @@ const workspacePackages = [
 	"extension-driven-browser-driver",
 	"extension-driven-llm-provider",
 	"extension-driving-agent-rpc",
+	"helper-extension-keep-alive",
+	"helper-extension-tab-lifecycle",
 	"types",
 ];
 
@@ -87,21 +89,28 @@ export default defineConfig({
 		// entrypoints/background.ts). WXT only emits this key alongside a popup
 		// entrypoint, so declare it explicitly or `action.onClicked` never fires.
 		action: {},
-		// Hosts the LLM providers talk to from the background service worker.
-		// None of these send CORS headers, and a service worker's `fetch` is
-		// subject to CORS like any other — a host permission is what exempts it.
+		// `tabs` for tab metadata (title/url) and `webNavigation` to track frames —
+		// both required by the browser driver's tool implementations. Mirrors
+		// `apps/m3/src/manifest.json`.
+		permissions: [
+			"tabs",
+			"webNavigation",
+		],
+		// Two things need this, and both need it broad.
 		//
-		// github.com + api.github.com: the Copilot device flow and its token
-		// exchange. The wildcard Copilot host covers Copilot Enterprise and
-		// proxied accounts, whose API base URL is returned by the token exchange
-		// rather than known ahead of time.
+		// The browser driver injects into and reads from whatever tab the agent is
+		// pointed at, which is any origin the user visits.
+		//
+		// The LLM providers are also reached from here. A service worker's `fetch`
+		// is subject to CORS like any other, and the provider endpoints don't send
+		// CORS headers; a host permission is what exempts it. Provider base URLs
+		// come from the models.dev registry at runtime, so they can't be enumerated
+		// ahead of time — and `http://` additionally covers local model servers
+		// (Ollama, LM Studio, llama.cpp) on localhost.
 		// biome-ignore lint/style/useNamingConvention: required WebExtension manifest key
 		host_permissions: [
-			"https://github.com/*",
-			"https://api.github.com/*",
-			"https://api.githubcopilot.com/*",
-			"https://*.githubcopilot.com/*",
-			"https://openrouter.ai/*",
+			"http://*/*",
+			"https://*/*",
 		],
 		// Firefox requires an explicit extension ID to sign the add-on.
 		// biome-ignore lint/style/useNamingConvention: required WebExtension manifest key

@@ -1,16 +1,5 @@
-import { Container } from "inversify";
-import { ExtensionTabLifecycle } from "./services/extension-tab-lifecycle";
+import { DrivenBrowserDriverM3 } from "@mcp-browser-kit/extension-driven-browser-driver/m3";
+import { ExtensionTabLifecycle } from "@mcp-browser-kit/helper-extension-tab-lifecycle";
 
-// Create and configure the dependency injection container for tab context
-const tabContainer = new Container({
-	defaultScope: "Singleton",
-});
-
-// Setup ExtensionTabLifecycle service (includes browser driver setup)
-ExtensionTabLifecycle.setupContainer(tabContainer);
-
-// Resolve and start ExtensionTabLifecycle service
-const extensionTabLifecycle = tabContainer.get<ExtensionTabLifecycle>(
-	ExtensionTabLifecycle,
-);
-extensionTabLifecycle.start();
+// Content-script entry: wire and start the tab half of the browser driver.
+ExtensionTabLifecycle.start(DrivenBrowserDriverM3);

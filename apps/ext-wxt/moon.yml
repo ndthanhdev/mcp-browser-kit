@@ -9,6 +9,7 @@ dependsOn:
 - extension-driven-browser-driver
 - extension-driven-llm-provider
 - extension-driving-agent-rpc
+- helper-extension-tab-lifecycle
 - types
 tags:
 - wxt
