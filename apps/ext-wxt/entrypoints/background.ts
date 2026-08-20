@@ -129,10 +129,29 @@ const startAgent = async () => {
 	container.get<ExtensionDrivingAgentRpc>(ExtensionDrivingAgentRpc).start();
 };
 
-export default defineBackground(() => {
-	openSidepanelOnActionClick();
+/**
+ * `type: "module"` is not cosmetic — it is what makes `import()` available in
+ * the service worker, and therefore what lets the LLM provider packages load
+ * lazily instead of being parsed on every wake.
+ *
+ * That matters because MV3 evicts an idle worker after ~30s and re-parses it on
+ * the next wake, and this worker wakes on every sidepanel open and every agent
+ * turn. Bundling the provider SDKs eagerly would put ~500 KB of code on that
+ * path for a user who only ever talks to one provider.
+ *
+ * Firefox builds MV2, where the background is a classic script that cannot
+ * `import()`. WXT already handles this: it emits a single inlined
+ * `background.js` with no chunk references for that target, so the same source
+ * degrades to eager loading. MV2 background pages are persistent, so the parse
+ * cost is paid once and the loss doesn't matter.
+ */
+export default defineBackground({
+	type: "module",
+	main() {
+		openSidepanelOnActionClick();
 
-	void startAgent().catch((error: unknown) => {
-		console.error("Failed to start the browser agent", error);
-	});
+		void startAgent().catch((error: unknown) => {
+			console.error("Failed to start the browser agent", error);
+		});
+	},
 });
