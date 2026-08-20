@@ -42,9 +42,12 @@ export const OPENROUTER_MODELS: readonly LlmModelDescriptor[] = [
 /**
  * OpenRouter strategy: one API key fronts many models (Claude, GPT, …).
  * OpenRouter is OpenAI-API compatible, so it is reached through
- * `@ai-sdk/openai-compatible` (version-matched to `ai@7-beta`); the dedicated
- * `@openrouter/ai-sdk-provider` still targets the AI SDK v6 provider spec and is
- * incompatible with this `ai` version.
+ * `@ai-sdk/openai-compatible`.
+ *
+ * The dedicated `@openrouter/ai-sdk-provider` is now on the same provider spec
+ * (`@ai-sdk/provider@4.0.7`) and peers `ai@^7`, so switching to it for native
+ * features — provider routing preferences, reasoning config — is possible; it
+ * just isn't needed for the plain chat path.
  */
 @injectable()
 export class OpenRouterProvider implements LlmProviderStrategy {
