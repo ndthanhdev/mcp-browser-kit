@@ -5,7 +5,6 @@
 	],
 	"compilerOptions": {
 		"outDir": "../../.moon/cache/types/packages/extension-driving-agent-rpc",
-		"moduleResolution": "bundler",
 		"lib": [
 			"dom",
 			"ESNext",

@@ -16,7 +16,6 @@
 	],
 	"compilerOptions": {
 		"outDir": "../../.moon/cache/types/packages/extension-driven-llm-provider",
-		"moduleResolution": "bundler",
 		"lib": [
 			"dom",
 			"ESNext",

@@ -2,8 +2,20 @@ import "core-js/proposals";
 import {
 	createCoreExtensionContainer,
 	FeatureFlagsOutputPort,
+	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-extension";
 import { DrivenFeatureFlagsOpenFeatureWeb } from "@mcp-browser-kit/driven-feature-flags/web";
+import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
+import { DrivenBrowserStateSource } from "@mcp-browser-kit/extension-driven-browser-driver";
+import { DrivenBrowserDriverM2 } from "@mcp-browser-kit/extension-driven-browser-driver/m2";
+import { DrivenBrowserDriverM3 } from "@mcp-browser-kit/extension-driven-browser-driver/m3";
+import type { LlmProviderStrategy } from "@mcp-browser-kit/extension-driven-llm-provider";
+import {
+	CopilotProvider,
+	DrivenLlmProvider,
+	LlmProviderStrategyToken,
+} from "@mcp-browser-kit/extension-driven-llm-provider";
+import { ExtensionDrivingAgentRpc } from "@mcp-browser-kit/extension-driving-agent-rpc";
 
 /**
  * The toolbar-button APIs used below, declared locally because the
@@ -64,10 +76,20 @@ const openSidepanelOnActionClick = () => {
 	});
 };
 
-export default defineBackground(() => {
-	openSidepanelOnActionClick();
-
+/**
+ * Compose the extension hexagon and expose the agent to the sidepanel.
+ *
+ * The agent has to live here rather than in the sidepanel: the background is the
+ * only context that owns the browser driver and survives both tab navigation and
+ * the sidepanel being closed mid-turn.
+ */
+const startAgent = async () => {
 	const container = createCoreExtensionContainer();
+
+	DrivenLoggerFactoryConsolaBrowser.setupContainer(
+		container,
+		LoggerFactoryOutputPort,
+	);
 	DrivenFeatureFlagsOpenFeatureWeb.setupContainer(
 		container,
 		FeatureFlagsOutputPort,
@@ -76,14 +98,41 @@ export default defineBackground(() => {
 	const featureFlags = container.get<FeatureFlagsOutputPort>(
 		FeatureFlagsOutputPort,
 	);
+	await featureFlags.start();
 
-	void featureFlags
-		.start()
-		.then(() => featureFlags.getBooleanValue("browser-agent"))
-		.then((browserAgentEnabled) => {
-			console.log("Hello background!", {
-				id: browser.runtime.id,
-				browserAgentEnabled,
-			});
-		});
+	if (!(await featureFlags.getBooleanValue("browser-agent"))) {
+		return;
+	}
+
+	// This app targets MV3 on Chromium and MV2 on Firefox from one source, and
+	// the drivers differ (`scripting.executeScript` vs `tabs.executeScript`).
+	// WXT inlines `MANIFEST_VERSION` at build time, so the unused branch is
+	// tree-shaken rather than shipped.
+	if (import.meta.env.MANIFEST_VERSION === 3) {
+		DrivenBrowserDriverM3.setupContainer(container);
+	} else {
+		DrivenBrowserDriverM2.setupContainer(container);
+	}
+	DrivenBrowserStateSource.setupContainer(container);
+
+	DrivenLlmProvider.setupContainer(container);
+	// Copilot is bound only when its flag is on — the adapter reaches an
+	// undocumented endpoint contrary to the Copilot terms of service, so it must
+	// not be present by default. See the provider's `constants.ts`.
+	if (await featureFlags.getBooleanValue("copilot-provider")) {
+		container
+			.bind<LlmProviderStrategy>(LlmProviderStrategyToken)
+			.to(CopilotProvider);
+	}
+
+	ExtensionDrivingAgentRpc.setupContainer(container);
+	container.get<ExtensionDrivingAgentRpc>(ExtensionDrivingAgentRpc).start();
+};
+
+export default defineBackground(() => {
+	openSidepanelOnActionClick();
+
+	void startAgent().catch((error: unknown) => {
+		console.error("Failed to start the browser agent", error);
+	});
 });

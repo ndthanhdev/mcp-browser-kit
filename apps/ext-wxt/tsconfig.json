@@ -15,6 +15,30 @@
 			"@mcp-browser-kit/branding/*": [
 				"../../etc/branding/*"
 			],
+			"@mcp-browser-kit/extension-driven-browser-driver": [
+				"../../packages/extension-driven-browser-driver/src/index.ts"
+			],
+			"@mcp-browser-kit/extension-driven-browser-driver/*": [
+				"../../packages/extension-driven-browser-driver/src/*"
+			],
+			"@mcp-browser-kit/extension-driven-llm-provider": [
+				"../../packages/extension-driven-llm-provider/src/index.ts"
+			],
+			"@mcp-browser-kit/extension-driven-llm-provider/*": [
+				"../../packages/extension-driven-llm-provider/src/*"
+			],
+			"@mcp-browser-kit/extension-driving-agent-rpc": [
+				"../../packages/extension-driving-agent-rpc/src/index.ts"
+			],
+			"@mcp-browser-kit/extension-driving-agent-rpc/*": [
+				"../../packages/extension-driving-agent-rpc/src/*"
+			],
+			"@mcp-browser-kit/driven-logger-factory": [
+				"../../packages/driven-logger-factory/src/index.ts"
+			],
+			"@mcp-browser-kit/driven-logger-factory/*": [
+				"../../packages/driven-logger-factory/src/*"
+			],
 			"@mcp-browser-kit/core-extension": [
 				"../../packages/core-extension/src/index.ts"
 			],
@@ -48,6 +72,18 @@
 		}
 	},
 	"references": [
+		{
+			"path": "../../packages/extension-driven-browser-driver"
+		},
+		{
+			"path": "../../packages/extension-driven-llm-provider"
+		},
+		{
+			"path": "../../packages/extension-driving-agent-rpc"
+		},
+		{
+			"path": "../../packages/driven-logger-factory"
+		},
 		{
 			"path": "../../packages/core-extension"
 		},
