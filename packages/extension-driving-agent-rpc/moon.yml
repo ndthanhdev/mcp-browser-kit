@@ -1,0 +1,12 @@
+$schema: https://moonrepo.dev/schemas/project.json
+language: typescript
+dependsOn:
+- core-extension
+- core-utils
+- types
+tags:
+- vitest
+tasks:
+  test:
+    deps:
+    - ~:vitest-test
