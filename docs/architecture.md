@@ -358,14 +358,69 @@ signals `onReconnect` so the UI re-hydrates from `listSessions`/`getHistory`
 instead of trusting its cache.
 
 `LlmProviderOutputPort` is realized by
-`@mcp-browser-kit/extension-driven-llm-provider`, a registry over per-vendor
-strategies. The port speaks in flat ids; the registry treats them as composite
-`"<providerId>:<modelId>"`, because model ids are only unique within a vendor.
-Two strategies ship:
+`@mcp-browser-kit/extension-driven-llm-provider`. The port speaks in flat ids;
+the adapter treats them as composite `"<providerId>:<modelId>"`, because model
+ids are only unique within a provider — several expose a `gpt-4o`.
 
-- **OpenRouter** — one API key, many models, via `@ai-sdk/openai-compatible`.
-- **GitHub Copilot** — gated behind the `copilot-provider` feature flag, which
-  defaults to **off**. GitHub publishes no third-party API for Copilot
-  subscriptions, so this signs in as an editor would; that is contrary to the
-  Copilot terms of service. The impersonation details are confined to
-  `providers/copilot/constants.ts`.
+Provider and model metadata is **data, not code**. The adapter reads the
+[models.dev](https://models.dev) registry — the same one OpenCode uses — so
+adding a provider is an upstream registry entry rather than a release here.
+That gives ~190 providers and ~5,800 tool-calling models. It is built on three
+independent axes:
+
+```mermaid
+---
+title: LLM Provider Adapter
+---
+flowchart LR
+  subgraph Adapter["extension-driven-llm-provider"]
+    Registry["DrivenLlmProvider"]
+    subgraph Axes[" "]
+      direction TB
+      Catalog["ModelCatalog<br/>(what exists)"]
+      Auth["AuthStrategy<br/>(how to authenticate)"]
+      Factory["ModelFactory<br/>(how to build it)"]
+    end
+  end
+  ModelsDev[("models.dev/api.json")]
+  Storage[("storage.local")]
+
+  Registry --> Catalog
+  Registry --> Auth
+  Registry --> Factory
+  Catalog -->|"fetch + ETag"| ModelsDev
+  Catalog -->|"pruned cache"| Storage
+  Auth -->|"credentials"| Storage
+```
+
+**Catalog.** The registry is ~4 MB, pruned on fetch to ~1.25 MB by dropping
+non-tool-calling models (the agent is a tool loop, so a model without tool
+calling would talk but never act) and unused fields. Cached in `storage.local`,
+revalidated daily against models.dev's ETag. Failure is non-destructive: a bad
+or empty response keeps the previous cache rather than replacing it with
+nothing, because this is an external contract nobody here controls.
+
+**Auth.** Keyed by provider id. Almost every provider is a plain bearer key.
+GitHub Copilot is the exception — see below.
+
+**Factory.** Keyed by the registry's `npm` field, defaulting to
+`@ai-sdk/openai-compatible` over the registry's `api` URL. That default covers
+152 of ~190 providers, which all carry a base URL, so they need no bundled code.
+Five native SDKs (`anthropic`, `google`, `openai`, `openrouter`, `gateway`) are
+`import()`ed lazily so they become separate chunks. `base-url-overrides.ts`
+records URLs for the providers models.dev omits an `api` for because it lives
+inside an SDK package.
+
+MV3 forbids remotely hosted code, so OpenCode's approach of installing a
+provider's npm package on demand is not available. Anything not covered by the
+five bundled SDKs or the OpenAI-compatible default is reachable through the
+custom-provider form, which also serves local servers (Ollama, LM Studio,
+llama.cpp).
+
+**GitHub Copilot** is gated behind the `copilot-provider` feature flag, which
+defaults to **off**. models.dev lists it like any other provider, so only the
+credential is unusual: a device flow yielding a long-lived OAuth token, exchanged
+for a ~30 minute bearer held in memory only. GitHub publishes no third-party API
+for Copilot subscriptions, so this signs in as an editor would, which is contrary
+to the Copilot terms of service. The impersonation details are confined to
+`auth/copilot/constants.ts`.

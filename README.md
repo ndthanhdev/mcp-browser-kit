@@ -115,28 +115,56 @@ The `ext-wxt` extension includes an in-browser agent: a sidepanel chat that
 drives your browser through the same tools the MCP server exposes. It runs
 entirely in the extension — the MCP server is not involved.
 
-Open the sidepanel, click the gear icon, and configure a model provider:
+Open the sidepanel, click the gear icon, then pick a provider and a model.
 
-- **OpenRouter** — paste an API key from
-  [openrouter.ai/keys](https://openrouter.ai/keys). One key fronts Claude, GPT,
-  Gemini and others.
-- **GitHub Copilot** — off by default, behind the `copilot-provider` feature
-  flag.
+### Providers
 
-> **On the Copilot provider**: GitHub publishes no third-party API for Copilot
+Provider and model metadata comes from the [models.dev](https://models.dev)
+registry, the same source [OpenCode](https://opencode.ai) uses — around 190
+providers and 5,800 tool-calling models, updated upstream rather than shipped
+with a release. Add an API key for any of them in settings.
+
+Only models that support tool calling are offered. The agent is a tool loop, so
+a model without it would hold a conversation and never touch the browser.
+
+Most providers are reached through their OpenAI-compatible endpoint. Anthropic,
+Google, OpenAI, OpenRouter and Vercel AI Gateway additionally have their native
+SDKs bundled, loaded on demand.
+
+> Browser extensions may not load code at runtime, so unlike OpenCode this
+> cannot install a provider's npm package on demand. A provider that is neither
+> OpenAI-compatible nor one of the five bundled SDKs can still be used via a
+> custom provider, below.
+
+### Local and custom providers
+
+Any OpenAI-compatible endpoint can be added by hand — Ollama, LM Studio,
+llama.cpp, or a company proxy. Enter a base URL such as
+`http://localhost:11434/v1`, click **Check connection**, and the extension will
+list the models the server reports.
+
+### GitHub Copilot
+
+Off by default, behind the `copilot-provider` feature flag.
+
+> **Read before enabling**: GitHub publishes no third-party API for Copilot
 > subscriptions. Reaching one requires signing in as an editor would, against an
 > undocumented endpoint. That is contrary to the Copilot terms of service, it can
 > break without notice, and accounts using it may be rate-limited or flagged. It
-> is disabled by default and deliberately not recommended. Prefer OpenRouter, or
-> [GitHub Models](https://models.github.ai) if you want a supported GitHub path.
+> is disabled by default and deliberately not recommended. Prefer any of the
+> other ~190 providers, or [GitHub Models](https://models.github.ai) if you want
+> a supported GitHub path.
 
-Only models that support tool calling are offered — the agent is a tool loop, so
-a model without tool calling would hold a conversation but never touch the
-browser.
+### Limitations
 
 Agent sessions are held in memory in the extension's background worker, which
-browsers evict when idle. Chats do not survive that; this is an alpha-stage
-limitation, not a design goal.
+browsers evict when idle. Chats do not survive that.
+
+The registry is downloaded on first use, so the model picker is empty until that
+completes, and unavailable if you are offline with no cached copy.
+
+Base URLs come from models.dev and are not individually verified here. If a
+provider fails to connect, add it as a custom provider with the correct URL.
 
 # User Notes
 
