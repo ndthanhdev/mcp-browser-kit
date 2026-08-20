@@ -30,6 +30,7 @@
 		"@wxt-dev/module-react": "1.1.5",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.5",
+		"vitest": "^4.1.11",
 		"web-ext": "^9.3.0",
 		"wxt": "^0.20.27"
 	}

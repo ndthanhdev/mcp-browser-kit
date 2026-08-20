@@ -12,9 +12,13 @@ dependsOn:
 - types
 tags:
 - wxt
+- vitest
 tasks:
   build:
     deps:
     - ~:wxt-zip
+  test:
+    deps:
+    - ~:vitest-test
 toolchains:
   default: node
