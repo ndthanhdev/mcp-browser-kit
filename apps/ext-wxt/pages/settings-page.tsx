@@ -8,45 +8,67 @@ export const SettingsPage = () => {
 	const {
 		settings,
 		providers,
-		availableModels,
+		configuredProviders,
+		catalogStatus,
+		catalogError,
 		signIn,
+		search,
+		retryCatalog,
 		saveApiKey,
 		selectModel,
+		probeCustomProvider,
+		saveCustomProvider,
+		deleteCustomProvider,
 		startCopilotSignIn,
 		cancelCopilotSignIn,
 		signOutProvider,
 	} = useAgentSettings();
+
 	// `undefined` while the flag provider starts — treat as off so the
 	// ToS-sensitive section never flashes into view before being hidden.
 	const copilotEnabled = useBooleanFlag("copilot-provider") ?? false;
+	const copilotCredential = settings?.credentials["github-copilot"];
 
 	return (
 		<SettingsScreen
 			backHref={hrefs.home}
 			providers={providers}
-			models={availableModels.map((entry) => ({
-				providerId: entry.provider.id,
-				modelId: entry.model.id,
-				label: `${entry.model.name} · ${entry.provider.name}`,
-			}))}
+			configuredProviderIds={configuredProviders.map((provider) => provider.id)}
 			selectedModel={settings?.selectedModel}
-			openRouterApiKey={settings?.credentials.openrouter?.apiKey}
+			catalogStatus={catalogStatus}
+			catalogError={catalogError}
 			copilotEnabled={copilotEnabled}
-			copilotLogin={settings?.credentials["github-copilot"]?.account}
+			copilotAccount={copilotCredential?.account}
+			copilotConfigured={Boolean(copilotCredential?.oauthToken)}
 			copilotSignIn={signIn}
-			onSaveOpenRouterKey={(apiKey) => {
-				void saveApiKey("openrouter", apiKey);
+			search={search}
+			onRetryCatalog={() => {
+				void retryCatalog();
+			}}
+			onSaveApiKey={(providerId, apiKey) => {
+				void saveApiKey(providerId, apiKey);
 			}}
 			onSelectModel={(providerId, modelId) => {
 				void selectModel(providerId, modelId);
+			}}
+			onSignOut={(providerId) => {
+				void signOutProvider(providerId);
+			}}
+			onProbeCustom={probeCustomProvider}
+			onSaveCustom={(provider, apiKey) => {
+				void saveCustomProvider(provider).then(() => {
+					if (apiKey) {
+						void saveApiKey(provider.id, apiKey);
+					}
+				});
+			}}
+			onRemoveCustom={(providerId) => {
+				void deleteCustomProvider(providerId);
 			}}
 			onCopilotSignIn={() => {
 				void startCopilotSignIn();
 			}}
 			onCopilotCancel={cancelCopilotSignIn}
-			onCopilotSignOut={() => {
-				void signOutProvider("github-copilot");
-			}}
 		/>
 	);
 };

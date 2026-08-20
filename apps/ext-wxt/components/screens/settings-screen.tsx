@@ -1,17 +1,25 @@
+import type {
+	CatalogEntry,
+	CustomProvider,
+	ProbeResult,
+} from "@mcp-browser-kit/extension-driven-llm-provider";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Alert from "@mui/material/Alert";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import MenuItem from "@mui/material/MenuItem";
+import LinearProgress from "@mui/material/LinearProgress";
 import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import { useState } from "react";
 import { CopilotSignInCard } from "@/components/fragments/copilot-sign-in-card";
+import { CustomProviderForm } from "@/components/fragments/custom-provider-form";
+import { ModelPicker } from "@/components/fragments/model-picker";
+import { ProviderCredentialList } from "@/components/fragments/provider-credential-list";
 import type {
+	CatalogStatus,
 	CopilotSignInState,
 	ProviderRow,
 } from "@/hooks/use-agent-settings";
@@ -19,23 +27,24 @@ import type {
 export interface SettingsScreenProps {
 	backHref: string;
 	providers: ProviderRow[];
-	/** Composite `"<provider>:<model>"` id, if one is chosen. */
+	configuredProviderIds: string[];
 	selectedModel?: string;
-	openRouterApiKey?: string;
-	/** Models the user can call right now, as `{providerId, modelId, label}`. */
-	models: Array<{
-		providerId: string;
-		modelId: string;
-		label: string;
-	}>;
+	catalogStatus: CatalogStatus;
+	catalogError?: string;
 	copilotEnabled: boolean;
-	copilotLogin?: string;
+	copilotAccount?: string;
+	copilotConfigured: boolean;
 	copilotSignIn: CopilotSignInState;
-	onSaveOpenRouterKey: (apiKey: string) => void;
+	search: (query: string, limit?: number) => CatalogEntry[];
+	onRetryCatalog: () => void;
+	onSaveApiKey: (providerId: string, apiKey: string) => void;
 	onSelectModel: (providerId: string, modelId: string) => void;
+	onSignOut: (providerId: string) => void;
+	onProbeCustom: (baseUrl: string, apiKey?: string) => Promise<ProbeResult>;
+	onSaveCustom: (provider: CustomProvider, apiKey?: string) => void;
+	onRemoveCustom: (providerId: string) => void;
 	onCopilotSignIn: () => void;
 	onCopilotCancel: () => void;
-	onCopilotSignOut: () => void;
 }
 
 const sectionTitle = (text: string) => (
@@ -44,133 +53,134 @@ const sectionTitle = (text: string) => (
 	</Typography>
 );
 
-/** Provider credentials and model selection. */
+/** Provider credentials and model selection, over the models.dev registry. */
 export const SettingsScreen = ({
 	backHref,
 	providers,
-	models,
+	configuredProviderIds,
 	selectedModel,
-	openRouterApiKey,
+	catalogStatus,
+	catalogError,
 	copilotEnabled,
-	copilotLogin,
+	copilotAccount,
+	copilotConfigured,
 	copilotSignIn,
-	onSaveOpenRouterKey,
+	search,
+	onRetryCatalog,
+	onSaveApiKey,
 	onSelectModel,
+	onSignOut,
+	onProbeCustom,
+	onSaveCustom,
+	onRemoveCustom,
 	onCopilotSignIn,
 	onCopilotCancel,
-	onCopilotSignOut,
-}: SettingsScreenProps) => {
-	const [keyDraft, setKeyDraft] = useState(openRouterApiKey ?? "");
-
-	const copilot = providers.find(
-		(provider) => provider.id === "github-copilot",
-	);
-
-	return (
-		<>
-			<AppBar position="static" color="default" elevation={0}>
-				<Toolbar
-					variant="dense"
-					sx={{
-						gap: 1,
-					}}
-				>
-					<IconButton
-						edge="start"
-						color="inherit"
-						component="a"
-						href={backHref}
-						aria-label="Back to chat"
-					>
-						<ArrowBackIcon />
-					</IconButton>
-					<Typography
-						variant="subtitle2"
-						sx={{
-							flexGrow: 1,
-						}}
-					>
-						Settings
-					</Typography>
-				</Toolbar>
-			</AppBar>
-
-			<Box
+}: SettingsScreenProps) => (
+	<>
+		<AppBar position="static" color="default" elevation={0}>
+			<Toolbar
+				variant="dense"
 				sx={{
-					overflowY: "auto",
-					p: 2,
+					gap: 1,
 				}}
 			>
-				<Stack spacing={3}>
-					<Stack spacing={1}>
-						{sectionTitle("Model")}
-						{models.length === 0 ? (
-							<Typography variant="body2" color="text.secondary">
-								Sign in to a provider below to choose a model.
-							</Typography>
-						) : (
-							<TextField
-								select
-								size="small"
-								label="Model"
-								value={selectedModel ?? ""}
-								onChange={(event) => {
-									const [providerId, ...rest] = event.target.value.split(":");
-									onSelectModel(providerId, rest.join(":"));
-								}}
-							>
-								{models.map((model) => (
-									<MenuItem
-										key={`${model.providerId}:${model.modelId}`}
-										value={`${model.providerId}:${model.modelId}`}
-									>
-										{model.label}
-									</MenuItem>
-								))}
-							</TextField>
-						)}
-					</Stack>
+				<IconButton
+					edge="start"
+					color="inherit"
+					component="a"
+					href={backHref}
+					aria-label="Back to chat"
+				>
+					<ArrowBackIcon />
+				</IconButton>
+				<Typography
+					variant="subtitle2"
+					sx={{
+						flexGrow: 1,
+					}}
+				>
+					Settings
+				</Typography>
+			</Toolbar>
+		</AppBar>
 
-					<Divider />
+		{/* The catalog is fetched at runtime, so the picker really is empty until
+		    it lands. Say so rather than showing an empty list that reads as
+		    "no providers exist". */}
+		{catalogStatus === "loading" ? <LinearProgress /> : null}
 
-					<Stack spacing={1}>
-						{sectionTitle("OpenRouter")}
-						<TextField
-							size="small"
-							type="password"
-							label="API key"
-							placeholder="sk-or-…"
-							value={keyDraft}
-							onChange={(event) => setKeyDraft(event.target.value)}
-							onBlur={() => onSaveOpenRouterKey(keyDraft)}
-							helperText="From openrouter.ai/keys. Saved when the field loses focus."
-						/>
-					</Stack>
+		<Box
+			sx={{
+				overflowY: "auto",
+				p: 2,
+			}}
+		>
+			<Stack spacing={3}>
+				{catalogStatus === "error" ? (
+					<Alert
+						severity="warning"
+						action={
+							<Button size="small" onClick={onRetryCatalog}>
+								Retry
+							</Button>
+						}
+					>
+						Could not load the model list from models.dev.
+						{catalogError ? ` ${catalogError}` : ""}
+					</Alert>
+				) : null}
 
-					{copilotEnabled ? (
-						<>
-							<Divider />
-							<Stack spacing={1}>
-								{sectionTitle("GitHub Copilot")}
-								<Alert severity="warning">
-									GitHub publishes no third-party API for Copilot. This signs in
-									as an editor would, which is contrary to the Copilot terms of
-									service and may get your account rate-limited or flagged. Use
-									OpenRouter if you would rather not take that risk.
-								</Alert>
-								<CopilotSignInCard
-									state={copilotSignIn}
-									login={copilotLogin}
-									signedIn={copilot?.configured ?? false}
-									onSignIn={onCopilotSignIn}
-									onCancel={onCopilotCancel}
-									onSignOut={onCopilotSignOut}
-								/>
-							</Stack>
-						</>
-					) : null}
+				<Stack spacing={1}>
+					{sectionTitle("Model")}
+					<ModelPicker
+						search={search}
+						selectedModel={selectedModel}
+						configuredProviderIds={configuredProviderIds}
+						onSelect={onSelectModel}
+					/>
 				</Stack>
-			</Box>
-		</>
-	);
-};
+
+				<Divider />
+
+				<Stack spacing={1}>
+					{sectionTitle("Providers")}
+					{copilotEnabled ? (
+						<Alert severity="warning">
+							GitHub publishes no third-party API for Copilot. Signing in below
+							authenticates as an editor would, which is contrary to the Copilot
+							terms of service and may get your account rate-limited or flagged.
+						</Alert>
+					) : null}
+					<ProviderCredentialList
+						providers={providers}
+						copilotEnabled={copilotEnabled}
+						copilotSlot={
+							<CopilotSignInCard
+								state={copilotSignIn}
+								login={copilotAccount}
+								signedIn={copilotConfigured}
+								onSignIn={onCopilotSignIn}
+								onCancel={onCopilotCancel}
+								onSignOut={() => onSignOut("github-copilot")}
+							/>
+						}
+						onSaveApiKey={onSaveApiKey}
+						onSignOut={onSignOut}
+						onRemoveCustom={onRemoveCustom}
+					/>
+				</Stack>
+
+				<Divider />
+
+				<Stack spacing={1}>
+					{sectionTitle("Add a custom provider")}
+					<CustomProviderForm
+						takenIds={providers.map((provider) => provider.id)}
+						onProbe={onProbeCustom}
+						onSave={onSaveCustom}
+					/>
+				</Stack>
+			</Stack>
+		</Box>
+	</>
+);
