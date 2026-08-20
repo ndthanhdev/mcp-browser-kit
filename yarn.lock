@@ -1863,6 +1863,8 @@ __metadata:
 "@mcp-browser-kit/core-utils@workspace:packages/core-utils":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/core-utils@workspace:packages/core-utils"
+  dependencies:
+    vitest: "npm:^4.1.11"
   languageName: unknown
   linkType: soft
 
@@ -1927,6 +1929,14 @@ __metadata:
 "@mcp-browser-kit/extension-driven-server-channel-provider@workspace:packages/extension-driven-server-channel-provider":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/extension-driven-server-channel-provider@workspace:packages/extension-driven-server-channel-provider"
+  languageName: unknown
+  linkType: soft
+
+"@mcp-browser-kit/extension-driving-agent-rpc@workspace:packages/extension-driving-agent-rpc":
+  version: 0.0.0-use.local
+  resolution: "@mcp-browser-kit/extension-driving-agent-rpc@workspace:packages/extension-driving-agent-rpc"
+  dependencies:
+    vitest: "npm:^4.1.11"
   languageName: unknown
   linkType: soft
 

@@ -2,3 +2,9 @@ $schema: https://moonrepo.dev/schemas/project.json
 language: typescript
 dependsOn:
 - types
+tags:
+- vitest
+tasks:
+  test:
+    deps:
+    - ~:vitest-test

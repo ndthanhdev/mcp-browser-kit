@@ -83,9 +83,15 @@ export class MessageChannelRpcClient<
 		const id = this.createId(String(method));
 		const defer = Promise.withResolvers<Awaited<ExtractRpcReturnType<U, K>>>();
 
-		defer.promise.finally(() => {
+		// `.then(cleanup, cleanup)`, not `.finally(cleanup)`: `finally` derives a
+		// promise that re-raises the rejection, and nothing handles that derived
+		// promise, so every rejected RPC call produced an unhandled rejection in
+		// addition to the one the caller sees. Passing an `onRejected` handler
+		// settles the derived promise instead.
+		const cleanup = () => {
 			this.pending.delete(id);
-		});
+		};
+		defer.promise.then(cleanup, cleanup);
 		this.pending.set(id, defer as PromiseWithResolvers<unknown>);
 
 		this.messageChannel.outgoing.emit("defer", {
