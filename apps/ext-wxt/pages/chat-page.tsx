@@ -31,6 +31,7 @@ export const ChatPage = () => {
 			expandedToolIds={threadState.expandedToolIds}
 			draft={threadState.draft}
 			chatsHref={hrefs.chats}
+			settingsHref={hrefs.settings}
 		/>
 	);
 };
