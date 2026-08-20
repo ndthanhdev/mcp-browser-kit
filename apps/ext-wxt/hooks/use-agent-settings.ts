@@ -6,8 +6,10 @@ import {
 	type CustomProvider,
 	type DeviceCodeGrant,
 	DeviceFlowError,
+	discoverModels,
 	ModelCatalog,
 	PROVIDER_IDS,
+	type ProbeResult,
 	type ResolvedProvider,
 	readAgentSettings,
 	removeCustomProvider,
@@ -206,6 +208,16 @@ export const useAgentSettings = () => {
 		],
 	);
 
+	/**
+	 * Ask a custom provider's server what it can run. Registry providers get
+	 * their models from models.dev; a local server is its own source of truth.
+	 */
+	const probeCustomProvider = useCallback(
+		async (baseUrl: string, apiKey?: string): Promise<ProbeResult> =>
+			discoverModels(baseUrl, apiKey),
+		[],
+	);
+
 	const saveCustomProvider = useCallback(
 		async (provider: CustomProvider) => {
 			await upsertCustomProvider(provider);
@@ -296,6 +308,7 @@ export const useAgentSettings = () => {
 		retryCatalog: () => loadCatalog(true),
 		saveApiKey,
 		selectModel,
+		probeCustomProvider,
 		saveCustomProvider,
 		deleteCustomProvider,
 		startCopilotSignIn,
