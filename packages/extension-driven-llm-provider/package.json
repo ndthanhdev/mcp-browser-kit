@@ -2,7 +2,12 @@
 	"name": "@mcp-browser-kit/extension-driven-llm-provider",
 	"type": "module",
 	"dependencies": {
+		"@ai-sdk/anthropic": "^4.0.40",
+		"@ai-sdk/gateway": "^4.0.56",
+		"@ai-sdk/google": "^4.0.47",
+		"@ai-sdk/openai": "^4.0.44",
 		"@ai-sdk/openai-compatible": "^3.0.32",
+		"@openrouter/ai-sdk-provider": "^3.0.0",
 		"ai": "^7.0.70",
 		"zod": "^4.3.6"
 	},

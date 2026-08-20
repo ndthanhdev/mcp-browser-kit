@@ -13,15 +13,21 @@ import { useState } from "react";
 import { CopilotSignInCard } from "@/components/fragments/copilot-sign-in-card";
 import type {
 	CopilotSignInState,
-	ProviderState,
+	ProviderRow,
 } from "@/hooks/use-agent-settings";
 
 export interface SettingsScreenProps {
 	backHref: string;
-	providers: ProviderState[];
+	providers: ProviderRow[];
 	/** Composite `"<provider>:<model>"` id, if one is chosen. */
 	selectedModel?: string;
 	openRouterApiKey?: string;
+	/** Models the user can call right now, as `{providerId, modelId, label}`. */
+	models: Array<{
+		providerId: string;
+		modelId: string;
+		label: string;
+	}>;
 	copilotEnabled: boolean;
 	copilotLogin?: string;
 	copilotSignIn: CopilotSignInState;
@@ -42,6 +48,7 @@ const sectionTitle = (text: string) => (
 export const SettingsScreen = ({
 	backHref,
 	providers,
+	models,
 	selectedModel,
 	openRouterApiKey,
 	copilotEnabled,
@@ -55,14 +62,8 @@ export const SettingsScreen = ({
 }: SettingsScreenProps) => {
 	const [keyDraft, setKeyDraft] = useState(openRouterApiKey ?? "");
 
-	const openRouter = providers.find((provider) => provider.id === "openrouter");
-	const copilot = providers.find((provider) => provider.id === "copilot");
-	const allModels = providers.flatMap((provider) =>
-		provider.models.map((model) => ({
-			providerId: provider.id,
-			providerLabel: provider.label,
-			...model,
-		})),
+	const copilot = providers.find(
+		(provider) => provider.id === "github-copilot",
 	);
 
 	return (
@@ -103,7 +104,7 @@ export const SettingsScreen = ({
 				<Stack spacing={3}>
 					<Stack spacing={1}>
 						{sectionTitle("Model")}
-						{allModels.length === 0 ? (
+						{models.length === 0 ? (
 							<Typography variant="body2" color="text.secondary">
 								Sign in to a provider below to choose a model.
 							</Typography>
@@ -118,12 +119,12 @@ export const SettingsScreen = ({
 									onSelectModel(providerId, rest.join(":"));
 								}}
 							>
-								{allModels.map((model) => (
+								{models.map((model) => (
 									<MenuItem
-										key={`${model.providerId}:${model.id}`}
-										value={`${model.providerId}:${model.id}`}
+										key={`${model.providerId}:${model.modelId}`}
+										value={`${model.providerId}:${model.modelId}`}
 									>
-										{model.label} · {model.providerLabel}
+										{model.label}
 									</MenuItem>
 								))}
 							</TextField>
@@ -134,9 +135,6 @@ export const SettingsScreen = ({
 
 					<Stack spacing={1}>
 						{sectionTitle("OpenRouter")}
-						{openRouter?.error ? (
-							<Alert severity="warning">{openRouter.error}</Alert>
-						) : null}
 						<TextField
 							size="small"
 							type="password"
@@ -160,9 +158,6 @@ export const SettingsScreen = ({
 									service and may get your account rate-limited or flagged. Use
 									OpenRouter if you would rather not take that risk.
 								</Alert>
-								{copilot?.error ? (
-									<Alert severity="error">{copilot.error}</Alert>
-								) : null}
 								<CopilotSignInCard
 									state={copilotSignIn}
 									login={copilotLogin}

@@ -5,10 +5,13 @@ import {
 } from "../testing/webextension-polyfill-stub";
 import {
 	AGENT_SETTINGS_STORAGE_KEY,
+	clearProviderCredential,
 	parseCompositeModelId,
 	readAgentSettings,
+	removeCustomProvider,
 	toCompositeModelId,
-	updateProviderCredentials,
+	updateProviderCredential,
+	upsertCustomProvider,
 	writeSelectedModel,
 } from "./agent-settings-storage";
 
@@ -17,7 +20,7 @@ beforeEach(() => {
 });
 
 describe("composite model ids", () => {
-	it("splits on the first colon so OpenRouter variant slugs survive", () => {
+	it("splits on the first colon so variant slugs survive", () => {
 		expect(parseCompositeModelId("openrouter:openai/gpt-4o:extended")).toEqual({
 			providerId: "openrouter",
 			modelId: "openai/gpt-4o:extended",
@@ -31,16 +34,17 @@ describe("composite model ids", () => {
 	});
 
 	it("round-trips", () => {
-		const composite = toCompositeModelId("copilot", "claude-sonnet-4");
-		expect(parseCompositeModelId(composite)).toEqual({
-			providerId: "copilot",
-			modelId: "claude-sonnet-4",
+		expect(
+			parseCompositeModelId(toCompositeModelId("github-copilot", "gpt-4o")),
+		).toEqual({
+			providerId: "github-copilot",
+			modelId: "gpt-4o",
 		});
 	});
 });
 
-describe("legacy settings migration", () => {
-	it("moves openRouterApiKey into the credentials slice", async () => {
+describe("migration from the single-key shape (v1)", () => {
+	it("moves openRouterApiKey into the id-keyed credentials record", async () => {
 		resetBrowserStub({
 			[AGENT_SETTINGS_STORAGE_KEY]: {
 				openRouterApiKey: "sk-legacy",
@@ -55,28 +59,78 @@ describe("legacy settings migration", () => {
 				},
 			},
 			selectedModel: "openrouter:anthropic/claude-3.7-sonnet",
+			customProviders: [],
 		});
 	});
 
-	it("does not invent an openrouter slice when the legacy key was unset", async () => {
+	it("does not invent a credential when the legacy key was unset", async () => {
 		resetBrowserStub({
 			[AGENT_SETTINGS_STORAGE_KEY]: {},
 		});
 
+		expect((await readAgentSettings()).credentials).toEqual({});
+	});
+});
+
+describe("migration from the fixed-slice shape (v2)", () => {
+	it("re-keys copilot to the id models.dev uses", async () => {
+		resetBrowserStub({
+			[AGENT_SETTINGS_STORAGE_KEY]: {
+				credentials: {
+					copilot: {
+						oauthToken: "gho_x",
+						login: "octocat",
+					},
+				},
+				selectedModel: "copilot:gpt-4o",
+			},
+		});
+
+		// The registry calls it `github-copilot`; without re-keying, lookups miss
+		// and the user appears signed out.
 		expect(await readAgentSettings()).toEqual({
-			credentials: {},
-			selectedModel: undefined,
+			credentials: {
+				"github-copilot": {
+					oauthToken: "gho_x",
+					account: "octocat",
+				},
+			},
+			selectedModel: "github-copilot:gpt-4o",
+			customProviders: [],
 		});
 	});
 
-	it("leaves already-migrated settings alone", async () => {
-		const current = {
+	it("carries an openrouter key across unchanged", async () => {
+		resetBrowserStub({
+			[AGENT_SETTINGS_STORAGE_KEY]: {
+				credentials: {
+					openrouter: {
+						apiKey: "sk-a",
+					},
+				},
+				selectedModel: "openrouter:openai/gpt-4o",
+			},
+		});
+
+		expect(await readAgentSettings()).toMatchObject({
 			credentials: {
-				copilot: {
-					oauthToken: "gho_x",
+				openrouter: {
+					apiKey: "sk-a",
 				},
 			},
-			selectedModel: "copilot:gpt-4o",
+			selectedModel: "openrouter:openai/gpt-4o",
+		});
+	});
+
+	it("leaves already-current settings alone", async () => {
+		const current = {
+			credentials: {
+				groq: {
+					apiKey: "k",
+				},
+			},
+			selectedModel: "groq:llama",
+			customProviders: [],
 		};
 		resetBrowserStub({
 			[AGENT_SETTINGS_STORAGE_KEY]: current,
@@ -88,53 +142,110 @@ describe("legacy settings migration", () => {
 	it("returns empty settings when nothing is persisted", async () => {
 		expect(await readAgentSettings()).toEqual({
 			credentials: {},
+			customProviders: [],
 		});
 	});
 });
 
 describe("partial writes", () => {
-	it("updates one provider's credentials without clobbering the others", async () => {
-		await updateProviderCredentials("openrouter", () => ({
-			apiKey: "sk-a",
+	it("updates one provider without clobbering the others", async () => {
+		await updateProviderCredential("groq", () => ({
+			apiKey: "gk",
 		}));
-		await writeSelectedModel("openrouter:openai/gpt-4o");
-		await updateProviderCredentials("copilot", () => ({
+		await writeSelectedModel("groq:llama");
+		await updateProviderCredential("github-copilot", () => ({
 			oauthToken: "gho_b",
 		}));
 
 		expect(await readAgentSettings()).toEqual({
 			credentials: {
-				openrouter: {
-					apiKey: "sk-a",
+				groq: {
+					apiKey: "gk",
 				},
-				copilot: {
+				"github-copilot": {
 					oauthToken: "gho_b",
 				},
 			},
-			selectedModel: "openrouter:openai/gpt-4o",
+			selectedModel: "groq:llama",
+			customProviders: [],
 		});
 	});
 
-	it("hands the current slice to the updater so it can merge", async () => {
-		await updateProviderCredentials("copilot", () => ({
+	it("hands the current credential to the updater so it can merge", async () => {
+		await updateProviderCredential("github-copilot", () => ({
 			oauthToken: "gho_b",
 		}));
-		await updateProviderCredentials("copilot", (current) => ({
+		await updateProviderCredential("github-copilot", (current) => ({
 			...current,
-			login: "octocat",
+			account: "octocat",
 		}));
 
-		const settings = await readAgentSettings();
-		expect(settings.credentials.copilot).toEqual({
+		expect((await readAgentSettings()).credentials["github-copilot"]).toEqual({
 			oauthToken: "gho_b",
-			login: "octocat",
+			account: "octocat",
 		});
+	});
+
+	it("clears one provider's credential and leaves the rest", async () => {
+		await updateProviderCredential("groq", () => ({
+			apiKey: "gk",
+		}));
+		await updateProviderCredential("mistral", () => ({
+			apiKey: "mk",
+		}));
+
+		await clearProviderCredential("groq");
+
+		expect(Object.keys((await readAgentSettings()).credentials)).toEqual([
+			"mistral",
+		]);
 	});
 
 	it("persists under the pinned storage key", async () => {
-		await writeSelectedModel("copilot:gpt-4o");
+		await writeSelectedModel("groq:llama");
 		expect(Object.keys(readBrowserStubStore())).toEqual([
 			AGENT_SETTINGS_STORAGE_KEY,
 		]);
+	});
+});
+
+describe("custom providers", () => {
+	const ollama = {
+		id: "ollama",
+		name: "Ollama",
+		baseUrl: "http://localhost:11434/v1",
+	};
+
+	it("adds one", async () => {
+		await upsertCustomProvider(ollama);
+		expect((await readAgentSettings()).customProviders).toEqual([
+			ollama,
+		]);
+	});
+
+	it("replaces rather than duplicates on the same id", async () => {
+		await upsertCustomProvider(ollama);
+		await upsertCustomProvider({
+			...ollama,
+			name: "Ollama (renamed)",
+		});
+
+		const { customProviders } = await readAgentSettings();
+		expect(customProviders).toHaveLength(1);
+		expect(customProviders[0].name).toBe("Ollama (renamed)");
+	});
+
+	it("removes the provider and its credential together", async () => {
+		await upsertCustomProvider(ollama);
+		await updateProviderCredential("ollama", () => ({
+			apiKey: "k",
+		}));
+
+		await removeCustomProvider("ollama");
+
+		const settings = await readAgentSettings();
+		expect(settings.customProviders).toEqual([]);
+		// A stranded credential would make the provider look configured forever.
+		expect(settings.credentials.ollama).toBeUndefined();
 	});
 });

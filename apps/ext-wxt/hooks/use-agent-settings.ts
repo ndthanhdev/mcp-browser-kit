@@ -1,28 +1,26 @@
 import {
 	type AgentSettings,
-	CopilotProvider,
+	type Catalog,
+	type CatalogEntry,
+	CopilotDeviceFlowAuth,
+	type CustomProvider,
 	type DeviceCodeGrant,
 	DeviceFlowError,
-	type LlmModelDescriptor,
-	OpenRouterProvider,
+	ModelCatalog,
 	PROVIDER_IDS,
+	type ResolvedProvider,
 	readAgentSettings,
+	removeCustomProvider,
+	searchCatalog,
 	toCompositeModelId,
-	updateProviderCredentials,
+	updateProviderCredential,
+	upsertCustomProvider,
 	writeSelectedModel,
 } from "@mcp-browser-kit/extension-driven-llm-provider";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-/** One provider's section in the settings screen. */
-export interface ProviderState {
-	id: string;
-	label: string;
-	configured: boolean;
-	/** Empty until the provider is configured. */
-	models: LlmModelDescriptor[];
-	/** Set when listing models failed — e.g. an expired or unentitled token. */
-	error?: string;
-}
+/** Where the catalog fetch has got to, so the UI can be honest about it. */
+export type CatalogStatus = "loading" | "ready" | "error";
 
 /** Where the Copilot device flow has got to. */
 export type CopilotSignInState =
@@ -41,78 +39,63 @@ export type CopilotSignInState =
 			message: string;
 	  };
 
+/** A provider row in the settings list. */
+export interface ProviderRow extends ResolvedProvider {
+	configured: boolean;
+	modelCount: number;
+}
+
 /**
  * Settings state for the sidepanel.
  *
- * Deliberately talks to the provider package *directly* rather than through the
- * agent RPC. Credentials live in `chrome.storage.local`, which both contexts
- * share, so storage — not the background's provider instance — is the source of
- * truth. Routing sign-in through the background would add a second RPC surface
- * and a second thing to keep in sync, and would keep the service worker alive
- * for the whole minutes-long device flow.
+ * Talks to the provider package directly rather than through the agent RPC:
+ * credentials and the catalog both live in `chrome.storage.local`, which the
+ * sidepanel and background share, so storage is the source of truth. Routing
+ * this through the background would add a second RPC surface to keep in sync
+ * and would pin the service worker alive for the whole minutes-long device flow.
  */
 export const useAgentSettings = () => {
-	// One instance per mount. Model lists are cached on the strategy, so keeping
-	// them across renders avoids re-listing on every keystroke.
-	const openRouter = useRef(new OpenRouterProvider()).current;
-	const copilot = useRef(new CopilotProvider()).current;
+	const catalog = useRef(new ModelCatalog()).current;
+	const copilot = useRef(new CopilotDeviceFlowAuth()).current;
 
 	const [settings, setSettings] = useState<AgentSettings>();
-	const [providers, setProviders] = useState<ProviderState[]>([]);
+	const [registry, setRegistry] = useState<Catalog>();
+	const [catalogStatus, setCatalogStatus] = useState<CatalogStatus>("loading");
+	const [catalogError, setCatalogError] = useState<string>();
 	const [signIn, setSignIn] = useState<CopilotSignInState>({
 		status: "idle",
 	});
 	const signInAbort = useRef<AbortController>(undefined);
 
-	const refresh = useCallback(async () => {
-		const current = await readAgentSettings();
-		setSettings(current);
+	const reloadSettings = useCallback(async () => {
+		setSettings(await readAgentSettings());
+	}, []);
 
-		const described = await Promise.all(
-			[
-				openRouter,
-				copilot,
-			].map(async (strategy): Promise<ProviderState> => {
-				const configured = await strategy.isConfigured();
-				if (!configured) {
-					return {
-						id: strategy.id,
-						label: strategy.label,
-						configured,
-						models: [],
-					};
-				}
-				try {
-					return {
-						id: strategy.id,
-						label: strategy.label,
-						configured,
-						models: await strategy.listModels(),
-					};
-				} catch (error) {
-					// Surface it rather than hiding the provider: an expired Copilot
-					// token looks identical to "not signed in" otherwise, and the user
-					// needs to know to sign in again.
-					return {
-						id: strategy.id,
-						label: strategy.label,
-						configured,
-						models: [],
-						error: error instanceof Error ? error.message : String(error),
-					};
-				}
-			}),
-		);
-		setProviders(described);
-	}, [
-		openRouter,
-		copilot,
-	]);
+	const loadCatalog = useCallback(
+		async (force = false) => {
+			setCatalogStatus("loading");
+			setCatalogError(undefined);
+			try {
+				setRegistry(force ? await catalog.forceRefresh() : await catalog.get());
+				setCatalogStatus("ready");
+			} catch (error) {
+				// The picker is unusable without this, so say so rather than
+				// rendering an empty list that looks like "no providers exist".
+				setCatalogError(error instanceof Error ? error.message : String(error));
+				setCatalogStatus("error");
+			}
+		},
+		[
+			catalog,
+		],
+	);
 
 	useEffect(() => {
-		void refresh();
+		void reloadSettings();
+		void loadCatalog();
 	}, [
-		refresh,
+		reloadSettings,
+		loadCatalog,
 	]);
 
 	// Abort an in-flight device flow if the panel closes mid-sign-in.
@@ -123,25 +106,123 @@ export const useAgentSettings = () => {
 		[],
 	);
 
-	const saveOpenRouterKey = useCallback(
-		async (apiKey: string) => {
-			await updateProviderCredentials(PROVIDER_IDS.openrouter, () => ({
+	/** Every provider, registry and custom, with its configured state. */
+	const providers = useMemo((): ProviderRow[] => {
+		const credentials = settings?.credentials ?? {};
+		const fromRegistry = Object.values(registry ?? {}).map(
+			(provider): ProviderRow => ({
+				id: provider.id,
+				name: provider.name,
+				npm: provider.npm,
+				api: provider.api,
+				doc: provider.doc,
+				custom: false,
+				configured: Boolean(
+					credentials[provider.id]?.apiKey ||
+						credentials[provider.id]?.oauthToken,
+				),
+				modelCount: provider.models.length,
+			}),
+		);
+		const fromCustom = (settings?.customProviders ?? []).map(
+			(provider): ProviderRow => ({
+				id: provider.id,
+				name: provider.name,
+				npm: "@ai-sdk/openai-compatible",
+				api: provider.baseUrl,
+				custom: true,
+				configured: true,
+				modelCount: provider.modelIds?.length ?? 0,
+			}),
+		);
+		return [
+			...fromRegistry,
+			...fromCustom,
+		].sort((a, b) => a.name.localeCompare(b.name));
+	}, [
+		registry,
+		settings,
+	]);
+
+	/** Configured providers first — what the user is most likely to want. */
+	const configuredProviders = useMemo(
+		() => providers.filter((provider) => provider.configured),
+		[
+			providers,
+		],
+	);
+
+	/** Models the user can actually call right now, for the model picker. */
+	const availableModels = useMemo((): CatalogEntry[] => {
+		if (!(registry && settings)) {
+			return [];
+		}
+		const configured = new Set(
+			configuredProviders.map((provider) => provider.id),
+		);
+		return Object.values(registry)
+			.filter((provider) => configured.has(provider.id))
+			.flatMap((provider) =>
+				provider.models.map((model) => ({
+					provider,
+					model,
+				})),
+			);
+	}, [
+		registry,
+		settings,
+		configuredProviders,
+	]);
+
+	/** Search the whole registry, for browsing before signing in anywhere. */
+	const search = useCallback(
+		(query: string, limit?: number): CatalogEntry[] =>
+			registry ? searchCatalog(registry, query, limit) : [],
+		[
+			registry,
+		],
+	);
+
+	const saveApiKey = useCallback(
+		async (providerId: string, apiKey: string) => {
+			await updateProviderCredential(providerId, (current) => ({
+				...current,
 				apiKey: apiKey.trim() || undefined,
 			}));
-			await refresh();
+			await reloadSettings();
 		},
 		[
-			refresh,
+			reloadSettings,
 		],
 	);
 
 	const selectModel = useCallback(
 		async (providerId: string, modelId: string) => {
 			await writeSelectedModel(toCompositeModelId(providerId, modelId));
-			await refresh();
+			await reloadSettings();
 		},
 		[
-			refresh,
+			reloadSettings,
+		],
+	);
+
+	const saveCustomProvider = useCallback(
+		async (provider: CustomProvider) => {
+			await upsertCustomProvider(provider);
+			await reloadSettings();
+		},
+		[
+			reloadSettings,
+		],
+	);
+
+	const deleteCustomProvider = useCallback(
+		async (providerId: string) => {
+			await removeCustomProvider(providerId);
+			await reloadSettings();
+		},
+		[
+			reloadSettings,
 		],
 	);
 
@@ -162,7 +243,7 @@ export const useAgentSettings = () => {
 			setSignIn({
 				status: "idle",
 			});
-			await refresh();
+			await reloadSettings();
 		} catch (error) {
 			if (error instanceof DeviceFlowError && error.failure === "cancelled") {
 				setSignIn({
@@ -177,7 +258,7 @@ export const useAgentSettings = () => {
 		}
 	}, [
 		copilot,
-		refresh,
+		reloadSettings,
 	]);
 
 	const cancelCopilotSignIn = useCallback(() => {
@@ -187,26 +268,38 @@ export const useAgentSettings = () => {
 		});
 	}, []);
 
-	const signOutCopilot = useCallback(async () => {
-		await copilot.signOut();
-		setSignIn({
-			status: "idle",
-		});
-		await refresh();
-	}, [
-		copilot,
-		refresh,
-	]);
+	const signOutProvider = useCallback(
+		async (providerId: string) => {
+			if (providerId === PROVIDER_IDS.githubCopilot) {
+				await copilot.signOut(providerId);
+			} else {
+				await updateProviderCredential(providerId, () => ({}));
+			}
+			await reloadSettings();
+		},
+		[
+			copilot,
+			reloadSettings,
+		],
+	);
 
 	return {
 		/** `undefined` until the first read completes. */
 		settings,
 		providers,
+		configuredProviders,
+		availableModels,
+		catalogStatus,
+		catalogError,
 		signIn,
-		saveOpenRouterKey,
+		search,
+		retryCatalog: () => loadCatalog(true),
+		saveApiKey,
 		selectModel,
+		saveCustomProvider,
+		deleteCustomProvider,
 		startCopilotSignIn,
 		cancelCopilotSignIn,
-		signOutCopilot,
+		signOutProvider,
 	};
 };

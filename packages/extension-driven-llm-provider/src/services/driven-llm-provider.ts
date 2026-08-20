@@ -4,92 +4,162 @@ import {
 	type LlmProviderOutputPort as LlmProviderOutputPortType,
 } from "@mcp-browser-kit/core-extension/output-ports";
 import type { LanguageModel } from "ai";
-import { type Container, injectable, multiInject } from "inversify";
+import { type Container, injectable } from "inversify";
 import {
+	type CustomProvider,
 	parseCompositeModelId,
 	readAgentSettings,
 	toCompositeModelId,
 } from "./agent-settings-storage";
-import type { LlmProviderStrategy } from "./providers/llm-provider-strategy";
-import { OpenRouterProvider } from "./providers/openrouter-provider";
+import { ApiKeyAuth } from "./auth/api-key-auth";
+import type { AuthStrategy } from "./auth/auth-strategy";
+import { CopilotDeviceFlowAuth } from "./auth/copilot/copilot-device-flow-auth";
+import type { CatalogProvider } from "./catalog/catalog-schema";
+import { ModelCatalog } from "./catalog/model-catalog";
+import { resolveBaseUrl } from "./factories/base-url-overrides";
+import { factoryFor } from "./factories/provider-factories";
 
-/** Multi-inject token collecting every registered {@link LlmProviderStrategy}. */
-export const LlmProviderStrategyToken = Symbol("LlmProviderStrategy");
+/** A provider the registry can serve, from the catalog or user-defined. */
+export interface ResolvedProvider {
+	id: string;
+	name: string;
+	npm: string;
+	api?: string;
+	doc?: string;
+	/** True for user-defined providers, which the catalog knows nothing about. */
+	custom: boolean;
+}
+
+/** Turn a user-defined provider into the same shape as a catalog entry. */
+const fromCustom = (provider: CustomProvider): ResolvedProvider => ({
+	id: provider.id,
+	name: provider.name,
+	// Custom providers are OpenAI-compatible by definition — that is the whole
+	// contract the form asks the user to satisfy.
+	npm: "@ai-sdk/openai-compatible",
+	api: provider.baseUrl,
+	custom: true,
+});
+
+const fromCatalog = (provider: CatalogProvider): ResolvedProvider => ({
+	id: provider.id,
+	name: provider.name,
+	npm: provider.npm,
+	api: provider.api,
+	doc: provider.doc,
+	custom: false,
+});
 
 /**
- * Driven adapter realizing {@link LlmProviderOutputPortType} as a *registry* over
- * several {@link LlmProviderStrategy} implementations rather than a single
- * hardcoded vendor.
+ * Driven adapter realizing {@link LlmProviderOutputPortType} over the models.dev
+ * registry.
  *
- * The port speaks in flat `providerId` strings; this adapter treats those as
- * composite `"<providerId>:<modelId>"` ids, because model ids are only unique
- * within a provider (both OpenRouter and Copilot expose a `gpt-4o`). That keeps
- * the port — and therefore `BrowserAgentUseCase` — unaware that more than one
- * vendor exists.
+ * Composes three independent axes so that adding a provider is *data*, not code:
  *
- * Pure JS (no sandbox/subprocess), so it runs in the MV3 background service
- * worker. Credentials and the selected model are read from extension storage
- * (`chrome.storage.local` via `webextension-polyfill`), written by the settings
- * page in `apps/ext-wxt`.
+ * - **What exists** — {@link ModelCatalog}, the models.dev registry.
+ * - **How to authenticate** — an {@link AuthStrategy}, keyed by provider id.
+ *   Almost every provider is a plain API key; GitHub Copilot has a device flow.
+ * - **How to build the model** — a factory keyed by the registry's `npm` field,
+ *   defaulting to OpenAI-compatible, which covers 152 of ~190 providers.
+ *
+ * The port speaks in flat id strings; this adapter treats them as composite
+ * `"<providerId>:<modelId>"`, because model ids are only unique within a
+ * provider. `BrowserAgentUseCase` stays unaware that any of this exists.
  */
 @injectable()
 export class DrivenLlmProvider implements LlmProviderOutputPortType {
-	/**
-	 * Bind the registry and its default strategies. Providers that are gated
-	 * (e.g. Copilot) are bound by the composition root instead, so an app can
-	 * decide which vendors it ships.
-	 */
 	static setupContainer(container: Container): void {
-		container
-			.bind<LlmProviderStrategy>(LlmProviderStrategyToken)
-			.to(OpenRouterProvider);
 		container
 			.bind<LlmProviderOutputPortType>(LlmProviderOutputPort)
 			.to(DrivenLlmProvider);
 	}
 
-	constructor(
-		@multiInject(LlmProviderStrategyToken)
-		private readonly strategies: LlmProviderStrategy[],
-	) {}
+	private readonly apiKeyAuth = new ApiKeyAuth();
+	private readonly copilotAuth = new CopilotDeviceFlowAuth();
 
-	private strategyById = (
+	constructor(readonly catalog: ModelCatalog = new ModelCatalog()) {}
+
+	/** The auth strategy for a provider. Anything unlisted uses an API key. */
+	authFor = (providerId: string): AuthStrategy =>
+		providerId === CopilotDeviceFlowAuth.providerId
+			? this.copilotAuth
+			: this.apiKeyAuth;
+
+	/** The Copilot flow, for the settings page's sign-in card. */
+	get copilot(): CopilotDeviceFlowAuth {
+		return this.copilotAuth;
+	}
+
+	/** Every provider the registry knows, plus the user's own. */
+	listAllProviders = async (): Promise<ResolvedProvider[]> => {
+		const settings = await readAgentSettings();
+		const custom = settings.customProviders.map(fromCustom);
+		const cataloged = (await this.catalog.peek()) ?? {};
+		return [
+			...Object.values(cataloged).map(fromCatalog),
+			...custom,
+		].sort((a, b) => a.name.localeCompare(b.name));
+	};
+
+	/** Resolve one provider by id, custom entries taking precedence. */
+	resolveProvider = async (
 		providerId: string,
-	): LlmProviderStrategy | undefined =>
-		this.strategies.find((strategy) => strategy.id === providerId);
+	): Promise<ResolvedProvider | undefined> => {
+		const settings = await readAgentSettings();
+		const custom = settings.customProviders.find(
+			(candidate) => candidate.id === providerId,
+		);
+		if (custom) {
+			return fromCustom(custom);
+		}
+		const cataloged = await this.catalog.getProvider(providerId);
+		return cataloged && fromCatalog(cataloged);
+	};
 
 	/**
-	 * Every model across every *configured* provider, as composite ids.
+	 * Models from every *configured* provider, as composite ids.
 	 *
-	 * A provider that throws while listing (expired token, network down) is
-	 * skipped rather than failing the whole list — otherwise one broken vendor
-	 * hides the working ones and the settings UI shows nothing.
+	 * Only configured providers: listing ~5,800 models the user cannot call would
+	 * make the port useless to the agent. The settings page browses the full
+	 * catalog separately.
 	 */
 	listProviders = async (): Promise<LlmProviderDescriptor[]> => {
-		const perProvider = await Promise.all(
-			this.strategies.map(async (strategy) => {
-				try {
-					if (!(await strategy.isConfigured())) {
-						return [];
-					}
-					const models = await strategy.listModels();
-					return models.map((model) => ({
-						id: toCompositeModelId(strategy.id, model.id),
-						label: `${model.label} · ${strategy.label}`,
-					}));
-				} catch {
-					return [];
-				}
-			}),
-		);
-		return perProvider.flat();
+		const settings = await readAgentSettings();
+		const configuredIds = Object.keys(settings.credentials);
+		const catalog = (await this.catalog.peek()) ?? {};
+		const descriptors: LlmProviderDescriptor[] = [];
+
+		for (const providerId of configuredIds) {
+			const provider = catalog[providerId];
+			if (!provider) {
+				continue;
+			}
+			for (const model of provider.models) {
+				descriptors.push({
+					id: toCompositeModelId(providerId, model.id),
+					label: `${model.name} · ${provider.name}`,
+				});
+			}
+		}
+
+		// Custom providers list whatever model ids the user recorded.
+		for (const custom of settings.customProviders) {
+			for (const modelId of custom.modelIds ?? []) {
+				descriptors.push({
+					id: toCompositeModelId(custom.id, modelId),
+					label: `${modelId} · ${custom.name}`,
+				});
+			}
+		}
+
+		return descriptors;
 	};
 
 	getModel = async (providerId?: string): Promise<LanguageModel> => {
-		const composite = providerId ?? (await this.resolveSelectedModel());
+		const composite = providerId ?? (await this.selectedModel());
 		if (!composite) {
 			throw new Error(
-				"No language model is configured. Open the extension settings to sign in to a provider.",
+				"No language model is configured. Open the extension settings to choose a provider and model.",
 			);
 		}
 		const parsed = parseCompositeModelId(composite);
@@ -98,32 +168,34 @@ export class DrivenLlmProvider implements LlmProviderOutputPortType {
 				`Malformed model id "${composite}" — expected "<provider>:<model>".`,
 			);
 		}
-		const strategy = this.strategyById(parsed.providerId);
-		if (!strategy) {
-			throw new Error(`Unknown LLM provider "${parsed.providerId}".`);
+
+		const provider = await this.resolveProvider(parsed.providerId);
+		if (!provider) {
+			throw new Error(
+				`Unknown provider "${parsed.providerId}". It may have been removed from the models.dev registry.`,
+			);
 		}
-		return strategy.createModel(parsed.modelId);
+
+		const auth = await this.authFor(provider.id).resolve(provider.id);
+		const baseUrl = resolveBaseUrl(provider.id, provider.api, auth.baseUrl);
+
+		return factoryFor(provider.npm)({
+			providerId: provider.id,
+			modelId: parsed.modelId,
+			baseUrl,
+			auth,
+		});
 	};
 
-	/**
-	 * The persisted selection, or the first configured provider's default. The
-	 * fallback matters on first run after signing in: the user has credentials
-	 * but has not opened the model dropdown yet.
-	 */
-	private async resolveSelectedModel(): Promise<string | undefined> {
-		const { selectedModel } = await readAgentSettings();
-		if (selectedModel) {
-			return selectedModel;
+	/** The persisted selection, or the first configured provider's newest model. */
+	private async selectedModel(): Promise<string | undefined> {
+		const settings = await readAgentSettings();
+		if (settings.selectedModel) {
+			return settings.selectedModel;
 		}
-		for (const strategy of this.strategies) {
-			if (!(await strategy.isConfigured())) {
-				continue;
-			}
-			const modelId = await strategy.defaultModelId();
-			if (modelId) {
-				return toCompositeModelId(strategy.id, modelId);
-			}
-		}
-		return undefined;
+		// First run after adding a key: the user has credentials but has not opened
+		// the model picker yet. Models are sorted newest-first by the catalog.
+		const [first] = await this.listProviders();
+		return first?.id;
 	}
 }

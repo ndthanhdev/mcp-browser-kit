@@ -2,6 +2,7 @@ import "core-js/proposals";
 import {
 	createCoreExtensionContainer,
 	FeatureFlagsOutputPort,
+	LlmProviderOutputPort,
 	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-extension";
 import { DrivenFeatureFlagsOpenFeatureWeb } from "@mcp-browser-kit/driven-feature-flags/web";
@@ -9,12 +10,7 @@ import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logge
 import { DrivenBrowserStateSource } from "@mcp-browser-kit/extension-driven-browser-driver";
 import { DrivenBrowserDriverM2 } from "@mcp-browser-kit/extension-driven-browser-driver/m2";
 import { DrivenBrowserDriverM3 } from "@mcp-browser-kit/extension-driven-browser-driver/m3";
-import type { LlmProviderStrategy } from "@mcp-browser-kit/extension-driven-llm-provider";
-import {
-	CopilotProvider,
-	DrivenLlmProvider,
-	LlmProviderStrategyToken,
-} from "@mcp-browser-kit/extension-driven-llm-provider";
+import { DrivenLlmProvider } from "@mcp-browser-kit/extension-driven-llm-provider";
 import { ExtensionDrivingAgentRpc } from "@mcp-browser-kit/extension-driving-agent-rpc";
 
 /**
@@ -116,13 +112,17 @@ const startAgent = async () => {
 	DrivenBrowserStateSource.setupContainer(container);
 
 	DrivenLlmProvider.setupContainer(container);
-	// Copilot is bound only when its flag is on — the adapter reaches an
-	// undocumented endpoint contrary to the Copilot terms of service, so it must
-	// not be present by default. See the provider's `constants.ts`.
-	if (await featureFlags.getBooleanValue("copilot-provider")) {
-		container
-			.bind<LlmProviderStrategy>(LlmProviderStrategyToken)
-			.to(CopilotProvider);
+
+	// Warm the models.dev catalog in the background so the settings picker has
+	// something to show. Failure is not fatal — the registry falls back to a
+	// cached copy, and the settings page surfaces the error and offers a retry.
+	const llmProvider = container.get<LlmProviderOutputPort>(
+		LlmProviderOutputPort,
+	);
+	if (llmProvider instanceof DrivenLlmProvider) {
+		void llmProvider.catalog.refreshIfStale().catch((error: unknown) => {
+			console.warn("Could not refresh the models.dev catalog", error);
+		});
 	}
 
 	ExtensionDrivingAgentRpc.setupContainer(container);
