@@ -19,6 +19,20 @@ export interface TabDriverSetup {
 	setupTabContainer(container: Container): void;
 }
 
+/** Per-app choices about what the tab half should run. */
+export interface TabLifecycleOptions {
+	/**
+	 * Ping the background every 25s to hold the MV3 service worker awake.
+	 *
+	 * Opt-in, and deliberately so. It is only worth it when the background owns
+	 * something that must outlive its idle timeout — the tRPC channel to the
+	 * local MCP server, in `apps/m2` and `apps/m3`. Enabling it elsewhere pins
+	 * the worker awake from every frame of every tab, and if the background
+	 * never called {@link KeepAlive.startListening} every ping fails.
+	 */
+	keepAlive?: boolean;
+}
+
 /**
  * Everything the extension runs inside a page.
  *
@@ -76,15 +90,18 @@ export class ExtensionTabLifecycle {
 	 * workspace default gets CJS — and the two are structurally incompatible even
 	 * though they are the same class at runtime.
 	 */
-	static start(driver: TabDriverSetup): void {
+	static start(
+		driver: TabDriverSetup,
+		options: TabLifecycleOptions = {},
+	): void {
 		const container = new Container({
 			defaultScope: "Singleton",
 		});
 		ExtensionTabLifecycle.setupContainer(container, driver);
-		container.get<ExtensionTabLifecycle>(ExtensionTabLifecycle).start();
+		container.get<ExtensionTabLifecycle>(ExtensionTabLifecycle).start(options);
 	}
 
-	start(): void {
+	start(options: TabLifecycleOptions = {}): void {
 		this.logger.info("Starting ExtensionTabLifecycle...");
 
 		// Expose the tool implementations in the page's global scope.
@@ -93,8 +110,9 @@ export class ExtensionTabLifecycle {
 		// Start listening for browser runtime messages.
 		this.tabToolsSetup.startListen();
 
-		// Start keep-alive mechanism.
-		this.keepAlive.startSending();
+		if (options.keepAlive) {
+			this.keepAlive.startSending();
+		}
 
 		// Start observing DOM mutations and pinging the background.
 		this.mutationObserver.start();

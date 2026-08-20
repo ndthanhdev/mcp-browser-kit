@@ -2004,6 +2004,8 @@ __metadata:
 "@mcp-browser-kit/helper-extension-keep-alive@workspace:packages/helper-extension-keep-alive":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/helper-extension-keep-alive@workspace:packages/helper-extension-keep-alive"
+  dependencies:
+    vitest: "npm:^4.1.11"
   languageName: unknown
   linkType: soft
 

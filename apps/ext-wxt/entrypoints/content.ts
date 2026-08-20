@@ -35,6 +35,11 @@ export default defineContentScript({
 				? DrivenBrowserDriverM3
 				: DrivenBrowserDriverM2;
 
+		// No keepAlive: unlike m2/m3 this app's background holds no MCP server
+		// channel, and the sidepanel's `runtime.connect` port already keeps the
+		// worker alive for exactly as long as the agent needs it. Pinging from
+		// every frame of every tab would pin the worker awake permanently — and
+		// this background never registers the listener, so every ping would fail.
 		ExtensionTabLifecycle.start(driver);
 	},
 });
