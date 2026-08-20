@@ -1,0 +1,639 @@
+{
+	"anthropic": {
+		"doc": "https://docs.anthropic.com/en/docs/about-claude/models",
+		"env": [
+			"ANTHROPIC_API_KEY"
+		],
+		"id": "anthropic",
+		"models": {
+			"claude-opus-4-7": {
+				"attachment": true,
+				"cost": {
+					"cache_read": 0.5,
+					"cache_write": 6.25,
+					"input": 5,
+					"output": 25
+				},
+				"description": "Stronger Opus tier for advanced software work and high-stakes reasoning",
+				"family": "claude-opus",
+				"id": "claude-opus-4-7",
+				"knowledge": "2026-01-31",
+				"last_updated": "2026-04-16",
+				"limit": {
+					"context": 1000000,
+					"output": 128000
+				},
+				"modalities": {
+					"input": [
+						"text",
+						"image",
+						"pdf"
+					],
+					"output": [
+						"text"
+					]
+				},
+				"name": "Claude Opus 4.7",
+				"open_weights": false,
+				"reasoning": true,
+				"reasoning_options": [
+					{
+						"type": "effort",
+						"values": [
+							"low",
+							"medium",
+							"high",
+							"xhigh",
+							"max"
+						]
+					}
+				],
+				"release_date": "2026-04-14",
+				"structured_output": true,
+				"temperature": false,
+				"tool_call": true
+			},
+			"claude-opus-4-8": {
+				"attachment": true,
+				"cost": {
+					"cache_read": 0.5,
+					"cache_write": 6.25,
+					"input": 5,
+					"output": 25
+				},
+				"description": "Top Claude Opus tier for the hardest reasoning, coding, and long-horizon agents",
+				"experimental": {
+					"modes": {
+						"fast": {
+							"cost": {
+								"cache_read": 1,
+								"cache_write": 12.5,
+								"input": 10,
+								"output": 50
+							},
+							"provider": {
+								"body": {
+									"speed": "fast"
+								},
+								"headers": {
+									"anthropic-beta": "fast-mode-2026-02-01"
+								}
+							}
+						}
+					}
+				},
+				"family": "claude-opus",
+				"id": "claude-opus-4-8",
+				"knowledge": "2026-01",
+				"last_updated": "2026-05-28",
+				"limit": {
+					"context": 1000000,
+					"output": 128000
+				},
+				"modalities": {
+					"input": [
+						"text",
+						"image",
+						"pdf"
+					],
+					"output": [
+						"text"
+					]
+				},
+				"name": "Claude Opus 4.8",
+				"open_weights": false,
+				"reasoning": true,
+				"reasoning_options": [
+					{
+						"type": "effort",
+						"values": [
+							"low",
+							"medium",
+							"high",
+							"xhigh",
+							"max"
+						]
+					}
+				],
+				"release_date": "2026-05-28",
+				"structured_output": true,
+				"temperature": false,
+				"tool_call": true
+			},
+			"claude-sonnet-5": {
+				"attachment": true,
+				"cost": {
+					"cache_read": 0.2,
+					"cache_write": 2.5,
+					"input": 2,
+					"output": 10
+				},
+				"description": "Everyday Claude agent model for coding, planning, browsing, and general work",
+				"family": "claude-sonnet",
+				"id": "claude-sonnet-5",
+				"knowledge": "2026-01-31",
+				"last_updated": "2026-06-30",
+				"limit": {
+					"context": 1000000,
+					"output": 128000
+				},
+				"modalities": {
+					"input": [
+						"text",
+						"image",
+						"pdf"
+					],
+					"output": [
+						"text"
+					]
+				},
+				"name": "Claude Sonnet 5",
+				"open_weights": false,
+				"reasoning": true,
+				"reasoning_options": [
+					{
+						"type": "toggle"
+					},
+					{
+						"type": "effort",
+						"values": [
+							"low",
+							"medium",
+							"high",
+							"xhigh",
+							"max"
+						]
+					}
+				],
+				"release_date": "2026-06-29",
+				"structured_output": true,
+				"temperature": false,
+				"tool_call": true
+			}
+		},
+		"name": "Anthropic",
+		"npm": "@ai-sdk/anthropic"
+	},
+	"github-copilot": {
+		"api": "https://api.githubcopilot.com",
+		"doc": "https://docs.github.com/en/copilot",
+		"env": [
+			"GITHUB_TOKEN"
+		],
+		"id": "github-copilot",
+		"models": {
+			"claude-opus-4.8": {
+				"attachment": true,
+				"cost": {
+					"cache_read": 0.5,
+					"cache_write": 6.25,
+					"input": 5,
+					"output": 25
+				},
+				"description": "Top Claude Opus tier for the hardest reasoning, coding, and long-horizon agents",
+				"experimental": {
+					"modes": {
+						"fast": {
+							"cost": {
+								"cache_read": 1,
+								"cache_write": 12.5,
+								"input": 10,
+								"output": 50
+							},
+							"provider": {
+								"body": {
+									"speed": "fast"
+								},
+								"headers": {
+									"anthropic-beta": "fast-mode-2026-02-01"
+								}
+							}
+						}
+					}
+				},
+				"family": "claude-opus",
+				"id": "claude-opus-4.8",
+				"knowledge": "2026-01",
+				"last_updated": "2026-05-28",
+				"limit": {
+					"context": 200000,
+					"input": 168000,
+					"output": 64000
+				},
+				"modalities": {
+					"input": [
+						"text",
+						"image",
+						"pdf"
+					],
+					"output": [
+						"text"
+					]
+				},
+				"name": "Claude Opus 4.8",
+				"open_weights": false,
+				"reasoning": true,
+				"reasoning_options": [
+					{
+						"type": "effort",
+						"values": [
+							"low",
+							"medium",
+							"high",
+							"xhigh",
+							"max"
+						]
+					}
+				],
+				"release_date": "2026-05-28",
+				"temperature": false,
+				"tool_call": true
+			},
+			"kimi-k2.7-code": {
+				"attachment": true,
+				"cost": {
+					"cache_read": 0.19,
+					"input": 0.95,
+					"output": 4
+				},
+				"description": "Coding-focused Kimi model, stronger on long-horizon repo work with less overthinking",
+				"family": "kimi-k2",
+				"id": "kimi-k2.7-code",
+				"knowledge": "2025-01",
+				"last_updated": "2026-06-12",
+				"limit": {
+					"context": 256000,
+					"input": 224000,
+					"output": 32000
+				},
+				"modalities": {
+					"input": [
+						"text",
+						"image"
+					],
+					"output": [
+						"text"
+					]
+				},
+				"name": "Kimi K2.7 Code",
+				"open_weights": true,
+				"reasoning": true,
+				"reasoning_options": [],
+				"release_date": "2026-06-12",
+				"structured_output": true,
+				"temperature": false,
+				"tool_call": true
+			},
+			"kimi-k3": {
+				"attachment": true,
+				"cost": {
+					"cache_read": 0.3,
+					"input": 3,
+					"output": 15
+				},
+				"description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
+				"family": "kimi-k3",
+				"id": "kimi-k3",
+				"last_updated": "2026-07-16",
+				"limit": {
+					"context": 1048576,
+					"output": 131072
+				},
+				"modalities": {
+					"input": [
+						"text",
+						"image"
+					],
+					"output": [
+						"text"
+					]
+				},
+				"name": "Kimi K3",
+				"open_weights": true,
+				"reasoning": true,
+				"reasoning_options": [
+					{
+						"type": "effort",
+						"values": [
+							"low",
+							"high",
+							"max"
+						]
+					}
+				],
+				"release_date": "2026-07-16",
+				"structured_output": true,
+				"temperature": false,
+				"tool_call": true
+			}
+		},
+		"name": "GitHub Copilot",
+		"npm": "@ai-sdk/openai-compatible"
+	},
+	"groq": {
+		"doc": "https://console.groq.com/docs/models",
+		"env": [
+			"GROQ_API_KEY"
+		],
+		"id": "groq",
+		"models": {
+			"llama-3.1-8b-instant": {
+				"attachment": false,
+				"cost": {
+					"input": 0.05,
+					"output": 0.08
+				},
+				"description": "Compact Llama instruction model for fast chat and local deployment",
+				"family": "llama",
+				"id": "llama-3.1-8b-instant",
+				"knowledge": "2023-12",
+				"last_updated": "2024-07-23",
+				"limit": {
+					"context": 131072,
+					"output": 131072
+				},
+				"modalities": {
+					"input": [
+						"text"
+					],
+					"output": [
+						"text"
+					]
+				},
+				"name": "Llama 3.1 8B",
+				"open_weights": true,
+				"reasoning": false,
+				"release_date": "2024-07-23",
+				"temperature": true,
+				"tool_call": true
+			},
+			"llama-3.3-70b-versatile": {
+				"attachment": false,
+				"cost": {
+					"input": 0.59,
+					"output": 0.79
+				},
+				"description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+				"family": "llama",
+				"id": "llama-3.3-70b-versatile",
+				"knowledge": "2023-12",
+				"last_updated": "2024-12-06",
+				"limit": {
+					"context": 131072,
+					"output": 32768
+				},
+				"modalities": {
+					"input": [
+						"text"
+					],
+					"output": [
+						"text"
+					]
+				},
+				"name": "Llama 3.3 70B",
+				"open_weights": true,
+				"reasoning": false,
+				"release_date": "2024-12-06",
+				"temperature": true,
+				"tool_call": true
+			},
+			"openai/gpt-oss-120b": {
+				"attachment": false,
+				"cost": {
+					"cache_read": 0.075,
+					"input": 0.15,
+					"output": 0.6
+				},
+				"description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
+				"family": "gpt-oss",
+				"id": "openai/gpt-oss-120b",
+				"last_updated": "2025-10-21",
+				"limit": {
+					"context": 131072,
+					"output": 65536
+				},
+				"modalities": {
+					"input": [
+						"text"
+					],
+					"output": [
+						"text"
+					]
+				},
+				"name": "GPT OSS 120B",
+				"open_weights": true,
+				"reasoning": true,
+				"reasoning_options": [
+					{
+						"type": "effort",
+						"values": [
+							"low",
+							"medium",
+							"high"
+						]
+					}
+				],
+				"release_date": "2025-08-05",
+				"structured_output": true,
+				"temperature": true,
+				"tool_call": true
+			},
+			"whisper-large-v3": {
+				"attachment": false,
+				"description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+				"family": "whisper",
+				"id": "whisper-large-v3",
+				"last_updated": "2025-09-05",
+				"limit": {
+					"context": 0,
+					"output": 0
+				},
+				"modalities": {
+					"input": [
+						"audio"
+					],
+					"output": [
+						"text"
+					]
+				},
+				"name": "Whisper",
+				"open_weights": true,
+				"reasoning": false,
+				"release_date": "2023-09-01",
+				"temperature": true,
+				"tool_call": false
+			}
+		},
+		"name": "Groq",
+		"npm": "@ai-sdk/groq"
+	},
+	"openrouter": {
+		"api": "https://openrouter.ai/api/v1",
+		"doc": "https://openrouter.ai/models",
+		"env": [
+			"OPENROUTER_API_KEY"
+		],
+		"id": "openrouter",
+		"models": {
+			"deepcogito/cogito-v2.1-671b": {
+				"attachment": false,
+				"cost": {
+					"input": 1.25,
+					"output": 1.25
+				},
+				"description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+				"family": "cogito",
+				"id": "deepcogito/cogito-v2.1-671b",
+				"last_updated": "2025-11-13",
+				"limit": {
+					"context": 128000,
+					"output": 128000
+				},
+				"modalities": {
+					"input": [
+						"text"
+					],
+					"output": [
+						"text"
+					]
+				},
+				"name": "Cogito v2.1 671B",
+				"open_weights": false,
+				"reasoning": true,
+				"reasoning_options": [],
+				"release_date": "2025-11-13",
+				"structured_output": true,
+				"temperature": true,
+				"tool_call": false
+			},
+			"tencent/hy3": {
+				"attachment": false,
+				"cost": {
+					"cache_read": 0.033,
+					"input": 0.132,
+					"output": 0.528
+				},
+				"description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
+				"family": "Hy",
+				"id": "tencent/hy3",
+				"last_updated": "2026-07-06",
+				"limit": {
+					"context": 262144,
+					"output": 128000
+				},
+				"modalities": {
+					"input": [
+						"text"
+					],
+					"output": [
+						"text"
+					]
+				},
+				"name": "Hy3",
+				"open_weights": true,
+				"reasoning": true,
+				"reasoning_options": [
+					{
+						"type": "effort",
+						"values": [
+							"none",
+							"low",
+							"high"
+						]
+					}
+				],
+				"release_date": "2026-07-06",
+				"structured_output": true,
+				"temperature": true,
+				"tool_call": true
+			},
+			"tencent/hy3-preview": {
+				"attachment": false,
+				"cost": {
+					"cache_read": 0.06,
+					"input": 0.18,
+					"output": 0.6
+				},
+				"description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
+				"family": "Hy",
+				"id": "tencent/hy3-preview",
+				"last_updated": "2026-04-20",
+				"limit": {
+					"context": 262144,
+					"output": 262144
+				},
+				"modalities": {
+					"input": [
+						"text"
+					],
+					"output": [
+						"text"
+					]
+				},
+				"name": "Hy3 preview",
+				"open_weights": true,
+				"reasoning": true,
+				"reasoning_options": [
+					{
+						"type": "effort",
+						"values": [
+							"none",
+							"low",
+							"high"
+						]
+					}
+				],
+				"release_date": "2026-04-20",
+				"structured_output": false,
+				"temperature": true,
+				"tool_call": true
+			},
+			"~anthropic/claude-haiku-latest": {
+				"attachment": true,
+				"cost": {
+					"cache_read": 0.1,
+					"cache_write": 1.25,
+					"input": 1,
+					"output": 5
+				},
+				"description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+				"family": "claude-haiku",
+				"id": "~anthropic/claude-haiku-latest",
+				"last_updated": "2026-04-27",
+				"limit": {
+					"context": 200000,
+					"output": 64000
+				},
+				"modalities": {
+					"input": [
+						"text",
+						"image",
+						"pdf"
+					],
+					"output": [
+						"text"
+					]
+				},
+				"name": "Anthropic Claude Haiku Latest",
+				"open_weights": false,
+				"reasoning": true,
+				"reasoning_options": [
+					{
+						"type": "toggle"
+					},
+					{
+						"max": 63999,
+						"min": 1024,
+						"type": "budget_tokens"
+					}
+				],
+				"release_date": "2026-04-27",
+				"structured_output": true,
+				"temperature": true,
+				"tool_call": true
+			}
+		},
+		"name": "OpenRouter",
+		"npm": "@openrouter/ai-sdk-provider"
+	}
+}
