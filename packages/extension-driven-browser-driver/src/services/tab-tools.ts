@@ -1,6 +1,6 @@
 import type { TabContext } from "@mcp-browser-kit/core-extension";
 import type { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
-import { LoggerFactoryOutputPort as LoggerFactoryOutputPortSymbol } from "@mcp-browser-kit/core-extension/output-ports";
+import { LoggerFactoryOutputPort as LoggerFactoryOutputPortSymbol } from "@mcp-browser-kit/core-extension/output-ports/logger-factory";
 import type {
 	HumanHintTabResult,
 	ShowHumanHintParams,

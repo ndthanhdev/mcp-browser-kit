@@ -4,7 +4,6 @@ import type { ConsolaReporter, LogObject } from "consola";
 import { consola, createConsola, LogLevels } from "consola";
 import type { Container } from "inversify";
 import { injectable } from "inversify";
-import * as R from "ramda";
 
 consola.level = LogLevels.verbose;
 const defaultInstance = createConsola({
@@ -12,11 +11,16 @@ const defaultInstance = createConsola({
 	fancy: true,
 }).withTag("mbk");
 
-const createLoggerId = (...components: string[]) => {
-	const id = R.pipe(R.map(changeCase.camelCase), R.join(":"))(components);
-
-	return id;
-};
+/**
+ * `"Tab Tools", "Setup"` -> `"tabTools:setup"`.
+ *
+ * Plain array methods rather than `R.pipe`/`R.map`/`R.join`: this module is
+ * bundled into every content script, and `import * as R from "ramda"` is a
+ * namespace import that can't be tree-shaken — the whole library ships for
+ * three combinators.
+ */
+const createLoggerId = (...components: string[]): string =>
+	components.map((component) => changeCase.camelCase(component)).join(":");
 
 // Type and level color mappings from fancy reporter
 const TYPE_COLOR_MAP: Record<string, string> = {

@@ -1,23 +1,13 @@
-import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension";
+import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/output-ports/logger-factory";
 import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
-import {
-	FrameCorrelationResponder,
-	TabContentMutationObserver,
-	TabToolsSetup,
-} from "@mcp-browser-kit/extension-driven-browser-driver";
+// Exact modules, not the package barrel. The barrel re-exports the background
+// drivers, which pull in the whole background half — and, through the
+// output-ports barrel, zod. A content script needs none of it.
+import { FrameCorrelationResponder } from "@mcp-browser-kit/extension-driven-browser-driver/services/frame-correlation-responder";
+import { TabContentMutationObserver } from "@mcp-browser-kit/extension-driven-browser-driver/services/tab-content-mutation-observer";
+import { TabToolsSetup } from "@mcp-browser-kit/extension-driven-browser-driver/services/tab-tools-setup";
 import { KeepAlive } from "@mcp-browser-kit/helper-extension-keep-alive";
 import { Container, inject, injectable } from "inversify";
-
-/**
- * The manifest-version-specific half of the tab wiring.
- *
- * `DrivenBrowserDriverM2` and `DrivenBrowserDriverM3` both satisfy this. It is
- * the *only* thing that differed between the previously duplicated per-app
- * copies of this class, so it is a parameter rather than a subclass.
- */
-export interface TabDriverSetup {
-	setupTabContainer(container: Container): void;
-}
 
 /** Per-app choices about what the tab half should run. */
 export interface TabLifecycleOptions {
@@ -64,16 +54,14 @@ export class ExtensionTabLifecycle {
 	/**
 	 * Wire a tab-context container.
 	 *
-	 * @param driver the manifest-version-specific driver — `DrivenBrowserDriverM2`
-	 *   or `DrivenBrowserDriverM3`.
 	 */
-	static setupContainer(container: Container, driver: TabDriverSetup): void {
+	static setupContainer(container: Container): void {
 		DrivenLoggerFactoryConsolaBrowser.setupContainer(
 			container,
 			LoggerFactoryOutputPort,
 		);
 
-		driver.setupTabContainer(container);
+		TabToolsSetup.setupContainer(container);
 
 		container.bind<KeepAlive>(KeepAlive).to(KeepAlive);
 		container
@@ -90,14 +78,11 @@ export class ExtensionTabLifecycle {
 	 * workspace default gets CJS — and the two are structurally incompatible even
 	 * though they are the same class at runtime.
 	 */
-	static start(
-		driver: TabDriverSetup,
-		options: TabLifecycleOptions = {},
-	): void {
+	static start(options: TabLifecycleOptions = {}): void {
 		const container = new Container({
 			defaultScope: "Singleton",
 		});
-		ExtensionTabLifecycle.setupContainer(container, driver);
+		ExtensionTabLifecycle.setupContainer(container);
 		container.get<ExtensionTabLifecycle>(ExtensionTabLifecycle).start(options);
 	}
 

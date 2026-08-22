@@ -12,6 +12,11 @@ import type {
 interface Procedures {
 	echo: (value: string) => Promise<string>;
 	boom: () => Promise<never>;
+	nested: {
+		deep: {
+			ping: () => Promise<string>;
+		};
+	};
 }
 
 /**
@@ -44,6 +49,16 @@ const connectedPair = (
 			boom: async () => {
 				throw new Error("procedure exploded");
 			},
+			nested: {
+				deep: {
+					ping: async () => "pong",
+				},
+			},
+			// A dotted path may land on a plain value. `ExtractProcedures` filters
+			// non-functions out of the type, so it is added past the type here.
+			...({
+				plainValue: 42,
+			} as object),
 		},
 		options,
 	);
@@ -94,6 +109,25 @@ describe("MessageChannelRpcClient", () => {
 	it("rejects with the error the procedure threw", async () => {
 		const { client } = connectedPair();
 		await expect(call(client, "boom")).rejects.toThrow("procedure exploded");
+	});
+
+	it("resolves a dotted path into nested procedures", async () => {
+		const { client } = connectedPair();
+		await expect(call(client, "nested.deep.ping")).resolves.toBe("pong");
+	});
+
+	it("treats a path that lands on a non-function as not found", async () => {
+		const { client } = connectedPair();
+		await expect(call(client, "plainValue")).rejects.toBe(
+			"Procedure plainValue not found",
+		);
+	});
+
+	it("treats a path through a non-object as not found", async () => {
+		const { client } = connectedPair();
+		await expect(call(client, "echo.nope.deeper")).rejects.toBe(
+			"Procedure echo.nope.deeper not found",
+		);
 	});
 
 	it("rejects when the procedure does not exist", async () => {
