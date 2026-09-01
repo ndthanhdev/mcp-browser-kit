@@ -1,7 +1,5 @@
 $schema: https://moonrepo.dev/schemas/project.json
 language: typescript
 dependsOn:
-- types
 - core-extension
-- core-utils
-- helper-page-save
+- types

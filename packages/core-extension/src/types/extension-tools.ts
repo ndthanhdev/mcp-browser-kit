@@ -3,6 +3,7 @@ import type {
 	ShowHumanHintParams,
 } from "@mcp-browser-kit/types";
 import type { ExtensionContext } from "./extension-context";
+import type { PageSaveFormat, PageSaveResult } from "./page-save";
 import type { ReadableElementRecord } from "./readable-element-record";
 import type { Screenshot } from "./screenshot";
 import type { Selection } from "./selection";
@@ -13,6 +14,7 @@ export type ScrollDirection = "up" | "down" | "left" | "right";
 
 export interface TabSpecificTool {
 	captureTab(tabId: string): Promise<Screenshot>;
+	savePage(tabId: string, format: PageSaveFormat): Promise<PageSaveResult>;
 	clickOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
 	clickOnElement(tabId: string, readablePath: string): Promise<void>;
 	closeTab(tabId: string): Promise<void>;

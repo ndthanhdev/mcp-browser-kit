@@ -74,6 +74,19 @@ export const tabReadableElementHtmlSchema = {
 		),
 };
 
+export const savePageSchema = {
+	...tabRefSchema,
+	format: z
+		.enum([
+			"zip",
+			"html",
+		])
+		.optional()
+		.describe(
+			'Output format. "zip" (default) writes index.html plus an assets/ folder; "html" writes a single file with resources inlined as data: URIs',
+		),
+};
+
 export const invokeJsFnSchema = {
 	...tabRefSchema,
 	fnBodyCode: z
@@ -230,6 +243,23 @@ export const captureTabOutputSchema = createOverOutputSchema({
 	data: z.string().describe("Base64-encoded screenshot image data"),
 });
 
+export const savePageOutputSchema = createOverOutputSchema({
+	filename: z.string().describe("Filename the page was saved as"),
+	bytes: z.number().describe("Size of the saved artifact in bytes"),
+	format: z.string().describe("Format the page was saved in"),
+	resourceCount: z
+		.number()
+		.describe("Number of subresources embedded in the saved artifact"),
+	skipped: z
+		.array(
+			z.object({
+				url: z.string(),
+				reason: z.string(),
+			}),
+		)
+		.describe("Subresources that could not be embedded, with a reason each"),
+});
+
 export const actionOutputSchema = createOverOutputSchema({});
 
 export const snapshotPageSchema = {
@@ -264,6 +294,7 @@ type InferOverValue<T> = T extends {
 
 type ServerToolOverSchemaMap = {
 	captureTab: typeof captureTabOutputSchema;
+	savePage: typeof savePageOutputSchema;
 	invokeJsFn: typeof invokeJsFnOutputSchema;
 	openTab: typeof openTabOutputSchema;
 	closeTab: typeof actionOutputSchema;

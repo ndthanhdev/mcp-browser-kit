@@ -65,6 +65,18 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 		].join("\n");
 	};
 
+	savePageInstruction = (): string => {
+		return [
+			"Save a tab's page to the user's download folder as a self-contained file.",
+			"When: you need to archive a page for later; works on every browser and manifest version.",
+			'How: format "zip" (default) writes index.html plus an assets/ folder — smaller, and the extracted folder is browsable and greppable. format "html" writes one file with resources inlined as data: URIs — larger, but opens by double-click.',
+			"Requires: browserId, windowId, tabId. Optional: format.",
+			"Returns: value { filename, bytes, format, resourceCount, skipped } — skipped lists resources that could not be embedded, with a reason each.",
+			"Note: the filename is derived from the page title; the agent cannot choose it. Scripts are never saved. Fonts, srcset and iframes are not embedded, and cross-origin resources without CORS headers appear in skipped.",
+			"Avoid: assuming an empty skipped list — check it when fidelity matters.",
+		].join("\n");
+	};
+
 	clickOnViewableElementInstruction = (): string => {
 		return [
 			"Click at pixel coordinates inside a tab.",
