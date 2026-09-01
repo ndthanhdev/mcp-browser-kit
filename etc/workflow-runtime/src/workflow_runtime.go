@@ -39,6 +39,12 @@ func (m *WorkflowRuntime) BuildEnv(ctx context.Context) *WorkflowRuntime {
 		Con.
 		WithWorkdir("/workspace").
 		WithFile("/workspace/.prototools", m.Dir.File(".prototools")).
+		// Vendored proto plugin schemas referenced by .prototools via file://
+		// locators. Staged alongside .prototools rather than waiting for the
+		// source mount below, because `proto use` runs before it. Kept out of
+		// the source mount step so the toolchain layer still caches on the
+		// toolchain inputs alone.
+		WithDirectory("/workspace/etc/proto-plugins", m.Dir.Directory("etc/proto-plugins")).
 		// proto use
 		WithExec([]string{"proto", "use"}).
 		WithMountedDirectory("/workspace", source).
