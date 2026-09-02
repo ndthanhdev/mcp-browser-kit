@@ -11,6 +11,8 @@ import {
 import type {
 	ExtensionContext,
 	ExtensionToolName,
+	PageSaveFormat,
+	PageSaveResult,
 	Screenshot,
 	ScrollDirection,
 	Selection,
@@ -99,6 +101,13 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 
 	captureTab = (tabId: string): Promise<Screenshot> => {
 		return this.browserDriver.captureTab(tabId);
+	};
+
+	savePage = (
+		tabId: string,
+		format: PageSaveFormat,
+	): Promise<PageSaveResult> => {
+		return this.browserDriver.savePage(tabId, format);
 	};
 
 	getSelection = (tabId: string): Promise<Selection> => {

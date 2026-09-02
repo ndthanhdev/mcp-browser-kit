@@ -8,6 +8,8 @@ import type {
 	ExtensionInfo,
 	ExtensionTabInfo,
 	ExtensionWindowInfo,
+	PageSaveFormat,
+	PageSaveResult,
 	Screenshot,
 	ScrollDirection,
 	Selection,
@@ -30,6 +32,7 @@ export interface BrowserDriverOutputPort {
 	loadTabContext(tabId: string): Promise<TabContext>;
 	closeTab(tabId: string): Promise<void>;
 	captureTab(tabId: string): Promise<Screenshot>;
+	savePage(tabId: string, format: PageSaveFormat): Promise<PageSaveResult>;
 	getSelection(tabId: string): Promise<Selection>;
 	scrollPage(
 		tabId: string,
