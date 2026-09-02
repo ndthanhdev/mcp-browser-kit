@@ -10212,12 +10212,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^5.1.6":
-  version: 5.1.6
-  resolution: "nanoid@npm:5.1.6"
+"nanoid@npm:^5.1.16":
+  version: 5.1.16
+  resolution: "nanoid@npm:5.1.16"
   bin:
     nanoid: bin/nanoid.js
-  checksum: 10c0/27b5b055ad8332cf4f0f9f6e2a494aa7e5ded89df4cab8c8490d4eabefe72c4423971d2745d22002868b1d50576a5e42b7b05214733b19f576382323282dd26e
+  checksum: 10c0/04b4f96237f5639716da0e98f453361b313bebaf458bb67dea2d384724fc8b3340a28f032a4373052150bcf3b801d122e291d81ae4fc522969f55c134f4401a3
   languageName: node
   linkType: hard
 
@@ -12012,7 +12012,7 @@ __metadata:
     js-base64: "npm:^3.7.8"
     jsdom: "npm:^27.4.0"
     lint-staged: "npm:^16.2.7"
-    nanoid: "npm:^5.1.6"
+    nanoid: "npm:^5.1.16"
     ok-value-error-reason: "npm:^1.1.0"
     p-timeout: "npm:^7.0.1"
     pino: "npm:^10.3.1"

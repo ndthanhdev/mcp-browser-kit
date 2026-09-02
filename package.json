@@ -46,7 +46,7 @@
 		"js-base64": "^3.7.8",
 		"jsdom": "^27.4.0",
 		"lint-staged": "^16.2.7",
-		"nanoid": "^5.1.6",
+		"nanoid": "^5.1.16",
 		"ok-value-error-reason": "^1.1.0",
 		"p-timeout": "^7.0.1",
 		"pino": "^10.3.1",
