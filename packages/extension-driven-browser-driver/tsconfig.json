@@ -11,10 +11,13 @@
 			"path": "../core-server"
 		},
 		{
-			"path": "../types"
+			"path": "../core-utils"
 		},
 		{
-			"path": "../core-utils"
+			"path": "../helper-page-save"
+		},
+		{
+			"path": "../types"
 		}
 	],
 	"compilerOptions": {
@@ -48,6 +51,12 @@
 			],
 			"@mcp-browser-kit/core-utils/*": [
 				"../core-utils/src/*"
+			],
+			"@mcp-browser-kit/helper-page-save": [
+				"../helper-page-save/src/index.ts"
+			],
+			"@mcp-browser-kit/helper-page-save/*": [
+				"../helper-page-save/src/*"
 			]
 		}
 	}

@@ -40,6 +40,7 @@
 		"dompurify": "^3.4.13",
 		"emittery": "^1.2.0",
 		"envalid": "^8.1.1",
+		"fflate": "^0.8.3",
 		"image-dimensions": "^2.5.0",
 		"inversify": "^7.11.0",
 		"js-base64": "^3.7.8",

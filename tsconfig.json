@@ -91,6 +91,9 @@
 			"path": "./packages/helper-extension-keep-alive"
 		},
 		{
+			"path": "./packages/helper-page-save"
+		},
+		{
 			"path": "./packages/server-driven-trpc-channel-provider"
 		},
 		{
