@@ -7,6 +7,8 @@ import type {
 	ExtensionInfo,
 	ExtensionTabInfo,
 	ExtensionWindowInfo,
+	PageSaveFormat,
+	PageSaveResult,
 	Screenshot,
 	ScrollDirection,
 	Selection,
@@ -28,6 +30,13 @@ import type { TabRpcService } from "./tab-rpc-service";
 const LOAD_FRAME_CONTEXT_TIMEOUT_MS = 5000;
 const RESOLVE_HIT_TARGET_TIMEOUT_MS = 3000;
 const MAX_IFRAME_NESTING = 8;
+/**
+ * Page capture fetches every subresource before serializing, so it is far
+ * slower than a DOM read. Measured at 1.6-6.9s across a range of real pages;
+ * this leaves generous headroom while still bounding a call that would
+ * otherwise hang forever, since the RPC client has no timeout of its own.
+ */
+const SAVE_PAGE_TIMEOUT_MS = 60_000;
 
 const withTimeout = <T>(promise: Promise<T>, timeoutMs: number): Promise<T> =>
 	new Promise<T>((resolve, reject) => {
@@ -156,6 +165,25 @@ export abstract class DrivenBrowserDriverBase
 
 	/** MV2-only: capture the visible tab. Not supported in MV3. */
 	abstract captureTab: (tabId: string) => Promise<Screenshot>;
+
+	savePage = (
+		tabId: string,
+		format: PageSaveFormat,
+	): Promise<PageSaveResult> => {
+		this.logger.verbose(`Saving page as ${format} for tab: ${tabId}`);
+		return withTimeout(
+			this.tabRpcService.tabRpcClient.call({
+				method: "pageSave.savePage",
+				args: [
+					format,
+				],
+				extraArgs: {
+					tabId,
+				},
+			}),
+			SAVE_PAGE_TIMEOUT_MS,
+		);
+	};
 
 	// DOM Query Methods
 	getSelection = (tabId: string): Promise<Selection> => {

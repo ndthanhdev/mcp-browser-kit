@@ -14,6 +14,7 @@ import { TabAnimationTools } from "./tab-animation-tools";
 import { TabContextStore } from "./tab-context-store";
 import { TabDomTools } from "./tab-dom-tools";
 import { TabHumanHintTools } from "./tab-human-hint-tools";
+import { TabPageSaveTools } from "./tab-page-save-tools";
 
 /**
  * TabTools class provides access to browser automation tools.
@@ -27,6 +28,7 @@ export class TabTools {
 		private readonly loggerFactory: LoggerFactoryOutputPort,
 		@inject(TabDomTools) public readonly dom: TabDomTools,
 		@inject(TabAnimationTools) public readonly animation: TabAnimationTools,
+		@inject(TabPageSaveTools) public readonly pageSave: TabPageSaveTools,
 		@inject(TabHumanHintTools) private readonly humanHint: TabHumanHintTools,
 		@inject(TabContextStore) private readonly contextStore: TabContextStore,
 	) {

@@ -1972,6 +1972,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mcp-browser-kit/helper-page-save@workspace:packages/helper-page-save":
+  version: 0.0.0-use.local
+  resolution: "@mcp-browser-kit/helper-page-save@workspace:packages/helper-page-save"
+  dependencies:
+    fflate: "npm:^0.8.3"
+  languageName: unknown
+  linkType: soft
+
 "@mcp-browser-kit/m2@workspace:apps/m2":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/m2@workspace:apps/m2"
@@ -7968,6 +7976,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fflate@npm:^0.8.3":
+  version: 0.8.3
+  resolution: "fflate@npm:0.8.3"
+  checksum: 10c0/eab181ca37f5348ae76d4b6f840e0026e30220e33153289ac942222d8b9638237d486507dbcc09878d724095bd354993a2ee48bbee99c8f2c6440d4448719aa7
+  languageName: node
+  linkType: hard
+
 "file-entry-cache@npm:^8.0.0":
   version: 8.0.0
   resolution: "file-entry-cache@npm:8.0.0"
@@ -10197,12 +10212,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^5.1.6":
-  version: 5.1.6
-  resolution: "nanoid@npm:5.1.6"
+"nanoid@npm:^5.1.16":
+  version: 5.1.16
+  resolution: "nanoid@npm:5.1.16"
   bin:
     nanoid: bin/nanoid.js
-  checksum: 10c0/27b5b055ad8332cf4f0f9f6e2a494aa7e5ded89df4cab8c8490d4eabefe72c4423971d2745d22002868b1d50576a5e42b7b05214733b19f576382323282dd26e
+  checksum: 10c0/04b4f96237f5639716da0e98f453361b313bebaf458bb67dea2d384724fc8b3340a28f032a4373052150bcf3b801d122e291d81ae4fc522969f55c134f4401a3
   languageName: node
   linkType: hard
 
@@ -11991,12 +12006,13 @@ __metadata:
     dompurify: "npm:^3.4.13"
     emittery: "npm:^1.2.0"
     envalid: "npm:^8.1.1"
+    fflate: "npm:^0.8.3"
     image-dimensions: "npm:^2.5.0"
     inversify: "npm:^7.11.0"
     js-base64: "npm:^3.7.8"
     jsdom: "npm:^27.4.0"
     lint-staged: "npm:^16.2.7"
-    nanoid: "npm:^5.1.6"
+    nanoid: "npm:^5.1.16"
     ok-value-error-reason: "npm:^1.1.0"
     p-timeout: "npm:^7.0.1"
     pino: "npm:^10.3.1"

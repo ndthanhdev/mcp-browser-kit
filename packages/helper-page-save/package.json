@@ -1,0 +1,6 @@
+{
+	"name": "@mcp-browser-kit/helper-page-save",
+	"dependencies": {
+		"fflate": "^0.8.3"
+	}
+}
