@@ -288,6 +288,12 @@ export const pageChangeOutputSchema = createOverOutputSchema({
 		.describe(
 			'Readable-elements diff: "+" added, "-" removed, "  " unchanged context, hunks separated by "@@"; paths are current',
 		),
+	detailsUnavailable: z
+		.boolean()
+		.optional()
+		.describe(
+			"The browser extension is outdated and cannot report what changed; re-read readable-elements to see the result",
+		),
 });
 
 export const snapshotPageSchema = {

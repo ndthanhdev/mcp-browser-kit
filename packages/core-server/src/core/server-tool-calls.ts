@@ -38,6 +38,7 @@ import {
 	targetFromParams,
 	validateShowHumanHintParams,
 } from "../utils/build-human-message";
+import { normalizePageChange } from "../utils/normalize-page-change";
 import { ExtensionChannelManager } from "./extension-channel-manager";
 
 @injectable()
@@ -440,7 +441,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Element clicked successfully");
-			return pageChange;
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to click on element", error);
 			throw error;
@@ -471,7 +472,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Text filled to element successfully");
-			return pageChange;
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to fill text to element", error);
 			throw error;
@@ -558,7 +559,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Clicked on coordinates successfully");
-			return pageChange;
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to click on coordinates", error);
 			throw error;
@@ -589,7 +590,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Scrolled page successfully");
-			return pageChange;
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to scroll page", error);
 			throw error;
@@ -622,7 +623,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Scrolled element successfully");
-			return pageChange;
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to scroll element", error);
 			throw error;
@@ -682,7 +683,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Text filled to coordinates successfully");
-			return pageChange;
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to fill text to coordinates", error);
 			throw error;
@@ -738,7 +739,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Hit enter on coordinates successfully");
-			return pageChange;
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to hit enter on coordinates", error);
 			throw error;
@@ -767,7 +768,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Hit enter on element successfully");
-			return pageChange;
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to hit enter on element", error);
 			throw error;

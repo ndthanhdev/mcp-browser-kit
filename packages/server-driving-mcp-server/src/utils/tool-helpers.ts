@@ -67,6 +67,7 @@ interface PageChangeSummary {
 	tooLarge: boolean;
 	pathsShifted: boolean;
 	diff?: string;
+	detailsUnavailable?: boolean;
 }
 
 /**
@@ -74,6 +75,9 @@ interface PageChangeSummary {
  * the diff in a fenced block, or a pointer to the full snapshot when omitted.
  */
 export const formatPageChange = (change: PageChangeSummary): string => {
+	if (change.detailsUnavailable) {
+		return "Done. The browser extension is outdated and cannot report what changed — re-read readable-elements to see the result, and update the extension.";
+	}
 	if (change.navigated) {
 		return `Done. Navigated to ${change.url} — read readable-elements for the new page.`;
 	}

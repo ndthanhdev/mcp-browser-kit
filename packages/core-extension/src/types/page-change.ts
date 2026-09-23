@@ -21,6 +21,11 @@ export interface PageChange {
 	pathsShifted: boolean;
 	/** Unified-style diff: "+" added, "-" removed, "  " unchanged context. */
 	diff?: string;
+	/**
+	 * Set by the server when the browser extension predates page-change
+	 * results: the action ran, but what it changed is unknown.
+	 */
+	detailsUnavailable?: boolean;
 }
 
 export interface LoadTabContextOptions {
