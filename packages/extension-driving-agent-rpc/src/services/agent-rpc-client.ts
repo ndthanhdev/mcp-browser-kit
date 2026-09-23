@@ -146,6 +146,16 @@ export class AgentRpcClient {
 		});
 
 		transport.onDisconnect(() => {
+			// Fail in-flight calls. A dead port can never deliver their `resolve`
+			// frames, so leaving them pending means the UI waits forever with
+			// neither a result nor an error — which is how a background that never
+			// registered a listener showed up as a chat stuck on "Loading…".
+			rpc.rejectPending(
+				new Error(
+					"The extension background disconnected before answering. It may have been restarted.",
+				),
+			);
+
 			// Don't reconnect here: the service worker may have been evicted
 			// deliberately, and an eager reconnect would revive it and defeat the
 			// point. The next call reconnects lazily.

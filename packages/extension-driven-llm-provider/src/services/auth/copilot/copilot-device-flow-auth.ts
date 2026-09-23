@@ -5,8 +5,13 @@ import {
 	updateProviderCredential,
 } from "../../agent-settings-storage";
 import type { AuthStrategy, ResolvedAuth } from "../auth-strategy";
-import { COPILOT_EDITOR_HEADERS } from "./constants";
-import { CopilotTokenCache } from "./copilot-token";
+import {
+	COPILOT_CLIENT_ID,
+	COPILOT_INITIATOR,
+	COPILOT_REQUEST_HEADERS,
+	copilotApiBaseUrl,
+	hasCopilotClientId,
+} from "./constants";
 import {
 	type DeviceCodeGrant,
 	fetchGithubLogin,
@@ -17,43 +22,51 @@ import {
 /**
  * GitHub Copilot's device flow.
  *
- * ⚠️ Reaches an undocumented endpoint by presenting an editor's OAuth client id;
- * see `./constants.ts` for the terms-of-service caveat. Gated behind the
- * `copilot-provider` feature flag, which defaults to off.
- *
  * The reason this is an auth strategy rather than a whole provider: models.dev
  * already lists `github-copilot` with `npm: "@ai-sdk/openai-compatible"` and its
  * API base URL, so the models and the transport come from the registry like any
- * other provider. Only the credential is unusual — a long-lived `gho_…` OAuth
- * token (persisted) exchanged for a ~30 minute bearer (memory only).
+ * other provider. Only the credential is unusual.
  *
- * That bearer is why {@link resolve} returns a `fetch` rather than an `apiKey`:
- * a turn is up to 32 sequential requests over several minutes, so a credential
- * captured once at model-construction time can expire mid-loop.
+ * The credential is the user's GitHub OAuth token, used directly as the bearer.
+ * An earlier version exchanged it at `copilot_internal/v2/token` for a ~30
+ * minute bearer, which is why this class once needed a token cache and a
+ * refresh skew; the public API accepts the OAuth token as-is, so all of that is
+ * gone.
+ *
+ * {@link resolve} still returns a `fetch` rather than an `apiKey`, for a
+ * different reason than before: each request needs its own `x-request-id`, and
+ * Copilot wants the initiator classified per request.
  */
 export class CopilotDeviceFlowAuth implements AuthStrategy {
 	/** The provider id this strategy handles, per models.dev. */
 	static readonly providerId = PROVIDER_IDS.githubCopilot;
 
-	private readonly tokens = new CopilotTokenCache(async () => {
-		const settings = await readAgentSettings();
-		return settings.credentials[PROVIDER_IDS.githubCopilot]?.oauthToken;
-	});
+	/**
+	 * Whether the build can offer Copilot at all. Separate from
+	 * {@link isConfigured}, which is about the user having signed in.
+	 */
+	static isAvailable = (): boolean => hasCopilotClientId();
+
+	/**
+	 * Injected so tests can exercise an unconfigured build without reaching for
+	 * a module mock; production always uses the shipped id.
+	 */
+	constructor(private readonly clientId: string = COPILOT_CLIENT_ID) {}
 
 	isConfigured = async (providerId: string): Promise<boolean> => {
+		if (!hasCopilotClientId(this.clientId)) {
+			return false;
+		}
 		const settings = await readAgentSettings();
 		return Boolean(settings.credentials[providerId]?.oauthToken);
 	};
 
 	resolve = async (): Promise<ResolvedAuth> => {
-		// Resolve once to learn the base URL. Copilot Enterprise and proxied
-		// accounts get their own host, returned by the token exchange, so it beats
-		// the registry's default.
-		const { apiBaseUrl } = await this.tokens.get();
+		const { enterpriseDomain } = await this.readCredential();
 		return {
-			baseUrl: apiBaseUrl,
+			baseUrl: copilotApiBaseUrl(enterpriseDomain),
 			headers: {
-				...COPILOT_EDITOR_HEADERS,
+				...COPILOT_REQUEST_HEADERS,
 			},
 			fetch: this.authedFetch,
 		};
@@ -61,7 +74,6 @@ export class CopilotDeviceFlowAuth implements AuthStrategy {
 
 	signOut = async (providerId: string): Promise<void> => {
 		await clearProviderCredential(providerId);
-		this.tokens.invalidate();
 	};
 
 	// --- Sign-in ---
@@ -69,43 +81,82 @@ export class CopilotDeviceFlowAuth implements AuthStrategy {
 	/**
 	 * Begin the GitHub device flow. Returns what the settings UI must display;
 	 * the caller then awaits {@link completeSignIn} with the same grant.
+	 *
+	 * `enterpriseDomain` targets a GitHub Enterprise deployment; omit it for
+	 * github.com.
 	 */
-	beginSignIn = async (): Promise<DeviceCodeGrant> => requestDeviceCode();
+	beginSignIn = async (enterpriseDomain?: string): Promise<DeviceCodeGrant> => {
+		if (!hasCopilotClientId(this.clientId)) {
+			throw new Error(
+				"This build has no GitHub client id, so Copilot sign-in cannot start. " +
+					"Set COPILOT_CLIENT_ID in auth/copilot/constants.ts.",
+			);
+		}
+		return requestDeviceCode({
+			domain: enterpriseDomain,
+			clientId: this.clientId,
+		});
+	};
 
 	/**
-	 * Wait for the user to authorize on github.com, then persist the resulting
-	 * OAuth token and the account login.
+	 * Wait for the user to authorize on GitHub, then persist the resulting OAuth
+	 * token, the account login, and which deployment it belongs to.
 	 */
 	completeSignIn = async (
 		grant: DeviceCodeGrant,
-		signal?: AbortSignal,
+		options: {
+			signal?: AbortSignal;
+			enterpriseDomain?: string;
+		} = {},
 	): Promise<{
 		login?: string;
 	}> => {
+		const { signal, enterpriseDomain } = options;
 		const oauthToken = await pollForAccessToken(grant, {
 			signal,
+			domain: enterpriseDomain,
+			clientId: this.clientId,
 		});
-		const login = await fetchGithubLogin(oauthToken);
+		const login = await fetchGithubLogin(oauthToken, {
+			domain: enterpriseDomain,
+		});
 		await updateProviderCredential(PROVIDER_IDS.githubCopilot, () => ({
 			oauthToken,
 			account: login,
+			enterpriseDomain,
 		}));
-		this.tokens.invalidate();
 		return {
 			login,
 		};
 	};
 
+	private readCredential = async (): Promise<{
+		oauthToken?: string;
+		enterpriseDomain?: string;
+	}> => {
+		const settings = await readAgentSettings();
+		const credential = settings.credentials[PROVIDER_IDS.githubCopilot];
+		return {
+			oauthToken: credential?.oauthToken,
+			enterpriseDomain: credential?.enterpriseDomain,
+		};
+	};
+
 	/**
-	 * Injects a *fresh* bearer per request, so a mid-turn refresh needs no
-	 * rebuild of the model.
+	 * Reads the token per request rather than capturing it once, so signing out
+	 * mid-turn stops the next request instead of the turn continuing on a
+	 * credential the user just revoked.
 	 */
 	private authedFetch: typeof fetch = async (input, init) => {
-		const { token } = await this.tokens.get();
+		const { oauthToken } = await this.readCredential();
+		if (!oauthToken) {
+			throw new Error("Not signed in to GitHub Copilot.");
+		}
 		const headers = new Headers(init?.headers);
-		headers.set("authorization", `Bearer ${token}`);
+		headers.set("authorization", `Bearer ${oauthToken}`);
 		// Copilot rejects repeated request ids; the SDK doesn't set one.
 		headers.set("x-request-id", crypto.randomUUID());
+		headers.set("x-initiator", COPILOT_INITIATOR);
 		return fetch(input, {
 			...init,
 			headers,

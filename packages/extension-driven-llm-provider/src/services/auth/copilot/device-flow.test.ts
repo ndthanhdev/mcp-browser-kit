@@ -6,6 +6,7 @@ import {
 	jsonResponse,
 	partialDeviceCodeResponse,
 } from "../../../testing/github-wire-fixtures";
+import { strictFetch } from "../../../testing/strict-fetch";
 import {
 	type DeviceCodeGrant,
 	DeviceFlowError,
@@ -22,9 +23,13 @@ const grant = (overrides: Partial<DeviceCodeGrant> = {}): DeviceCodeGrant => ({
 	...overrides,
 });
 
-/** Serves the given payloads in order, as `fetch` would. */
+/**
+ * Serves the given payloads in order, as `fetch` would — including the browser's
+ * receiver rule, so a refactor that starts calling this as `this.fetchImpl(...)`
+ * fails here rather than in a browser.
+ */
 const respondingWith = (payloads: Record<string, unknown>[]) =>
-	vi.fn(async () => jsonResponse(payloads.shift() ?? {}));
+	vi.fn(strictFetch(() => jsonResponse(payloads.shift() ?? {})));
 
 /** Polling without the waiting. Records what the flow *would* have slept. */
 const recordingSleep = () => {
@@ -47,7 +52,9 @@ describe("requestDeviceCode", () => {
 		]);
 
 		expect(
-			await requestDeviceCode(fetchImpl as unknown as typeof fetch),
+			await requestDeviceCode({
+				fetchImpl: fetchImpl as unknown as typeof fetch,
+			}),
 		).toEqual({
 			userCode: "ABCD-1234",
 			verificationUri: "https://github.com/login/device",
@@ -62,9 +69,9 @@ describe("requestDeviceCode", () => {
 			deviceCodeResponse(),
 		]);
 
-		const result = await requestDeviceCode(
-			fetchImpl as unknown as typeof fetch,
-		);
+		const result = await requestDeviceCode({
+			fetchImpl: fetchImpl as unknown as typeof fetch,
+		});
 		expect(result.intervalSeconds).toBe(5);
 		expect(result.expiresInSeconds).toBe(900);
 	});
@@ -75,14 +82,18 @@ describe("requestDeviceCode", () => {
 		]);
 
 		await expect(
-			requestDeviceCode(fetchImpl as unknown as typeof fetch),
+			requestDeviceCode({
+				fetchImpl: fetchImpl as unknown as typeof fetch,
+			}),
 		).rejects.toThrow(/incomplete device-code response/);
 	});
 
 	it("surfaces a non-200", async () => {
 		const fetchImpl = vi.fn(async () => jsonResponse({}, 503));
 		await expect(
-			requestDeviceCode(fetchImpl as unknown as typeof fetch),
+			requestDeviceCode({
+				fetchImpl: fetchImpl as unknown as typeof fetch,
+			}),
 		).rejects.toThrow(/\(503\)/);
 	});
 });

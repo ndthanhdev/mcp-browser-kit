@@ -4,7 +4,7 @@ import {
 	type LlmProviderOutputPort as LlmProviderOutputPortType,
 } from "@mcp-browser-kit/core-extension/output-ports";
 import type { LanguageModel } from "ai";
-import { type Container, injectable } from "inversify";
+import { type Container, injectable, unmanaged } from "inversify";
 import {
 	type CustomProvider,
 	parseCompositeModelId,
@@ -13,7 +13,12 @@ import {
 } from "./agent-settings-storage";
 import { ApiKeyAuth } from "./auth/api-key-auth";
 import type { AuthStrategy } from "./auth/auth-strategy";
+import { COPILOT_MODELS_TTL_MS } from "./auth/copilot/constants";
 import { CopilotDeviceFlowAuth } from "./auth/copilot/copilot-device-flow-auth";
+import {
+	type CopilotModel,
+	fetchCopilotModels,
+} from "./auth/copilot/copilot-models";
 import type { CatalogProvider } from "./catalog/catalog-schema";
 import { ModelCatalog } from "./catalog/model-catalog";
 import { resolveBaseUrl } from "./factories/base-url-overrides";
@@ -77,7 +82,26 @@ export class DrivenLlmProvider implements LlmProviderOutputPortType {
 	private readonly apiKeyAuth = new ApiKeyAuth();
 	private readonly copilotAuth = new CopilotDeviceFlowAuth();
 
-	constructor(readonly catalog: ModelCatalog = new ModelCatalog()) {}
+	/**
+	 * Last successful Copilot entitlement lookup. Memoized because
+	 * {@link listProviders} runs on every settings render and the answer changes
+	 * about as often as a subscription does.
+	 */
+	private copilotModels?: {
+		at: number;
+		models: CopilotModel[];
+	};
+
+	/**
+	 * `@unmanaged()` is load-bearing. Vite emits `design:paramtypes`, so without
+	 * it inversify sees a `ModelCatalog` parameter, tries to resolve a binding
+	 * that was never registered, and throws — taking the whole background
+	 * composition down with it. The container passes nothing and the default
+	 * applies; tests still pass a catalog explicitly.
+	 */
+	constructor(
+		@unmanaged() readonly catalog: ModelCatalog = new ModelCatalog(),
+	) {}
 
 	/** The auth strategy for a provider. Anything unlisted uses an API key. */
 	authFor = (providerId: string): AuthStrategy =>
@@ -129,9 +153,31 @@ export class DrivenLlmProvider implements LlmProviderOutputPortType {
 		const catalog = (await this.catalog.peek()) ?? {};
 		const descriptors: LlmProviderDescriptor[] = [];
 
+		const copilotModels = configuredIds.includes(
+			CopilotDeviceFlowAuth.providerId,
+		)
+			? await this.liveCopilotModels()
+			: undefined;
+
 		for (const providerId of configuredIds) {
 			const provider = catalog[providerId];
 			if (!provider) {
+				continue;
+			}
+			// Copilot is the one provider whose registry model ids cannot be used.
+			// models.dev lists the current Copilot line-up while an account is
+			// served an entirely different set — the two id namespaces do not
+			// overlap at all, so a registry id reaches Copilot and comes back
+			// "The requested model is not supported". When the account's own list
+			// is unavailable, Copilot therefore contributes nothing rather than
+			// falling back to ids that are guaranteed to fail.
+			if (providerId === CopilotDeviceFlowAuth.providerId) {
+				for (const model of copilotModels ?? []) {
+					descriptors.push({
+						id: toCompositeModelId(providerId, model.id),
+						label: `${model.name} · ${provider.name}`,
+					});
+				}
 				continue;
 			}
 			for (const model of provider.models) {
@@ -155,6 +201,45 @@ export class DrivenLlmProvider implements LlmProviderOutputPortType {
 		return descriptors;
 	};
 
+	/**
+	 * Chat models the signed-in Copilot account may actually use, or `undefined`
+	 * to fall back to the registry's list.
+	 *
+	 * Failure is deliberately silent: an entitlement lookup that cannot reach
+	 * GitHub is not a reason to make a configured provider unusable, so a stale
+	 * answer is preferred to none and no answer is preferred to an error.
+	 */
+	private liveCopilotModels = async (): Promise<CopilotModel[] | undefined> => {
+		const cached = this.copilotModels;
+		if (cached && Date.now() - cached.at < COPILOT_MODELS_TTL_MS) {
+			return cached.models;
+		}
+
+		const settings = await readAgentSettings();
+		const credential = settings.credentials[CopilotDeviceFlowAuth.providerId];
+		if (!credential?.oauthToken) {
+			return undefined;
+		}
+
+		try {
+			// Deliberately not filtered to `supportsTools`. The agent does need
+			// tool calling, but whether Copilot populates that capability for
+			// every plan is unverified, and a filter that silently empties the
+			// picker is a worse failure than a model that rejects a tool call
+			// with an explicit error.
+			const models = await fetchCopilotModels(credential.oauthToken, {
+				enterpriseDomain: credential.enterpriseDomain,
+			});
+			this.copilotModels = {
+				at: Date.now(),
+				models,
+			};
+			return models;
+		} catch {
+			return cached?.models;
+		}
+	};
+
 	getModel = async (providerId?: string): Promise<LanguageModel> => {
 		const composite = providerId ?? (await this.selectedModel());
 		if (!composite) {
@@ -176,6 +261,8 @@ export class DrivenLlmProvider implements LlmProviderOutputPortType {
 			);
 		}
 
+		await this.assertCopilotModelEntitled(provider.id, parsed.modelId);
+
 		const auth = await this.authFor(provider.id).resolve(provider.id);
 		const baseUrl = resolveBaseUrl(provider.id, provider.api, auth.baseUrl);
 
@@ -185,6 +272,39 @@ export class DrivenLlmProvider implements LlmProviderOutputPortType {
 			baseUrl,
 			auth,
 		});
+	};
+
+	/**
+	 * Fail before the request when a Copilot model the account cannot use is
+	 * selected.
+	 *
+	 * Copilot answers such a request with "The requested model is not
+	 * supported", which names neither the model nor the fix. A selection can go
+	 * stale simply by being persisted: it may predate this check, or the plan
+	 * may have changed.
+	 */
+	private assertCopilotModelEntitled = async (
+		providerId: string,
+		modelId: string,
+	): Promise<void> => {
+		if (providerId !== CopilotDeviceFlowAuth.providerId) {
+			return;
+		}
+		const entitled = await this.liveCopilotModels();
+		// An empty list is "we learned nothing", not "nothing is allowed". Treating
+		// the two alike produced the self-defeating "choose one of:" followed by
+		// no models at all.
+		if (!entitled?.length || entitled.some((model) => model.id === modelId)) {
+			// Unknown entitlement is not grounds to block: the request may still
+			// succeed, and Copilot's own error is better than a guess.
+			return;
+		}
+		throw new Error(
+			`Your GitHub Copilot plan does not include the model "${modelId}". ` +
+				`Open settings and choose one of: ${entitled
+					.map((model) => model.id)
+					.join(", ")}.`,
+		);
 	};
 
 	/** The persisted selection, or the first configured provider's newest model. */

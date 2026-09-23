@@ -238,40 +238,46 @@ export const useAgentSettings = () => {
 		],
 	);
 
-	const startCopilotSignIn = useCallback(async () => {
-		setSignIn({
-			status: "starting",
-		});
-		const abort = new AbortController();
-		signInAbort.current = abort;
+	const startCopilotSignIn = useCallback(
+		async (enterpriseDomain?: string) => {
+			setSignIn({
+				status: "starting",
+			});
+			const abort = new AbortController();
+			signInAbort.current = abort;
 
-		try {
-			const grant = await copilot.beginSignIn();
-			setSignIn({
-				status: "awaiting-authorization",
-				grant,
-			});
-			await copilot.completeSignIn(grant, abort.signal);
-			setSignIn({
-				status: "idle",
-			});
-			await reloadSettings();
-		} catch (error) {
-			if (error instanceof DeviceFlowError && error.failure === "cancelled") {
+			try {
+				const grant = await copilot.beginSignIn(enterpriseDomain);
+				setSignIn({
+					status: "awaiting-authorization",
+					grant,
+				});
+				await copilot.completeSignIn(grant, {
+					signal: abort.signal,
+					enterpriseDomain,
+				});
 				setSignIn({
 					status: "idle",
 				});
-				return;
+				await reloadSettings();
+			} catch (error) {
+				if (error instanceof DeviceFlowError && error.failure === "cancelled") {
+					setSignIn({
+						status: "idle",
+					});
+					return;
+				}
+				setSignIn({
+					status: "failed",
+					message: error instanceof Error ? error.message : String(error),
+				});
 			}
-			setSignIn({
-				status: "failed",
-				message: error instanceof Error ? error.message : String(error),
-			});
-		}
-	}, [
-		copilot,
-		reloadSettings,
-	]);
+		},
+		[
+			copilot,
+			reloadSettings,
+		],
+	);
 
 	const cancelCopilotSignIn = useCallback(() => {
 		signInAbort.current?.abort();

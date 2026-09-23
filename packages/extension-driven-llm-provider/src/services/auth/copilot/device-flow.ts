@@ -2,9 +2,10 @@ import {
 	COPILOT_CLIENT_ID,
 	COPILOT_DEVICE_FLOW_TIMEOUT_MS,
 	COPILOT_OAUTH_SCOPE,
-	GITHUB_ACCESS_TOKEN_URL,
-	GITHUB_DEVICE_CODE_URL,
-	GITHUB_USER_URL,
+	COPILOT_USER_AGENT,
+	githubAccessTokenUrl,
+	githubDeviceCodeUrl,
+	githubUserUrl,
 } from "./constants";
 import {
 	type AccessTokenResponse,
@@ -50,9 +51,15 @@ export class DeviceFlowError extends Error {
 	}
 }
 
+/**
+ * `user-agent` identifies this extension to GitHub. The device flow works
+ * without it, but sending it keeps every request in this directory honestly
+ * attributed rather than only the Copilot ones.
+ */
 const jsonHeaders = {
 	accept: "application/json",
 	"content-type": "application/json",
+	"user-agent": COPILOT_USER_AGENT,
 };
 
 /**
@@ -61,12 +68,19 @@ const jsonHeaders = {
  * {@link pollForAccessToken}.
  */
 export const requestDeviceCode = async (
-	fetchImpl: typeof fetch = fetch,
+	options: {
+		/** GitHub Enterprise host; omit for github.com. */
+		domain?: string;
+		fetchImpl?: typeof fetch;
+		/** Overridable so tests can exercise an unconfigured build. */
+		clientId?: string;
+	} = {},
 ): Promise<DeviceCodeGrant> => {
-	const response = await fetchImpl(GITHUB_DEVICE_CODE_URL, {
+	const { domain, fetchImpl = fetch, clientId = COPILOT_CLIENT_ID } = options;
+	const response = await fetchImpl(githubDeviceCodeUrl(domain), {
 		method: "POST",
 		headers: jsonHeaders,
-		body: deviceCodeRequestBody(COPILOT_CLIENT_ID, COPILOT_OAUTH_SCOPE),
+		body: deviceCodeRequestBody(clientId, COPILOT_OAUTH_SCOPE),
 	});
 	if (!response.ok) {
 		throw new Error(
@@ -121,6 +135,10 @@ export const pollForAccessToken = async (
 		/** Injected in tests so polling doesn't actually wait. */
 		sleepImpl?: (ms: number, signal?: AbortSignal) => Promise<void>;
 		now?: () => number;
+		/** GitHub Enterprise host; omit for github.com. */
+		domain?: string;
+		/** Overridable so tests can exercise an unconfigured build. */
+		clientId?: string;
 	} = {},
 ): Promise<string> => {
 	const {
@@ -128,6 +146,8 @@ export const pollForAccessToken = async (
 		fetchImpl = fetch,
 		sleepImpl = sleep,
 		now = Date.now,
+		domain,
+		clientId = COPILOT_CLIENT_ID,
 	} = options;
 
 	let intervalMs = grant.intervalSeconds * 1000;
@@ -148,10 +168,10 @@ export const pollForAccessToken = async (
 
 		await sleepImpl(intervalMs, signal);
 
-		const response = await fetchImpl(GITHUB_ACCESS_TOKEN_URL, {
+		const response = await fetchImpl(githubAccessTokenUrl(domain), {
 			method: "POST",
 			headers: jsonHeaders,
-			body: accessTokenRequestBody(COPILOT_CLIENT_ID, grant.deviceCode),
+			body: accessTokenRequestBody(clientId, grant.deviceCode),
 		});
 		const body = (await response.json()) as AccessTokenResponse;
 
@@ -188,12 +208,18 @@ export const pollForAccessToken = async (
 /** Look up the signed-in GitHub login, for display in settings. */
 export const fetchGithubLogin = async (
 	oauthToken: string,
-	fetchImpl: typeof fetch = fetch,
+	options: {
+		/** GitHub Enterprise host; omit for github.com. */
+		domain?: string;
+		fetchImpl?: typeof fetch;
+	} = {},
 ): Promise<string | undefined> => {
-	const response = await fetchImpl(GITHUB_USER_URL, {
+	const { domain, fetchImpl = fetch } = options;
+	const response = await fetchImpl(githubUserUrl(domain), {
 		headers: {
-			authorization: `token ${oauthToken}`,
+			authorization: `Bearer ${oauthToken}`,
 			accept: "application/vnd.github+json",
+			"user-agent": COPILOT_USER_AGENT,
 		},
 	});
 	if (!response.ok) {

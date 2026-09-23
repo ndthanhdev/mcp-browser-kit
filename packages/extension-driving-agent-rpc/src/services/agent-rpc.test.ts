@@ -11,6 +11,7 @@ import {
 	resetRuntimeStub,
 	setConnectHandler,
 } from "../testing/webextension-polyfill-stub";
+import { AgentPortGate } from "./agent-port-gate";
 import { AgentRpcClient } from "./agent-rpc-client";
 import { ExtensionDrivingAgentRpc } from "./extension-driving-agent-rpc";
 
@@ -73,12 +74,13 @@ const fakeAgent = () => {
  */
 const connectClient = (controller: ExtensionDrivingAgentRpc) => {
 	const pair = createFakePortPair();
+	const gate = new AgentPortGate();
 	setConnectHandler(() => {
 		// The background sees the connection at the moment the UI connects.
 		queueMicrotask(() => fireOnConnect(pair.background));
 		return pair.ui;
 	});
-	controller.start();
+	controller.start(gate);
 	return pair;
 };
 
@@ -324,10 +326,11 @@ describe("controller lifecycle", () => {
 		const { agent } = fakeAgent();
 		const controller = new ExtensionDrivingAgentRpc(agent, silentLoggerFactory);
 		const pair = createFakePortPair();
+		const gate = new AgentPortGate();
 		setConnectHandler(() => pair.ui);
 
-		controller.start();
-		controller.start();
+		controller.start(gate);
+		controller.start(gate);
 
 		// Two registrations would accept the same port twice and double every event.
 		fireOnConnect(pair.background);
@@ -337,10 +340,105 @@ describe("controller lifecycle", () => {
 	it("ignores ports opened under another name", () => {
 		const { agent } = fakeAgent();
 		const controller = new ExtensionDrivingAgentRpc(agent, silentLoggerFactory);
-		controller.start();
+		controller.start(new AgentPortGate());
 
 		fireOnConnect(createFakePortPair("some-other-feature").background);
 
 		expect(agent.subscribe).not.toHaveBeenCalled();
+	});
+});
+
+describe("connecting before the agent is ready", () => {
+	/**
+	 * The bug this exists to prevent: MV3 only delivers `onConnect` to listeners
+	 * registered during the worker's initial synchronous evaluation, and the
+	 * connection that *wakes* the worker is dispatched while composition is still
+	 * suspended on an `await`. Registering after that window drops exactly the
+	 * connection that caused the wake — every first open of the sidepanel.
+	 */
+	it("serves a port that arrived before the controller started", async () => {
+		const harness = fakeAgent();
+		const controller = new ExtensionDrivingAgentRpc(
+			harness.agent,
+			silentLoggerFactory,
+		);
+
+		// Gate is constructed first, as it is in the background's initial
+		// evaluation. The connection lands while the agent is still being built.
+		const gate = new AgentPortGate();
+		const pair = createFakePortPair();
+		setConnectHandler(() => pair.ui);
+		const client = new AgentRpcClient();
+		const pending = client.listSessions();
+
+		fireOnConnect(pair.background);
+		expect(gate.bufferedCount).toBe(1);
+
+		// Composition finishes late; the buffered port is replayed.
+		controller.start(gate);
+
+		expect(await pending).toEqual([
+			session("s1"),
+		]);
+	});
+
+	it("serves ports arriving after start without buffering", () => {
+		const { agent } = fakeAgent();
+		const controller = new ExtensionDrivingAgentRpc(agent, silentLoggerFactory);
+		const gate = new AgentPortGate();
+		controller.start(gate);
+
+		fireOnConnect(createFakePortPair().background);
+
+		expect(gate.bufferedCount).toBe(0);
+		expect(agent.subscribe).toHaveBeenCalledOnce();
+	});
+});
+
+describe("when the agent never starts", () => {
+	/**
+	 * Buffering a port forever is worse than refusing it: the UI waits with
+	 * neither a result nor an error. That is how a disabled feature flag showed
+	 * up as a chat stuck on "Loading…".
+	 */
+	it("fails in-flight calls instead of hanging when the gate refuses", async () => {
+		const gate = new AgentPortGate();
+		const pair = createFakePortPair();
+		setConnectHandler(() => pair.ui);
+
+		const client = new AgentRpcClient();
+		const pending = client.listSessions();
+		fireOnConnect(pair.background);
+
+		gate.refuse();
+
+		await expect(pending).rejects.toThrow(/disconnected before answering/);
+	});
+
+	it("closes connections that arrive after refusing", () => {
+		const gate = new AgentPortGate();
+		gate.refuse();
+
+		const pair = createFakePortPair();
+		fireOnConnect(pair.background);
+
+		expect(gate.bufferedCount).toBe(0);
+	});
+});
+
+describe("a dying port fails its calls", () => {
+	it("rejects in-flight calls when the background disconnects", async () => {
+		const { agent } = fakeAgent();
+		// Accept the connection but never answer, then drop the port.
+		agent.listSessions.mockImplementation(() => new Promise(() => {}));
+		const controller = new ExtensionDrivingAgentRpc(agent, silentLoggerFactory);
+		const pair = connectClient(controller);
+
+		const client = new AgentRpcClient();
+		const pending = client.listSessions();
+		await flush();
+		pair.disconnect();
+
+		await expect(pending).rejects.toThrow(/disconnected before answering/);
 	});
 });

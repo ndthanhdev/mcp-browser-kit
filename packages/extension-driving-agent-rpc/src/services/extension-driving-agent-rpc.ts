@@ -5,11 +5,9 @@ import {
 import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
 import { MessageChannelRpcServer } from "@mcp-browser-kit/core-utils";
 import { type Container, inject, injectable } from "inversify";
-import browser from "webextension-polyfill";
-import {
-	AGENT_PORT_NAME,
-	RuntimePortTransport,
-} from "./runtime-port-transport";
+import type { Runtime } from "webextension-polyfill";
+import type { AgentPortGate } from "./agent-port-gate";
+import { RuntimePortTransport } from "./runtime-port-transport";
 
 /**
  * The subset of {@link BrowserAgentInputPort} exposed over the wire.
@@ -63,22 +61,23 @@ export class ExtensionDrivingAgentRpc {
 		this.logger = loggerFactory.create("ExtensionDrivingAgentRpc");
 	}
 
-	/** Begin accepting connections from UI contexts. Idempotent. */
-	start = (): void => {
+	/**
+	 * Begin serving connections from UI contexts. Idempotent.
+	 *
+	 * Takes a gate rather than registering `onConnect` itself: composing the
+	 * agent requires `await`, and by the time that finishes MV3 has already
+	 * dispatched the connection that woke the worker. The gate is constructed
+	 * synchronously during initial evaluation and hands over whatever it caught.
+	 */
+	start = (gate: AgentPortGate): void => {
 		if (this.stopListening) {
 			return;
 		}
-		const onConnect = (port: browser.Runtime.Port) => {
-			if (port.name !== AGENT_PORT_NAME) {
-				return;
-			}
-			this.accept(port);
-		};
-		browser.runtime.onConnect.addListener(onConnect);
+		gate.attach(this.accept);
 		this.stopListening = () => {
-			browser.runtime.onConnect.removeListener(onConnect);
+			gate.detach();
 		};
-		this.logger.verbose("listening for agent UI connections");
+		this.logger.verbose("serving agent UI connections");
 	};
 
 	/** Stop accepting connections and drop the existing ones. */
@@ -91,7 +90,7 @@ export class ExtensionDrivingAgentRpc {
 		this.connections.clear();
 	};
 
-	private accept(port: browser.Runtime.Port): void {
+	private accept = (port: Runtime.Port): void => {
 		const transport = new RuntimePortTransport(port);
 		this.connections.add(transport);
 
@@ -128,5 +127,5 @@ export class ExtensionDrivingAgentRpc {
 		});
 
 		this.logger.verbose("agent UI connected");
-	}
+	};
 }

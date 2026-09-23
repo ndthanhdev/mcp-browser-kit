@@ -32,6 +32,10 @@ export const useAgentSessions = () => {
 			setError(undefined);
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : String(cause));
+			// Resolve to an empty list rather than staying `undefined`. Callers
+			// treat `undefined` as "still loading" and gate on it, so leaving it
+			// unset turns a failed read into a permanent spinner.
+			setSessions((current) => current ?? []);
 		}
 	}, []);
 
@@ -87,6 +91,10 @@ export const useAgentThread = (sessionId: string | undefined) => {
 
 	const hydrate = useCallback(async () => {
 		if (!sessionId) {
+			// Nothing to hydrate at `/`, but this still counts as settled. Leaving
+			// `hydrated` false here is what kept the page on "Loading chat…"
+			// indefinitely whenever the redirect had not happened yet.
+			setHydrated(true);
 			return;
 		}
 		setHydrated(false);

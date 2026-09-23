@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { chromium, firefox } from "@playwright/test";
 import { defineConfig } from "wxt";
+import { HOST_PERMISSIONS, PERMISSIONS } from "./manifest-permissions";
 
 // Patched by scripts:versions-patch at release time. Kept out of package.json
 // because the 4-part extension version is not valid semver.
@@ -89,28 +90,13 @@ export default defineConfig({
 		// entrypoints/background.ts). WXT only emits this key alongside a popup
 		// entrypoint, so declare it explicitly or `action.onClicked` never fires.
 		action: {},
-		// `tabs` for tab metadata (title/url) and `webNavigation` to track frames —
-		// both required by the browser driver's tool implementations. Mirrors
-		// `apps/m3/src/manifest.json`.
+		// See `manifest-permissions.ts` for what needs each one.
 		permissions: [
-			"tabs",
-			"webNavigation",
+			...PERMISSIONS,
 		],
-		// Two things need this, and both need it broad.
-		//
-		// The browser driver injects into and reads from whatever tab the agent is
-		// pointed at, which is any origin the user visits.
-		//
-		// The LLM providers are also reached from here. A service worker's `fetch`
-		// is subject to CORS like any other, and the provider endpoints don't send
-		// CORS headers; a host permission is what exempts it. Provider base URLs
-		// come from the models.dev registry at runtime, so they can't be enumerated
-		// ahead of time — and `http://` additionally covers local model servers
-		// (Ollama, LM Studio, llama.cpp) on localhost.
 		// biome-ignore lint/style/useNamingConvention: required WebExtension manifest key
 		host_permissions: [
-			"http://*/*",
-			"https://*/*",
+			...HOST_PERMISSIONS,
 		],
 		// Firefox requires an explicit extension ID to sign the add-on.
 		// biome-ignore lint/style/useNamingConvention: required WebExtension manifest key

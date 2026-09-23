@@ -146,15 +146,68 @@ list the models the server reports.
 
 ### GitHub Copilot
 
-Off by default, behind the `copilot-provider` feature flag.
+Sign in with a GitHub account that has a Copilot subscription: the settings
+screen shows a device code to enter at `github.com/login/device`. GitHub
+Enterprise deployments can supply their own host.
 
-> **Read before enabling**: GitHub publishes no third-party API for Copilot
-> subscriptions. Reaching one requires signing in as an editor would, against an
-> undocumented endpoint. That is contrary to the Copilot terms of service, it can
-> break without notice, and accounts using it may be rate-limited or flagged. It
-> is disabled by default and deliberately not recommended. Prefer any of the
-> other ~190 providers, or [GitHub Models](https://models.github.ai) if you want
-> a supported GitHub path.
+Earlier versions of this adapter reached Copilot by presenting an editor's OAuth
+client id and pretending to be VS Code, which is why it used to be disabled by
+default with a terms-of-service warning. It now authenticates as this project,
+against GitHub's versioned Copilot API, with no impersonation.
+
+Copilot only appears when the build has a GitHub App client id configured
+(`COPILOT_CLIENT_ID` in `auth/copilot/constants.ts`); otherwise it is hidden,
+because there would be no sign-in to complete. This repository ships one, so it
+is available by default.
+
+The model list comes from your account rather than the registry. models.dev
+lists every Copilot model that exists, but entitlement varies by plan, and
+offering a model your subscription excludes fails at the first turn.
+
+#### Registering a client id
+
+Register an **OAuth App** — not a GitHub App. They are different application
+types: OAuth Apps have `Ov23li…` client ids and issue `gho_` tokens, GitHub Apps
+have `Iv23li…` ids and issue `ghu_` tokens. Both authenticate to Copilot, but
+every established Copilot client is an OAuth App, and a GitHub App adds
+installation and visibility settings that affect nothing here.
+
+At <https://github.com/settings/applications/new>:
+
+| Field | Value |
+| --- | --- |
+| Application name | anything unique |
+| Homepage URL | this repository |
+| Redirect URI | `http://localhost` — required, unused by the device flow |
+| Enable Device Flow | **check** |
+| Expire user access tokens | **uncheck** |
+
+The **Client ID** (`Ov23li…`) is shown after registration. The client secret is
+not used by a device flow.
+
+Unchecking token expiry contradicts GitHub's own recommendation. It is here
+because this adapter has no refresh handling: with expiry enabled, sign-in
+succeeds and then fails around eight hours later, a long way from the code
+responsible. An app that shipped to users should implement refresh instead.
+
+Permissions can be left empty. Every Copilot permission GitHub documents is
+org-level management — seats, metrics, content exclusion. None of them govern
+`api.githubcopilot.com`, which is not part of the documented GitHub App
+permission model.
+
+Verify a replacement id before committing it:
+
+```bash
+moon run scripts:copilot-spike -- Iv23li...
+```
+
+It runs the device flow, lists models, and makes one real completion.
+
+This was originally written to answer whether GitHub restricts Copilot to
+allow-listed editor clients. It does not: a self-registered App with **no
+permissions granted** reaches `/models` and `/chat/completions` with an honest
+`User-Agent` and no token exchange. The script remains as the check to run
+before changing the id.
 
 ### Limitations
 

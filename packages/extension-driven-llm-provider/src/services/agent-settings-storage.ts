@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import { localStorageArea } from "./storage-area";
 
 /** `chrome.storage.local` key the agent settings live under. */
 export const AGENT_SETTINGS_STORAGE_KEY = "mbk.agent.settings";
@@ -21,13 +21,19 @@ export interface ProviderCredential {
 	/** Bearer token for the ~185 providers that authenticate with a plain key. */
 	apiKey?: string;
 	/**
-	 * Long-lived GitHub OAuth token (`gho_…`) from the device flow. The
-	 * short-lived Copilot bearer derived from it is deliberately NOT persisted —
-	 * it lives in memory only (see `auth/copilot-token.ts`).
+	 * GitHub OAuth token from the device flow, used directly as the Copilot
+	 * bearer. Persisted because it is long-lived: the App is registered with
+	 * user-token expiry disabled, so there is no refresh token to manage.
 	 */
 	oauthToken?: string;
 	/** Account label for display, e.g. the GitHub login. */
 	account?: string;
+	/**
+	 * GitHub Enterprise host this credential belongs to, absent for github.com.
+	 * Stored per credential because it selects the Copilot API host, and the
+	 * public API — unlike the old token exchange — does not report it back.
+	 */
+	enterpriseDomain?: string;
 }
 
 /** A provider the user defined by hand — Ollama, LM Studio, a company proxy. */
@@ -164,7 +170,7 @@ const migrate = (value: Record<string, unknown>): AgentSettings => {
 
 /** Read the persisted agent settings, migrating older shapes if present. */
 export async function readAgentSettings(): Promise<AgentSettings> {
-	const record = await browser.storage.local.get(AGENT_SETTINGS_STORAGE_KEY);
+	const record = await localStorageArea().get(AGENT_SETTINGS_STORAGE_KEY);
 	const value = record[AGENT_SETTINGS_STORAGE_KEY];
 	if (!value || typeof value !== "object") {
 		return emptySettings();
@@ -181,7 +187,7 @@ export async function readAgentSettings(): Promise<AgentSettings> {
 export async function writeAgentSettings(
 	settings: AgentSettings,
 ): Promise<void> {
-	await browser.storage.local.set({
+	await localStorageArea().set({
 		[AGENT_SETTINGS_STORAGE_KEY]: settings,
 	});
 }

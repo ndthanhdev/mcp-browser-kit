@@ -1,17 +1,14 @@
 import "core-js/proposals";
 import {
-	createCoreExtensionContainer,
 	FeatureFlagsOutputPort,
 	LlmProviderOutputPort,
-	LoggerFactoryOutputPort,
 } from "@mcp-browser-kit/core-extension";
-import { DrivenFeatureFlagsOpenFeatureWeb } from "@mcp-browser-kit/driven-feature-flags/web";
-import { DrivenLoggerFactoryConsolaBrowser } from "@mcp-browser-kit/driven-logger-factory";
-import { DrivenBrowserStateSource } from "@mcp-browser-kit/extension-driven-browser-driver";
-import { DrivenBrowserDriverM2 } from "@mcp-browser-kit/extension-driven-browser-driver/m2";
-import { DrivenBrowserDriverM3 } from "@mcp-browser-kit/extension-driven-browser-driver/m3";
 import { DrivenLlmProvider } from "@mcp-browser-kit/extension-driven-llm-provider";
-import { ExtensionDrivingAgentRpc } from "@mcp-browser-kit/extension-driving-agent-rpc";
+import {
+	AgentPortGate,
+	ExtensionDrivingAgentRpc,
+} from "@mcp-browser-kit/extension-driving-agent-rpc";
+import { composeAgentContainer } from "@/utils/compose-agent-container";
 
 /**
  * The toolbar-button APIs used below, declared locally because the
@@ -79,16 +76,12 @@ const openSidepanelOnActionClick = () => {
  * only context that owns the browser driver and survives both tab navigation and
  * the sidepanel being closed mid-turn.
  */
-const startAgent = async () => {
-	const container = createCoreExtensionContainer();
-
-	DrivenLoggerFactoryConsolaBrowser.setupContainer(
-		container,
-		LoggerFactoryOutputPort,
-	);
-	DrivenFeatureFlagsOpenFeatureWeb.setupContainer(
-		container,
-		FeatureFlagsOutputPort,
+const startAgent = async (gate: AgentPortGate) => {
+	// Built by `composeAgentContainer` so the graph the tests resolve is the
+	// graph that ships. WXT inlines `MANIFEST_VERSION`, so the unused driver is
+	// still tree-shaken.
+	const container = composeAgentContainer(
+		import.meta.env.MANIFEST_VERSION === 3 ? 3 : 2,
 	);
 
 	const featureFlags = container.get<FeatureFlagsOutputPort>(
@@ -97,25 +90,14 @@ const startAgent = async () => {
 	await featureFlags.start();
 
 	if (!(await featureFlags.getBooleanValue("browser-agent"))) {
+		// Close any waiting sidepanel connection rather than leaving it hanging.
+		gate.refuse();
 		return;
 	}
 
-	// This app targets MV3 on Chromium and MV2 on Firefox from one source, and
-	// the drivers differ (`scripting.executeScript` vs `tabs.executeScript`).
-	// WXT inlines `MANIFEST_VERSION` at build time, so the unused branch is
-	// tree-shaken rather than shipped.
-	if (import.meta.env.MANIFEST_VERSION === 3) {
-		DrivenBrowserDriverM3.setupContainer(container);
-	} else {
-		DrivenBrowserDriverM2.setupContainer(container);
-	}
-	DrivenBrowserStateSource.setupContainer(container);
-
-	DrivenLlmProvider.setupContainer(container);
-
-	// Warm the models.dev catalog in the background so the settings picker has
-	// something to show. Failure is not fatal — the registry falls back to a
-	// cached copy, and the settings page surfaces the error and offers a retry.
+	// Warm the models.dev catalog so the settings picker has something to show.
+	// Failure is not fatal — the registry falls back to a cached copy, and the
+	// settings page surfaces the error and offers a retry.
 	const llmProvider = container.get<LlmProviderOutputPort>(
 		LlmProviderOutputPort,
 	);
@@ -125,8 +107,7 @@ const startAgent = async () => {
 		});
 	}
 
-	ExtensionDrivingAgentRpc.setupContainer(container);
-	container.get<ExtensionDrivingAgentRpc>(ExtensionDrivingAgentRpc).start();
+	container.get<ExtensionDrivingAgentRpc>(ExtensionDrivingAgentRpc).start(gate);
 };
 
 /**
@@ -150,8 +131,18 @@ export default defineBackground({
 	main() {
 		openSidepanelOnActionClick();
 
-		void startAgent().catch((error: unknown) => {
+		// Constructed synchronously, before any `await`. MV3 only delivers
+		// `onConnect` to listeners registered during the worker's initial
+		// evaluation, and the connection that wakes the worker is dispatched while
+		// composition below is still suspended — so without this the sidepanel's
+		// very first connect is dropped and its calls never resolve.
+		const gate = new AgentPortGate();
+
+		void startAgent(gate).catch((error: unknown) => {
 			console.error("Failed to start the browser agent", error);
+			// Don't strand the sidepanel: let its calls fail with an error it can
+			// show, rather than waiting on an agent that will never arrive.
+			gate.refuse();
 		});
 	},
 });
