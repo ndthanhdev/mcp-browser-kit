@@ -7,6 +7,7 @@ import {
 	type ResolveData,
 	type ResolveMessage,
 } from "@mcp-browser-kit/core-utils";
+import { PageSave } from "@mcp-browser-kit/helper-page-save";
 import type { Func, Logger, LoggerFactory } from "@mcp-browser-kit/types";
 import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
@@ -16,6 +17,7 @@ import { TabAnimationTools } from "./tab-animation-tools";
 import { TabContextStore } from "./tab-context-store";
 import { TabDomTools } from "./tab-dom-tools";
 import { TabHumanHintTools } from "./tab-human-hint-tools";
+import { TabPageSaveTools } from "./tab-page-save-tools";
 import { TabTools } from "./tab-tools";
 
 export type ToolKeys = Paths<
@@ -64,6 +66,8 @@ export class TabToolsSetup {
 		container.bind<TabHumanHintTools>(TabHumanHintTools).to(TabHumanHintTools);
 		container.bind<TabAnimationTools>(TabAnimationTools).to(TabAnimationTools);
 		container.bind<TabContextStore>(TabContextStore).to(TabContextStore);
+		container.bind<PageSave>(PageSave).to(PageSave);
+		container.bind<TabPageSaveTools>(TabPageSaveTools).to(TabPageSaveTools);
 		container.bind<TabTools>(TabTools).to(TabTools);
 		container.bind<TabToolsSetup>(TabToolsSetup).to(TabToolsSetup);
 	}

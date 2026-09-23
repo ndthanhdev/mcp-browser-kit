@@ -45,6 +45,9 @@ export const extContextTest = base.extend<
 		const context = await chromium.launchPersistentContext("", {
 			...launchOptions,
 			channel: "chromium",
+			// Page save writes real files; downloads must be captured rather
+			// than cancelled so specs can inspect the artifact.
+			acceptDownloads: true,
 			args: [
 				...(launchOptions.args ?? []),
 				`--disable-extensions-except=${pathToExtension}`,

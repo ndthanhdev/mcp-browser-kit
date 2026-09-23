@@ -11,6 +11,7 @@ dependsOn:
 - extension-driving-trpc-controller
 - core-utils
 - helper-extension-keep-alive
+- helper-page-save
 - extension-driving-lifecycle
 tags:
 - tsup

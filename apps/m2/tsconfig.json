@@ -82,6 +82,12 @@
 			],
 			"@mcp-browser-kit/core-feature-flags/*": [
 				"../../packages/core-feature-flags/src/*"
+			],
+			"@mcp-browser-kit/helper-page-save": [
+				"../../packages/helper-page-save/src/index.ts"
+			],
+			"@mcp-browser-kit/helper-page-save/*": [
+				"../../packages/helper-page-save/src/*"
 			]
 		},
 		"outDir": "../../.moon/cache/types/apps/m2"
@@ -96,6 +102,9 @@
 	"references": [
 		{
 			"path": "../../packages/core-extension"
+		},
+		{
+			"path": "../../packages/core-feature-flags"
 		},
 		{
 			"path": "../../packages/core-server"
@@ -122,10 +131,10 @@
 			"path": "../../packages/extension-driving-trpc-controller"
 		},
 		{
-			"path": "../../packages/core-feature-flags"
+			"path": "../../packages/helper-extension-keep-alive"
 		},
 		{
-			"path": "../../packages/helper-extension-keep-alive"
+			"path": "../../packages/helper-page-save"
 		},
 		{
 			"path": "../server"
