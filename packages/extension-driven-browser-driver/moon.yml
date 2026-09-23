@@ -4,3 +4,4 @@ dependsOn:
 - types
 - core-extension
 - core-utils
+- helper-page-save

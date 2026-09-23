@@ -3,6 +3,8 @@ import type {
 	ExtensionTabInfo,
 	ExtensionToolCallInputPort,
 	ExtensionWindowInfo,
+	PageSaveFormat,
+	PageSaveResult,
 	ReadableElementRecord,
 	Screenshot,
 	ScrollDirection,
@@ -494,6 +496,37 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			return screenshot;
 		} catch (error) {
 			this.logger.error("Failed to capture screenshot", error);
+			throw error;
+		}
+	};
+
+	savePage = async (
+		browserId: string,
+		_windowId: string,
+		tabId: string,
+		format: PageSaveFormat,
+	): Promise<PageSaveResult> => {
+		this.logger.info(
+			`Saving page as ${format} from tab: ${browserId}/${tabId}`,
+		);
+
+		try {
+			const rpcClient = await this.getTabRpc(browserId, tabId);
+			const result = await rpcClient.call({
+				method: "savePage" as const,
+				args: [
+					tabId,
+					format,
+				],
+				extraArgs: {},
+			});
+
+			this.logger.info(
+				`Page saved as ${result.filename} (${result.bytes} bytes)`,
+			);
+			return result;
+		} catch (error) {
+			this.logger.error("Failed to save page", error);
 			throw error;
 		}
 	};

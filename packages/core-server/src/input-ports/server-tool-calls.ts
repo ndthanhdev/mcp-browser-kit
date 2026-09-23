@@ -8,7 +8,7 @@ import type {
 	HumanHintResponse,
 	ShowHumanHintParams,
 } from "@mcp-browser-kit/types";
-import type { Screenshot } from "../types";
+import type { PageSaveFormat, PageSaveResult, Screenshot } from "../types";
 
 export interface BrowserTabContext {
 	windowId: string;
@@ -40,6 +40,12 @@ export type ServerToolCallsInputPort = {
 		windowId: string,
 		tabId: string,
 	) => Promise<Screenshot>;
+	savePage: (
+		browserId: string,
+		windowId: string,
+		tabId: string,
+		format: PageSaveFormat,
+	) => Promise<PageSaveResult>;
 	clickOnCoordinates: (
 		browserId: string,
 		windowId: string,
@@ -151,6 +157,9 @@ type TabRef = {
 
 export type ServerToolArgsMap = {
 	captureTab: TabRef;
+	savePage: TabRef & {
+		format?: PageSaveFormat;
+	};
 	clickOnCoordinates: TabRef & {
 		x: number;
 		y: number;

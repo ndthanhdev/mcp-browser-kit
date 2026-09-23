@@ -7,6 +7,7 @@ export * from "./extension-info";
 export * from "./extension-tab-info";
 export * from "./extension-tools";
 export * from "./extension-window-info";
+export * from "./page-save";
 export * from "./readable-element-record";
 export * from "./screenshot";
 export * from "./selection";

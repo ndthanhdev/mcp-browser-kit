@@ -97,6 +97,9 @@
 			"path": "./packages/helper-extension-tab-lifecycle"
 		},
 		{
+			"path": "./packages/helper-page-save"
+		},
+		{
 			"path": "./packages/server-driven-trpc-channel-provider"
 		},
 		{

@@ -4,6 +4,7 @@ export interface McpDescriptionsInputPort {
 
 	// Tool descriptions
 	captureTabInstruction(): string;
+	savePageInstruction(): string;
 	clickOnViewableElementInstruction(): string;
 	fillTextToViewableElementInstruction(): string;
 	hitEnterOnViewableElementInstruction(): string;

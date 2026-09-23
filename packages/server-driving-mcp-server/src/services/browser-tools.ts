@@ -20,6 +20,8 @@ import {
 	invokeJsFnSchema,
 	openTabOutputSchema,
 	openTabSchema,
+	savePageOutputSchema,
+	savePageSchema,
 	selectionOutputSchema,
 	tabRefSchema,
 } from "../utils/tool-schemas";
@@ -41,10 +43,83 @@ export class BrowserTools {
 
 	register(server: McpServer): void {
 		this.registerCaptureTab(server);
+		this.registerSavePage(server);
 		this.registerInvokeJsFn(server);
 		this.registerOpenTab(server);
 		this.registerCloseTab(server);
 		this.registerGetSelection(server);
+	}
+
+	private registerSavePage(server: McpServer): void {
+		this.logger.verbose("Registering tool: savePage");
+		registerTool(
+			server,
+			"savePage",
+			{
+				title: "Save page to disk",
+				description: this.toolDescriptionsInputPort.savePageInstruction(),
+				inputSchema: savePageSchema,
+				outputSchema: savePageOutputSchema,
+				annotations: {
+					readOnlyHint: true,
+					openWorldHint: true,
+				},
+			},
+			async ({ browserId, windowId, tabId, format }) => {
+				const resolvedFormat = format ?? "zip";
+				this.logger.info("Executing savePage", {
+					browserId,
+					tabId,
+					format: resolvedFormat,
+				});
+				const overResult = await over(() =>
+					this.toolsInputPort.savePage(
+						browserId,
+						windowId,
+						tabId,
+						resolvedFormat,
+					),
+				);
+
+				if (!overResult.ok) {
+					this.logger.error("Failed to save page", {
+						browserId,
+						tabId,
+						reason: overResult.reason,
+					});
+					return createOverResponse(savePageOutputSchema, {
+						ok: false,
+						reason: String(overResult.reason),
+					});
+				}
+
+				const result = overResult.value;
+				this.logger.verbose("Page saved", {
+					browserId,
+					tabId,
+					filename: result.filename,
+					bytes: result.bytes,
+				});
+				const skippedNote =
+					result.skipped.length > 0
+						? `, ${result.skipped.length} resource(s) skipped`
+						: "";
+				return createOverResponse(
+					savePageOutputSchema,
+					{
+						ok: true,
+						value: {
+							filename: result.filename,
+							bytes: result.bytes,
+							format: result.format,
+							resourceCount: result.resourceCount,
+							skipped: result.skipped,
+						},
+					},
+					`Saved ${result.filename} (${result.bytes} bytes, ${result.resourceCount} resources embedded${skippedNote})`,
+				);
+			},
+		);
 	}
 
 	private registerCaptureTab(server: McpServer): void {
