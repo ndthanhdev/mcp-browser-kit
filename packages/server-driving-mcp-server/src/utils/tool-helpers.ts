@@ -57,3 +57,38 @@ export const createOverResponse = <Schema extends Record<string, z.ZodType>>(
 		},
 	};
 };
+
+interface PageChangeSummary {
+	changed: boolean;
+	navigated: boolean;
+	url: string;
+	added: number;
+	removed: number;
+	tooLarge: boolean;
+	pathsShifted: boolean;
+	diff?: string;
+}
+
+/**
+ * Renders a page change as the text an agent reads: a one-line summary, then
+ * the diff in a fenced block, or a pointer to the full snapshot when omitted.
+ */
+export const formatPageChange = (change: PageChangeSummary): string => {
+	if (change.navigated) {
+		return `Done. Navigated to ${change.url} — read readable-elements for the new page.`;
+	}
+	if (!change.changed) {
+		return change.pathsShifted
+			? "Done. No readable elements changed, but element paths shifted — re-read readable-elements before reusing older paths."
+			: "Done. No readable elements changed.";
+	}
+
+	const counts = `${change.added} added, ${change.removed} removed`;
+	const shiftNote = change.pathsShifted
+		? "\nPaths outside this diff may have shifted — re-read readable-elements before reusing older paths."
+		: "";
+	if (change.tooLarge || !change.diff) {
+		return `Done. Page changed (${counts}); diff too large to show — read readable-elements for the full snapshot.`;
+	}
+	return `Done. Page changed (${counts}).\n\`\`\`diff\n${change.diff}\n\`\`\`${shiftNote}`;
+};
