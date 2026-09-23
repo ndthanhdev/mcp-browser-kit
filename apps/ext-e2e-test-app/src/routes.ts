@@ -12,6 +12,7 @@ const routes = [
 	route("iframe-test", "pages/iframe-test.tsx"),
 	route("iframe-test/inner", "pages/iframe-test-inner.tsx"),
 	route("popup-test", "pages/popup-test.tsx"),
+	route("auto-wait-test", "pages/auto-wait-test.tsx"),
 ] satisfies RouteConfig;
 
 export default routes;

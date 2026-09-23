@@ -83,9 +83,12 @@ export class MessageChannelRpcClient<
 		const id = this.createId(String(method));
 		const defer = Promise.withResolvers<Awaited<ExtractRpcReturnType<U, K>>>();
 
-		defer.promise.finally(() => {
+		// Clean up on both outcomes without deriving a second promise that would
+		// re-reject unhandled (`.finally` re-throws the rejection).
+		const cleanup = () => {
 			this.pending.delete(id);
-		});
+		};
+		defer.promise.then(cleanup, cleanup);
 		this.pending.set(id, defer as PromiseWithResolvers<unknown>);
 
 		this.messageChannel.outgoing.emit("defer", {

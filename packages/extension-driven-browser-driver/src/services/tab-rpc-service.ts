@@ -90,12 +90,22 @@ export class TabRpcService {
 						}
 					: undefined,
 			);
+			if (response === undefined) {
+				throw new Error("No response from tab content script");
+			}
 			this.handleTabMessage(response as ResolveMessage);
 		} catch (error) {
-			this.logger.error(
+			this.logger.warn(
 				`Failed to send message to tab ${tabId} frame ${frameId ?? "(unspecified)"}:`,
 				error,
 			);
+			// Without this the caller's promise never settles: a navigation that
+			// unloads the content script mid-call would hang the tool forever.
+			this.handleTabMessage({
+				id: deferMessage.id,
+				isOk: false,
+				result: error instanceof Error ? error.message : String(error),
+			} satisfies ResolveMessage);
 		}
 	};
 

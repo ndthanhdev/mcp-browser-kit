@@ -262,6 +262,40 @@ export const savePageOutputSchema = createOverOutputSchema({
 
 export const actionOutputSchema = createOverOutputSchema({});
 
+export const pageChangeOutputSchema = createOverOutputSchema({
+	changed: z
+		.boolean()
+		.describe("Whether readable elements changed after the page settled"),
+	navigated: z
+		.boolean()
+		.describe("Whether the action loaded a new document or route"),
+	url: z.string().describe("Tab URL after the action settled"),
+	added: z.number().describe("Readable elements added"),
+	removed: z.number().describe("Readable elements removed"),
+	tooLarge: z
+		.boolean()
+		.describe(
+			"Diff omitted (too large or navigated); re-read readable-elements for the full snapshot",
+		),
+	pathsShifted: z
+		.boolean()
+		.describe(
+			"Element paths outside the diff changed; re-read before reusing older paths",
+		),
+	diff: z
+		.string()
+		.optional()
+		.describe(
+			'Readable-elements diff: "+" added, "-" removed, "  " unchanged context, hunks separated by "@@"; paths are current',
+		),
+	detailsUnavailable: z
+		.boolean()
+		.optional()
+		.describe(
+			"The browser extension is outdated and cannot report what changed; re-read readable-elements to see the result",
+		),
+});
+
 export const snapshotPageSchema = {
 	snapshotId: z
 		.string()
@@ -299,14 +333,14 @@ type ServerToolOverSchemaMap = {
 	openTab: typeof openTabOutputSchema;
 	closeTab: typeof actionOutputSchema;
 	getSelection: typeof selectionOutputSchema;
-	clickOnCoordinates: typeof actionOutputSchema;
-	fillTextToCoordinates: typeof actionOutputSchema;
-	hitEnterOnCoordinates: typeof actionOutputSchema;
-	clickOnElement: typeof actionOutputSchema;
-	fillTextToElement: typeof actionOutputSchema;
-	hitEnterOnElement: typeof actionOutputSchema;
-	scrollPage: typeof actionOutputSchema;
-	scrollElement: typeof actionOutputSchema;
+	clickOnCoordinates: typeof pageChangeOutputSchema;
+	fillTextToCoordinates: typeof pageChangeOutputSchema;
+	hitEnterOnCoordinates: typeof pageChangeOutputSchema;
+	clickOnElement: typeof pageChangeOutputSchema;
+	fillTextToElement: typeof pageChangeOutputSchema;
+	hitEnterOnElement: typeof pageChangeOutputSchema;
+	scrollPage: typeof pageChangeOutputSchema;
+	scrollElement: typeof pageChangeOutputSchema;
 	showHumanHint: typeof showHumanHintOutputSchema;
 };
 
