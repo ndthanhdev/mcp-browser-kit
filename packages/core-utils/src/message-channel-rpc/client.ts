@@ -104,6 +104,17 @@ export class MessageChannelRpcClient<
 		return defer.promise;
 	};
 
+	/** Reject every in-flight call, e.g. when the channel has died. */
+	public rejectPending = (reason: unknown): void => {
+		const pending = [
+			...this.pending.values(),
+		];
+		this.pending.clear();
+		for (const defer of pending) {
+			defer.reject(reason);
+		}
+	};
+
 	public unbindChannel = (): void => {
 		if (this.messageChannelUnsubscribe) {
 			this.messageChannelUnsubscribe();

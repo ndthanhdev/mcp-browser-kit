@@ -1,320 +1,198 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetBrowserStub } from "../testing/webextension-polyfill-stub";
-import {
-	updateProviderCredential,
-	upsertCustomProvider,
-	writeSelectedModel,
-} from "./agent-settings-storage";
-import { CatalogCache } from "./catalog/catalog-cache";
-import type { Catalog } from "./catalog/catalog-schema";
-import { ModelCatalog } from "./catalog/model-catalog";
+import { upsertConnection, writeSelectedModel } from "./agent-settings-storage";
 import { DrivenLlmProvider } from "./driven-llm-provider";
-import * as factories from "./factories/provider-factories";
+import { fetchModelIds, validateBaseUrl } from "./model-list";
 
-const catalogOf = (
-	providers: Array<{
-		id: string;
-		npm?: string;
-		/** `null` means models.dev omits `api` — the URL lives in the SDK package. */
-		api?: string | null;
-		models: string[];
-	}>,
-): Catalog =>
-	Object.fromEntries(
-		providers.map((provider) => [
-			provider.id,
-			{
-				id: provider.id,
-				name: provider.id.toUpperCase(),
-				npm: provider.npm ?? "@ai-sdk/openai-compatible",
-				api:
-					provider.api === null
-						? undefined
-						: (provider.api ?? `https://${provider.id}.test/v1`),
-				env: [],
-				models: provider.models.map((id) => ({
-					id,
-					name: id.toUpperCase(),
-					toolCall: true as const,
-					reasoning: false,
-					attachment: false,
-				})),
-			},
-		]),
+const modelsResponse = (ids: string[]) =>
+	new Response(
+		JSON.stringify({
+			data: ids.map((id) => ({
+				id,
+			})),
+		}),
+		{
+			status: 200,
+		},
 	);
 
-/** A catalog already populated in storage, so nothing hits the network. */
-const seededCatalog = async (catalog: Catalog) => {
-	const cache = new CatalogCache();
-	await cache.write(catalog, "v1");
-	return new ModelCatalog(undefined, cache);
-};
+const fetchMock = vi.fn<typeof fetch>();
 
 beforeEach(() => {
 	resetBrowserStub();
-	vi.restoreAllMocks();
+	fetchMock.mockReset();
+	vi.stubGlobal("fetch", fetchMock);
 });
 
-describe("listProviders", () => {
-	it("lists models only from providers that have credentials", async () => {
-		const catalog = await seededCatalog(
-			catalogOf([
-				{
-					id: "groq",
-					models: [
-						"llama",
-					],
-				},
-				{
-					id: "mistral",
-					models: [
-						"large",
-					],
-				},
+afterEach(() => {
+	vi.unstubAllGlobals();
+});
+
+describe("fetchModelIds", () => {
+	it("reads ids from GET {baseUrl}/models with the key as a bearer", async () => {
+		fetchMock.mockResolvedValue(
+			modelsResponse([
+				"gpt-4o",
+				"gpt-4.1",
 			]),
 		);
-		await updateProviderCredential("groq", () => ({
-			apiKey: "k",
-		}));
 
-		const registry = new DrivenLlmProvider(catalog);
+		const result = await fetchModelIds({
+			baseUrl: "https://api.openai.com/v1/",
+			apiKey: "sk-test",
+			headers: {
+				"x-extra": "1",
+			},
+		});
 
-		// Listing ~5,800 models the user cannot call would make the port useless.
-		expect(await registry.listProviders()).toEqual([
+		expect(result).toEqual({
+			status: "ok",
+			modelIds: [
+				"gpt-4.1",
+				"gpt-4o",
+			],
+		});
+		expect(fetchMock).toHaveBeenCalledWith("https://api.openai.com/v1/models", {
+			headers: {
+				// biome-ignore lint/style/useNamingConvention: HTTP header name.
+				Authorization: "Bearer sk-test",
+				"x-extra": "1",
+			},
+		});
+	});
+
+	it("reports HTTP errors instead of throwing", async () => {
+		fetchMock.mockResolvedValue(
+			new Response("nope", {
+				status: 401,
+				statusText: "Unauthorized",
+			}),
+		);
+		expect(
+			await fetchModelIds({
+				baseUrl: "https://x.test/v1",
+			}),
+		).toEqual({
+			status: "failed",
+			message: "The endpoint answered 401 Unauthorized.",
+		});
+	});
+
+	it("reports network errors instead of throwing", async () => {
+		fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
+		expect(
+			await fetchModelIds({
+				baseUrl: "http://localhost:11434/v1",
+			}),
+		).toEqual({
+			status: "failed",
+			message: "Failed to fetch",
+		});
+	});
+});
+
+describe("validateBaseUrl", () => {
+	it("accepts http and https", () => {
+		expect(validateBaseUrl("http://localhost:1234/v1")).toBeUndefined();
+		expect(validateBaseUrl("https://api.x.ai/v1")).toBeUndefined();
+	});
+
+	it("rejects other schemes and garbage", () => {
+		expect(validateBaseUrl("ftp://x")).toBeDefined();
+		expect(validateBaseUrl("not a url")).toBeDefined();
+	});
+});
+
+describe("DrivenLlmProvider", () => {
+	it("lists discovered models per connection", async () => {
+		await upsertConnection({
+			id: "openai",
+			name: "OpenAI",
+			baseUrl: "https://api.openai.com/v1",
+			apiKey: "sk",
+		});
+		fetchMock.mockResolvedValue(
+			modelsResponse([
+				"gpt-4o",
+			]),
+		);
+
+		expect(await new DrivenLlmProvider().listProviders()).toEqual([
 			{
-				id: "groq:llama",
-				label: "LLAMA · GROQ",
+				id: "openai:gpt-4o",
+				label: "gpt-4o · OpenAI",
 			},
 		]);
 	});
 
-	it("qualifies model ids with their provider", async () => {
-		const catalog = await seededCatalog(
-			catalogOf([
-				{
-					id: "a",
-					models: [
-						"gpt-4o",
-					],
-				},
-				{
-					id: "b",
-					models: [
-						"gpt-4o",
-					],
-				},
-			]),
+	it("falls back to the manual model list when discovery fails", async () => {
+		await upsertConnection({
+			id: "proxy",
+			name: "Proxy",
+			baseUrl: "https://proxy.test/v1",
+			models: [
+				"my-model",
+			],
+		});
+		fetchMock.mockResolvedValue(
+			new Response("", {
+				status: 404,
+			}),
 		);
-		await updateProviderCredential("a", () => ({
-			apiKey: "k",
-		}));
-		await updateProviderCredential("b", () => ({
-			apiKey: "k",
-		}));
 
-		const ids = (await new DrivenLlmProvider(catalog).listProviders()).map(
-			(descriptor) => descriptor.id,
-		);
-		// Model ids are only unique within a provider.
-		expect(ids.sort()).toEqual([
-			"a:gpt-4o",
-			"b:gpt-4o",
+		expect(await new DrivenLlmProvider().listProviders()).toEqual([
+			{
+				id: "proxy:my-model",
+				label: "my-model · Proxy",
+			},
 		]);
 	});
 
-	it("includes custom providers' recorded models", async () => {
-		const catalog = await seededCatalog(catalogOf([]));
-		await upsertCustomProvider({
+	it("reuses a discovered list instead of refetching", async () => {
+		await upsertConnection({
+			id: "openai",
+			name: "OpenAI",
+			baseUrl: "https://api.openai.com/v1",
+		});
+		fetchMock.mockImplementation(async () =>
+			modelsResponse([
+				"gpt-4o",
+			]),
+		);
+		const provider = new DrivenLlmProvider();
+
+		await provider.listProviders();
+		await provider.listProviders();
+
+		expect(fetchMock).toHaveBeenCalledOnce();
+	});
+
+	it("builds the selected model", async () => {
+		await upsertConnection({
 			id: "ollama",
 			name: "Ollama",
 			baseUrl: "http://localhost:11434/v1",
-			modelIds: [
-				"qwen3-coder",
-			],
 		});
+		await writeSelectedModel("ollama:llama3:8b");
 
-		expect(await new DrivenLlmProvider(catalog).listProviders()).toEqual([
-			{
-				id: "ollama:qwen3-coder",
-				label: "qwen3-coder · Ollama",
-			},
-		]);
+		const model = await new DrivenLlmProvider().getModel();
+
+		expect(model).toMatchObject({
+			modelId: "llama3:8b",
+			provider: expect.stringContaining("ollama"),
+		});
 	});
 
-	it("skips a configured provider the registry no longer lists", async () => {
-		const catalog = await seededCatalog(catalogOf([]));
-		await updateProviderCredential("since-removed", () => ({
-			apiKey: "k",
-		}));
-
-		expect(await new DrivenLlmProvider(catalog).listProviders()).toEqual([]);
-	});
-});
-
-describe("getModel", () => {
-	const setup = async () => {
-		const catalog = await seededCatalog(
-			catalogOf([
-				{
-					id: "groq",
-					models: [
-						"llama",
-					],
-				},
-				{
-					id: "anthropic",
-					npm: "@ai-sdk/anthropic",
-					api: null,
-					models: [
-						"claude",
-					],
-				},
-			]),
-		);
-		await updateProviderCredential("groq", () => ({
-			apiKey: "gk",
-		}));
-		await updateProviderCredential("anthropic", () => ({
-			apiKey: "ak",
-		}));
-		return new DrivenLlmProvider(catalog);
-	};
-
-	it("routes to the factory named by the registry's npm field", async () => {
-		const spy = vi
-			.spyOn(factories, "factoryFor")
-			.mockReturnValue(async () => "model" as never);
-
-		await (await setup()).getModel("anthropic:claude");
-
-		expect(spy).toHaveBeenCalledWith("@ai-sdk/anthropic");
-	});
-
-	it("passes the registry base URL and the resolved key to the factory", async () => {
-		const factory = vi.fn(async () => "model" as never);
-		vi.spyOn(factories, "factoryFor").mockReturnValue(factory);
-
-		await (await setup()).getModel("groq:llama");
-
-		expect(factory).toHaveBeenCalledWith(
-			expect.objectContaining({
-				providerId: "groq",
-				modelId: "llama",
-				baseUrl: "https://groq.test/v1",
-				auth: expect.objectContaining({
-					apiKey: "gk",
-				}),
-			}),
-		);
-	});
-
-	it("falls back to a static base URL when the registry omits one", async () => {
-		const factory = vi.fn(async () => "model" as never);
-		vi.spyOn(factories, "factoryFor").mockReturnValue(factory);
-
-		await (await setup()).getModel("anthropic:claude");
-
-		expect(factory).toHaveBeenCalledWith(
-			expect.objectContaining({
-				baseUrl: "https://api.anthropic.com/v1",
-			}),
-		);
-	});
-
-	it("uses the persisted selection when given no argument", async () => {
-		const factory = vi.fn(async () => "model" as never);
-		vi.spyOn(factories, "factoryFor").mockReturnValue(factory);
-		const registry = await setup();
-		await writeSelectedModel("anthropic:claude");
-
-		await registry.getModel();
-
-		expect(factory).toHaveBeenCalledWith(
-			expect.objectContaining({
-				modelId: "claude",
-			}),
-		);
-	});
-
-	it("falls back to the first configured model when nothing is selected", async () => {
-		const factory = vi.fn(async () => "model" as never);
-		vi.spyOn(factories, "factoryFor").mockReturnValue(factory);
-
-		await (await setup()).getModel();
-
-		expect(factory).toHaveBeenCalledOnce();
-	});
-
-	it("explains itself when nothing is configured", async () => {
-		const catalog = await seededCatalog(catalogOf([]));
-
-		await expect(new DrivenLlmProvider(catalog).getModel()).rejects.toThrow(
+	it("explains when nothing is configured", async () => {
+		await expect(new DrivenLlmProvider().getModel()).rejects.toThrow(
 			/No language model is configured/,
 		);
 	});
 
-	it("rejects a malformed composite id", async () => {
-		await expect((await setup()).getModel("llama")).rejects.toThrow(
-			/expected "<provider>:<model>"/,
+	it("explains when the selected connection is gone", async () => {
+		await writeSelectedModel("gone:gpt-4o");
+		await expect(new DrivenLlmProvider().getModel()).rejects.toThrow(
+			/"gone" no longer exists/,
 		);
-	});
-
-	it("names the provider when it is no longer in the registry", async () => {
-		await expect((await setup()).getModel("bedrock:claude")).rejects.toThrow(
-			/Unknown provider "bedrock"/,
-		);
-	});
-
-	it("requires a key before building a model", async () => {
-		const catalog = await seededCatalog(
-			catalogOf([
-				{
-					id: "groq",
-					models: [
-						"llama",
-					],
-				},
-			]),
-		);
-
-		await expect(
-			new DrivenLlmProvider(catalog).getModel("groq:llama"),
-		).rejects.toThrow(/No API key stored for "groq"/);
-	});
-});
-
-describe("provider resolution", () => {
-	it("prefers a custom provider over a registry entry of the same id", async () => {
-		const catalog = await seededCatalog(
-			catalogOf([
-				{
-					id: "groq",
-					models: [
-						"llama",
-					],
-				},
-			]),
-		);
-		await upsertCustomProvider({
-			id: "groq",
-			name: "My Groq proxy",
-			baseUrl: "http://localhost:9000/v1",
-		});
-
-		// The user's own definition is the more specific intent.
-		expect(
-			await new DrivenLlmProvider(catalog).resolveProvider("groq"),
-		).toMatchObject({
-			name: "My Groq proxy",
-			api: "http://localhost:9000/v1",
-			custom: true,
-		});
-	});
-
-	it("selects the Copilot device flow for that provider only", async () => {
-		const registry = new DrivenLlmProvider(await seededCatalog(catalogOf([])));
-
-		expect(registry.authFor("github-copilot")).toBe(registry.copilot);
-		expect(registry.authFor("groq")).not.toBe(registry.copilot);
 	});
 });

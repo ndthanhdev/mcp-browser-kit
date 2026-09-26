@@ -1,50 +1,37 @@
+import type { LlmProviderDescriptor } from "@mcp-browser-kit/core-extension";
 import type {
-	CatalogEntry,
-	CustomProvider,
-	ProbeResult,
+	Connection,
+	ModelListResult,
 } from "@mcp-browser-kit/extension-driven-llm-provider";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Alert from "@mui/material/Alert";
 import AppBar from "@mui/material/AppBar";
+import Autocomplete from "@mui/material/Autocomplete";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import LinearProgress from "@mui/material/LinearProgress";
+import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import { CopilotSignInCard } from "@/components/fragments/copilot-sign-in-card";
-import { CustomProviderForm } from "@/components/fragments/custom-provider-form";
-import { ModelPicker } from "@/components/fragments/model-picker";
-import { ProviderCredentialList } from "@/components/fragments/provider-credential-list";
-import type {
-	CatalogStatus,
-	CopilotSignInState,
-	ProviderRow,
-} from "@/hooks/use-agent-settings";
+import { useState } from "react";
+import { ConnectionForm } from "@/components/fragments/connection-form";
 
 export interface SettingsScreenProps {
 	backHref: string;
-	providers: ProviderRow[];
-	configuredProviderIds: string[];
+	connections: Connection[];
+	models: LlmProviderDescriptor[];
+	modelsLoading: boolean;
 	selectedModel?: string;
-	catalogStatus: CatalogStatus;
-	catalogError?: string;
-	copilotEnabled: boolean;
-	copilotAccount?: string;
-	copilotConfigured: boolean;
-	copilotSignIn: CopilotSignInState;
-	search: (query: string, limit?: number) => CatalogEntry[];
-	onRetryCatalog: () => void;
-	onSaveApiKey: (providerId: string, apiKey: string) => void;
-	onSelectModel: (providerId: string, modelId: string) => void;
-	onSignOut: (providerId: string) => void;
-	onProbeCustom: (baseUrl: string, apiKey?: string) => Promise<ProbeResult>;
-	onSaveCustom: (provider: CustomProvider, apiKey?: string) => void;
-	onRemoveCustom: (providerId: string) => void;
-	onCopilotSignIn: () => void;
-	onCopilotCancel: () => void;
+	onSelectModel: (compositeModelId: string) => void;
+	onTestConnection: (
+		connection: Pick<Connection, "baseUrl" | "apiKey">,
+	) => Promise<ModelListResult>;
+	onSaveConnection: (connection: Connection) => void;
+	onDeleteConnection: (connectionId: string) => void;
 }
 
 const sectionTitle = (text: string) => (
@@ -53,134 +40,191 @@ const sectionTitle = (text: string) => (
 	</Typography>
 );
 
-/** Provider credentials and model selection, over the models.dev registry. */
-export const SettingsScreen = ({
-	backHref,
-	providers,
-	configuredProviderIds,
-	selectedModel,
-	catalogStatus,
-	catalogError,
-	copilotEnabled,
-	copilotAccount,
-	copilotConfigured,
-	copilotSignIn,
-	search,
-	onRetryCatalog,
-	onSaveApiKey,
-	onSelectModel,
-	onSignOut,
-	onProbeCustom,
-	onSaveCustom,
-	onRemoveCustom,
-	onCopilotSignIn,
-	onCopilotCancel,
-}: SettingsScreenProps) => (
-	<>
-		<AppBar position="static" color="default" elevation={0}>
-			<Toolbar
-				variant="dense"
-				sx={{
-					gap: 1,
-				}}
-			>
-				<IconButton
-					edge="start"
-					color="inherit"
-					component="a"
-					href={backHref}
-					aria-label="Back to chat"
-				>
-					<ArrowBackIcon />
-				</IconButton>
-				<Typography
-					variant="subtitle2"
-					sx={{
-						flexGrow: 1,
-					}}
-				>
-					Settings
-				</Typography>
-			</Toolbar>
-		</AppBar>
-
-		{/* The catalog is fetched at runtime, so the picker really is empty until
-		    it lands. Say so rather than showing an empty list that reads as
-		    "no providers exist". */}
-		{catalogStatus === "loading" ? <LinearProgress /> : null}
-
-		<Box
+const ConnectionRow = ({
+	connection,
+	takenIds,
+	onTest,
+	onSave,
+	onDelete,
+}: {
+	connection: Connection;
+	takenIds: string[];
+	onTest: SettingsScreenProps["onTestConnection"];
+	onSave: (connection: Connection) => void;
+	onDelete: () => void;
+}) => {
+	const [editing, setEditing] = useState(false);
+	return (
+		<Paper
+			variant="outlined"
 			sx={{
-				overflowY: "auto",
-				p: 2,
+				p: 1.5,
 			}}
 		>
-			<Stack spacing={3}>
-				{catalogStatus === "error" ? (
-					<Alert
-						severity="warning"
-						action={
-							<Button size="small" onClick={onRetryCatalog}>
-								Retry
-							</Button>
-						}
+			{editing ? (
+				<ConnectionForm
+					initial={connection}
+					takenIds={takenIds}
+					onTest={onTest}
+					onSave={(next) => {
+						onSave(next);
+						setEditing(false);
+					}}
+					onCancel={() => setEditing(false)}
+				/>
+			) : (
+				<Stack
+					direction="row"
+					spacing={1}
+					sx={{
+						alignItems: "center",
+					}}
+				>
+					<Box
+						sx={{
+							flexGrow: 1,
+							minWidth: 0,
+						}}
 					>
-						Could not load the model list from models.dev.
-						{catalogError ? ` ${catalogError}` : ""}
-					</Alert>
-				) : null}
-
-				<Stack spacing={1}>
-					{sectionTitle("Model")}
-					<ModelPicker
-						search={search}
-						selectedModel={selectedModel}
-						configuredProviderIds={configuredProviderIds}
-						onSelect={onSelectModel}
-					/>
+						<Typography variant="body2">{connection.name}</Typography>
+						<Typography variant="caption" color="text.secondary" noWrap>
+							{connection.baseUrl}
+						</Typography>
+					</Box>
+					<Button size="small" onClick={() => setEditing(true)}>
+						Edit
+					</Button>
+					<Button size="small" color="error" onClick={onDelete}>
+						Remove
+					</Button>
 				</Stack>
+			)}
+		</Paper>
+	);
+};
 
-				<Divider />
+/** OpenAI-compatible connections and model selection. */
+export const SettingsScreen = ({
+	backHref,
+	connections,
+	models,
+	modelsLoading,
+	selectedModel,
+	onSelectModel,
+	onTestConnection,
+	onSaveConnection,
+	onDeleteConnection,
+}: SettingsScreenProps) => {
+	const takenIds = connections.map((connection) => connection.id);
+	const selected =
+		models.find((model) => model.id === selectedModel) ??
+		(selectedModel
+			? {
+					id: selectedModel,
+					label: selectedModel,
+				}
+			: null);
 
-				<Stack spacing={1}>
-					{sectionTitle("Providers")}
-					{copilotEnabled ? (
-						<Alert severity="warning">
-							GitHub publishes no third-party API for Copilot. Signing in below
-							authenticates as an editor would, which is contrary to the Copilot
-							terms of service and may get your account rate-limited or flagged.
-						</Alert>
-					) : null}
-					<ProviderCredentialList
-						providers={providers}
-						copilotEnabled={copilotEnabled}
-						copilotSlot={
-							<CopilotSignInCard
-								state={copilotSignIn}
-								login={copilotAccount}
-								signedIn={copilotConfigured}
-								onSignIn={onCopilotSignIn}
-								onCancel={onCopilotCancel}
-								onSignOut={() => onSignOut("github-copilot")}
+	return (
+		<>
+			<AppBar position="static" color="default" elevation={0}>
+				<Toolbar
+					variant="dense"
+					sx={{
+						gap: 1,
+					}}
+				>
+					<IconButton
+						edge="start"
+						color="inherit"
+						component="a"
+						href={backHref}
+						aria-label="Back to chat"
+					>
+						<ArrowBackIcon />
+					</IconButton>
+					<Typography
+						variant="subtitle2"
+						sx={{
+							flexGrow: 1,
+						}}
+					>
+						Settings
+					</Typography>
+				</Toolbar>
+			</AppBar>
+
+			{modelsLoading ? <LinearProgress /> : null}
+
+			<Box
+				sx={{
+					overflowY: "auto",
+					p: 2,
+				}}
+			>
+				<Stack spacing={3}>
+					<Stack spacing={1}>
+						{sectionTitle("Model")}
+						{connections.length === 0 ? (
+							<Alert severity="info">
+								Add a connection below to choose a model.
+							</Alert>
+						) : (
+							<Autocomplete
+								size="small"
+								options={models}
+								value={selected}
+								loading={modelsLoading}
+								isOptionEqualToValue={(option, value) => option.id === value.id}
+								getOptionLabel={(option) => option.label}
+								onChange={(_event, value) => {
+									if (value) {
+										onSelectModel(value.id);
+									}
+								}}
+								renderInput={(params) => (
+									<TextField
+										{...params}
+										label="Model"
+										helperText="Pick a model that supports tool calling."
+									/>
+								)}
 							/>
-						}
-						onSaveApiKey={onSaveApiKey}
-						onSignOut={onSignOut}
-						onRemoveCustom={onRemoveCustom}
-					/>
-				</Stack>
+						)}
+					</Stack>
 
-				<Divider />
+					<Divider />
 
-				<Stack spacing={1}>
-					{sectionTitle("Add a custom provider")}
-					<CustomProviderForm
-						takenIds={providers.map((provider) => provider.id)}
-						onProbe={onProbeCustom}
-						onSave={onSaveCustom}
-					/>
+					<Stack spacing={1}>
+						{sectionTitle("Connections")}
+						{connections.map((connection) => (
+							<ConnectionRow
+								key={connection.id}
+								connection={connection}
+								takenIds={takenIds}
+								onTest={onTestConnection}
+								onSave={onSaveConnection}
+								onDelete={() => onDeleteConnection(connection.id)}
+							/>
+						))}
+					</Stack>
+
+					<Divider />
+
+					<Stack spacing={1}>
+						{sectionTitle("Add a connection")}
+						<Typography variant="body2" color="text.secondary">
+							Any OpenAI-compatible endpoint works: OpenAI, Anthropic, Gemini,
+							OpenRouter, Groq, Ollama, LM Studio, or your own proxy.
+						</Typography>
+						<ConnectionForm
+							takenIds={takenIds}
+							onTest={onTestConnection}
+							onSave={onSaveConnection}
+						/>
+					</Stack>
 				</Stack>
-			</Stack>
-		</Box>
-	</>
-);
+			</Box>
+		</>
+	);
+};

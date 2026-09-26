@@ -5,247 +5,109 @@ import {
 } from "../testing/webextension-polyfill-stub";
 import {
 	AGENT_SETTINGS_STORAGE_KEY,
-	clearProviderCredential,
 	parseCompositeModelId,
 	readAgentSettings,
-	removeCustomProvider,
+	removeConnection,
 	toCompositeModelId,
-	updateProviderCredential,
-	upsertCustomProvider,
+	upsertConnection,
 	writeSelectedModel,
 } from "./agent-settings-storage";
+
+const ollama = {
+	id: "ollama",
+	name: "Ollama",
+	baseUrl: "http://localhost:11434/v1",
+};
 
 beforeEach(() => {
 	resetBrowserStub();
 });
 
 describe("composite model ids", () => {
-	it("splits on the first colon so variant slugs survive", () => {
-		expect(parseCompositeModelId("openrouter:openai/gpt-4o:extended")).toEqual({
-			providerId: "openrouter",
-			modelId: "openai/gpt-4o:extended",
+	it("splits on the first colon so tagged model ids survive", () => {
+		expect(parseCompositeModelId("ollama:llama3:8b")).toEqual({
+			connectionId: "ollama",
+			modelId: "llama3:8b",
 		});
 	});
 
-	it("rejects ids with no provider or no model", () => {
+	it("rejects ids with no connection or no model", () => {
 		expect(parseCompositeModelId("gpt-4o")).toBeUndefined();
 		expect(parseCompositeModelId(":gpt-4o")).toBeUndefined();
-		expect(parseCompositeModelId("copilot:")).toBeUndefined();
+		expect(parseCompositeModelId("openai:")).toBeUndefined();
 	});
 
 	it("round-trips", () => {
 		expect(
-			parseCompositeModelId(toCompositeModelId("github-copilot", "gpt-4o")),
+			parseCompositeModelId(toCompositeModelId("openai", "gpt-4o")),
 		).toEqual({
-			providerId: "github-copilot",
+			connectionId: "openai",
 			modelId: "gpt-4o",
 		});
 	});
 });
 
-describe("migration from the single-key shape (v1)", () => {
-	it("moves openRouterApiKey into the id-keyed credentials record", async () => {
-		resetBrowserStub({
-			[AGENT_SETTINGS_STORAGE_KEY]: {
-				openRouterApiKey: "sk-legacy",
-				modelId: "anthropic/claude-3.7-sonnet",
-			},
-		});
-
+describe("agent settings", () => {
+	it("starts empty", async () => {
 		expect(await readAgentSettings()).toEqual({
-			credentials: {
-				openrouter: {
-					apiKey: "sk-legacy",
-				},
-			},
-			selectedModel: "openrouter:anthropic/claude-3.7-sonnet",
-			customProviders: [],
+			connections: [],
 		});
 	});
 
-	it("does not invent a credential when the legacy key was unset", async () => {
+	it("ignores settings stored under older keys", async () => {
 		resetBrowserStub({
-			[AGENT_SETTINGS_STORAGE_KEY]: {},
-		});
-
-		expect((await readAgentSettings()).credentials).toEqual({});
-	});
-});
-
-describe("migration from the fixed-slice shape (v2)", () => {
-	it("re-keys copilot to the id models.dev uses", async () => {
-		resetBrowserStub({
-			[AGENT_SETTINGS_STORAGE_KEY]: {
-				credentials: {
-					copilot: {
-						oauthToken: "gho_x",
-						login: "octocat",
-					},
-				},
-				selectedModel: "copilot:gpt-4o",
-			},
-		});
-
-		// The registry calls it `github-copilot`; without re-keying, lookups miss
-		// and the user appears signed out.
-		expect(await readAgentSettings()).toEqual({
-			credentials: {
-				"github-copilot": {
-					oauthToken: "gho_x",
-					account: "octocat",
-				},
-			},
-			selectedModel: "github-copilot:gpt-4o",
-			customProviders: [],
-		});
-	});
-
-	it("carries an openrouter key across unchanged", async () => {
-		resetBrowserStub({
-			[AGENT_SETTINGS_STORAGE_KEY]: {
+			"mbk.agent.settings": {
 				credentials: {
 					openrouter: {
-						apiKey: "sk-a",
+						apiKey: "sk-old",
 					},
 				},
-				selectedModel: "openrouter:openai/gpt-4o",
 			},
 		});
-
-		expect(await readAgentSettings()).toMatchObject({
-			credentials: {
-				openrouter: {
-					apiKey: "sk-a",
-				},
-			},
-			selectedModel: "openrouter:openai/gpt-4o",
-		});
+		expect((await readAgentSettings()).connections).toEqual([]);
 	});
 
-	it("leaves already-current settings alone", async () => {
-		const current = {
-			credentials: {
-				groq: {
-					apiKey: "k",
-				},
-			},
-			selectedModel: "groq:llama",
-			customProviders: [],
-		};
-		resetBrowserStub({
-			[AGENT_SETTINGS_STORAGE_KEY]: current,
-		});
-
-		expect(await readAgentSettings()).toEqual(current);
-	});
-
-	it("returns empty settings when nothing is persisted", async () => {
-		expect(await readAgentSettings()).toEqual({
-			credentials: {},
-			customProviders: [],
-		});
-	});
-});
-
-describe("partial writes", () => {
-	it("updates one provider without clobbering the others", async () => {
-		await updateProviderCredential("groq", () => ({
-			apiKey: "gk",
-		}));
-		await writeSelectedModel("groq:llama");
-		await updateProviderCredential("github-copilot", () => ({
-			oauthToken: "gho_b",
-		}));
-
-		expect(await readAgentSettings()).toEqual({
-			credentials: {
-				groq: {
-					apiKey: "gk",
-				},
-				"github-copilot": {
-					oauthToken: "gho_b",
-				},
-			},
-			selectedModel: "groq:llama",
-			customProviders: [],
-		});
-	});
-
-	it("hands the current credential to the updater so it can merge", async () => {
-		await updateProviderCredential("github-copilot", () => ({
-			oauthToken: "gho_b",
-		}));
-		await updateProviderCredential("github-copilot", (current) => ({
-			...current,
-			account: "octocat",
-		}));
-
-		expect((await readAgentSettings()).credentials["github-copilot"]).toEqual({
-			oauthToken: "gho_b",
-			account: "octocat",
-		});
-	});
-
-	it("clears one provider's credential and leaves the rest", async () => {
-		await updateProviderCredential("groq", () => ({
-			apiKey: "gk",
-		}));
-		await updateProviderCredential("mistral", () => ({
-			apiKey: "mk",
-		}));
-
-		await clearProviderCredential("groq");
-
-		expect(Object.keys((await readAgentSettings()).credentials)).toEqual([
-			"mistral",
-		]);
-	});
-
-	it("persists under the pinned storage key", async () => {
-		await writeSelectedModel("groq:llama");
-		expect(Object.keys(readBrowserStubStore())).toEqual([
-			AGENT_SETTINGS_STORAGE_KEY,
-		]);
-	});
-});
-
-describe("custom providers", () => {
-	const ollama = {
-		id: "ollama",
-		name: "Ollama",
-		baseUrl: "http://localhost:11434/v1",
-	};
-
-	it("adds one", async () => {
-		await upsertCustomProvider(ollama);
-		expect((await readAgentSettings()).customProviders).toEqual([
-			ollama,
-		]);
-	});
-
-	it("replaces rather than duplicates on the same id", async () => {
-		await upsertCustomProvider(ollama);
-		await upsertCustomProvider({
+	it("adds, replaces and removes connections", async () => {
+		await upsertConnection(ollama);
+		await upsertConnection({
 			...ollama,
-			name: "Ollama (renamed)",
+			name: "Local",
 		});
+		expect((await readAgentSettings()).connections).toEqual([
+			{
+				...ollama,
+				name: "Local",
+			},
+		]);
 
-		const { customProviders } = await readAgentSettings();
-		expect(customProviders).toHaveLength(1);
-		expect(customProviders[0].name).toBe("Ollama (renamed)");
+		await removeConnection("ollama");
+		expect((await readAgentSettings()).connections).toEqual([]);
 	});
 
-	it("removes the provider and its credential together", async () => {
-		await upsertCustomProvider(ollama);
-		await updateProviderCredential("ollama", () => ({
-			apiKey: "k",
-		}));
+	it("clears the selection when its connection is removed", async () => {
+		await upsertConnection(ollama);
+		await writeSelectedModel("ollama:llama3");
+		await removeConnection("ollama");
+		expect((await readAgentSettings()).selectedModel).toBeUndefined();
+	});
 
-		await removeCustomProvider("ollama");
+	it("keeps the selection when another connection is removed", async () => {
+		await upsertConnection(ollama);
+		await upsertConnection({
+			...ollama,
+			id: "other",
+		});
+		await writeSelectedModel("ollama:llama3");
+		await removeConnection("other");
+		expect((await readAgentSettings()).selectedModel).toBe("ollama:llama3");
+	});
 
-		const settings = await readAgentSettings();
-		expect(settings.customProviders).toEqual([]);
-		// A stranded credential would make the provider look configured forever.
-		expect(settings.credentials.ollama).toBeUndefined();
+	it("persists under the versioned key", async () => {
+		await upsertConnection(ollama);
+		expect(readBrowserStubStore()[AGENT_SETTINGS_STORAGE_KEY]).toEqual({
+			connections: [
+				ollama,
+			],
+		});
 	});
 });

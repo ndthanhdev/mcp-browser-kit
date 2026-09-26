@@ -1,9 +1,5 @@
 import "core-js/proposals";
-import {
-	FeatureFlagsOutputPort,
-	LlmProviderOutputPort,
-} from "@mcp-browser-kit/core-extension";
-import { DrivenLlmProvider } from "@mcp-browser-kit/extension-driven-llm-provider";
+import { FeatureFlagsOutputPort } from "@mcp-browser-kit/core-extension";
 import {
 	AgentPortGate,
 	ExtensionDrivingAgentRpc,
@@ -93,18 +89,6 @@ const startAgent = async (gate: AgentPortGate) => {
 		// Close any waiting sidepanel connection rather than leaving it hanging.
 		gate.refuse();
 		return;
-	}
-
-	// Warm the models.dev catalog so the settings picker has something to show.
-	// Failure is not fatal — the registry falls back to a cached copy, and the
-	// settings page surfaces the error and offers a retry.
-	const llmProvider = container.get<LlmProviderOutputPort>(
-		LlmProviderOutputPort,
-	);
-	if (llmProvider instanceof DrivenLlmProvider) {
-		void llmProvider.catalog.refreshIfStale().catch((error: unknown) => {
-			console.warn("Could not refresh the models.dev catalog", error);
-		});
 	}
 
 	container.get<ExtensionDrivingAgentRpc>(ExtensionDrivingAgentRpc).start(gate);
