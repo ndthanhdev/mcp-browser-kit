@@ -7,10 +7,49 @@ import { LoggerFactoryOutputPort as LoggerFactoryOutputPortSymbol } from "@mcp-b
 import type { Logger } from "@mcp-browser-kit/types";
 import { inject, injectable } from "inversify";
 import { config } from "../config";
+import {
+	type ActionabilityCheck,
+	waitForActionable,
+	waitForDomQuiet,
+} from "../utils/auto-wait";
 import * as dom from "../utils/dom-tools";
 import { CORRELATE_MESSAGE_TYPE } from "../utils/frame-correlation";
 import { TabAnimationTools } from "./tab-animation-tools";
 import { TabContextStore } from "./tab-context-store";
+
+/** Minted once per document load: a new value means the document was replaced. */
+const documentId = crypto.randomUUID();
+
+const CLICK_CHECKS: ActionabilityCheck[] = [
+	"visible",
+	"stable",
+	"enabled",
+	"receivesEvents",
+];
+const FILL_CHECKS: ActionabilityCheck[] = [
+	"visible",
+	"enabled",
+	"editable",
+];
+const ENTER_CHECKS: ActionabilityCheck[] = [
+	"visible",
+	"enabled",
+];
+// Scroll targets are often layout wrappers with no box of their own, so only
+// the attached check (always applied) makes sense.
+const SCROLL_CHECKS: ActionabilityCheck[] = [];
+// A coordinate target is under the point by definition; it just has to be usable.
+const COORDINATE_CHECKS: ActionabilityCheck[] = [
+	"enabled",
+];
+
+const waitUntilActionable = (
+	element: HTMLElement,
+	checks: ActionabilityCheck[],
+) => waitForActionable(element, checks, config.actionabilityTimeoutMs);
+
+const waitUntilSettled = () =>
+	waitForDomQuiet(config.settleQuietMs, config.settleTimeoutMs);
 
 interface Strategy {
 	label: string;
@@ -74,6 +113,7 @@ export class TabDomTools {
 			`Scrolling ${direction}${amount != null ? ` by ${amount}px` : ""}`,
 		);
 		dom.scrollPage(direction, amount ?? undefined);
+		await waitUntilSettled();
 		this.logger.verbose("Scroll completed");
 	};
 
@@ -92,8 +132,27 @@ export class TabDomTools {
 			return;
 		}
 
+		await waitUntilActionable(element, SCROLL_CHECKS);
 		dom.scrollElement(element, direction, amount ?? undefined);
+		await waitUntilSettled();
 		this.logger.verbose("Scroll element completed");
+	};
+
+	/** Identifies the current document; see `documentId`. */
+	getDocumentState = (): {
+		documentId: string;
+	} => ({
+		documentId,
+	});
+
+	/** Waits for this frame's DOM to go quiet, then reports the document id. */
+	waitForSettled = async (): Promise<{
+		documentId: string;
+	}> => {
+		await waitUntilSettled();
+		return {
+			documentId,
+		};
 	};
 
 	/**
@@ -130,6 +189,10 @@ export class TabDomTools {
 
 	clickOnCoordinates = async (x: number, y: number) => {
 		this.logger.info(`Clicking on coordinates (${x}, ${y})`);
+		const target = document.elementFromPoint(x, y);
+		if (target instanceof HTMLElement) {
+			await waitUntilActionable(target, COORDINATE_CHECKS);
+		}
 		await this.animation.playClickAnimation(x, y);
 
 		const element = document.elementFromPoint(x, y) as HTMLElement | null;
@@ -160,20 +223,22 @@ export class TabDomTools {
 				acceptAnyMutation: true,
 			},
 		);
+		await waitUntilSettled();
 		this.logger.verbose("Click on coordinates completed");
 	};
 
 	clickOnElementByReadablePath = async (readablePath: string) => {
 		this.logger.info(`Clicking on element at path: ${readablePath}`);
-		await this.animation.playClickAnimationOnElementByReadablePath(
-			readablePath,
-		);
-
 		const element = this.contextStore.getElementFromPath(readablePath);
 		if (!element) {
 			this.logger.warn(`Element not found at path: ${readablePath}`);
 			return;
 		}
+
+		await waitUntilActionable(element, CLICK_CHECKS);
+		await this.animation.playClickAnimationOnElementByReadablePath(
+			readablePath,
+		);
 
 		const prevActiveEl = document.activeElement;
 		const prevAriaPressed = element.getAttribute("aria-pressed");
@@ -200,6 +265,7 @@ export class TabDomTools {
 				acceptAnyMutation: true,
 			},
 		);
+		await waitUntilSettled();
 		this.logger.verbose("Click on element completed");
 	};
 
@@ -226,15 +292,16 @@ export class TabDomTools {
 		this.logger.info(
 			`Filling text to element at path: ${readablePath}, value length: ${value.length}`,
 		);
-		await this.animation.playClickAnimationOnElementByReadablePath(
-			readablePath,
-		);
-
 		const element = this.contextStore.getElementFromPath(readablePath);
 		if (!element) {
 			this.logger.warn(`Element not found at path: ${readablePath}`);
 			return;
 		}
+
+		await waitUntilActionable(element, FILL_CHECKS);
+		await this.animation.playClickAnimationOnElementByReadablePath(
+			readablePath,
+		);
 
 		await withActVerify(
 			`fillTextToElementByReadablePath(${readablePath})`,
@@ -255,6 +322,7 @@ export class TabDomTools {
 			],
 			() => dom.verifyFillEffect(element, value),
 		);
+		await waitUntilSettled();
 		this.logger.verbose("Fill text completed");
 	};
 
@@ -263,6 +331,9 @@ export class TabDomTools {
 			`Filling text to focused element, value length: ${value.length}`,
 		);
 		const focusedElement = document.activeElement;
+		if (focusedElement instanceof HTMLElement) {
+			await waitUntilActionable(focusedElement, FILL_CHECKS);
+		}
 		if (focusedElement) {
 			await this.animation.playClickAnimationOnElement(focusedElement);
 		}
@@ -293,6 +364,7 @@ export class TabDomTools {
 			],
 			() => (element ? dom.verifyFillEffect(element, value) : true),
 		);
+		await waitUntilSettled();
 		this.logger.verbose("Fill text to focused element completed");
 	};
 
@@ -329,15 +401,16 @@ export class TabDomTools {
 
 	hitEnterOnElementByReadablePath = async (readablePath: string) => {
 		this.logger.info(`Hitting enter on element at path: ${readablePath}`);
-		await this.animation.playClickAnimationOnElementByReadablePath(
-			readablePath,
-		);
-
 		const element = this.contextStore.getElementFromPath(readablePath);
 		if (!element) {
 			this.logger.warn(`Element not found at path: ${readablePath}`);
 			return;
 		}
+
+		await waitUntilActionable(element, ENTER_CHECKS);
+		await this.animation.playClickAnimationOnElementByReadablePath(
+			readablePath,
+		);
 
 		const prevHref = location.href;
 
@@ -363,12 +436,16 @@ export class TabDomTools {
 				acceptAnyMutation: true,
 			},
 		);
+		await waitUntilSettled();
 		this.logger.verbose("Hit enter on element completed");
 	};
 
 	hitEnterOnFocusedElement = async () => {
 		this.logger.info("Hitting enter on focused element");
 		const focusedElement = document.activeElement;
+		if (focusedElement instanceof HTMLElement) {
+			await waitUntilActionable(focusedElement, ENTER_CHECKS);
+		}
 		if (focusedElement) {
 			await this.animation.playClickAnimationOnElement(focusedElement);
 		}
@@ -403,6 +480,7 @@ export class TabDomTools {
 				acceptAnyMutation: true,
 			},
 		);
+		await waitUntilSettled();
 		this.logger.verbose("Hit enter on focused element completed");
 	};
 

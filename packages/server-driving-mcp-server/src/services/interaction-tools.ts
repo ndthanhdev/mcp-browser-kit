@@ -12,11 +12,11 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
 import { registerTool } from "../utils/register-tool";
-import { createOverResponse } from "../utils/tool-helpers";
+import { createOverResponse, formatPageChange } from "../utils/tool-helpers";
 import {
-	actionOutputSchema,
 	coordinateSchema,
 	coordinateTextInputSchema,
+	pageChangeOutputSchema,
 	readableElementSchema,
 	readableElementTextInputSchema,
 	scrollElementSchema,
@@ -60,7 +60,7 @@ export class InteractionTools {
 				title: "Scroll the page",
 				description: this.toolDescriptionsInputPort.scrollPageInstruction(),
 				inputSchema: scrollPageSchema,
-				outputSchema: actionOutputSchema,
+				outputSchema: pageChangeOutputSchema,
 				annotations: {
 					readOnlyHint: false,
 					destructiveHint: false,
@@ -93,7 +93,7 @@ export class InteractionTools {
 						amount,
 						reason: overScroll.reason,
 					});
-					return createOverResponse(actionOutputSchema, {
+					return createOverResponse(pageChangeOutputSchema, {
 						ok: false,
 						reason: String(overScroll.reason),
 					});
@@ -106,12 +106,12 @@ export class InteractionTools {
 					amount,
 				});
 				return createOverResponse(
-					actionOutputSchema,
+					pageChangeOutputSchema,
 					{
 						ok: true,
-						value: {},
+						value: overScroll.value,
 					},
-					"Done",
+					formatPageChange(overScroll.value),
 				);
 			},
 		);
@@ -126,7 +126,7 @@ export class InteractionTools {
 				title: "Scroll an element",
 				description: this.toolDescriptionsInputPort.scrollElementInstruction(),
 				inputSchema: scrollElementSchema,
-				outputSchema: actionOutputSchema,
+				outputSchema: pageChangeOutputSchema,
 				annotations: {
 					readOnlyHint: false,
 					destructiveHint: false,
@@ -169,7 +169,7 @@ export class InteractionTools {
 						amount,
 						reason: overScroll.reason,
 					});
-					return createOverResponse(actionOutputSchema, {
+					return createOverResponse(pageChangeOutputSchema, {
 						ok: false,
 						reason: String(overScroll.reason),
 					});
@@ -183,12 +183,12 @@ export class InteractionTools {
 					amount,
 				});
 				return createOverResponse(
-					actionOutputSchema,
+					pageChangeOutputSchema,
 					{
 						ok: true,
-						value: {},
+						value: overScroll.value,
 					},
-					"Done",
+					formatPageChange(overScroll.value),
 				);
 			},
 		);
@@ -204,7 +204,7 @@ export class InteractionTools {
 				description:
 					this.toolDescriptionsInputPort.clickOnViewableElementInstruction(),
 				inputSchema: coordinateSchema,
-				outputSchema: actionOutputSchema,
+				outputSchema: pageChangeOutputSchema,
 				annotations: {
 					readOnlyHint: false,
 					destructiveHint: false,
@@ -237,7 +237,7 @@ export class InteractionTools {
 						y,
 						reason: overClick.reason,
 					});
-					return createOverResponse(actionOutputSchema, {
+					return createOverResponse(pageChangeOutputSchema, {
 						ok: false,
 						reason: String(overClick.reason),
 					});
@@ -250,12 +250,12 @@ export class InteractionTools {
 					y,
 				});
 				return createOverResponse(
-					actionOutputSchema,
+					pageChangeOutputSchema,
 					{
 						ok: true,
-						value: {},
+						value: overClick.value,
 					},
-					"Done",
+					formatPageChange(overClick.value),
 				);
 			},
 		);
@@ -271,7 +271,7 @@ export class InteractionTools {
 				description:
 					this.toolDescriptionsInputPort.fillTextToViewableElementInstruction(),
 				inputSchema: coordinateTextInputSchema,
-				outputSchema: actionOutputSchema,
+				outputSchema: pageChangeOutputSchema,
 				annotations: {
 					readOnlyHint: false,
 					destructiveHint: false,
@@ -305,7 +305,7 @@ export class InteractionTools {
 						y,
 						reason: overFill.reason,
 					});
-					return createOverResponse(actionOutputSchema, {
+					return createOverResponse(pageChangeOutputSchema, {
 						ok: false,
 						reason: String(overFill.reason),
 					});
@@ -319,12 +319,12 @@ export class InteractionTools {
 					valueLength: value.length,
 				});
 				return createOverResponse(
-					actionOutputSchema,
+					pageChangeOutputSchema,
 					{
 						ok: true,
-						value: {},
+						value: overFill.value,
 					},
-					"Done",
+					formatPageChange(overFill.value),
 				);
 			},
 		);
@@ -340,7 +340,7 @@ export class InteractionTools {
 				description:
 					this.toolDescriptionsInputPort.hitEnterOnViewableElementInstruction(),
 				inputSchema: coordinateSchema,
-				outputSchema: actionOutputSchema,
+				outputSchema: pageChangeOutputSchema,
 				annotations: {
 					readOnlyHint: false,
 					destructiveHint: false,
@@ -373,7 +373,7 @@ export class InteractionTools {
 						y,
 						reason: overEnter.reason,
 					});
-					return createOverResponse(actionOutputSchema, {
+					return createOverResponse(pageChangeOutputSchema, {
 						ok: false,
 						reason: String(overEnter.reason),
 					});
@@ -386,12 +386,12 @@ export class InteractionTools {
 					y,
 				});
 				return createOverResponse(
-					actionOutputSchema,
+					pageChangeOutputSchema,
 					{
 						ok: true,
-						value: {},
+						value: overEnter.value,
 					},
-					"Done",
+					formatPageChange(overEnter.value),
 				);
 			},
 		);
@@ -407,7 +407,7 @@ export class InteractionTools {
 				description:
 					this.toolDescriptionsInputPort.clickOnReadableElementInstruction(),
 				inputSchema: readableElementSchema,
-				outputSchema: actionOutputSchema,
+				outputSchema: pageChangeOutputSchema,
 				annotations: {
 					readOnlyHint: false,
 					destructiveHint: false,
@@ -437,7 +437,7 @@ export class InteractionTools {
 						readablePath,
 						reason: overClick.reason,
 					});
-					return createOverResponse(actionOutputSchema, {
+					return createOverResponse(pageChangeOutputSchema, {
 						ok: false,
 						reason: String(overClick.reason),
 					});
@@ -449,12 +449,12 @@ export class InteractionTools {
 					readablePath,
 				});
 				return createOverResponse(
-					actionOutputSchema,
+					pageChangeOutputSchema,
 					{
 						ok: true,
-						value: {},
+						value: overClick.value,
 					},
-					"Done",
+					formatPageChange(overClick.value),
 				);
 			},
 		);
@@ -470,7 +470,7 @@ export class InteractionTools {
 				description:
 					this.toolDescriptionsInputPort.fillTextToReadableElementInstruction(),
 				inputSchema: readableElementTextInputSchema,
-				outputSchema: actionOutputSchema,
+				outputSchema: pageChangeOutputSchema,
 				annotations: {
 					readOnlyHint: false,
 					destructiveHint: false,
@@ -501,7 +501,7 @@ export class InteractionTools {
 						readablePath,
 						reason: overFill.reason,
 					});
-					return createOverResponse(actionOutputSchema, {
+					return createOverResponse(pageChangeOutputSchema, {
 						ok: false,
 						reason: String(overFill.reason),
 					});
@@ -514,12 +514,12 @@ export class InteractionTools {
 					valueLength: value.length,
 				});
 				return createOverResponse(
-					actionOutputSchema,
+					pageChangeOutputSchema,
 					{
 						ok: true,
-						value: {},
+						value: overFill.value,
 					},
-					"Done",
+					formatPageChange(overFill.value),
 				);
 			},
 		);
@@ -535,7 +535,7 @@ export class InteractionTools {
 				description:
 					this.toolDescriptionsInputPort.hitEnterOnReadableElementInstruction(),
 				inputSchema: readableElementSchema,
-				outputSchema: actionOutputSchema,
+				outputSchema: pageChangeOutputSchema,
 				annotations: {
 					readOnlyHint: false,
 					destructiveHint: false,
@@ -565,7 +565,7 @@ export class InteractionTools {
 						readablePath,
 						reason: overEnter.reason,
 					});
-					return createOverResponse(actionOutputSchema, {
+					return createOverResponse(pageChangeOutputSchema, {
 						ok: false,
 						reason: String(overEnter.reason),
 					});
@@ -577,12 +577,12 @@ export class InteractionTools {
 					readablePath,
 				});
 				return createOverResponse(
-					actionOutputSchema,
+					pageChangeOutputSchema,
 					{
 						ok: true,
-						value: {},
+						value: overEnter.value,
 					},
-					"Done",
+					formatPageChange(overEnter.value),
 				);
 			},
 		);
