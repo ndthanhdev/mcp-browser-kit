@@ -189,7 +189,7 @@ test.describe("Write tool auto-wait and page-change diffs", () => {
 		expectToBeDefined(value);
 		expect(value.changed).toBe(true);
 		expect(value.tooLarge).toBe(true);
-		expect(value.added).toBeGreaterThanOrEqual(300);
+		expect(value.added).toBeGreaterThanOrEqual(1_000);
 		expect(value.diff).toBeUndefined();
 		expect(textOf(result)).toContain("diff too large");
 	});

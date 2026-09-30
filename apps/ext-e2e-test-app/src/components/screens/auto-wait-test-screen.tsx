@@ -11,7 +11,7 @@ export function meta() {
 
 const ENABLE_DELAY_MS = 800;
 const RESULTS_DELAY_MS = 100;
-const MANY_COUNT = 300;
+const MANY_COUNT = 1_000;
 
 export function AutoWaitTestScreen() {
 	const [armed, setArmed] = useState(false);
