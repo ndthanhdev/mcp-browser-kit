@@ -1,5 +1,6 @@
 export * from "./animation-tools";
 export * from "./dom-tools";
+export * from "./get-visible-text";
 export * from "./is-readable";
 export * from "./to-dom-tree";
 export * from "./to-element-records";
