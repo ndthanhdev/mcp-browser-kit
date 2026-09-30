@@ -200,6 +200,30 @@ export function TextTestScreen() {
 					</table>
 				</section>
 
+				<section className="mb-8">
+					<h2 className="text-2xl font-bold mb-4">Inline Style and Script</h2>
+					<span data-testid="inline-style-span">
+						<style
+							// biome-ignore lint/security/noDangerouslySetInnerHtml: test fixture for inline <style> leaking into text
+							dangerouslySetInnerHTML={{
+								__html: ".etxtjc{flex:1 0 auto;width:24px;}",
+							}}
+						/>
+						<div className="etxtjc" role="button">
+							Search by image
+						</div>
+					</span>
+					<p data-testid="inline-script-paragraph">
+						<script
+							// biome-ignore lint/security/noDangerouslySetInnerHtml: test fixture for inline <script> leaking into text
+							dangerouslySetInnerHTML={{
+								__html: "window.__inlineScriptLeak = 1;",
+							}}
+						/>
+						Paragraph after inline script
+					</p>
+				</section>
+
 				<section>
 					<h2 className="text-2xl font-bold mb-4">ARIA Labels</h2>
 					<div className="flex gap-2.5 flex-wrap">
