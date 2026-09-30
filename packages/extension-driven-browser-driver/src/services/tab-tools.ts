@@ -10,6 +10,7 @@ import type {
 } from "@mcp-browser-kit/types";
 import { Readability } from "@mozilla/readability";
 import { inject, injectable } from "inversify";
+import { getVisibleText } from "../utils/get-visible-text";
 import { toDomTree } from "../utils/to-dom-tree";
 import { toElementRecords } from "../utils/to-element-records";
 import { domTreeToReadableTree } from "../utils/to-readable-tree";
@@ -100,12 +101,12 @@ export class TabTools {
 			if (article?.textContent) {
 				return article.textContent.trim();
 			}
-			return document.body.textContent?.trim() ?? "";
+			return getVisibleText(document.body);
 		} catch (error) {
 			this.logger.warn(
 				`Readability failed, using fallback extraction: ${error}`,
 			);
-			return document.body.textContent?.trim() ?? "";
+			return getVisibleText(document.body);
 		}
 	};
 
