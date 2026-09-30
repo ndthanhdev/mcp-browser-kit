@@ -14,6 +14,7 @@ export class TestAppPage extends BasePage {
 	readonly scrollTestUrl = `${TEST_APP_BASE_URL}/scroll-test`;
 	readonly iframeTestUrl = `${TEST_APP_BASE_URL}/iframe-test`;
 	readonly popupTestUrl = `${TEST_APP_BASE_URL}/popup-test`;
+	readonly autoWaitTestUrl = `${TEST_APP_BASE_URL}/auto-wait-test`;
 
 	readonly pageTitle: Locator;
 
@@ -79,6 +80,11 @@ export class TestAppPage extends BasePage {
 	async navigateToFallbackTest() {
 		await this.goto(this.fallbackTestUrl);
 		await super.waitForPageLoad(this.getByTestId("resistant-button"));
+	}
+
+	async navigateToAutoWaitTest() {
+		await this.goto(this.autoWaitTestUrl);
+		await super.waitForPageLoad(this.getByTestId("arm-button"));
 	}
 
 	getClickTestLocators() {
@@ -162,6 +168,13 @@ export class TestAppPage extends BasePage {
 			openPopupButton: this.getByTestId("open-popup-button"),
 			openerButton: this.getByTestId("opener-button"),
 			openerClickCount: this.getByTestId("opener-click-count"),
+		};
+	}
+
+	getAutoWaitTestLocators() {
+		return {
+			delayedCount: this.getByTestId("delayed-count"),
+			pickedResult: this.getByTestId("picked-result"),
 		};
 	}
 }

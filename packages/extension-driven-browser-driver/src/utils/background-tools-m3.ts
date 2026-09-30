@@ -11,6 +11,19 @@ export const closeTab = async (tabId: string): Promise<void> => {
 	await browser.tabs.remove(Number.parseInt(tabId, 10));
 };
 
+export const getTabLoadState = async (
+	tabId: string,
+): Promise<{
+	complete: boolean;
+	url: string;
+}> => {
+	const tab = await browser.tabs.get(Number.parseInt(tabId, 10));
+	return {
+		complete: tab.status === "complete",
+		url: tab.url ?? "",
+	};
+};
+
 export const getBrowserInfo = async (): Promise<BrowserInfo> => {
 	const browserInfo = await getBrowserInfoPolyfill();
 

@@ -11,12 +11,16 @@ import {
 import type {
 	ExtensionContext,
 	ExtensionToolName,
+	PageChange,
 	PageSaveFormat,
 	PageSaveResult,
 	Screenshot,
 	ScrollDirection,
 	Selection,
 } from "../types";
+import { diffReadableElements } from "../utils/diff-readable-elements";
+
+const stripHash = (url: string): string => url.split("#")[0];
 
 @injectable()
 export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
@@ -30,20 +34,86 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 	) {
 		this.logger = this.loggerFactory.create("ToolCallHandlersUseCase");
 	}
-	hitEnterOnCoordinates = async (
+
+	/**
+	 * Runs a page-modifying action and reports what it changed. The "before"
+	 * snapshot is not committed, so the action still resolves readablePaths
+	 * against the snapshot the caller last read. If the action fails because
+	 * the page navigated away mid-call, the navigation is the result, not an
+	 * error.
+	 */
+	private withPageChange = async (
+		tabId: string,
+		act: () => Promise<void>,
+	): Promise<PageChange> => {
+		const beforeState = await this.browserDriver.waitForTabSettled(tabId);
+		const before = await this.browserDriver.loadTabContext(tabId, {
+			commit: false,
+			animate: false,
+		});
+
+		let actError: unknown;
+		try {
+			await act();
+		} catch (error) {
+			actError = error;
+		}
+
+		const afterState = await this.browserDriver.waitForTabSettled(
+			tabId,
+			beforeState.documentId,
+		);
+		const navigated =
+			afterState.documentId !== beforeState.documentId ||
+			stripHash(afterState.url) !== stripHash(beforeState.url);
+
+		if (actError !== undefined && !navigated) throw actError;
+
+		if (navigated) {
+			this.logger.info(`Action navigated tab ${tabId} to ${afterState.url}`);
+			return {
+				changed: true,
+				navigated: true,
+				url: afterState.url,
+				added: 0,
+				removed: 0,
+				tooLarge: true,
+				pathsShifted: true,
+			};
+		}
+
+		const after = await this.browserDriver.loadTabContext(tabId, {
+			commit: true,
+			animate: false,
+		});
+		const diff = diffReadableElements(
+			before.readableElementRecords,
+			after.readableElementRecords,
+		);
+		return {
+			...diff,
+			navigated: false,
+			url: afterState.url,
+		};
+	};
+
+	hitEnterOnCoordinates = (
 		tabId: string,
 		x: number,
 		y: number,
-	): Promise<void> => {
-		await this.browserDriver.focusOnCoordinates(tabId, x, y);
-		return this.browserDriver.hitEnterOnFocusedElement(tabId);
-	};
-	hitEnterOnElement = (tabId: string, readablePath: string): Promise<void> => {
-		return this.browserDriver.hitEnterOnElementByReadablePath(
-			tabId,
-			readablePath,
+	): Promise<PageChange> =>
+		this.withPageChange(tabId, async () => {
+			await this.browserDriver.focusOnCoordinates(tabId, x, y);
+			await this.browserDriver.hitEnterOnFocusedElement(tabId);
+		});
+
+	hitEnterOnElement = (
+		tabId: string,
+		readablePath: string,
+	): Promise<PageChange> =>
+		this.withPageChange(tabId, () =>
+			this.browserDriver.hitEnterOnElementByReadablePath(tabId, readablePath),
 		);
-	};
 
 	getExtensionContext = async (): Promise<ExtensionContext> => {
 		this.logger.verbose("getExtensionContext");
@@ -114,57 +184,62 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 		return this.browserDriver.getSelection(tabId);
 	};
 
-	clickOnCoordinates = (tabId: string, x: number, y: number): Promise<void> => {
-		return this.browserDriver.clickOnCoordinates(tabId, x, y);
-	};
+	clickOnCoordinates = (
+		tabId: string,
+		x: number,
+		y: number,
+	): Promise<PageChange> =>
+		this.withPageChange(tabId, () =>
+			this.browserDriver.clickOnCoordinates(tabId, x, y),
+		);
 
 	scrollPage = (
 		tabId: string,
 		direction: ScrollDirection,
 		amount?: number,
-	): Promise<void> => {
-		return this.browserDriver.scrollPage(tabId, direction, amount);
-	};
+	): Promise<PageChange> =>
+		this.withPageChange(tabId, () =>
+			this.browserDriver.scrollPage(tabId, direction, amount),
+		);
 
 	scrollElement = (
 		tabId: string,
 		readablePath: string,
 		direction: ScrollDirection,
 		amount?: number,
-	): Promise<void> => {
-		return this.browserDriver.scrollElement(
-			tabId,
-			readablePath,
-			direction,
-			amount,
+	): Promise<PageChange> =>
+		this.withPageChange(tabId, () =>
+			this.browserDriver.scrollElement(tabId, readablePath, direction, amount),
 		);
-	};
 
-	fillTextToCoordinates = async (
+	fillTextToCoordinates = (
 		tabId: string,
 		x: number,
 		y: number,
 		value: string,
-	): Promise<void> => {
-		await this.browserDriver.focusOnCoordinates(tabId, x, y);
-		return this.browserDriver.fillTextToFocusedElement(tabId, value);
-	};
+	): Promise<PageChange> =>
+		this.withPageChange(tabId, async () => {
+			await this.browserDriver.focusOnCoordinates(tabId, x, y);
+			await this.browserDriver.fillTextToFocusedElement(tabId, value);
+		});
 
-	clickOnElement = (tabId: string, readablePath: string): Promise<void> => {
-		return this.browserDriver.clickOnElementByReadablePath(tabId, readablePath);
-	};
+	clickOnElement = (tabId: string, readablePath: string): Promise<PageChange> =>
+		this.withPageChange(tabId, () =>
+			this.browserDriver.clickOnElementByReadablePath(tabId, readablePath),
+		);
 
 	fillTextToElement = (
 		tabId: string,
 		readablePath: string,
 		value: string,
-	): Promise<void> => {
-		return this.browserDriver.fillTextToElementByReadablePath(
-			tabId,
-			readablePath,
-			value,
+	): Promise<PageChange> =>
+		this.withPageChange(tabId, () =>
+			this.browserDriver.fillTextToElementByReadablePath(
+				tabId,
+				readablePath,
+				value,
+			),
 		);
-	};
 
 	showHumanHint = (
 		tabId: string,

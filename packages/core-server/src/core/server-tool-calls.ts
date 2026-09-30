@@ -3,6 +3,7 @@ import type {
 	ExtensionTabInfo,
 	ExtensionToolCallInputPort,
 	ExtensionWindowInfo,
+	PageChange,
 	PageSaveFormat,
 	PageSaveResult,
 	ReadableElementRecord,
@@ -37,6 +38,7 @@ import {
 	targetFromParams,
 	validateShowHumanHintParams,
 } from "../utils/build-human-message";
+import { normalizePageChange } from "../utils/normalize-page-change";
 import { ExtensionChannelManager } from "./extension-channel-manager";
 
 @injectable()
@@ -422,14 +424,14 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		_windowId: string,
 		tabId: string,
 		readablePath: string,
-	): Promise<void> => {
+	): Promise<PageChange> => {
 		this.logger.info(
 			`Clicking on element ${readablePath} in tab: ${browserId}/${tabId}`,
 		);
 
 		try {
 			const rpcClient = await this.getTabRpc(browserId, tabId);
-			await rpcClient.call({
+			const pageChange = await rpcClient.call({
 				method: "clickOnElement" as const,
 				args: [
 					tabId,
@@ -439,6 +441,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Element clicked successfully");
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to click on element", error);
 			throw error;
@@ -451,14 +454,14 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		tabId: string,
 		readablePath: string,
 		value: string,
-	): Promise<void> => {
+	): Promise<PageChange> => {
 		this.logger.info(
 			`Filling text to element ${readablePath} in tab: ${browserId}/${tabId}`,
 		);
 
 		try {
 			const rpcClient = await this.getTabRpc(browserId, tabId);
-			await rpcClient.call({
+			const pageChange = await rpcClient.call({
 				method: "fillTextToElement" as const,
 				args: [
 					tabId,
@@ -469,6 +472,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Text filled to element successfully");
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to fill text to element", error);
 			throw error;
@@ -537,14 +541,14 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		tabId: string,
 		x: number,
 		y: number,
-	): Promise<void> => {
+	): Promise<PageChange> => {
 		this.logger.info(
 			`Clicking on coordinates (${x}, ${y}) in tab: ${browserId}/${tabId}`,
 		);
 
 		try {
 			const rpcClient = await this.getTabRpc(browserId, tabId);
-			await rpcClient.call({
+			const pageChange = await rpcClient.call({
 				method: "clickOnCoordinates" as const,
 				args: [
 					tabId,
@@ -555,6 +559,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Clicked on coordinates successfully");
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to click on coordinates", error);
 			throw error;
@@ -567,14 +572,14 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		tabId: string,
 		direction: ScrollDirection,
 		amount?: number,
-	): Promise<void> => {
+	): Promise<PageChange> => {
 		this.logger.info(
 			`Scrolling ${direction}${amount != null ? ` by ${amount}px` : ""} in tab: ${browserId}/${tabId}`,
 		);
 
 		try {
 			const rpcClient = await this.getTabRpc(browserId, tabId);
-			await rpcClient.call({
+			const pageChange = await rpcClient.call({
 				method: "scrollPage" as const,
 				args: [
 					tabId,
@@ -585,6 +590,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Scrolled page successfully");
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to scroll page", error);
 			throw error;
@@ -598,14 +604,14 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		readablePath: string,
 		direction: ScrollDirection,
 		amount?: number,
-	): Promise<void> => {
+	): Promise<PageChange> => {
 		this.logger.info(
 			`Scrolling element ${readablePath} ${direction}${amount != null ? ` by ${amount}px` : ""} in tab: ${browserId}/${tabId}`,
 		);
 
 		try {
 			const rpcClient = await this.getTabRpc(browserId, tabId);
-			await rpcClient.call({
+			const pageChange = await rpcClient.call({
 				method: "scrollElement" as const,
 				args: [
 					tabId,
@@ -617,6 +623,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Scrolled element successfully");
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to scroll element", error);
 			throw error;
@@ -657,14 +664,14 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		x: number,
 		y: number,
 		value: string,
-	): Promise<void> => {
+	): Promise<PageChange> => {
 		this.logger.info(
 			`Filling text to coordinates (${x}, ${y}) in tab: ${browserId}/${tabId}`,
 		);
 
 		try {
 			const rpcClient = await this.getTabRpc(browserId, tabId);
-			await rpcClient.call({
+			const pageChange = await rpcClient.call({
 				method: "fillTextToCoordinates" as const,
 				args: [
 					tabId,
@@ -676,6 +683,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Text filled to coordinates successfully");
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to fill text to coordinates", error);
 			throw error;
@@ -713,14 +721,14 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		tabId: string,
 		x: number,
 		y: number,
-	): Promise<void> => {
+	): Promise<PageChange> => {
 		this.logger.info(
 			`Hitting enter on coordinates (${x}, ${y}) in tab: ${browserId}/${tabId}`,
 		);
 
 		try {
 			const rpcClient = await this.getTabRpc(browserId, tabId);
-			await rpcClient.call({
+			const pageChange = await rpcClient.call({
 				method: "hitEnterOnCoordinates" as const,
 				args: [
 					tabId,
@@ -731,6 +739,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Hit enter on coordinates successfully");
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to hit enter on coordinates", error);
 			throw error;
@@ -742,14 +751,14 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		_windowId: string,
 		tabId: string,
 		readablePath: string,
-	): Promise<void> => {
+	): Promise<PageChange> => {
 		this.logger.info(
 			`Hitting enter on element ${readablePath} in tab: ${browserId}/${tabId}`,
 		);
 
 		try {
 			const rpcClient = await this.getTabRpc(browserId, tabId);
-			await rpcClient.call({
+			const pageChange = await rpcClient.call({
 				method: "hitEnterOnElement" as const,
 				args: [
 					tabId,
@@ -759,6 +768,7 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 			});
 
 			this.logger.info("Hit enter on element successfully");
+			return normalizePageChange(pageChange);
 		} catch (error) {
 			this.logger.error("Failed to hit enter on element", error);
 			throw error;

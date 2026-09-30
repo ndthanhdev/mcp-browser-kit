@@ -1,6 +1,7 @@
 import type { TreeNode } from "@mcp-browser-kit/core-utils/tree";
 import { treeToPathValueArray } from "@mcp-browser-kit/core-utils/tree";
 import type { ReadableElementRecord } from "../types";
+import { getVisibleText } from "./get-visible-text";
 
 /**
  * Extracts the current form value of an element, if it has one.
@@ -50,8 +51,7 @@ export function toElementRecords(
 			element.getAttribute("aria-labelledby") ??
 			element.getAttribute("placeholder") ??
 			element.getAttribute("title") ??
-			element.textContent?.trim() ??
-			"";
+			getVisibleText(element);
 
 		const record: ReadableElementRecord = [
 			path,

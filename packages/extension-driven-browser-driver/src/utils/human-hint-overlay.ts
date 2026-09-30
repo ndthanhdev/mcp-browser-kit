@@ -1,6 +1,6 @@
 import { playClickAnimationAdvance } from "./animation-tools";
 
-const OVERLAY_ROOT_ID = "mbk-human-hint-root";
+export const OVERLAY_ROOT_ID = "mbk-human-hint-root";
 const HINT_TIMEOUT_MS = 60_000;
 
 type Anchor =

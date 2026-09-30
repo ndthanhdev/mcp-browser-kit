@@ -1,6 +1,9 @@
 import { injectable } from "inversify";
 import type { McpDescriptionsInputPort } from "../input-ports";
 
+const PAGE_CHANGE_RETURNS =
+	"Returns: after auto-waiting, value { changed, navigated, url, added, removed, tooLarge, pathsShifted, diff? } — diff shows readable elements added (+), removed (-) and nearby unchanged ones, with current paths. No diff when tooLarge or navigated: re-read readable-elements.";
+
 @injectable()
 export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 	serverInstructions = (): string => {
@@ -37,7 +40,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"- captureTab/invokeJsFn not supported -> switch to element tools",
 			"",
 			"Complex inputs:",
-			"- Custom dropdown/combobox/listbox (ARIA, React/MUI): clickOnElement the trigger -> re-read readable-elements (options now present) -> clickOnElement the option with matching text. Re-read after opening; snapshots go stale.",
+			"- Custom dropdown/combobox/listbox (ARIA, React/MUI): clickOnElement the trigger -> the returned diff lists the new options with their paths (re-read readable-elements if the diff was too large) -> clickOnElement the option with matching text.",
 			"- Custom datepicker popup: clickOnElement the field to open the calendar -> re-read elements -> click prev/next month then the day cell.",
 			"- Native <input> date/time/color pickers: fillTextToElement with the exact value format (see fillTextToElement).",
 			"- Native <select>, by shape, verifying via re-read after each step. Listbox (multiple or size>1) shows options inline: clickOnElement the option, else MV2 invokeJsFn (set option.selected or .value/.selectedIndex, dispatch a bubbling change). Single-line dropdown (size=1) has a native popup that ignores synthetic clicks: MV2 invokeJsFn (set .value/.selectedIndex, dispatch change); MV3 best-effort clickOnElement select then option, then showHumanHint if unchanged.",
@@ -45,11 +48,17 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			'- Checkbox/radio: clickOnElement toggles it. Checked state appears as the optional 4th tuple value "checked" (absent when unchecked), so check the tuple and avoid re-clicking a box already in the desired state.',
 			"- File input (<input type=file>): cannot be set by tools (browser security). Use showHumanHint with the fill action to ask the user to pick the file.",
 			"",
+			"Page-modifying tools (click*, fillText*, hitEnter*, scroll*):",
+			"- Auto-wait before acting: the target must be attached, visible, enabled (and editable for fill; stable and not covered for click), up to 5s",
+			"- Auto-wait after acting: until the DOM is quiet, and for any navigation to finish loading",
+			'- Result: value { changed, navigated, url, added, removed, tooLarge, pathsShifted, diff? }. diff is a readable-elements diff: "+" added, "-" removed, "  " unchanged context, hunks separated by "@@"; every line carries its current path, usable right away',
+			"- tooLarge or navigated -> no diff; re-read readable-elements. pathsShifted -> paths from older reads may be stale; re-read before reusing them",
+			"",
 			"Constraints:",
 			"- browserId, windowId, tabId — source from bk:///context or getContext (browsers[].browserId and browsers[].tabs[].windowId / .id); do not invent them",
 			"- readablePath is a dot-separated tree index (0.2.1), not a CSS selector",
 			"- Snapshots go stale after navigation; re-read after page changes",
-			"- ok=true means a change was detected (focus/aria/DOM mutation), not proof the intended state was reached — re-read elements or text to confirm critical results",
+			"- ok=true means the action ran and the page settled, not proof the intended state was reached — check the returned diff, or re-read elements or text to confirm critical results",
 			"- Resource lists capped at 200 tabs; subscribe for resources/updated notifications",
 		].join("\n");
 	};
@@ -83,7 +92,8 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: MV2 fallback when no readablePath is available.",
 			"How: x/y from a recent captureTab screenshot (same width/height); browserId, windowId, tabId from context.",
 			"Requires: browserId, windowId, tabId, x, y.",
-			"Returns: ok=true on success; on ok=false re-capture the tab and recompute x/y.",
+			PAGE_CHANGE_RETURNS,
+			"On ok=false: re-capture the tab and recompute x/y.",
 			"Avoid: on MV3 (no screenshot source); prefer clickOnElement when readablePath exists.",
 		].join("\n");
 	};
@@ -94,7 +104,8 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: MV2 fallback for inputs without a readablePath.",
 			"How: coordinates from recent captureTab; submit via clickOnCoordinates on submit button or hitEnterOnCoordinates.",
 			"Requires: browserId, windowId, tabId, x, y, value.",
-			"Returns: ok=true on success; on ok=false re-capture the tab and recompute x/y.",
+			PAGE_CHANGE_RETURNS,
+			"On ok=false: re-capture the tab and recompute x/y.",
 			"Avoid: on MV3; prefer fillTextToElement when readablePath is available.",
 		].join("\n");
 	};
@@ -105,7 +116,8 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: MV2 fallback to submit when no submit button readablePath exists.",
 			"How: coordinates from recent captureTab.",
 			"Requires: browserId, windowId, tabId, x, y.",
-			"Returns: ok=true on success; on ok=false re-capture the tab and recompute x/y.",
+			PAGE_CHANGE_RETURNS,
+			"On ok=false: re-capture the tab and recompute x/y.",
 			"Avoid: on MV3; prefer hitEnterOnElement when readablePath is available.",
 		].join("\n");
 	};
@@ -117,7 +129,8 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"How: read {tabUri}/readable-elements; filter [path, role, text, value?] tuples by role and text; copy path exactly (e.g. 0.2.1) — not a CSS selector.",
 			"Custom dropdown/combobox/datepicker: click the trigger to open it, then re-read readable-elements and click the option/day cell. Native <select>: clicking an option can work for listbox selects (multiple or size>1) but single-line dropdowns use a native popup that ignores synthetic clicks — those need invokeJsFn (MV2) or showHumanHint (MV3). Verify by re-reading and escalate. See Complex inputs.",
 			"Requires: browserId, windowId, tabId, readablePath.",
-			"Returns: ok=true on success; on ok=false re-read readable-elements and pick a fresh path.",
+			PAGE_CHANGE_RETURNS,
+			"On ok=false: the reason says why (not visible, disabled, covered by <el>, detached); re-read readable-elements and pick a fresh path.",
 			"Avoid: inventing paths; re-read elements after navigation if click fails.",
 		].join("\n");
 	};
@@ -128,7 +141,8 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: primary fill method on MV2 and MV3. Also handles native <input> date/time/datetime-local/month/color when value is in the exact format (date YYYY-MM-DD, time HH:MM, datetime-local YYYY-MM-DDTHH:MM, month YYYY-MM, color #rrggbb).",
 			"How: readablePath from first element of [path, role, text, value?] tuple in readable-elements; submit via clickOnElement on submit button or hitEnterOnElement.",
 			"Requires: browserId, windowId, tabId, readablePath, value.",
-			"Returns: ok=true on success; on ok=false re-read readable-elements and pick a fresh path.",
+			PAGE_CHANGE_RETURNS,
+			"On ok=false: the reason says why (not visible, disabled, covered by <el>, detached); re-read readable-elements and pick a fresh path.",
 			"Avoid: CSS selectors as readablePath; stale paths after DOM changes. Does not work on contenteditable rich-text editors (MV2 invokeJsFn instead), native <select>, or custom popup dropdowns/datepickers — use the strategy ladder under Complex inputs in server instructions.",
 		].join("\n");
 	};
@@ -139,7 +153,8 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: submitting a form when no explicit submit button exists.",
 			"How: readablePath from readable-elements tuple (dot-separated index like 0.2.1).",
 			"Requires: browserId, windowId, tabId, readablePath.",
-			"Returns: ok=true on success; on ok=false re-read readable-elements and pick a fresh path.",
+			PAGE_CHANGE_RETURNS,
+			"On ok=false: the reason says why (not visible, disabled, covered by <el>, detached); re-read readable-elements and pick a fresh path.",
 			"Avoid: using when a submit button readablePath is available — click it instead.",
 		].join("\n");
 	};
@@ -161,7 +176,8 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: target content or elements are off-screen; reveal more of the page before reading or interacting. Works on MV2 and MV3 (no screenshot needed).",
 			"How: direction is up/down/left/right; optional amount in pixels — omit it to scroll ~one viewport (a page). browserId, windowId, tabId from bk:///context.",
 			"Requires: browserId, windowId, tabId, direction.",
-			"Returns: ok=true once scrolled. Already at that edge (nothing to scroll) is still ok=true.",
+			PAGE_CHANGE_RETURNS,
+			"Already at that edge (nothing to scroll) is still ok=true.",
 			"Avoid: assuming new elements exist — re-read readable-elements after scrolling, snapshots go stale.",
 		].join("\n");
 	};
@@ -172,7 +188,8 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: content lives in a scrollable region that scrollPage (whole viewport) does not move — e.g. a chat panel or a long list inside a div. Works on MV2 and MV3 (no screenshot needed).",
 			"How: readablePath from a readable-elements tuple; direction is up/down/left/right; optional amount in pixels — omit it to scroll ~90% of the element's size. The element at readablePath is scrolled, or its nearest scrollable ancestor when it isn't itself scrollable (so you can target an interactive child inside the panel). browserId, windowId, tabId from bk:///context.",
 			"Requires: browserId, windowId, tabId, readablePath, direction.",
-			"Returns: ok=true once scrolled. Already at that edge, or no scrollable container found (nothing to scroll), is still ok=true.",
+			PAGE_CHANGE_RETURNS,
+			"Already at that edge, or no scrollable container found (nothing to scroll), is still ok=true.",
 			"Avoid: using for whole-page scrolling — use scrollPage instead; re-read readable-elements after scrolling, snapshots go stale.",
 		].join("\n");
 	};
