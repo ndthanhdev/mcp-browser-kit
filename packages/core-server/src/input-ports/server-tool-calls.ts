@@ -1,5 +1,6 @@
 import type {
 	ExtensionToolName,
+	PageChange,
 	ReadableElementRecord,
 	ScrollDirection,
 	Selection,
@@ -52,13 +53,13 @@ export type ServerToolCallsInputPort = {
 		tabId: string,
 		x: number,
 		y: number,
-	) => Promise<void>;
+	) => Promise<PageChange>;
 	clickOnElement: (
 		browserId: string,
 		windowId: string,
 		tabId: string,
 		readablePath: string,
-	) => Promise<void>;
+	) => Promise<PageChange>;
 	closeTab: (
 		browserId: string,
 		windowId: string,
@@ -71,14 +72,14 @@ export type ServerToolCallsInputPort = {
 		x: number,
 		y: number,
 		value: string,
-	) => Promise<void>;
+	) => Promise<PageChange>;
 	fillTextToElement: (
 		browserId: string,
 		windowId: string,
 		tabId: string,
 		readablePath: string,
 		value: string,
-	) => Promise<void>;
+	) => Promise<PageChange>;
 	getContext: () => Promise<Context>;
 	getReadableTextByChannelAndTab: (
 		channelId: string,
@@ -101,13 +102,13 @@ export type ServerToolCallsInputPort = {
 		tabId: string,
 		x: number,
 		y: number,
-	) => Promise<void>;
+	) => Promise<PageChange>;
 	hitEnterOnElement: (
 		browserId: string,
 		windowId: string,
 		tabId: string,
 		readablePath: string,
-	) => Promise<void>;
+	) => Promise<PageChange>;
 	invokeJsFn: (
 		browserId: string,
 		windowId: string,
@@ -129,7 +130,7 @@ export type ServerToolCallsInputPort = {
 		tabId: string,
 		direction: ScrollDirection,
 		amount?: number,
-	) => Promise<void>;
+	) => Promise<PageChange>;
 	scrollElement: (
 		browserId: string,
 		windowId: string,
@@ -137,7 +138,7 @@ export type ServerToolCallsInputPort = {
 		readablePath: string,
 		direction: ScrollDirection,
 		amount?: number,
-	) => Promise<void>;
+	) => Promise<PageChange>;
 	showHumanHint: (
 		browserId: string,
 		windowId: string,

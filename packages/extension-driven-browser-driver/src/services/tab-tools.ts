@@ -1,4 +1,7 @@
-import type { TabContext } from "@mcp-browser-kit/core-extension";
+import type {
+	LoadTabContextOptions,
+	TabContext,
+} from "@mcp-browser-kit/core-extension";
 import type { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
 import { LoggerFactoryOutputPort as LoggerFactoryOutputPortSymbol } from "@mcp-browser-kit/core-extension/output-ports";
 import type {
@@ -7,6 +10,7 @@ import type {
 } from "@mcp-browser-kit/types";
 import { Readability } from "@mozilla/readability";
 import { inject, injectable } from "inversify";
+import { getVisibleText } from "../utils/get-visible-text";
 import { toDomTree } from "../utils/to-dom-tree";
 import { toElementRecords } from "../utils/to-element-records";
 import { domTreeToReadableTree } from "../utils/to-readable-tree";
@@ -35,8 +39,20 @@ export class TabTools {
 		this.logger = this.loggerFactory.create("TabTools");
 	}
 
-	loadTabContext = async (): Promise<TabContext> => {
-		this.logger.info("Loading tab context");
+	/**
+	 * Snapshots the page. With `commit: false` the snapshot is returned but not
+	 * stored, so readablePaths keep resolving against the previous snapshot.
+	 */
+	loadTabContext = async (
+		options?: LoadTabContextOptions | null,
+	): Promise<TabContext> => {
+		// Messaging serializes an omitted argument as null, which a default
+		// parameter would not replace.
+		const { commit = true, animate = true } = options ?? {};
+		this.logger.info("Loading tab context", {
+			commit,
+			animate,
+		});
 
 		const rootElement = document.documentElement;
 		const domTree = toDomTree(rootElement);
@@ -52,7 +68,7 @@ export class TabTools {
 		const html = document.documentElement.outerHTML;
 		const textContent = this.extractTextContent();
 
-		if (readableTree) {
+		if (readableTree && commit) {
 			this.contextStore.setLatestCapturedTabContext({
 				html,
 				readableElementRecords,
@@ -61,13 +77,15 @@ export class TabTools {
 				textContent,
 			});
 			this.logger.info("Tab context loaded and stored successfully");
-		} else {
+		} else if (!readableTree) {
 			this.logger.warn(
 				"Tab context loaded but not stored (no readable tree available)",
 			);
 		}
 
-		await this.animation.playScanAnimation();
+		if (animate) {
+			await this.animation.playScanAnimation();
+		}
 
 		return {
 			html,
@@ -83,12 +101,12 @@ export class TabTools {
 			if (article?.textContent) {
 				return article.textContent.trim();
 			}
-			return document.body.textContent?.trim() ?? "";
+			return getVisibleText(document.body);
 		} catch (error) {
 			this.logger.warn(
 				`Readability failed, using fallback extraction: ${error}`,
 			);
-			return document.body.textContent?.trim() ?? "";
+			return getVisibleText(document.body);
 		}
 	};
 
