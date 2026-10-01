@@ -193,4 +193,66 @@ test.describe("Write tool auto-wait and page-change diffs", () => {
 		expect(value.diff).toBeUndefined();
 		expect(textOf(result)).toContain("diff too large");
 	});
+
+	test("element ids stay valid after elements are inserted above", async ({
+		testAppPage,
+		mcpClientPage,
+	}) => {
+		const targetId = await findPath(mcpClientPage, tabUri, "Stable Target");
+		const insertId = await findPath(mcpClientPage, tabUri, "Insert Above");
+		expect(targetId).toMatch(/^\d+:e[0-9a-z]+$/);
+
+		for (let i = 0; i < 3; i++) {
+			await mcpClientPage.callTool("clickOnElement", {
+				...tab,
+				readablePath: insertId,
+			});
+		}
+
+		const result = await mcpClientPage.callTool("clickOnElement", {
+			...tab,
+			readablePath: targetId,
+		});
+		expect(result.structuredContent?.ok).toBe(true);
+		await expect(
+			testAppPage.getAutoWaitTestLocators().targetClicks,
+		).toContainText("Target Clicks: 1");
+
+		expect(await findPath(mcpClientPage, tabUri, "Stable Target")).toBe(
+			targetId,
+		);
+	});
+
+	test("an id of a removed element fails with a clear reason", async ({
+		mcpClientPage,
+	}) => {
+		const targetId = await findPath(mcpClientPage, tabUri, "Stable Target");
+		const removeId = await findPath(mcpClientPage, tabUri, "Remove Target");
+
+		await mcpClientPage.callTool("clickOnElement", {
+			...tab,
+			readablePath: removeId,
+		});
+		const result = await mcpClientPage.callTool("clickOnElement", {
+			...tab,
+			readablePath: targetId,
+		});
+
+		expect(result.structuredContent?.ok).toBe(false);
+		expect(
+			`${result.structuredContent?.reason ?? ""} ${textOf(result)}`,
+		).toContain("no longer exists");
+	});
+
+	test("rejects legacy positional paths", async ({ mcpClientPage }) => {
+		const result = await mcpClientPage.callTool("clickOnElement", {
+			...tab,
+			readablePath: "0:0.1.2",
+		});
+
+		expect(result.structuredContent?.ok).toBe(false);
+		expect(
+			`${result.structuredContent?.reason ?? ""} ${textOf(result)}`,
+		).toContain("positional path");
+	});
 });

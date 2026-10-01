@@ -22,6 +22,9 @@ export function AutoWaitTestScreen() {
 	const [picked, setPicked] = useState<string | null>(null);
 	const [manyVisible, setManyVisible] = useState(false);
 	const [note, setNote] = useState("");
+	const [insertedCount, setInsertedCount] = useState(0);
+	const [targetClicks, setTargetClicks] = useState(0);
+	const [targetVisible, setTargetVisible] = useState(true);
 
 	useEffect(() => {
 		if (!armed) return;
@@ -140,6 +143,50 @@ export function AutoWaitTestScreen() {
 					>
 						Go To Click Test
 					</a>
+				</section>
+
+				<section className="mb-8">
+					<h2 className="text-2xl font-bold mb-4">Stable ids</h2>
+					<div className="flex gap-2.5">
+						<button
+							type="button"
+							data-testid="insert-above-button"
+							onClick={() => setInsertedCount((count) => count + 1)}
+							className="px-4 py-2 bg-blue-600 text-white rounded"
+						>
+							Insert Above Target
+						</button>
+						<button
+							type="button"
+							data-testid="remove-target-button"
+							onClick={() => setTargetVisible(false)}
+							className="px-4 py-2 bg-red-600 text-white rounded"
+						>
+							Remove Target
+						</button>
+					</div>
+					<div className="flex flex-col gap-1 mt-2">
+						{Array.from(
+							{
+								length: insertedCount,
+							},
+							(_, index) => (
+								// biome-ignore lint/suspicious/noArrayIndexKey: append-only list
+								<p key={index}>Inserted Row {index + 1}</p>
+							),
+						)}
+						{targetVisible && (
+							<button
+								type="button"
+								data-testid="stable-target"
+								onClick={() => setTargetClicks((count) => count + 1)}
+								className="px-4 py-2 bg-green-600 text-white rounded self-start"
+							>
+								Stable Target
+							</button>
+						)}
+					</div>
+					<p data-testid="target-clicks">Target Clicks: {targetClicks}</p>
 				</section>
 
 				<section>

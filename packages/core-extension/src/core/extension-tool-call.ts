@@ -37,10 +37,9 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 
 	/**
 	 * Runs a page-modifying action and reports what it changed. The "before"
-	 * snapshot is not committed, so the action still resolves readablePaths
-	 * against the snapshot the caller last read. If the action fails because
-	 * the page navigated away mid-call, the navigation is the result, not an
-	 * error.
+	 * snapshot is not committed as the latest context; element ids resolve
+	 * either way. If the action fails because the page navigated away
+	 * mid-call, the navigation is the result, not an error.
 	 */
 	private withPageChange = async (
 		tabId: string,
@@ -78,7 +77,6 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 				added: 0,
 				removed: 0,
 				tooLarge: true,
-				pathsShifted: true,
 			};
 		}
 
