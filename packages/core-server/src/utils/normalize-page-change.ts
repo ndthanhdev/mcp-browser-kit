@@ -15,6 +15,5 @@ export const normalizePageChange = (
 		added: 0,
 		removed: 0,
 		tooLarge: true,
-		pathsShifted: true,
 		detailsUnavailable: true,
 	};

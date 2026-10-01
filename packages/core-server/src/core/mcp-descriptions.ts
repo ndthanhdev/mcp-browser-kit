@@ -2,7 +2,7 @@ import { injectable } from "inversify";
 import type { McpDescriptionsInputPort } from "../input-ports";
 
 const PAGE_CHANGE_RETURNS =
-	"Returns: after auto-waiting, value { changed, navigated, url, added, removed, tooLarge, pathsShifted, diff? } — diff shows readable elements added (+), removed (-) and nearby unchanged ones, with current paths. No diff when tooLarge or navigated: re-read readable-elements.";
+	"Returns: after auto-waiting, value { changed, navigated, url, added, removed, tooLarge, diff? } — diff shows readable elements added (+), removed (-) and nearby unchanged ones, with their element ids. No diff when tooLarge or navigated: re-read readable-elements.";
 
 @injectable()
 export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
@@ -16,7 +16,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"3. Read its ids: browserId (browsers[].browserId), windowId and tabId (browsers[].tabs[].windowId / .id); copy tabUri and extensionInfo.manifestVersion verbatim",
 			"4. resources/read -> {tabUri}/readable-elements",
 			"5. If hasNextPage, read bk:///snapshot-types/readable-elements/snapshots/{snapshotId}/pages/{nextPageNumber}",
-			'6. Filter data tuples [path, role, text, value?] by role and text; use path (e.g. 0.2.1) as readablePath. value is appended only when the element has a current form value (text inputs/textarea/select) or is a checked checkbox/radio ("checked").',
+			'6. Filter data tuples [path, role, text, value?] by role and text; use path (e.g. 0:e1a) as readablePath. value is appended only when the element has a current form value (text inputs/textarea/select) or is a checked checkbox/radio ("checked").',
 			"7. Call tool with { browserId, windowId, tabId, ... }; always check structuredContent.ok — if false, re-read elements or showHumanHint",
 			"",
 			"Quick start (tools — for clients without resource support):",
@@ -35,7 +35,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"",
 			"Error recovery:",
 			"- Tab not found -> re-read bk:///context or call getContext",
-			"- Element not found at path / no longer exists -> re-read readable-elements or call getReadableElements, pick fresh path",
+			"- Element no longer exists -> it was removed from the page; re-read readable-elements or call getReadableElements and pick its replacement",
 			"- Page N out of range / No cached snapshot -> read page 1 first, use snapshotId from that response",
 			"- captureTab/invokeJsFn not supported -> switch to element tools",
 			"",
@@ -51,12 +51,12 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"Page-modifying tools (click*, fillText*, hitEnter*, scroll*):",
 			"- Auto-wait before acting: the target must be attached, visible, enabled (and editable for fill; stable and not covered for click), up to 5s",
 			"- Auto-wait after acting: until the DOM is quiet, and for any navigation to finish loading",
-			'- Result: value { changed, navigated, url, added, removed, tooLarge, pathsShifted, diff? }. diff is a readable-elements diff: "+" added, "-" removed, "  " unchanged context, hunks separated by "@@"; every line carries its current path, usable right away',
-			"- tooLarge or navigated -> no diff; re-read readable-elements. pathsShifted -> paths from older reads may be stale; re-read before reusing them",
+			'- Result: value { changed, navigated, url, added, removed, tooLarge, diff? }. diff is a readable-elements diff: "+" added, "-" removed, "  " unchanged context, hunks separated by "@@"; every line carries the element id, usable right away',
+			"- tooLarge or navigated -> no diff; re-read readable-elements. Element ids are stable: ids from earlier reads stay valid until that element is removed from the page",
 			"",
 			"Constraints:",
 			"- browserId, windowId, tabId — source from bk:///context or getContext (browsers[].browserId and browsers[].tabs[].windowId / .id); do not invent them",
-			"- readablePath is a dot-separated tree index (0.2.1), not a CSS selector",
+			"- readablePath is a stable element id (e.g. 0:e1a), not a CSS selector",
 			"- Snapshots go stale after navigation; re-read after page changes",
 			"- ok=true means the action ran and the page settled, not proof the intended state was reached — check the returned diff, or re-read elements or text to confirm critical results",
 			"- Resource lists capped at 200 tabs; subscribe for resources/updated notifications",
@@ -126,11 +126,11 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 		return [
 			"Click an element by readablePath.",
 			"When: primary click method on MV2 and MV3.",
-			"How: read {tabUri}/readable-elements; filter [path, role, text, value?] tuples by role and text; copy path exactly (e.g. 0.2.1) — not a CSS selector.",
+			"How: read {tabUri}/readable-elements; filter [path, role, text, value?] tuples by role and text; copy path exactly (e.g. 0:e1a) — not a CSS selector.",
 			"Custom dropdown/combobox/datepicker: click the trigger to open it, then re-read readable-elements and click the option/day cell. Native <select>: clicking an option can work for listbox selects (multiple or size>1) but single-line dropdowns use a native popup that ignores synthetic clicks — those need invokeJsFn (MV2) or showHumanHint (MV3). Verify by re-reading and escalate. See Complex inputs.",
 			"Requires: browserId, windowId, tabId, readablePath.",
 			PAGE_CHANGE_RETURNS,
-			"On ok=false: the reason says why (not visible, disabled, covered by <el>, detached); re-read readable-elements and pick a fresh path.",
+			"On ok=false: the reason says why (not visible, disabled, covered by <el>, detached); re-read readable-elements and pick a fresh id.",
 			"Avoid: inventing paths; re-read elements after navigation if click fails.",
 		].join("\n");
 	};
@@ -142,8 +142,8 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"How: readablePath from first element of [path, role, text, value?] tuple in readable-elements; submit via clickOnElement on submit button or hitEnterOnElement.",
 			"Requires: browserId, windowId, tabId, readablePath, value.",
 			PAGE_CHANGE_RETURNS,
-			"On ok=false: the reason says why (not visible, disabled, covered by <el>, detached); re-read readable-elements and pick a fresh path.",
-			"Avoid: CSS selectors as readablePath; stale paths after DOM changes. Does not work on contenteditable rich-text editors (MV2 invokeJsFn instead), native <select>, or custom popup dropdowns/datepickers — use the strategy ladder under Complex inputs in server instructions.",
+			"On ok=false: the reason says why (not visible, disabled, covered by <el>, detached); re-read readable-elements and pick a fresh id.",
+			"Avoid: CSS selectors as readablePath; ids of elements that were removed or re-rendered. Does not work on contenteditable rich-text editors (MV2 invokeJsFn instead), native <select>, or custom popup dropdowns/datepickers — use the strategy ladder under Complex inputs in server instructions.",
 		].join("\n");
 	};
 
@@ -151,10 +151,10 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 		return [
 			"Focus an element by readablePath then press Enter.",
 			"When: submitting a form when no explicit submit button exists.",
-			"How: readablePath from readable-elements tuple (dot-separated index like 0.2.1).",
+			"How: readablePath from readable-elements tuple (stable element id like 0:e1a).",
 			"Requires: browserId, windowId, tabId, readablePath.",
 			PAGE_CHANGE_RETURNS,
-			"On ok=false: the reason says why (not visible, disabled, covered by <el>, detached); re-read readable-elements and pick a fresh path.",
+			"On ok=false: the reason says why (not visible, disabled, covered by <el>, detached); re-read readable-elements and pick a fresh id.",
 			"Avoid: using when a submit button readablePath is available — click it instead.",
 		].join("\n");
 	};
@@ -267,7 +267,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"How: browserId and tabId from getContext or bk:///context.",
 			"Requires: browserId, tabId.",
 			"Returns: { snapshotId, data ([path, role, text, value?] tuples), hasNextPage, nextPageNumber, totalPages }.",
-			"path is a dot-separated tree index (e.g. 0.2.1) — use as readablePath in interaction tools.",
+			"path is a stable element id (e.g. 0:e1a) — use as readablePath in interaction tools.",
 			"Pagination: if hasNextPage is true, call getSnapshotPage with the returned snapshotId and nextPageNumber.",
 		].join("\n");
 	};
@@ -277,7 +277,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"Get the outerHTML of a single element by readablePath.",
 			"When: you need the exact markup (attributes, classes, nested structure) of one element — equivalent to reading {tabUri}/readable-element-html/<readablePath>.",
 			"How: get readablePath from a readable-elements tuple (first field); browserId and tabId from getContext or bk:///context.",
-			"Requires: browserId, tabId, readablePath (dot-separated tree index e.g. 0.2.1, not a CSS selector).",
+			"Requires: browserId, tabId, readablePath (stable element id e.g. 0:e1a, not a CSS selector).",
 			"Returns: { snapshotId, data (HTML), hasNextPage, nextPageNumber, totalPages }.",
 			"Pagination: if hasNextPage is true, call getSnapshotPage with the returned snapshotId, type readable-element-html, and nextPageNumber.",
 		].join("\n");
@@ -345,7 +345,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 		return [
 			`Snapshot interactive elements for tab ${tabId}.`,
 			"Returns JSON with snapshotId, data ([path, role, text, value?] tuples), hasNextPage, nextPageNumber, totalPages.",
-			"path is a dot-separated tree index (e.g. 0.2.1) — use as readablePath, not a CSS selector.",
+			"path is a stable element id (e.g. 0:e1a) — use as readablePath, not a CSS selector.",
 			"Page 2+: bk:///snapshot-types/readable-elements/snapshots/<snapshotId>/pages/<nextPageNumber>.",
 		].join(" ");
 	};
@@ -357,7 +357,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 		return [
 			`outerHTML of element ${readablePath} in tab ${tabId}.`,
 			"Returns JSON with snapshotId, data (HTML), hasNextPage, nextPageNumber, totalPages.",
-			"readablePath is a dot-separated tree index (e.g. 0.2.1) from a readable-elements tuple, not a CSS selector.",
+			"readablePath is a stable element id (e.g. 0:e1a) from a readable-elements tuple, not a CSS selector.",
 			"Page 2+: bk:///snapshot-types/readable-element-html/snapshots/<snapshotId>/pages/<nextPageNumber>.",
 		].join(" ");
 	};
