@@ -40,8 +40,9 @@ export class TabTools {
 	}
 
 	/**
-	 * Snapshots the page. With `commit: false` the snapshot is returned but not
-	 * stored, so readablePaths keep resolving against the previous snapshot.
+	 * Snapshots the page. Records carry stable element ids, so lookups work for
+	 * any snapshotted element still in the document. `commit: false` only skips
+	 * storing the snapshot as the latest context.
 	 */
 	loadTabContext = async (
 		options?: LoadTabContextOptions | null,
@@ -54,6 +55,8 @@ export class TabTools {
 			animate,
 		});
 
+		this.contextStore.pruneElementIds();
+
 		const rootElement = document.documentElement;
 		const domTree = toDomTree(rootElement);
 		const readableTree = domTreeToReadableTree(domTree);
@@ -62,7 +65,7 @@ export class TabTools {
 		);
 
 		const readableElementRecords = readableTree
-			? toElementRecords(readableTree).slice(1)
+			? toElementRecords(readableTree, this.contextStore.idOf).slice(1)
 			: [];
 
 		const html = document.documentElement.outerHTML;
@@ -73,7 +76,6 @@ export class TabTools {
 				html,
 				readableElementRecords,
 				domTree,
-				readableTree,
 				textContent,
 			});
 			this.logger.info("Tab context loaded and stored successfully");

@@ -13,7 +13,6 @@ export interface ReadableElementsDiff {
 	changed: boolean;
 	added: number;
 	removed: number;
-	pathsShifted: boolean;
 	tooLarge: boolean;
 	diff?: string;
 }
@@ -42,10 +41,11 @@ const estimateTokens = (text: string): number =>
 	Math.ceil(text.length / CHARS_PER_TOKEN);
 const DEFAULT_MAX_CELLS = 4_000_000;
 
-// Identity ignores the path: inserting one element renumbers every later
-// sibling, and matching on path would turn that into a wall of changes.
-const identity = ([, role, text, value]: ReadableElementRecord): string =>
+// Identity includes the stable element id, so the same element with new
+// text shows as "-" old / "+" new rather than an unrelated insertion.
+const identity = ([id, role, text, value]: ReadableElementRecord): string =>
 	JSON.stringify([
+		id,
 		role,
 		text,
 		value ?? null,
@@ -152,8 +152,8 @@ const renderHunks = (ops: Op[], contextLines: number): string => {
 
 /**
  * Line diff of two readable-element snapshots. Records are matched on
- * role + text + value; rendered lines carry the record's current path so the
- * caller can act on any line in the diff without re-reading.
+ * id + role + text + value; rendered lines carry the element's stable id so
+ * the caller can act on any line in the diff without re-reading.
  */
 export const diffReadableElements = (
 	before: ReadableElementRecord[],
@@ -193,7 +193,6 @@ export const diffReadableElements = (
 			changed: true,
 			added: middleAfter.length,
 			removed: middleBefore.length,
-			pathsShifted: true,
 			tooLarge: true,
 		};
 	}
@@ -222,11 +221,9 @@ export const diffReadableElements = (
 
 	let added = 0;
 	let removed = 0;
-	let pathsShifted = false;
 	for (const op of ops) {
 		if (op.kind === "add") added++;
 		else if (op.kind === "remove") removed++;
-		else if (op.before[0] !== op.after[0]) pathsShifted = true;
 	}
 
 	if (added === 0 && removed === 0) {
@@ -234,7 +231,6 @@ export const diffReadableElements = (
 			changed: false,
 			added,
 			removed,
-			pathsShifted,
 			tooLarge: false,
 		};
 	}
@@ -245,7 +241,6 @@ export const diffReadableElements = (
 			changed: true,
 			added,
 			removed,
-			pathsShifted,
 			tooLarge: true,
 		};
 	}
@@ -254,7 +249,6 @@ export const diffReadableElements = (
 		changed: true,
 		added,
 		removed,
-		pathsShifted,
 		tooLarge: false,
 		diff,
 	};

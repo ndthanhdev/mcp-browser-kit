@@ -94,7 +94,7 @@ export const waitForActionable = async (
 	while (true) {
 		if (!element.isConnected) {
 			throw new Error(
-				"Element is detached from the document; re-read readable-elements for a fresh path",
+				"Element is detached from the document; re-read readable-elements for a fresh id",
 			);
 		}
 

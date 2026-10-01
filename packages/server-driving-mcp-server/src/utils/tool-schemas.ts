@@ -55,7 +55,7 @@ export const readableElementSchema = {
 	readablePath: z
 		.string()
 		.describe(
-			"Dot-separated tree path (e.g. 0.2.1) — first element of [path, role, text] tuple from readable-elements; not a CSS selector",
+			"Stable element id (e.g. 0:e1a) — first element of [path, role, text] tuple from readable-elements; not a CSS selector",
 		),
 };
 
@@ -70,7 +70,7 @@ export const tabReadableElementHtmlSchema = {
 	readablePath: z
 		.string()
 		.describe(
-			"Dot-separated tree path (e.g. 0.2.1) — first element of a [path, role, text, value?] tuple from readable-elements; not a CSS selector",
+			"Stable element id (e.g. 0:e1a) — first element of a [path, role, text, value?] tuple from readable-elements; not a CSS selector",
 		),
 };
 
@@ -161,7 +161,7 @@ export const showHumanHintInputSchema = {
 		.string()
 		.optional()
 		.describe(
-			"Dot-separated tree path from readable-elements (e.g. 0.2.1); provide this OR x+y, not both",
+			"Stable element id from readable-elements (e.g. 0:e1a); provide this OR x+y, not both",
 		),
 	x: z
 		.number()
@@ -277,16 +277,11 @@ export const pageChangeOutputSchema = createOverOutputSchema({
 		.describe(
 			"Diff omitted (too large or navigated); re-read readable-elements for the full snapshot",
 		),
-	pathsShifted: z
-		.boolean()
-		.describe(
-			"Element paths outside the diff changed; re-read before reusing older paths",
-		),
 	diff: z
 		.string()
 		.optional()
 		.describe(
-			'Readable-elements diff: "+" added, "-" removed, "  " unchanged context, hunks separated by "@@"; paths are current',
+			'Readable-elements diff: "+" added, "-" removed, "  " unchanged context, hunks separated by "@@"; element ids are stable',
 		),
 	detailsUnavailable: z
 		.boolean()
