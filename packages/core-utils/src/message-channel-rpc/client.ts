@@ -83,11 +83,8 @@ export class MessageChannelRpcClient<
 		const id = this.createId(String(method));
 		const defer = Promise.withResolvers<Awaited<ExtractRpcReturnType<U, K>>>();
 
-		// `.then(cleanup, cleanup)`, not `.finally(cleanup)`: `finally` derives a
-		// promise that re-raises the rejection, and nothing handles that derived
-		// promise, so every rejected RPC call produced an unhandled rejection in
-		// addition to the one the caller sees. Passing an `onRejected` handler
-		// settles the derived promise instead.
+		// Clean up on both outcomes without deriving a second promise that would
+		// re-reject unhandled (`.finally` re-throws the rejection).
 		const cleanup = () => {
 			this.pending.delete(id);
 		};
@@ -102,17 +99,6 @@ export class MessageChannelRpcClient<
 		});
 
 		return defer.promise;
-	};
-
-	/** Reject every in-flight call, e.g. when the channel has died. */
-	public rejectPending = (reason: unknown): void => {
-		const pending = [
-			...this.pending.values(),
-		];
-		this.pending.clear();
-		for (const defer of pending) {
-			defer.reject(reason);
-		}
 	};
 
 	public unbindChannel = (): void => {

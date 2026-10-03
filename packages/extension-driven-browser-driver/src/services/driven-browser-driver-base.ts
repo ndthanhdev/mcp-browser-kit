@@ -7,18 +7,22 @@ import type {
 	ExtensionInfo,
 	ExtensionTabInfo,
 	ExtensionWindowInfo,
+	LoadTabContextOptions,
 	PageSaveFormat,
 	PageSaveResult,
 	Screenshot,
 	ScrollDirection,
 	Selection,
 	TabContext,
+	TabSettledState,
 } from "@mcp-browser-kit/core-extension/types";
 import type {
 	Func,
 	HumanHintTabResult,
 	ShowHumanHintParams,
 } from "@mcp-browser-kit/types";
+import delay from "delay";
+import { config } from "../config";
 import * as backgroundToolsM3 from "../utils/background-tools-m3";
 import { buildFramePath, parseFramePath } from "../utils/frame-path";
 import { mergeFrameTabContexts } from "../utils/merge-frame-tab-contexts";
@@ -30,6 +34,9 @@ import type { TabRpcService } from "./tab-rpc-service";
 const LOAD_FRAME_CONTEXT_TIMEOUT_MS = 5000;
 const RESOLVE_HIT_TARGET_TIMEOUT_MS = 3000;
 const MAX_IFRAME_NESTING = 8;
+const TOP_FRAME_ID = "0";
+const SETTLE_PROBE_TIMEOUT_MS = 1_000;
+const SETTLE_POLL_INTERVAL_MS = 100;
 /**
  * Page capture fetches every subresource before serializing, so it is far
  * slower than a DOM read. Measured at 1.6-6.9s across a range of real pages;
@@ -80,7 +87,10 @@ export abstract class DrivenBrowserDriverBase
 		this.logger = loggerFactory.create(loggerName);
 	}
 
-	loadTabContext = async (tabId: string): Promise<TabContext> => {
+	loadTabContext = async (
+		tabId: string,
+		options?: LoadTabContextOptions,
+	): Promise<TabContext> => {
 		this.logger.verbose(`Loading tab context for tab: ${tabId}`);
 
 		const frames = await this.frameRegistry.listFrames(tabId);
@@ -90,7 +100,9 @@ export abstract class DrivenBrowserDriverBase
 					const context = await withTimeout(
 						this.tabRpcService.tabRpcClient.call({
 							method: "loadTabContext",
-							args: [],
+							args: [
+								options ?? {},
+							],
 							extraArgs: {
 								tabId,
 								frameId: frame.frameId,
@@ -115,6 +127,62 @@ export abstract class DrivenBrowserDriverBase
 		return mergeFrameTabContexts(
 			perFrame.filter((result) => result !== undefined),
 		);
+	};
+
+	waitForTabSettled = async (
+		tabId: string,
+		previousDocumentId?: string,
+	): Promise<TabSettledState> => {
+		const deadline = Date.now() + config.navigationTimeoutMs;
+		let lastError: unknown;
+
+		while (true) {
+			const loadState = await backgroundToolsM3.getTabLoadState(tabId);
+			if (loadState.complete) {
+				try {
+					// A fresh document's content script may not be listening yet;
+					// sendMessage then fails fast, and we poll again.
+					let { documentId } = await withTimeout(
+						this.tabRpcService.tabRpcClient.call({
+							method: "dom.getDocumentState",
+							args: [],
+							extraArgs: {
+								tabId,
+								frameId: TOP_FRAME_ID,
+							},
+						}),
+						SETTLE_PROBE_TIMEOUT_MS,
+					);
+					if (previousDocumentId && documentId !== previousDocumentId) {
+						({ documentId } = await withTimeout(
+							this.tabRpcService.tabRpcClient.call({
+								method: "dom.waitForSettled",
+								args: [],
+								extraArgs: {
+									tabId,
+									frameId: TOP_FRAME_ID,
+								},
+							}),
+							config.settleTimeoutMs + SETTLE_PROBE_TIMEOUT_MS,
+						));
+					}
+					const { url } = await backgroundToolsM3.getTabLoadState(tabId);
+					return {
+						url,
+						documentId,
+					};
+				} catch (error) {
+					lastError = error;
+				}
+			}
+
+			if (Date.now() >= deadline) {
+				throw new Error(
+					`Tab ${tabId} did not settle within ${config.navigationTimeoutMs}ms${lastError ? `: ${String(lastError)}` : ""}`,
+				);
+			}
+			await delay(SETTLE_POLL_INTERVAL_MS);
+		}
 	};
 
 	// Browser and Extension Info Methods

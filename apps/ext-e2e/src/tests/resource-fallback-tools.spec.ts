@@ -129,6 +129,8 @@ test.describe("Resource Fallback Tools", () => {
 			expect(result.totalPages).toBeGreaterThanOrEqual(1);
 			expect(typeof result.data).toBe("string");
 			expect(result.data).toContain("Text Test Screen");
+			expect(result.data).not.toContain(".etxtjc");
+			expect(result.data).not.toContain("__inlineScriptLeak");
 		});
 
 		test("pagination with getSnapshotPage", async ({

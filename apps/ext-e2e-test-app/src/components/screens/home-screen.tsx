@@ -58,6 +58,12 @@ const testScreens = [
 		title: "Popup Test",
 		description: "Test tool behavior with a window.open() popup window",
 	},
+	{
+		path: "/auto-wait-test",
+		title: "Auto Wait Test",
+		description:
+			"Test auto-waiting and page-change diffs returned by write tools",
+	},
 ];
 
 export function HomeScreen() {

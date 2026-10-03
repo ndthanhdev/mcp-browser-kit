@@ -1,6 +1,6 @@
 import type { TreeNode } from "@mcp-browser-kit/core-utils/tree";
-import { treeToPathValueArray } from "@mcp-browser-kit/core-utils/tree";
 import type { ReadableElementRecord } from "../types";
+import { getVisibleText } from "./get-visible-text";
 
 /**
  * Extracts the current form value of an element, if it has one.
@@ -26,20 +26,28 @@ function getElementValue(element: globalThis.Element): string {
 }
 
 /**
- * Converts a tree of DOM elements to an array of ReadableElementRecords
+ * Converts a tree of DOM elements to an array of ReadableElementRecords, in
+ * pre-order (document order).
  * @param tree - TreeNode structure containing DOM elements
- * @returns Array of ReadableElementRecord tuples with path, accessibleRole,
+ * @param idOf - Returns the stable element id used as the record's path
+ * @returns Array of ReadableElementRecord tuples with id, accessibleRole,
  *   accessibleText, and an optional value (appended only when the element has
  *   a non-empty form value)
  */
 export function toElementRecords(
 	tree: TreeNode<globalThis.Element>,
+	idOf: (element: globalThis.Element) => string,
 ): ReadableElementRecord[] {
-	// Convert tree to path-value array
-	const pathValueArray = treeToPathValueArray(tree);
+	const elements: globalThis.Element[] = [];
+	const visit = (node: TreeNode<globalThis.Element>): void => {
+		elements.push(node.data);
+		for (const child of node.children ?? []) visit(child);
+	};
+	visit(tree);
 
-	// Map each path-value pair to a ReadableElementRecord
-	return pathValueArray.map(([path, element]): ReadableElementRecord => {
+	return elements.map((element): ReadableElementRecord => {
+		const path = idOf(element);
+
 		// Extract accessible role from element
 		const accessibleRole =
 			element.getAttribute("role") ?? element.tagName.toLowerCase();
@@ -50,8 +58,7 @@ export function toElementRecords(
 			element.getAttribute("aria-labelledby") ??
 			element.getAttribute("placeholder") ??
 			element.getAttribute("title") ??
-			element.textContent?.trim() ??
-			"";
+			getVisibleText(element);
 
 		const record: ReadableElementRecord = [
 			path,

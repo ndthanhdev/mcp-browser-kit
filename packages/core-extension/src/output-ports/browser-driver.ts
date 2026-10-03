@@ -8,12 +8,14 @@ import type {
 	ExtensionInfo,
 	ExtensionTabInfo,
 	ExtensionWindowInfo,
+	LoadTabContextOptions,
 	PageSaveFormat,
 	PageSaveResult,
 	Screenshot,
 	ScrollDirection,
 	Selection,
 	TabContext,
+	TabSettledState,
 } from "../types";
 
 export interface BrowserDriverOutputPort {
@@ -29,7 +31,19 @@ export interface BrowserDriverOutputPort {
 		tabId: string;
 		windowId: string;
 	}>;
-	loadTabContext(tabId: string): Promise<TabContext>;
+	loadTabContext(
+		tabId: string,
+		options?: LoadTabContextOptions,
+	): Promise<TabContext>;
+	/**
+	 * Wait until the tab finished loading and its top-frame content script is
+	 * responsive. When the document changed since `previousDocumentId`, also
+	 * wait for the new document's DOM to go quiet.
+	 */
+	waitForTabSettled(
+		tabId: string,
+		previousDocumentId?: string,
+	): Promise<TabSettledState>;
 	closeTab(tabId: string): Promise<void>;
 	captureTab(tabId: string): Promise<Screenshot>;
 	savePage(tabId: string, format: PageSaveFormat): Promise<PageSaveResult>;

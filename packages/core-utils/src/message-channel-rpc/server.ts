@@ -109,7 +109,9 @@ export class MessageChannelRpcServer<
 			return Promise.resolve({
 				id,
 				isOk: false,
-				result: error,
+				// Error objects don't survive structured cloning across extension
+				// messaging (they arrive as {}), so send the message itself.
+				result: error instanceof Error ? error.message : error,
 			});
 		}
 	};

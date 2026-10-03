@@ -13,6 +13,7 @@ import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import type { Get, Paths } from "type-fest";
 import browser, { type Runtime } from "webextension-polyfill";
+import { ElementIdRegistry } from "./element-id-registry";
 import { TabAnimationTools } from "./tab-animation-tools";
 import { TabContextStore } from "./tab-context-store";
 import { TabDomTools } from "./tab-dom-tools";
@@ -65,6 +66,7 @@ export class TabToolsSetup {
 		container.bind<TabDomTools>(TabDomTools).to(TabDomTools);
 		container.bind<TabHumanHintTools>(TabHumanHintTools).to(TabHumanHintTools);
 		container.bind<TabAnimationTools>(TabAnimationTools).to(TabAnimationTools);
+		container.bind<ElementIdRegistry>(ElementIdRegistry).to(ElementIdRegistry);
 		container.bind<TabContextStore>(TabContextStore).to(TabContextStore);
 		container.bind<PageSave>(PageSave).to(PageSave);
 		container.bind<TabPageSaveTools>(TabPageSaveTools).to(TabPageSaveTools);

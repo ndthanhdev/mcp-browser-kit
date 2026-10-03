@@ -1,3 +1,5 @@
+import { getVisibleText } from "./get-visible-text";
+
 /**
  * Checks if a DOM element is considered readable/interactive
  * @param element - A jsdom Element to check
@@ -39,7 +41,7 @@ export function isReadable(element: globalThis.Element): boolean {
 
 	// If not in always readable list, check if it's a leaf node with inner text
 	const isLeafNode = element.children.length === 0;
-	const hasInnerText = (element.textContent?.trim() ?? "") !== "";
+	const hasInnerText = getVisibleText(element) !== "";
 	const isVisible = element.checkVisibility();
 
 	return isLeafNode && hasInnerText && isVisible;

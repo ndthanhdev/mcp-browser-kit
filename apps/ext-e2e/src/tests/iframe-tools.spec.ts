@@ -91,6 +91,7 @@ test.describe("Iframe Tools", () => {
 				el[2]?.includes("Iframe Inner Button"),
 			)?.[0];
 			expectToBeDefined(iframeButtonPath);
+			expect(iframeButtonPath).toMatch(/^[1-9]\d*:e[0-9a-z]+$/);
 
 			await mcpClientPage.callTool("clickOnElement", {
 				...tab,
