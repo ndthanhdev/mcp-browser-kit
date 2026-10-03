@@ -55,7 +55,7 @@ export const readableElementSchema = {
 	readablePath: z
 		.string()
 		.describe(
-			"Stable element id (e.g. 0:e1a) — first element of [path, role, text] tuple from readable-elements; not a CSS selector",
+			"Stable element id (e.g. f1:e1a) — first element of [path, role, text] tuple from readable-elements; not a CSS selector",
 		),
 };
 
@@ -70,7 +70,7 @@ export const tabReadableElementHtmlSchema = {
 	readablePath: z
 		.string()
 		.describe(
-			"Stable element id (e.g. 0:e1a) — first element of a [path, role, text, value?] tuple from readable-elements; not a CSS selector",
+			"Stable element id (e.g. f1:e1a) — first element of a [path, role, text, value?] tuple from readable-elements; not a CSS selector",
 		),
 };
 
@@ -161,7 +161,7 @@ export const showHumanHintInputSchema = {
 		.string()
 		.optional()
 		.describe(
-			"Stable element id from readable-elements (e.g. 0:e1a); provide this OR x+y, not both",
+			"Stable element id from readable-elements (e.g. f1:e1a); provide this OR x+y, not both",
 		),
 	x: z
 		.number()

@@ -12,4 +12,10 @@ export const config = {
 	settleTimeoutMs: 3_000,
 	/** Max time to wait for a navigation to finish loading. */
 	navigationTimeoutMs: 10_000,
+	/**
+	 * Default ceiling on a single call into a tab's content script, so a
+	 * response that never arrives (e.g. a page frozen into bfcache) fails
+	 * instead of hanging the tool call.
+	 */
+	tabCallTimeoutMs: 30_000,
 };

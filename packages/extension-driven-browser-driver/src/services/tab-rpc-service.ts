@@ -11,13 +11,43 @@ import {
 } from "@mcp-browser-kit/core-utils";
 import type { Func } from "@mcp-browser-kit/types";
 import { inject, injectable } from "inversify";
-import browser from "webextension-polyfill";
+import browser, { type WebNavigation } from "webextension-polyfill";
+import { config } from "../config";
 import type { TabTools } from "./tab-tools";
 
 type DeferMessageWithTabId = DeferMessage & {
 	extraArgs?: {
 		tabId: string;
 		frameId?: string;
+		timeoutMs?: number;
+	};
+};
+
+const TOP_FRAME_ID = 0;
+
+/**
+ * Rejects once `frameId` of `tabId` commits a new document. A frame that
+ * navigates mid-call never answers, and Firefox may never fail the pending
+ * message either (the old page can sit frozen in bfcache).
+ */
+const watchFrameNavigation = (tabId: number, frameId: number) => {
+	let listener:
+		| ((details: WebNavigation.OnCommittedDetailsType) => void)
+		| undefined;
+	const navigated = new Promise<never>((_, reject) => {
+		listener = (details) => {
+			if (details.tabId === tabId && details.frameId === frameId) {
+				reject(new Error("Frame navigated during call"));
+			}
+		};
+		browser.webNavigation.onCommitted.addListener(listener);
+	});
+	navigated.catch(() => undefined);
+	return {
+		navigated,
+		stop: () => {
+			if (listener) browser.webNavigation.onCommitted.removeListener(listener);
+		},
 	};
 };
 
@@ -29,6 +59,10 @@ export class TabRpcService {
 		{
 			tabId: string;
 			frameId?: string;
+			/** When set, the frame rejects the call unless it still hosts this document. */
+			documentId?: string;
+			/** Overrides `config.tabCallTimeoutMs` for this call. */
+			timeoutMs?: number;
 		}
 	>();
 	private _unlink: Func | undefined;
@@ -73,6 +107,26 @@ export class TabRpcService {
 			return;
 		}
 
+		const timeoutMs =
+			deferMessage.extraArgs?.timeoutMs ?? config.tabCallTimeoutMs;
+		const watch = watchFrameNavigation(
+			Number(tabId),
+			frameId != null ? Number(frameId) : TOP_FRAME_ID,
+		);
+		let timer: ReturnType<typeof setTimeout> | undefined;
+		const timedOut = new Promise<never>((_, reject) => {
+			timer = setTimeout(
+				() =>
+					reject(
+						new Error(
+							`Timed out after ${timeoutMs}ms waiting for tab ${tabId} frame ${frameId ?? TOP_FRAME_ID}`,
+						),
+					),
+				timeoutMs,
+			);
+		});
+		timedOut.catch(() => undefined);
+
 		try {
 			this.logger.verbose(
 				"Sending message to tab:",
@@ -81,15 +135,19 @@ export class TabRpcService {
 				frameId ?? "(unspecified)",
 				deferMessage,
 			);
-			const response = await browser.tabs.sendMessage(
-				Number(tabId),
-				deferMessage,
-				frameId != null
-					? {
-							frameId: Number(frameId),
-						}
-					: undefined,
-			);
+			const response = await Promise.race([
+				browser.tabs.sendMessage(
+					Number(tabId),
+					deferMessage,
+					frameId != null
+						? {
+								frameId: Number(frameId),
+							}
+						: undefined,
+				),
+				watch.navigated,
+				timedOut,
+			]);
 			if (response === undefined) {
 				throw new Error("No response from tab content script");
 			}
@@ -106,6 +164,9 @@ export class TabRpcService {
 				isOk: false,
 				result: error instanceof Error ? error.message : String(error),
 			} satisfies ResolveMessage);
+		} finally {
+			clearTimeout(timer);
+			watch.stop();
 		}
 	};
 

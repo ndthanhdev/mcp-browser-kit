@@ -2,24 +2,28 @@ import type {
 	ReadableElementRecord,
 	TabContext,
 } from "@mcp-browser-kit/core-extension/types";
-import { buildFramePath, isTopFrame } from "./frame-path";
+import { buildFramePath } from "./frame-path";
 
 export interface FrameTabContext {
+	/** Stable frame id (`f…`) used in frame-qualified paths. */
 	frameId: string;
+	isTopFrame: boolean;
 	context: TabContext;
 }
 
 /**
  * Merges each frame's own (frame-local) `TabContext` into one flat context,
  * rewriting `readableElementRecords` paths to be frame-qualified. The top
- * frame ("0") is ordered first and is the only one whose `html` is kept.
+ * frame is ordered first and is the only one whose `html` is kept; the other
+ * frames keep their given order.
  */
 export const mergeFrameTabContexts = (
 	frameContexts: FrameTabContext[],
 ): TabContext => {
 	const ordered = [
-		...frameContexts,
-	].sort((a, b) => Number(a.frameId) - Number(b.frameId));
+		...frameContexts.filter(({ isTopFrame }) => isTopFrame),
+		...frameContexts.filter(({ isTopFrame }) => !isTopFrame),
+	];
 
 	const readableElementRecords: ReadableElementRecord[] = ordered.flatMap(
 		({ frameId, context }) =>
@@ -45,7 +49,7 @@ export const mergeFrameTabContexts = (
 		.filter((text) => text.length > 0)
 		.join("\n\n");
 
-	const topFrame = ordered.find(({ frameId }) => isTopFrame(frameId));
+	const topFrame = ordered.find(({ isTopFrame }) => isTopFrame);
 
 	return {
 		html: topFrame?.context.html ?? "",

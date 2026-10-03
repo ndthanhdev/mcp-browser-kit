@@ -10,6 +10,7 @@ import type {
 } from "@mcp-browser-kit/types";
 import { Readability } from "@mozilla/readability";
 import { inject, injectable } from "inversify";
+import { documentId } from "../utils/document-id";
 import { getVisibleText } from "../utils/get-visible-text";
 import { toDomTree } from "../utils/to-dom-tree";
 import { toElementRecords } from "../utils/to-element-records";
@@ -46,7 +47,11 @@ export class TabTools {
 	 */
 	loadTabContext = async (
 		options?: LoadTabContextOptions | null,
-	): Promise<TabContext> => {
+	): Promise<
+		TabContext & {
+			documentId: string;
+		}
+	> => {
 		// Messaging serializes an omitted argument as null, which a default
 		// parameter would not replace.
 		const { commit = true, animate = true } = options ?? {};
@@ -93,6 +98,7 @@ export class TabTools {
 			html,
 			readableElementRecords,
 			textContent,
+			documentId,
 		};
 	};
 
