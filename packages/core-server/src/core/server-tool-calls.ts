@@ -240,11 +240,13 @@ export class ToolCallUseCases implements ServerToolCallsInputPort {
 		browserId: string,
 		tabId: string,
 	): Promise<MessageChannelRpcClient<TabSpecificTool>> => {
+		// Resolve the client first so a version mismatch is reported before the
+		// internal-page check, which can't see incompatible browsers.
+		const rpcClient =
+			this.extensionChannelManager.getRpcClientByBrowserId(browserId);
 		await this.ensureNotAnInternalBrowserPage(browserId, tabId);
 
-		return this.extensionChannelManager.getRpcClientByBrowserId(
-			browserId,
-		) as unknown as MessageChannelRpcClient<TabSpecificTool>;
+		return rpcClient as unknown as MessageChannelRpcClient<TabSpecificTool>;
 	};
 
 	/**
