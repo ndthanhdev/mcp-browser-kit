@@ -7,6 +7,7 @@ import type { Container } from "inversify";
 import { inject, injectable } from "inversify";
 import { DrivenBrowserDriverBase } from "./driven-browser-driver-base";
 import { FrameCorrelationService } from "./frame-correlation-service";
+import { FrameIdRegistry } from "./frame-id-registry";
 import { FrameRegistryService } from "./frame-registry-service";
 import { TabRpcService } from "./tab-rpc-service";
 import { TabToolsSetup } from "./tab-tools-setup";
@@ -25,6 +26,10 @@ export class DrivenBrowserDriverM3 extends DrivenBrowserDriverBase {
 		container
 			.bind<FrameCorrelationService>(FrameCorrelationService)
 			.to(FrameCorrelationService)
+			.inSingletonScope();
+		container
+			.bind<FrameIdRegistry>(FrameIdRegistry)
+			.to(FrameIdRegistry)
 			.inSingletonScope();
 
 		// M3 browser driver
@@ -46,12 +51,15 @@ export class DrivenBrowserDriverM3 extends DrivenBrowserDriverBase {
 		frameRegistry: FrameRegistryService,
 		@inject(FrameCorrelationService)
 		frameCorrelation: FrameCorrelationService,
+		@inject(FrameIdRegistry)
+		frameIds: FrameIdRegistry,
 	) {
 		super(
 			loggerFactory,
 			tabRpcService,
 			frameRegistry,
 			frameCorrelation,
+			frameIds,
 			"DrivenBrowserDriverM3",
 		);
 	}

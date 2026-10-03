@@ -29,6 +29,8 @@ export class TabRpcService {
 		{
 			tabId: string;
 			frameId?: string;
+			/** When set, the frame rejects the call unless it still hosts this document. */
+			documentId?: string;
 		}
 	>();
 	private _unlink: Func | undefined;

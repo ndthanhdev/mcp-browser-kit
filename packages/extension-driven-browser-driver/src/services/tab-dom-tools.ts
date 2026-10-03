@@ -12,13 +12,11 @@ import {
 	waitForActionable,
 	waitForDomQuiet,
 } from "../utils/auto-wait";
+import { documentId } from "../utils/document-id";
 import * as dom from "../utils/dom-tools";
 import { CORRELATE_MESSAGE_TYPE } from "../utils/frame-correlation";
 import { TabAnimationTools } from "./tab-animation-tools";
 import { TabContextStore } from "./tab-context-store";
-
-/** Minted once per document load: a new value means the document was replaced. */
-const documentId = crypto.randomUUID();
 
 const CLICK_CHECKS: ActionabilityCheck[] = [
 	"visible",
