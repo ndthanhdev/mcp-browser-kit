@@ -29,19 +29,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ai-sdk/anthropic@npm:^4.0.40":
-  version: 4.0.40
-  resolution: "@ai-sdk/anthropic@npm:4.0.40"
-  dependencies:
-    "@ai-sdk/provider": "npm:4.0.7"
-    "@ai-sdk/provider-utils": "npm:5.0.28"
-  peerDependencies:
-    zod: ^3.25.76 || ^4.1.8
-  checksum: 10c0/c75c40ece9dbd4b7323e618782ffeb507d470a5f2ddd2d0ed81be1ca1a1382cc843d883b030de333555f0e112233d62a9607c24d656e85c3a35278f069ce96d0
-  languageName: node
-  linkType: hard
-
-"@ai-sdk/gateway@npm:4.0.56, @ai-sdk/gateway@npm:^4.0.56":
+"@ai-sdk/gateway@npm:4.0.56":
   version: 4.0.56
   resolution: "@ai-sdk/gateway@npm:4.0.56"
   dependencies:
@@ -54,18 +42,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ai-sdk/google@npm:^4.0.47":
-  version: 4.0.47
-  resolution: "@ai-sdk/google@npm:4.0.47"
-  dependencies:
-    "@ai-sdk/provider": "npm:4.0.7"
-    "@ai-sdk/provider-utils": "npm:5.0.28"
-  peerDependencies:
-    zod: ^3.25.76 || ^4.1.8
-  checksum: 10c0/291472a1df447adfc13915963ea9ab214010f5726c7f66bf765058fb62d79bc0a8093d06ffaa3465335eac41aaf4cb5e81afdf7287f8d656d5e97322ae051d7b
-  languageName: node
-  linkType: hard
-
 "@ai-sdk/openai-compatible@npm:^3.0.32":
   version: 3.0.32
   resolution: "@ai-sdk/openai-compatible@npm:3.0.32"
@@ -75,18 +51,6 @@ __metadata:
   peerDependencies:
     zod: ^3.25.76 || ^4.1.8
   checksum: 10c0/d17c45209c3b7fe5adb92ab19206b61b2dcd36284aa5fb447fa94c0ac6cad2cbe7c7c6cd5fba29d9b2b294a66ffe8637177cc02b52ad7e3018f66d150c6f91ca
-  languageName: node
-  linkType: hard
-
-"@ai-sdk/openai@npm:^4.0.44":
-  version: 4.0.44
-  resolution: "@ai-sdk/openai@npm:4.0.44"
-  dependencies:
-    "@ai-sdk/provider": "npm:4.0.7"
-    "@ai-sdk/provider-utils": "npm:5.0.28"
-  peerDependencies:
-    zod: ^3.25.76 || ^4.1.8
-  checksum: 10c0/0d66e908a94b69cacd61a2c9e4ae50f7b80d798bd0c74d528ad5b24ce8549f7157a4ab9e03bd35a4178632d5934dc6b551ab3b400383f291dc3d98ecd3460d98
   languageName: node
   linkType: hard
 
@@ -1967,15 +1931,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/extension-driven-llm-provider@workspace:packages/extension-driven-llm-provider"
   dependencies:
-    "@ai-sdk/anthropic": "npm:^4.0.40"
-    "@ai-sdk/gateway": "npm:^4.0.56"
-    "@ai-sdk/google": "npm:^4.0.47"
-    "@ai-sdk/openai": "npm:^4.0.44"
     "@ai-sdk/openai-compatible": "npm:^3.0.32"
-    "@openrouter/ai-sdk-provider": "npm:^3.0.0"
     ai: "npm:^7.0.70"
     vitest: "npm:^4.1.11"
-    zod: "npm:^4.3.6"
   languageName: unknown
   linkType: soft
 
@@ -2649,16 +2607,6 @@ __metadata:
   peerDependencies:
     "@openfeature/core": ^1.11.0
   checksum: 10c0/5b3cc5981e4fe2459a278d59527856ccc31228df0d09a86ed263c98f2540758385d75ffa480c1b14fcedc9cbe16a7c4e658cc87066875ff0ae113bb9c5752cde
-  languageName: node
-  linkType: hard
-
-"@openrouter/ai-sdk-provider@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "@openrouter/ai-sdk-provider@npm:3.0.0"
-  peerDependencies:
-    ai: ^7.0.0
-    zod: ^3.25.76 || ^4.1.8
-  checksum: 10c0/e8ee3db219eafecc35f965a171c69c23d2349e4067d48f32f3949b7d4c7d09c8d299885de7c79bee4fd61456a30e5c7a9b2f8ca9c457758a3603172e48e0e02a
   languageName: node
   linkType: hard
 
@@ -8819,21 +8767,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iconv-lite@npm:^0.7.2":
+"iconv-lite@npm:^0.7.2, iconv-lite@npm:~0.7.0":
   version: 0.7.3
   resolution: "iconv-lite@npm:0.7.3"
   dependencies:
     safer-buffer: "npm:>= 2.1.2 < 3.0.0"
   checksum: 10c0/be2fd2414f7e94be3a63063fa0ad5919c16bc7b6e00c77eea0765ced6db405739f38dd51016583058fba25cc1d0106ba30b83fbb7a7e32f824d4db76f23d8d33
-  languageName: node
-  linkType: hard
-
-"iconv-lite@npm:~0.7.0":
-  version: 0.7.2
-  resolution: "iconv-lite@npm:0.7.2"
-  dependencies:
-    safer-buffer: "npm:>= 2.1.2 < 3.0.0"
-  checksum: 10c0/3c228920f3bd307f56bf8363706a776f4a060eb042f131cd23855ceca962951b264d0997ab38a1ad340e1c5df8499ed26e1f4f0db6b2a2ad9befaff22f14b722
   languageName: node
   linkType: hard
 
@@ -12206,16 +12145,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "root@workspace:."
   dependencies:
-    "@ai-sdk/anthropic": "npm:^4.0.40"
-    "@ai-sdk/gateway": "npm:^4.0.56"
-    "@ai-sdk/google": "npm:^4.0.47"
-    "@ai-sdk/openai": "npm:^4.0.44"
     "@biomejs/biome": "npm:^2.5.5"
     "@medv/finder": "npm:^4.0.2"
     "@mozilla/readability": "npm:^0.6.0"
     "@openfeature/core": "npm:^1.11.0"
     "@openfeature/web-sdk": "npm:^1.9.0"
-    "@openrouter/ai-sdk-provider": "npm:^3.0.0"
     "@playwright/test": "npm:^1.58.2"
     "@readme/data-urls": "npm:^3.0.1"
     "@swc-node/register": "npm:^1.11.1"
@@ -13714,18 +13648,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-is@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "type-is@npm:2.0.1"
-  dependencies:
-    content-type: "npm:^1.0.5"
-    media-typer: "npm:^1.1.0"
-    mime-types: "npm:^3.0.0"
-  checksum: 10c0/7f7ec0a060b16880bdad36824ab37c26019454b67d73e8a465ed5a3587440fbe158bc765f0da68344498235c877e7dbbb1600beccc94628ed05599d667951b99
-  languageName: node
-  linkType: hard
-
-"type-is@npm:^2.1.0":
+"type-is@npm:^2.0.1, type-is@npm:^2.1.0":
   version: 2.1.0
   resolution: "type-is@npm:2.1.0"
   dependencies:
