@@ -5,3 +5,4 @@ export * from "./observe-browser-state";
 export * from "./server-lifecycle";
 export * from "./server-tool-calls";
 export * from "./snapshot-content";
+export * from "./version-compatibility";

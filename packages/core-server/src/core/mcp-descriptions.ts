@@ -26,7 +26,8 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"4. Use readablePath from the elements in interaction tools",
 			"",
 			"Context shape (bk:///context or getContext):",
-			'{ "browsers": [{ "browserId": "<short-id>", "extensionInfo": { "manifestVersion": 3 }, "tabs": [{ "id": "<tabId>", "windowId": "<windowId>", "tabUri": "bk:///browsers/.../tabs/...", "url": "...", "title": "..." }] }] }',
+			'{ "serverVersion": "10.1.0", "browsers": [{ "browserId": "<short-id>", "extensionInfo": { "manifestVersion": 3, "extensionVersion": "10.1.0" }, "versionMismatch?": { "update": "extension", "message": "..." }, "tabs": [{ "id": "<tabId>", "windowId": "<windowId>", "tabUri": "bk:///browsers/.../tabs/...", "url": "...", "title": "..." }] }] }',
+			"- versionMismatch is present only when the extension's major version differs from the server's (or is unknown); every tool call to that browser fails. Relay versionMismatch.message to the user instead of retrying.",
 			"",
 			"Tool selection by manifestVersion:",
 			"- MV2: all tools; prefer element tools; invokeJsFn only as last resort",
@@ -35,6 +36,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"",
 			"Error recovery:",
 			"- Tab not found -> re-read bk:///context or call getContext",
+			"- Version mismatch (update the extension / server) -> stop; tell the user the message — retrying won't help",
 			"- Element no longer exists -> it was removed from the page; re-read readable-elements or call getReadableElements and pick its replacement",
 			"- Page N out of range / No cached snapshot -> read page 1 first, use snapshotId from that response",
 			"- captureTab/invokeJsFn not supported -> switch to element tools",
@@ -244,7 +246,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"When: discovering available tabs before interacting — equivalent to reading the bk:///context resource.",
 			"How: no parameters needed.",
 			"Requires: nothing.",
-			"Returns: browsers[] (each with browserId, extensionInfo, windows) and tabs (each with id (tabId), windowId, tabUri, url, title, active).",
+			"Returns: serverVersion, browsers[] (each with browserId, extensionInfo, versionMismatch when the extension's major version differs from the server's, windows) and tabs (each with id (tabId), windowId, tabUri, url, title, active).",
 			"Avoid: calling repeatedly in a tight loop — cache the result for the duration of a task.",
 		].join("\n");
 	};
@@ -299,6 +301,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"Aggregated state of every connected browser — read this first.",
 			"browserId is on each browsers[] entry; tabId (id), windowId, and tabUri are on each entry in browsers[].tabs[].",
 			"extensionInfo.manifestVersion on each browser gates available tools (2 = all, 3 = element tools only).",
+			"A browser with versionMismatch can't be used until the extension or server is updated; relay versionMismatch.message to the user.",
 			"Example pointer: browsers[0].tabs[0].tabUri -> append /readable-elements to interact.",
 		].join(" ");
 	};
