@@ -295,6 +295,7 @@ export abstract class DrivenBrowserDriverBase
 				],
 				extraArgs: {
 					tabId,
+					timeoutMs: SAVE_PAGE_TIMEOUT_MS,
 				},
 			}),
 			SAVE_PAGE_TIMEOUT_MS,

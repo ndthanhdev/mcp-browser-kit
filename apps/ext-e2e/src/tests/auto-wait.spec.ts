@@ -175,6 +175,30 @@ test.describe("Write tool auto-wait and page-change diffs", () => {
 		expect(textOf(result)).toContain("Navigated to");
 	});
 
+	test("hitting enter in a form that navigates reports navigation promptly", async ({
+		testAppPage,
+		mcpClientPage,
+	}) => {
+		const inputPath = await findPath(
+			mcpClientPage,
+			tabUri,
+			"Search And Navigate",
+		);
+		await testAppPage.page.getByTestId("search-navigate-input").fill("hello");
+
+		const startedAt = Date.now();
+		const result = await mcpClientPage.callTool("hitEnterOnElement", {
+			...tab,
+			readablePath: inputPath,
+		});
+
+		const value = result.structuredContent?.value;
+		expectToBeDefined(value);
+		expect(value.navigated).toBe(true);
+		expect(value.url).toContain("click-test?q=hello");
+		expect(Date.now() - startedAt).toBeLessThan(20_000);
+	});
+
 	test("flags a too-large change without sending the diff", async ({
 		mcpClientPage,
 	}) => {
