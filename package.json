@@ -54,7 +54,7 @@
 		"quick-lru": "^7.3.0",
 		"ramda": "^0.32.0",
 		"reflect-metadata": "^0.2.2",
-		"sanitize-html": "^2.17.5",
+		"sanitize-html": "^2.17.7",
 		"semver": "^7.7.4",
 		"serve": "^14.2.5",
 		"simple-git": "^3.36.0",
