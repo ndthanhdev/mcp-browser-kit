@@ -1,4 +1,7 @@
-import type { TabContext } from "@mcp-browser-kit/core-extension";
+import type {
+	LoadTabContextOptions,
+	TabContext,
+} from "@mcp-browser-kit/core-extension";
 import type { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
 import { LoggerFactoryOutputPort as LoggerFactoryOutputPortSymbol } from "@mcp-browser-kit/core-extension/output-ports";
 import type {
@@ -7,6 +10,8 @@ import type {
 } from "@mcp-browser-kit/types";
 import { Readability } from "@mozilla/readability";
 import { inject, injectable } from "inversify";
+import { documentId } from "../utils/document-id";
+import { getVisibleText } from "../utils/get-visible-text";
 import { toDomTree } from "../utils/to-dom-tree";
 import { toElementRecords } from "../utils/to-element-records";
 import { domTreeToReadableTree } from "../utils/to-readable-tree";
@@ -35,8 +40,27 @@ export class TabTools {
 		this.logger = this.loggerFactory.create("TabTools");
 	}
 
-	loadTabContext = async (): Promise<TabContext> => {
-		this.logger.info("Loading tab context");
+	/**
+	 * Snapshots the page. Records carry stable element ids, so lookups work for
+	 * any snapshotted element still in the document. `commit: false` only skips
+	 * storing the snapshot as the latest context.
+	 */
+	loadTabContext = async (
+		options?: LoadTabContextOptions | null,
+	): Promise<
+		TabContext & {
+			documentId: string;
+		}
+	> => {
+		// Messaging serializes an omitted argument as null, which a default
+		// parameter would not replace.
+		const { commit = true, animate = true } = options ?? {};
+		this.logger.info("Loading tab context", {
+			commit,
+			animate,
+		});
+
+		this.contextStore.pruneElementIds();
 
 		const rootElement = document.documentElement;
 		const domTree = toDomTree(rootElement);
@@ -46,33 +70,35 @@ export class TabTools {
 		);
 
 		const readableElementRecords = readableTree
-			? toElementRecords(readableTree).slice(1)
+			? toElementRecords(readableTree, this.contextStore.idOf).slice(1)
 			: [];
 
 		const html = document.documentElement.outerHTML;
 		const textContent = this.extractTextContent();
 
-		if (readableTree) {
+		if (readableTree && commit) {
 			this.contextStore.setLatestCapturedTabContext({
 				html,
 				readableElementRecords,
 				domTree,
-				readableTree,
 				textContent,
 			});
 			this.logger.info("Tab context loaded and stored successfully");
-		} else {
+		} else if (!readableTree) {
 			this.logger.warn(
 				"Tab context loaded but not stored (no readable tree available)",
 			);
 		}
 
-		await this.animation.playScanAnimation();
+		if (animate) {
+			await this.animation.playScanAnimation();
+		}
 
 		return {
 			html,
 			readableElementRecords,
 			textContent,
+			documentId,
 		};
 	};
 
@@ -83,12 +109,12 @@ export class TabTools {
 			if (article?.textContent) {
 				return article.textContent.trim();
 			}
-			return document.body.textContent?.trim() ?? "";
+			return getVisibleText(document.body);
 		} catch (error) {
 			this.logger.warn(
 				`Readability failed, using fallback extraction: ${error}`,
 			);
-			return document.body.textContent?.trim() ?? "";
+			return getVisibleText(document.body);
 		}
 	};
 

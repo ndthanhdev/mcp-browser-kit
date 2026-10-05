@@ -12,5 +12,4 @@ export interface InternalTabContext {
 	readableElementRecords: ReadableElementRecord[];
 	textContent: string;
 	domTree: TreeNode<globalThis.Element>;
-	readableTree: TreeNode<globalThis.Element>;
 }

@@ -96,4 +96,31 @@ test.describe("Readable element HTML", () => {
 		expect(resourceResult.data).toBe(toolResult.data);
 		expect(resourceResult.totalPages).toBe(toolResult.totalPages);
 	});
+
+	test("inline <style> and <script> contents do not leak into element text", async ({
+		testAppPage,
+		mcpClientPage,
+	}) => {
+		await testAppPage.navigateToTextTest();
+
+		const tabUri = await mcpClientPage.waitForTabUriByUrl(
+			testAppPage.page,
+			"text-test",
+		);
+
+		const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
+
+		for (const element of elements) {
+			expect(element[2]).not.toContain(".etxtjc");
+			expect(element[2]).not.toContain("__inlineScriptLeak");
+		}
+		expect(
+			elements.some((el) => el[1] === "span" && el[2] === "Search by image"),
+		).toBe(true);
+		expect(
+			elements.some(
+				(el) => el[1] === "p" && el[2] === "Paragraph after inline script",
+			),
+		).toBe(true);
+	});
 });

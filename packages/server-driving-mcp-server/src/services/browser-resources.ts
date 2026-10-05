@@ -1,6 +1,7 @@
 import {
 	LoggerFactoryOutputPort,
 	ObserveBrowserStateInputPort,
+	VersionCompatibilityInputPort,
 } from "@mcp-browser-kit/core-server";
 import {
 	McpDescriptionsInputPort,
@@ -34,6 +35,7 @@ import {
 	tabReadableElementsBkUri,
 	tabReadableTextBkUri,
 } from "../utils/browser-resource-uris";
+import { buildContextPayload } from "../utils/build-context-payload";
 
 const TAB_LIST_CAP = 200;
 const COMPLETION_CAP = 100;
@@ -130,6 +132,8 @@ export class BrowserResources {
 		private readonly snapshotContent: SnapshotContentInputPortInterface,
 		@inject(McpDescriptionsInputPort)
 		private readonly mcpDescriptions: McpDescriptionsInputPortInterface,
+		@inject(VersionCompatibilityInputPort)
+		private readonly versionCompatibility: VersionCompatibilityInputPort,
 	) {
 		this.logger = loggerFactory.create("browserResources");
 	}
@@ -349,53 +353,17 @@ export class BrowserResources {
 			text: string;
 		}>;
 	} {
-		const entries = this.observeBrowserState
-			.listBrowsers()
-			.filter((e) => e.snapshot.status !== "offline");
-
-		const browsers = entries.map((entry) => {
-			const { snapshot, channelId } = entry;
-			const browserId = shortChannelId(channelId);
-
-			const windows = snapshot.windows.map((w) => ({
-				id: w.id,
-				focused: w.focused,
-			}));
-
-			const tabs = snapshot.tabs.map((tab) => {
-				const windowId = tab.windowId ?? findWindowIdForTab(snapshot, tab.id);
-				return {
-					id: tab.id,
-					windowId,
-					url: tab.url,
-					title: tab.title,
-					active: tab.active,
-					tabUri: tabBkUri(channelId, tab.id),
-				};
-			});
-
-			return {
-				browserId,
-				status: snapshot.status,
-				browserInfo: snapshot.browserInfo,
-				extensionInfo: snapshot.extensionInfo,
-				windows,
-				tabs,
-			};
-		});
+		const payload = buildContextPayload(
+			this.observeBrowserState.listBrowsers(),
+			this.versionCompatibility,
+		);
 
 		return {
 			contents: [
 				{
 					uri: uri.toString(),
 					mimeType: "application/json",
-					text: JSON.stringify(
-						{
-							browsers,
-						},
-						null,
-						2,
-					),
+					text: JSON.stringify(payload, null, 2),
 				},
 			],
 		};
