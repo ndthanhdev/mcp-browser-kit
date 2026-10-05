@@ -91,6 +91,7 @@ test.describe("Iframe Tools", () => {
 				el[2]?.includes("Iframe Inner Button"),
 			)?.[0];
 			expectToBeDefined(iframeButtonPath);
+			expect(iframeButtonPath).toMatch(/^f[0-9a-z]+:e[0-9a-z]+$/);
 
 			await mcpClientPage.callTool("clickOnElement", {
 				...tab,
@@ -101,6 +102,91 @@ test.describe("Iframe Tools", () => {
 			await expect(locators.iframeClickCountMirror).toContainText(
 				"Iframe Click Count (mirrored): 1",
 			);
+		});
+	});
+
+	test.describe("frame ids", () => {
+		test("top frame and iframe get distinct stable frame ids", async ({
+			testAppPage,
+			mcpClientPage,
+		}) => {
+			await testAppPage.navigateToIframeTest();
+
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				testAppPage.page,
+				"iframe-test",
+			);
+			const frameOf = async (text: string) => {
+				const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
+				const path = elements.find((el) => el[2]?.includes(text))?.[0];
+				expectToBeDefined(path);
+				return path.split(":")[0];
+			};
+
+			const outerFrame = await frameOf("Outer Button");
+			const iframeFrame = await frameOf("Iframe Inner Button");
+			expect(outerFrame).not.toBe(iframeFrame);
+			expect(await frameOf("Outer Button")).toBe(outerFrame);
+			expect(await frameOf("Iframe Inner Button")).toBe(iframeFrame);
+		});
+
+		test("a reloaded iframe gets a new frame id and old paths into it fail", async ({
+			testAppPage,
+			mcpClientPage,
+		}) => {
+			await testAppPage.navigateToIframeTest();
+
+			const tab = await mcpClientPage.waitForTabByUrl(
+				testAppPage.page,
+				"iframe-test",
+			);
+			const tabUri = await mcpClientPage.waitForTabUriByUrl(
+				testAppPage.page,
+				"iframe-test",
+			);
+			const findIframeButton = async () => {
+				const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
+				const path = elements.find((el) =>
+					el[2]?.includes("Iframe Inner Button"),
+				)?.[0];
+				expectToBeDefined(path);
+				return path;
+			};
+			const oldPath = await findIframeButton();
+
+			const iframe = testAppPage.page.getByTestId("test-iframe");
+			const reloaded = iframe.evaluate(
+				(el) =>
+					new Promise<void>((resolve) => {
+						el.addEventListener("load", () => resolve(), {
+							once: true,
+						});
+						(el as HTMLIFrameElement).src = (el as HTMLIFrameElement).src;
+					}),
+			);
+			await reloaded;
+			await expect(
+				testAppPage.page
+					.frameLocator('[data-testid="test-iframe"]')
+					.getByTestId("iframe-inner-button"),
+			).toBeVisible();
+
+			const oldFrame = oldPath.split(":")[0];
+			await expect
+				.poll(async () => {
+					const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
+					const frame = elements
+						.find((el) => el[2]?.includes("Iframe Inner Button"))?.[0]
+						?.split(":")[0];
+					return frame !== undefined && frame !== oldFrame;
+				})
+				.toBe(true);
+
+			const result = await mcpClientPage.callTool("clickOnElement", {
+				...tab,
+				readablePath: oldPath,
+			});
+			expect(result.structuredContent?.ok).toBe(false);
 		});
 	});
 

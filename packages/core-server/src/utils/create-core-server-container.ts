@@ -7,6 +7,7 @@ import {
 	ServerLifecycle,
 	SnapshotContentUseCases,
 	ToolCallUseCases,
+	VersionCompatibilityUseCases,
 } from "../core";
 import {
 	McpDescriptionsInputPort,
@@ -14,6 +15,7 @@ import {
 	ServerLifecycleInputPort,
 	ServerToolCallsInputPort,
 	SnapshotContentInputPort,
+	VersionCompatibilityInputPort,
 } from "../input-ports";
 import { LifecycleParticipantOutputPort } from "../output-ports";
 
@@ -37,6 +39,9 @@ export const createCoreServerContainer = () => {
 	container
 		.bind<ObserveBrowserStateInputPort>(ObserveBrowserStateInputPort)
 		.to(ObserveBrowserStateUseCases);
+	container
+		.bind<VersionCompatibilityInputPort>(VersionCompatibilityInputPort)
+		.to(VersionCompatibilityUseCases);
 	// Lifecycle orchestration. Participants register themselves (in order)
 	// via their own setupContainer; BrowserStateRegistry is a core participant
 	// and is registered here first so it always starts before any adapters.

@@ -1,8 +1,8 @@
 import type { InternalTabContext } from "@mcp-browser-kit/core-extension";
 import type { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
 import { LoggerFactoryOutputPort as LoggerFactoryOutputPortSymbol } from "@mcp-browser-kit/core-extension/output-ports";
-import { findNodeByPath } from "@mcp-browser-kit/core-utils/tree";
 import { inject, injectable } from "inversify";
+import { ElementIdRegistry } from "./element-id-registry";
 
 @injectable()
 export class TabContextStore {
@@ -12,6 +12,8 @@ export class TabContextStore {
 	constructor(
 		@inject(LoggerFactoryOutputPortSymbol)
 		private readonly loggerFactory: LoggerFactoryOutputPort,
+		@inject(ElementIdRegistry)
+		private readonly elementIds: ElementIdRegistry,
 	) {
 		this.logger = this.loggerFactory.create("TabContextStore");
 	}
@@ -38,36 +40,21 @@ export class TabContextStore {
 		this.logger.verbose("Tab context cleared");
 	};
 
-	getElementFromPath = (readablePath: string): HTMLElement | null => {
-		this.logger.verbose(`Getting element from path: ${readablePath}`);
+	idOf = (element: globalThis.Element): string => this.elementIds.idOf(element);
 
-		// Get readableTree from contextStore
-		const tabContext = this.getLatestCapturedTabContext();
-		if (!tabContext?.readableTree) {
-			this.logger.error("No readable tree available in context store");
-			throw new Error("No readable tree available in context store");
+	pruneElementIds = (): void => {
+		this.elementIds.prune();
+	};
+
+	getElementFromPath = (readablePath: string): HTMLElement => {
+		this.logger.verbose(`Getting element from id: ${readablePath}`);
+		try {
+			const element = this.elementIds.elementOf(readablePath);
+			this.logger.verbose(`Element found and validated: ${element.tagName}`);
+			return element;
+		} catch (error) {
+			this.logger.error(error instanceof Error ? error.message : String(error));
+			throw error;
 		}
-
-		// Find element by path
-		const node = findNodeByPath(tabContext.readableTree, readablePath);
-		if (!node) {
-			this.logger.error(`Element not found at path: ${readablePath}`);
-			throw new Error(`Element not found at path: ${readablePath}`);
-		}
-
-		const element = node.data as HTMLElement;
-
-		// Check if element still exists in document
-		if (!document.contains(element)) {
-			this.logger.error(
-				`Element at path ${readablePath} no longer exists in document`,
-			);
-			throw new Error(
-				`Element at path ${readablePath} no longer exists in document`,
-			);
-		}
-
-		this.logger.verbose(`Element found and validated: ${element.tagName}`);
-		return element;
 	};
 }

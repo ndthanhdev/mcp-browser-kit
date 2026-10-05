@@ -42,7 +42,7 @@ const tabIdSchema = z
 const readablePathSchema = z
 	.string()
 	.describe(
-		"Dot-separated tree path (e.g. 0.2.1) — first element of [path, role, text] tuple from getReadableElements; not a CSS selector",
+		"Stable element id (e.g. f1:e1a) — first element of [path, role, text] tuple from getReadableElements; not a CSS selector",
 	);
 
 const xSchema = z
@@ -148,7 +148,7 @@ export function createBrowserAgentTools(
 			},
 		}),
 		clickOnElement: tool({
-			description: "Click an element identified by its readable tree path.",
+			description: "Click an element identified by its readable element id.",
 			inputSchema: z.object({
 				tabId: tabIdSchema,
 				readablePath: readablePathSchema,
@@ -206,7 +206,7 @@ export function createBrowserAgentTools(
 		}),
 		fillTextToElement: tool({
 			description:
-				"Fill text into the element identified by its readable tree path.",
+				"Fill text into the element identified by its readable element id.",
 			inputSchema: z.object({
 				tabId: tabIdSchema,
 				readablePath: readablePathSchema,
@@ -314,7 +314,7 @@ export function createBrowserAgentTools(
 		}),
 		hitEnterOnElement: tool({
 			description:
-				"Press Enter on the element identified by its readable tree path.",
+				"Press Enter on the element identified by its readable element id.",
 			inputSchema: z.object({
 				tabId: tabIdSchema,
 				readablePath: readablePathSchema,

@@ -25,7 +25,7 @@ export interface SnapshotContentInputPort {
 
 	/**
 	 * Same as `getReadableTextPage` but for the `outerHTML` of the single element
-	 * identified by `readablePath` (the dot-separated tree index from a
+	 * identified by `readablePath` (the stable element id from a
 	 * readable-elements tuple).
 	 */
 	getReadableElementHtmlPage(
