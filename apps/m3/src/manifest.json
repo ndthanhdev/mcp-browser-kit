@@ -5,6 +5,7 @@
 	"version": "0.0.0",
 	"description": "Allow MCP Browser Kit to interact with this browser.",
 	"permissions": [
+		"storage",
 		"tabs",
 		"webNavigation"
 	],

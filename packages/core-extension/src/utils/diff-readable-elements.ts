@@ -3,8 +3,8 @@ import type { ReadableElementRecord } from "../types";
 export interface ReadableElementsDiffOptions {
 	/** Unchanged lines shown before and after each change. */
 	contextLines?: number;
-	/** Rendered diff longer than this is dropped and reported as tooLarge. */
-	maxChars?: number;
+	/** Rendered diff estimated above this many tokens is dropped and reported as tooLarge. */
+	maxTokens?: number;
 	/** Upper bound on LCS table cells; larger changed regions are tooLarge. */
 	maxCells?: number;
 }
@@ -13,7 +13,6 @@ export interface ReadableElementsDiff {
 	changed: boolean;
 	added: number;
 	removed: number;
-	pathsShifted: boolean;
 	tooLarge: boolean;
 	diff?: string;
 }
@@ -34,13 +33,19 @@ type Op =
 	  };
 
 const DEFAULT_CONTEXT_LINES = 3;
-const DEFAULT_MAX_CHARS = 2_000;
+const DEFAULT_MAX_TOKENS = 4_000;
+// Rough chars-per-token ratio; avoids shipping a tokenizer in the extension.
+const CHARS_PER_TOKEN = 4;
+
+const estimateTokens = (text: string): number =>
+	Math.ceil(text.length / CHARS_PER_TOKEN);
 const DEFAULT_MAX_CELLS = 4_000_000;
 
-// Identity ignores the path: inserting one element renumbers every later
-// sibling, and matching on path would turn that into a wall of changes.
-const identity = ([, role, text, value]: ReadableElementRecord): string =>
+// Identity includes the stable element id, so the same element with new
+// text shows as "-" old / "+" new rather than an unrelated insertion.
+const identity = ([id, role, text, value]: ReadableElementRecord): string =>
 	JSON.stringify([
+		id,
 		role,
 		text,
 		value ?? null,
@@ -147,8 +152,8 @@ const renderHunks = (ops: Op[], contextLines: number): string => {
 
 /**
  * Line diff of two readable-element snapshots. Records are matched on
- * role + text + value; rendered lines carry the record's current path so the
- * caller can act on any line in the diff without re-reading.
+ * id + role + text + value; rendered lines carry the element's stable id so
+ * the caller can act on any line in the diff without re-reading.
  */
 export const diffReadableElements = (
 	before: ReadableElementRecord[],
@@ -156,7 +161,7 @@ export const diffReadableElements = (
 	options: ReadableElementsDiffOptions = {},
 ): ReadableElementsDiff => {
 	const contextLines = options.contextLines ?? DEFAULT_CONTEXT_LINES;
-	const maxChars = options.maxChars ?? DEFAULT_MAX_CHARS;
+	const maxTokens = options.maxTokens ?? DEFAULT_MAX_TOKENS;
 	const maxCells = options.maxCells ?? DEFAULT_MAX_CELLS;
 
 	const beforeKeys = before.map(identity);
@@ -188,7 +193,6 @@ export const diffReadableElements = (
 			changed: true,
 			added: middleAfter.length,
 			removed: middleBefore.length,
-			pathsShifted: true,
 			tooLarge: true,
 		};
 	}
@@ -217,11 +221,9 @@ export const diffReadableElements = (
 
 	let added = 0;
 	let removed = 0;
-	let pathsShifted = false;
 	for (const op of ops) {
 		if (op.kind === "add") added++;
 		else if (op.kind === "remove") removed++;
-		else if (op.before[0] !== op.after[0]) pathsShifted = true;
 	}
 
 	if (added === 0 && removed === 0) {
@@ -229,18 +231,16 @@ export const diffReadableElements = (
 			changed: false,
 			added,
 			removed,
-			pathsShifted,
 			tooLarge: false,
 		};
 	}
 
 	const diff = renderHunks(ops, contextLines);
-	if (diff.length > maxChars) {
+	if (estimateTokens(diff) > maxTokens) {
 		return {
 			changed: true,
 			added,
 			removed,
-			pathsShifted,
 			tooLarge: true,
 		};
 	}
@@ -249,7 +249,6 @@ export const diffReadableElements = (
 		changed: true,
 		added,
 		removed,
-		pathsShifted,
 		tooLarge: false,
 		diff,
 	};

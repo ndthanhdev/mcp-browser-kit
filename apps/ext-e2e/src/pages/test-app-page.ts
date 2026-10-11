@@ -175,6 +175,7 @@ export class TestAppPage extends BasePage {
 		return {
 			delayedCount: this.getByTestId("delayed-count"),
 			pickedResult: this.getByTestId("picked-result"),
+			targetClicks: this.getByTestId("target-clicks"),
 		};
 	}
 }

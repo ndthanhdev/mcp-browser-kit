@@ -175,6 +175,30 @@ test.describe("Write tool auto-wait and page-change diffs", () => {
 		expect(textOf(result)).toContain("Navigated to");
 	});
 
+	test("hitting enter in a form that navigates reports navigation promptly", async ({
+		testAppPage,
+		mcpClientPage,
+	}) => {
+		const inputPath = await findPath(
+			mcpClientPage,
+			tabUri,
+			"Search And Navigate",
+		);
+		await testAppPage.page.getByTestId("search-navigate-input").fill("hello");
+
+		const startedAt = Date.now();
+		const result = await mcpClientPage.callTool("hitEnterOnElement", {
+			...tab,
+			readablePath: inputPath,
+		});
+
+		const value = result.structuredContent?.value;
+		expectToBeDefined(value);
+		expect(value.navigated).toBe(true);
+		expect(value.url).toContain("click-test?q=hello");
+		expect(Date.now() - startedAt).toBeLessThan(20_000);
+	});
+
 	test("flags a too-large change without sending the diff", async ({
 		mcpClientPage,
 	}) => {
@@ -189,8 +213,118 @@ test.describe("Write tool auto-wait and page-change diffs", () => {
 		expectToBeDefined(value);
 		expect(value.changed).toBe(true);
 		expect(value.tooLarge).toBe(true);
-		expect(value.added).toBeGreaterThanOrEqual(300);
+		expect(value.added).toBeGreaterThanOrEqual(1_000);
 		expect(value.diff).toBeUndefined();
 		expect(textOf(result)).toContain("diff too large");
+	});
+
+	test("element ids stay valid after elements are inserted above", async ({
+		testAppPage,
+		mcpClientPage,
+	}) => {
+		const targetId = await findPath(mcpClientPage, tabUri, "Stable Target");
+		const insertId = await findPath(mcpClientPage, tabUri, "Insert Above");
+		expect(targetId).toMatch(/^f[0-9a-z]+:e[0-9a-z]+$/);
+
+		for (let i = 0; i < 3; i++) {
+			await mcpClientPage.callTool("clickOnElement", {
+				...tab,
+				readablePath: insertId,
+			});
+		}
+
+		const result = await mcpClientPage.callTool("clickOnElement", {
+			...tab,
+			readablePath: targetId,
+		});
+		expect(result.structuredContent?.ok).toBe(true);
+		await expect(
+			testAppPage.getAutoWaitTestLocators().targetClicks,
+		).toContainText("Target Clicks: 1");
+
+		expect(await findPath(mcpClientPage, tabUri, "Stable Target")).toBe(
+			targetId,
+		);
+	});
+
+	test("an id of a removed element fails with a clear reason", async ({
+		mcpClientPage,
+	}) => {
+		const targetId = await findPath(mcpClientPage, tabUri, "Stable Target");
+		const removeId = await findPath(mcpClientPage, tabUri, "Remove Target");
+
+		await mcpClientPage.callTool("clickOnElement", {
+			...tab,
+			readablePath: removeId,
+		});
+		const result = await mcpClientPage.callTool("clickOnElement", {
+			...tab,
+			readablePath: targetId,
+		});
+
+		expect(result.structuredContent?.ok).toBe(false);
+		expect(
+			`${result.structuredContent?.reason ?? ""} ${textOf(result)}`,
+		).toContain("no longer exists");
+	});
+
+	test("rejects legacy positional paths", async ({ mcpClientPage }) => {
+		const targetId = await findPath(mcpClientPage, tabUri, "Stable Target");
+		const frameId = targetId.split(":")[0];
+		const result = await mcpClientPage.callTool("clickOnElement", {
+			...tab,
+			readablePath: `${frameId}:0.1.2`,
+		});
+
+		expect(result.structuredContent?.ok).toBe(false);
+		expect(
+			`${result.structuredContent?.reason ?? ""} ${textOf(result)}`,
+		).toContain("positional path");
+	});
+
+	test("rejects legacy numeric frame ids", async ({ mcpClientPage }) => {
+		const result = await mcpClientPage.callTool("clickOnElement", {
+			...tab,
+			readablePath: "0:e1",
+		});
+
+		expect(result.structuredContent?.ok).toBe(false);
+		expect(
+			`${result.structuredContent?.reason ?? ""} ${textOf(result)}`,
+		).toContain("numeric frame id");
+	});
+
+	test("an id read before a reload fails instead of hitting a new element", async ({
+		testAppPage,
+		mcpClientPage,
+	}) => {
+		const targetId = await findPath(mcpClientPage, tabUri, "Stable Target");
+
+		await testAppPage.page.reload();
+		await expect(
+			testAppPage.getAutoWaitTestLocators().targetClicks,
+		).toBeVisible();
+		const oldFrame = targetId.split(":")[0];
+		await expect
+			.poll(async () => {
+				const elements = await mcpClientPage.readAllSnapshotElements(tabUri);
+				const frame = elements
+					.find((el) => el[2]?.includes("Stable Target"))?.[0]
+					?.split(":")[0];
+				return frame !== undefined && frame !== oldFrame;
+			})
+			.toBe(true);
+
+		const result = await mcpClientPage.callTool("clickOnElement", {
+			...tab,
+			readablePath: targetId,
+		});
+		expect(result.structuredContent?.ok).toBe(false);
+		expect(
+			`${result.structuredContent?.reason ?? ""} ${textOf(result)}`,
+		).toMatch(/no longer exists|reloaded or navigated/);
+		await expect(
+			testAppPage.getAutoWaitTestLocators().targetClicks,
+		).toContainText("Target Clicks: 0");
 	});
 });

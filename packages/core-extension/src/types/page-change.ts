@@ -17,8 +17,6 @@ export interface PageChange {
 	removed: number;
 	/** The diff was too large to include; re-read readable-elements instead. */
 	tooLarge: boolean;
-	/** Paths of elements outside the diff shifted; older paths may be stale. */
-	pathsShifted: boolean;
 	/** Unified-style diff: "+" added, "-" removed, "  " unchanged context. */
 	diff?: string;
 	/**
@@ -30,8 +28,8 @@ export interface PageChange {
 
 export interface LoadTabContextOptions {
 	/**
-	 * Store the snapshot as the tab's path map so later readablePath lookups
-	 * resolve against it. Defaults to true.
+	 * Store the snapshot as the tab's latest context. Element ids resolve
+	 * regardless of this flag. Defaults to true.
 	 */
 	commit?: boolean;
 	/** Play the scan animation. Defaults to true. */

@@ -10,6 +10,7 @@ import type {
 } from "@mcp-browser-kit/types";
 import { Readability } from "@mozilla/readability";
 import { inject, injectable } from "inversify";
+import { documentId } from "../utils/document-id";
 import { getVisibleText } from "../utils/get-visible-text";
 import { toDomTree } from "../utils/to-dom-tree";
 import { toElementRecords } from "../utils/to-element-records";
@@ -40,12 +41,17 @@ export class TabTools {
 	}
 
 	/**
-	 * Snapshots the page. With `commit: false` the snapshot is returned but not
-	 * stored, so readablePaths keep resolving against the previous snapshot.
+	 * Snapshots the page. Records carry stable element ids, so lookups work for
+	 * any snapshotted element still in the document. `commit: false` only skips
+	 * storing the snapshot as the latest context.
 	 */
 	loadTabContext = async (
 		options?: LoadTabContextOptions | null,
-	): Promise<TabContext> => {
+	): Promise<
+		TabContext & {
+			documentId: string;
+		}
+	> => {
 		// Messaging serializes an omitted argument as null, which a default
 		// parameter would not replace.
 		const { commit = true, animate = true } = options ?? {};
@@ -53,6 +59,8 @@ export class TabTools {
 			commit,
 			animate,
 		});
+
+		this.contextStore.pruneElementIds();
 
 		const rootElement = document.documentElement;
 		const domTree = toDomTree(rootElement);
@@ -62,7 +70,7 @@ export class TabTools {
 		);
 
 		const readableElementRecords = readableTree
-			? toElementRecords(readableTree).slice(1)
+			? toElementRecords(readableTree, this.contextStore.idOf).slice(1)
 			: [];
 
 		const html = document.documentElement.outerHTML;
@@ -73,7 +81,6 @@ export class TabTools {
 				html,
 				readableElementRecords,
 				domTree,
-				readableTree,
 				textContent,
 			});
 			this.logger.info("Tab context loaded and stored successfully");
@@ -91,6 +98,7 @@ export class TabTools {
 			html,
 			readableElementRecords,
 			textContent,
+			documentId,
 		};
 	};
 

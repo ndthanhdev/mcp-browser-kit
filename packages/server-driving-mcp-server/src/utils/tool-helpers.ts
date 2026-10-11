@@ -65,7 +65,6 @@ interface PageChangeSummary {
 	added: number;
 	removed: number;
 	tooLarge: boolean;
-	pathsShifted: boolean;
 	diff?: string;
 	detailsUnavailable?: boolean;
 }
@@ -82,17 +81,12 @@ export const formatPageChange = (change: PageChangeSummary): string => {
 		return `Done. Navigated to ${change.url} — read readable-elements for the new page.`;
 	}
 	if (!change.changed) {
-		return change.pathsShifted
-			? "Done. No readable elements changed, but element paths shifted — re-read readable-elements before reusing older paths."
-			: "Done. No readable elements changed.";
+		return "Done. No readable elements changed.";
 	}
 
 	const counts = `${change.added} added, ${change.removed} removed`;
-	const shiftNote = change.pathsShifted
-		? "\nPaths outside this diff may have shifted — re-read readable-elements before reusing older paths."
-		: "";
 	if (change.tooLarge || !change.diff) {
 		return `Done. Page changed (${counts}); diff too large to show — read readable-elements for the full snapshot.`;
 	}
-	return `Done. Page changed (${counts}).\n\`\`\`diff\n${change.diff}\n\`\`\`${shiftNote}`;
+	return `Done. Page changed (${counts}).\n\`\`\`diff\n${change.diff}\n\`\`\``;
 };
