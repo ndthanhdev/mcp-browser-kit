@@ -6,6 +6,7 @@ import {
 	BrowserStateRegistry,
 	createCoreServerContainer,
 	LoggerFactoryOutputPort,
+	ServerInfoOutputPort,
 } from "@mcp-browser-kit/core-server";
 import { DrivenLoggerFactoryConsolaError } from "@mcp-browser-kit/driven-logger-factory";
 import { ServerDrivenTrpcChannelProvider } from "@mcp-browser-kit/server-driven-trpc-channel-provider";
@@ -93,9 +94,16 @@ export class McpClientPageObject {
 		);
 	}
 
-	async startServer() {
+	async startServer(
+		serverInfo: ServerInfoOutputPort = {
+			serverVersion: "0.0.0",
+		},
+	) {
 		const container = createCoreServerContainer();
 
+		container
+			.bind<ServerInfoOutputPort>(ServerInfoOutputPort)
+			.toConstantValue(serverInfo);
 		DrivenLoggerFactoryConsolaError.setupContainer(
 			container,
 			LoggerFactoryOutputPort,

@@ -1,6 +1,7 @@
 import {
 	LoggerFactoryOutputPort,
 	type LoggerFactoryOutputPort as LoggerFactoryOutputPortInterface,
+	VersionCompatibilityInputPort,
 } from "@mcp-browser-kit/core-server";
 import {
 	McpDescriptionsInputPort,
@@ -43,6 +44,8 @@ export class McpServerFactory {
 		private readonly resourceFallbackTools: ResourceFallbackTools,
 		@inject(McpDescriptionsInputPort)
 		private readonly mcpDescriptions: McpDescriptionsInputPortInterface,
+		@inject(VersionCompatibilityInputPort)
+		private readonly versionCompatibility: VersionCompatibilityInputPort,
 	) {
 		this.logger = loggerFactory.create("mcpServerFactory");
 	}
@@ -52,7 +55,7 @@ export class McpServerFactory {
 		const server = new McpServer(
 			{
 				name: "MCP Browser Kit",
-				version: "1.0.0",
+				version: this.versionCompatibility.getServerVersion(),
 			},
 			{
 				instructions: this.mcpDescriptions.serverInstructions(),

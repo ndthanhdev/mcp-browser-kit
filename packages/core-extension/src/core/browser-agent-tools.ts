@@ -42,7 +42,7 @@ const tabIdSchema = z
 const readablePathSchema = z
 	.string()
 	.describe(
-		"Stable element id (e.g. 0:e1a) — first element of [path, role, text] tuple from getReadableElements; not a CSS selector",
+		"Stable element id (e.g. f1:e1a) — first element of [path, role, text] tuple from getReadableElements; not a CSS selector",
 	);
 
 const xSchema = z
