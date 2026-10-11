@@ -37,7 +37,7 @@
 		"consola": "^3.4.2",
 		"core-js": "^3.48.0",
 		"delay": "^7.0.0",
-		"dompurify": "^3.4.13",
+		"dompurify": "^3.4.16",
 		"emittery": "^1.2.0",
 		"envalid": "^8.1.1",
 		"fflate": "^0.8.3",
