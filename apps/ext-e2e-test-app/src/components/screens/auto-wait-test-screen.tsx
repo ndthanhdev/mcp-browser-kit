@@ -143,6 +143,16 @@ export function AutoWaitTestScreen() {
 					>
 						Go To Click Test
 					</a>
+					<form action="/click-test" method="get" className="mt-4">
+						<input
+							type="text"
+							name="q"
+							data-testid="search-navigate-input"
+							aria-label="Search And Navigate"
+							placeholder="Search And Navigate"
+							className="border px-2 py-1"
+						/>
+					</form>
 				</section>
 
 				<section className="mb-8">

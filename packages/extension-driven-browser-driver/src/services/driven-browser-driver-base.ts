@@ -27,6 +27,7 @@ import * as backgroundToolsM3 from "../utils/background-tools-m3";
 import { buildFramePath, parseFramePath } from "../utils/frame-path";
 import { mergeFrameTabContexts } from "../utils/merge-frame-tab-contexts";
 import type { FrameCorrelationService } from "./frame-correlation-service";
+import type { FrameIdRegistry } from "./frame-id-registry";
 import type { FrameRegistryService } from "./frame-registry-service";
 import type { HitTargetResolution } from "./tab-dom-tools";
 import type { TabRpcService } from "./tab-rpc-service";
@@ -82,10 +83,41 @@ export abstract class DrivenBrowserDriverBase
 		protected readonly tabRpcService: TabRpcService,
 		protected readonly frameRegistry: FrameRegistryService,
 		protected readonly frameCorrelation: FrameCorrelationService,
+		protected readonly frameIds: FrameIdRegistry,
 		loggerName: string,
 	) {
 		this.logger = loggerFactory.create(loggerName);
 	}
+
+	/**
+	 * Resolves a frame-qualified path to the frame-local element id plus the
+	 * RPC target, pinned to the document the path was read from.
+	 */
+	private resolveFramePath = async (
+		tabId: string,
+		framePath: string,
+	): Promise<{
+		localPath: string;
+		target: {
+			tabId: string;
+			frameId: string;
+			documentId: string;
+		};
+	}> => {
+		const { frameId, localPath } = parseFramePath(framePath);
+		const { browserFrameId, documentId } = await this.frameIds.resolve(
+			tabId,
+			frameId,
+		);
+		return {
+			localPath,
+			target: {
+				tabId,
+				frameId: browserFrameId,
+				documentId,
+			},
+		};
+	};
 
 	loadTabContext = async (
 		tabId: string,
@@ -93,7 +125,9 @@ export abstract class DrivenBrowserDriverBase
 	): Promise<TabContext> => {
 		this.logger.verbose(`Loading tab context for tab: ${tabId}`);
 
-		const frames = await this.frameRegistry.listFrames(tabId);
+		const frames = (await this.frameRegistry.listFrames(tabId)).sort(
+			(a, b) => Number(a.frameId) - Number(b.frameId),
+		);
 		const perFrame = await Promise.all(
 			frames.map(async (frame) => {
 				try {
@@ -111,7 +145,7 @@ export abstract class DrivenBrowserDriverBase
 						LOAD_FRAME_CONTEXT_TIMEOUT_MS,
 					);
 					return {
-						frameId: frame.frameId,
+						frame,
 						context,
 					};
 				} catch (error) {
@@ -124,8 +158,22 @@ export abstract class DrivenBrowserDriverBase
 			}),
 		);
 
+		const responded = perFrame.filter((result) => result !== undefined);
+		const frameIds = await this.frameIds.assign(
+			tabId,
+			frames.map(({ frameId }) => frameId),
+			responded.map(({ frame, context }) => ({
+				browserFrameId: frame.frameId,
+				documentId: context.documentId,
+			})),
+		);
+
 		return mergeFrameTabContexts(
-			perFrame.filter((result) => result !== undefined),
+			responded.map(({ frame, context: { documentId: _, ...context } }, i) => ({
+				frameId: frameIds[i] as string,
+				isTopFrame: frame.parentFrameId === null,
+				context,
+			})),
 		);
 	};
 
@@ -247,6 +295,7 @@ export abstract class DrivenBrowserDriverBase
 				],
 				extraArgs: {
 					tabId,
+					timeoutMs: SAVE_PAGE_TIMEOUT_MS,
 				},
 			}),
 			SAVE_PAGE_TIMEOUT_MS,
@@ -286,7 +335,7 @@ export abstract class DrivenBrowserDriverBase
 		});
 	};
 
-	scrollElement = (
+	scrollElement = async (
 		tabId: string,
 		readableTreePath: string,
 		direction: ScrollDirection,
@@ -295,7 +344,10 @@ export abstract class DrivenBrowserDriverBase
 		this.logger.verbose(
 			`Scrolling element ${readableTreePath} ${direction}${amount != null ? ` by ${amount}px` : ""} in tab: ${tabId}`,
 		);
-		const { frameId, localPath } = parseFramePath(readableTreePath);
+		const { localPath, target } = await this.resolveFramePath(
+			tabId,
+			readableTreePath,
+		);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.scrollElement",
 			args: [
@@ -303,10 +355,7 @@ export abstract class DrivenBrowserDriverBase
 				direction,
 				amount,
 			],
-			extraArgs: {
-				tabId,
-				frameId,
-			},
+			extraArgs: target,
 		});
 	};
 
@@ -414,7 +463,7 @@ export abstract class DrivenBrowserDriverBase
 		this.logger.verbose(
 			`Clicking on coordinates (${x}, ${y}) in tab: ${tabId}`,
 		);
-		const resolved = await this.resolveDeepFrame(tabId, "0", x, y);
+		const resolved = await this.resolveDeepFrame(tabId, TOP_FRAME_ID, x, y);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.clickOnCoordinates",
 			args: [
@@ -428,43 +477,43 @@ export abstract class DrivenBrowserDriverBase
 		});
 	};
 
-	clickOnElementByReadablePath = (
+	clickOnElementByReadablePath = async (
 		tabId: string,
 		readableTreePath: string,
 	): Promise<void> => {
 		this.logger.verbose(
 			`Clicking on element by readable path: ${readableTreePath} in tab: ${tabId}`,
 		);
-		const { frameId, localPath } = parseFramePath(readableTreePath);
+		const { localPath, target } = await this.resolveFramePath(
+			tabId,
+			readableTreePath,
+		);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.clickOnElementByReadablePath",
 			args: [
 				localPath,
 			],
-			extraArgs: {
-				tabId,
-				frameId,
-			},
+			extraArgs: target,
 		});
 	};
 
-	getElementHtmlByReadablePath = (
+	getElementHtmlByReadablePath = async (
 		tabId: string,
 		readablePath: string,
 	): Promise<string> => {
 		this.logger.verbose(
 			`Getting element HTML by readable path: ${readablePath} in tab: ${tabId}`,
 		);
-		const { frameId, localPath } = parseFramePath(readablePath);
+		const { localPath, target } = await this.resolveFramePath(
+			tabId,
+			readablePath,
+		);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.getElementHtmlByReadablePath",
 			args: [
 				localPath,
 			],
-			extraArgs: {
-				tabId,
-				frameId,
-			},
+			extraArgs: target,
 		});
 	};
 
@@ -476,7 +525,7 @@ export abstract class DrivenBrowserDriverBase
 		this.logger.verbose(
 			`Focusing on coordinates (${x}, ${y}) in tab: ${tabId}`,
 		);
-		const resolved = await this.resolveDeepFrame(tabId, "0", x, y);
+		const resolved = await this.resolveDeepFrame(tabId, TOP_FRAME_ID, x, y);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.focusOnCoordinates",
 			args: [
@@ -491,7 +540,7 @@ export abstract class DrivenBrowserDriverBase
 	};
 
 	// Input Methods
-	fillTextToElementByReadablePath = (
+	fillTextToElementByReadablePath = async (
 		tabId: string,
 		readableTreePath: string,
 		value: string,
@@ -499,17 +548,17 @@ export abstract class DrivenBrowserDriverBase
 		this.logger.verbose(
 			`Filling text to element by readable path: ${readableTreePath} in tab: ${tabId}`,
 		);
-		const { frameId, localPath } = parseFramePath(readableTreePath);
+		const { localPath, target } = await this.resolveFramePath(
+			tabId,
+			readableTreePath,
+		);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.fillTextToElementByReadablePath",
 			args: [
 				localPath,
 				value,
 			],
-			extraArgs: {
-				tabId,
-				frameId,
-			},
+			extraArgs: target,
 		});
 	};
 
@@ -526,23 +575,23 @@ export abstract class DrivenBrowserDriverBase
 		});
 	};
 
-	hitEnterOnElementByReadablePath = (
+	hitEnterOnElementByReadablePath = async (
 		tabId: string,
 		readableTreePath: string,
 	): Promise<void> => {
 		this.logger.verbose(
 			`Hitting enter on element by readable path: ${readableTreePath} in tab: ${tabId}`,
 		);
-		const { frameId, localPath } = parseFramePath(readableTreePath);
+		const { localPath, target } = await this.resolveFramePath(
+			tabId,
+			readableTreePath,
+		);
 		return this.tabRpcService.tabRpcClient.call({
 			method: "dom.hitEnterOnElementByReadablePath",
 			args: [
 				localPath,
 			],
-			extraArgs: {
-				tabId,
-				frameId,
-			},
+			extraArgs: target,
 		});
 	};
 
@@ -566,24 +615,15 @@ export abstract class DrivenBrowserDriverBase
 		await backgroundToolsM3.activateTab(tabId);
 
 		const readablePath = params.readablePath;
-		const { frameId, localParams } = readablePath
-			? ((): {
-					frameId: string;
-					localParams: ShowHumanHintParams;
-				} => {
-					const parsed = parseFramePath(readablePath);
-					return {
-						frameId: parsed.frameId,
-						localParams: {
-							...params,
-							readablePath: parsed.localPath,
-						},
-					};
-				})()
-			: {
-					frameId: "0",
-					localParams: params,
-				};
+		const resolved = readablePath
+			? await this.resolveFramePath(tabId, readablePath)
+			: undefined;
+		const localParams: ShowHumanHintParams = resolved
+			? {
+					...params,
+					readablePath: resolved.localPath,
+				}
+			: params;
 
 		const result = await this.tabRpcService.tabRpcClient.call({
 			method: "showHumanHint",
@@ -591,13 +631,16 @@ export abstract class DrivenBrowserDriverBase
 				localParams,
 				humanMessage,
 			],
-			extraArgs: {
+			extraArgs: resolved?.target ?? {
 				tabId,
-				frameId,
+				frameId: TOP_FRAME_ID,
 			},
 		});
 
 		if (result.target?.type === "readablePath") {
+			const frameId = readablePath
+				? parseFramePath(readablePath).frameId
+				: await this.topFrameId(tabId);
 			return {
 				...result,
 				target: {
@@ -607,6 +650,21 @@ export abstract class DrivenBrowserDriverBase
 			};
 		}
 		return result;
+	};
+
+	private topFrameId = async (tabId: string): Promise<string> => {
+		const { documentId } = await this.tabRpcService.tabRpcClient.call({
+			method: "dom.getDocumentState",
+			args: [],
+			extraArgs: {
+				tabId,
+				frameId: TOP_FRAME_ID,
+			},
+		});
+		return this.frameIds.idOf(tabId, {
+			browserFrameId: TOP_FRAME_ID,
+			documentId,
+		});
 	};
 
 	// JavaScript Execution Methods

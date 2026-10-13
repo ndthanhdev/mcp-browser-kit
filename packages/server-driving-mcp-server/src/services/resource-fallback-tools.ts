@@ -2,6 +2,7 @@ import {
 	LoggerFactoryOutputPort,
 	type LoggerFactoryOutputPort as LoggerFactoryOutputPortInterface,
 	ObserveBrowserStateInputPort,
+	VersionCompatibilityInputPort,
 } from "@mcp-browser-kit/core-server";
 import {
 	McpDescriptionsInputPort,
@@ -13,7 +14,7 @@ import { shortChannelId } from "@mcp-browser-kit/core-utils";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { inject, injectable } from "inversify";
 import { over } from "ok-value-error-reason";
-import { findWindowIdForTab, tabBkUri } from "../utils/browser-resource-uris";
+import { buildContextPayload } from "../utils/build-context-payload";
 import {
 	snapshotPageSchema,
 	tabReadableElementHtmlSchema,
@@ -37,6 +38,8 @@ export class ResourceFallbackTools {
 		private readonly snapshotContent: SnapshotContentInputPortInterface,
 		@inject(McpDescriptionsInputPort)
 		private readonly mcpDescriptions: McpDescriptionsInputPortInterface,
+		@inject(VersionCompatibilityInputPort)
+		private readonly versionCompatibility: VersionCompatibilityInputPort,
 	) {
 		this.logger = loggerFactory.create("resourceFallbackTools");
 	}
@@ -357,40 +360,7 @@ export class ResourceFallbackTools {
 			);
 		}
 
-		const browsers = entries.map((entry) => {
-			const { snapshot, channelId } = entry;
-			const browserId = shortChannelId(channelId);
-
-			const windows = snapshot.windows.map((w) => ({
-				id: w.id,
-				focused: w.focused,
-			}));
-
-			const tabs = snapshot.tabs.map((tab) => {
-				const windowId = tab.windowId ?? findWindowIdForTab(snapshot, tab.id);
-				return {
-					id: tab.id,
-					windowId,
-					url: tab.url,
-					title: tab.title,
-					active: tab.active,
-					tabUri: tabBkUri(channelId, tab.id),
-				};
-			});
-
-			return {
-				browserId,
-				status: snapshot.status,
-				browserInfo: snapshot.browserInfo,
-				extensionInfo: snapshot.extensionInfo,
-				windows,
-				tabs,
-			};
-		});
-
-		return {
-			browsers,
-		};
+		return buildContextPayload(entries, this.versionCompatibility);
 	}
 
 	/**
