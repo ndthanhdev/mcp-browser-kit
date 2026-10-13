@@ -100,10 +100,9 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 		x: number,
 		y: number,
 	): Promise<PageChange> =>
-		this.withPageChange(tabId, async () => {
-			await this.browserDriver.focusOnCoordinates(tabId, x, y);
-			await this.browserDriver.hitEnterOnFocusedElement(tabId);
-		});
+		this.withPageChange(tabId, () =>
+			this.browserDriver.hitEnterOnCoordinates(tabId, x, y),
+		);
 
 	hitEnterOnElement = (
 		tabId: string,
@@ -216,10 +215,9 @@ export class ToolCallHandlersUseCase implements ExtensionToolCallInputPort {
 		y: number,
 		value: string,
 	): Promise<PageChange> =>
-		this.withPageChange(tabId, async () => {
-			await this.browserDriver.focusOnCoordinates(tabId, x, y);
-			await this.browserDriver.fillTextToFocusedElement(tabId, value);
-		});
+		this.withPageChange(tabId, () =>
+			this.browserDriver.fillTextToCoordinates(tabId, x, y, value),
+		);
 
 	clickOnElement = (tabId: string, readablePath: string): Promise<PageChange> =>
 		this.withPageChange(tabId, () =>

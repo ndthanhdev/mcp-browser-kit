@@ -60,9 +60,13 @@ export interface BrowserDriverOutputPort {
 		amount?: number,
 	): Promise<void>;
 	clickOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
-	focusOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
-	fillTextToFocusedElement(tabId: string, value: string): Promise<void>;
-	hitEnterOnFocusedElement(tabId: string): Promise<void>;
+	fillTextToCoordinates(
+		tabId: string,
+		x: number,
+		y: number,
+		value: string,
+	): Promise<void>;
+	hitEnterOnCoordinates(tabId: string, x: number, y: number): Promise<void>;
 	clickOnElementByReadablePath(
 		tabId: string,
 		readableTreePath: string,

@@ -10,6 +10,7 @@ export function meta() {
 
 export function IframeTestInnerScreen() {
 	const [clickCount, setClickCount] = useState(0);
+	const [innerText, setInnerText] = useState("");
 
 	const handleClick = () => {
 		const nextCount = clickCount + 1;
@@ -39,6 +40,14 @@ export function IframeTestInnerScreen() {
 			>
 				Iframe Inner Button
 			</button>
+			<input
+				type="text"
+				data-testid="iframe-inner-input"
+				placeholder="Iframe Inner Input"
+				value={innerText}
+				onChange={(e) => setInnerText(e.target.value)}
+				className="block mt-4 px-3 py-2 border border-gray-300 rounded"
+			/>
 		</div>
 	);
 }
