@@ -64,7 +64,7 @@ export function IframeTestScreen() {
 					title="Iframe Test Inner"
 					className="w-full border border-gray-300 rounded"
 					style={{
-						height: "220px",
+						height: "280px",
 					}}
 				/>
 			</TestScreenLayout>

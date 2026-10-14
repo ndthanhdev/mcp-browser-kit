@@ -1,13 +1,19 @@
+import { isEditingHost } from "./editing-host";
 import { getVisibleText } from "./get-visible-text";
 
 /**
  * Checks if a DOM element is considered readable/interactive
  * @param element - A jsdom Element to check
- * @returns true if the element has aria-label or is a readable/interactive element type
+ * @returns true if the element has aria-label, is a rich-text editing host, or
+ *   is a readable/interactive element type
  */
 export function isReadable(element: globalThis.Element): boolean {
 	// Check if element has aria-label attribute
 	if (element.hasAttribute("aria-label")) {
+		return true;
+	}
+
+	if (isEditingHost(element)) {
 		return true;
 	}
 
