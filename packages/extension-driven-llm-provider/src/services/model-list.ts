@@ -38,6 +38,59 @@ export const connectionHeaders = (
 	...connection.headers,
 });
 
+const MAX_REASON_LENGTH = 200;
+
+/**
+ * The provider's own explanation from an error body. Covers the common shapes:
+ * `{error: {message}}`, `{error: "..."}`, `{detail}` and `{message}`, falling
+ * back to the raw text.
+ */
+const errorReason = (text: string): string | undefined => {
+	let reason: unknown = text;
+	try {
+		const body = JSON.parse(text) as {
+			error?:
+				| string
+				| {
+						message?: unknown;
+				  };
+			detail?: unknown;
+			message?: unknown;
+		};
+		reason =
+			(typeof body.error === "object" ? body.error?.message : body.error) ??
+			body.detail ??
+			body.message ??
+			text;
+	} catch {
+		// Not JSON: use the text as is.
+	}
+	if (typeof reason !== "string") {
+		return undefined;
+	}
+	const trimmed = reason.replace(/\s+/g, " ").trim();
+	return trimmed ? trimmed.slice(0, MAX_REASON_LENGTH) : undefined;
+};
+
+const httpFailure = async (response: Response): Promise<string> => {
+	const status = `${response.status} ${response.statusText}`.trim();
+	const reason = errorReason(await response.text().catch(() => ""));
+	return reason
+		? `The endpoint answered ${status}: ${reason}`
+		: `The endpoint answered ${status}.`;
+};
+
+const networkFailure = (baseUrl: string, error: unknown): string => {
+	const detail = error instanceof Error ? error.message : String(error);
+	let origin = baseUrl;
+	try {
+		origin = new URL(baseUrl).origin;
+	} catch {
+		// Keep the raw value; validateBaseUrl reports the problem.
+	}
+	return `Could not reach ${origin} (${detail}). Check the URL and that the server is running.`;
+};
+
 /**
  * Ask an endpoint which models it serves, via `GET {baseUrl}/models`.
  *
@@ -49,18 +102,22 @@ export const fetchModelIds = async (
 		Partial<Pick<Connection, "headers">>,
 	fetchImpl: typeof fetch = fetch,
 ): Promise<ModelListResult> => {
+	let response: Response;
 	try {
-		const response = await fetchImpl(
-			`${trimSlash(connection.baseUrl)}/models`,
-			{
-				headers: connectionHeaders(connection),
-			},
-		);
+		response = await fetchImpl(`${trimSlash(connection.baseUrl)}/models`, {
+			headers: connectionHeaders(connection),
+		});
+	} catch (error) {
+		return {
+			status: "failed",
+			message: networkFailure(connection.baseUrl, error),
+		};
+	}
+	try {
 		if (!response.ok) {
 			return {
 				status: "failed",
-				message:
-					`The endpoint answered ${response.status} ${response.statusText}.`.trim(),
+				message: await httpFailure(response),
 			};
 		}
 		const body = (await response.json()) as {

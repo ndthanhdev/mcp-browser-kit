@@ -74,9 +74,52 @@ describe("fetchModelIds", () => {
 			}),
 		).toEqual({
 			status: "failed",
-			message: "The endpoint answered 401 Unauthorized.",
+			message: "The endpoint answered 401 Unauthorized: nope",
 		});
 	});
+
+	it.each([
+		[
+			"OpenAI-style",
+			{
+				error: {
+					message: "Incorrect API key provided.",
+				},
+			},
+			"Incorrect API key provided.",
+		],
+		[
+			"string error",
+			{
+				error: "Incorrect API key provided.",
+			},
+			"Incorrect API key provided.",
+		],
+		[
+			"detail",
+			{
+				detail: "Invalid API Key",
+			},
+			"Invalid API Key",
+		],
+	])(
+		"includes the provider's %s error message",
+		async (_shape, body, reason) => {
+			fetchMock.mockResolvedValue(
+				new Response(JSON.stringify(body), {
+					status: 401,
+				}),
+			);
+			expect(
+				await fetchModelIds({
+					baseUrl: "https://x.test/v1",
+				}),
+			).toEqual({
+				status: "failed",
+				message: `The endpoint answered 401: ${reason}`,
+			});
+		},
+	);
 
 	it("reports network errors instead of throwing", async () => {
 		fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
@@ -86,7 +129,8 @@ describe("fetchModelIds", () => {
 			}),
 		).toEqual({
 			status: "failed",
-			message: "Failed to fetch",
+			message:
+				"Could not reach http://localhost:11434 (Failed to fetch). Check the URL and that the server is running.",
 		});
 	});
 });
