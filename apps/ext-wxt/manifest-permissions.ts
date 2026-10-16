@@ -1,10 +1,12 @@
 /**
  * Manifest permissions for the extension.
  *
+ * `storage` holds the agent settings (connections, selected model);
  * `tabs` and `webNavigation` are required by the browser driver's tools.
  * Mirrors `apps/m3/src/manifest.json`.
  */
 export const PERMISSIONS = [
+	"storage",
 	"tabs",
 	"webNavigation",
 ] as const;
