@@ -2,15 +2,24 @@ $schema: https://moonrepo.dev/schemas/project.json
 language: typescript
 dependsOn:
 - core-extension
-- driven-feature-flags
 - core-feature-flags
 - core-utils
+- driven-feature-flags
+- driven-logger-factory
+- extension-driven-browser-driver
+- extension-driven-llm-provider
+- extension-driving-agent-rpc
+- helper-extension-tab-lifecycle
 - types
 tags:
 - wxt
+- vitest
 tasks:
   build:
     deps:
     - ~:wxt-zip
+  test:
+    deps:
+    - ~:vitest-test
 toolchains:
   default: node

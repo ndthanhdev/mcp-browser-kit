@@ -1,4 +1,4 @@
-import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
+import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/output-ports/logger-factory";
 import { inject, injectable } from "inversify";
 import browser, { type Runtime } from "webextension-polyfill";
 import { isCorrelatedRuntimeMessage } from "../utils/frame-correlation";

@@ -11,7 +11,6 @@ import { FrameCorrelationService } from "./frame-correlation-service";
 import { FrameIdRegistry } from "./frame-id-registry";
 import { FrameRegistryService } from "./frame-registry-service";
 import { TabRpcService } from "./tab-rpc-service";
-import { TabToolsSetup } from "./tab-tools-setup";
 
 @injectable()
 export class DrivenBrowserDriverM2 extends DrivenBrowserDriverBase {
@@ -37,10 +36,6 @@ export class DrivenBrowserDriverM2 extends DrivenBrowserDriverBase {
 		container
 			.bind<BrowserDriverOutputPort>(BrowserDriverOutputPort)
 			.to(DrivenBrowserDriverM2);
-	}
-
-	static setupTabContainer(container: Container): void {
-		TabToolsSetup.setupContainer(container);
 	}
 
 	constructor(

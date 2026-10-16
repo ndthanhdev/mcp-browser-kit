@@ -9,6 +9,7 @@ dependsOn:
 - extension-driven-server-channel-provider
 - core-utils
 - helper-extension-keep-alive
+- helper-extension-tab-lifecycle
 - helper-page-save
 - extension-driving-trpc-controller
 - extension-driving-lifecycle

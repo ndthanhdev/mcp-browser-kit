@@ -55,6 +55,9 @@
 			"path": "./packages/core-extension"
 		},
 		{
+			"path": "./packages/core-feature-flags"
+		},
+		{
 			"path": "./packages/core-server"
 		},
 		{
@@ -62,9 +65,6 @@
 		},
 		{
 			"path": "./packages/driven-feature-flags"
-		},
-		{
-			"path": "./packages/core-feature-flags"
 		},
 		{
 			"path": "./packages/driven-logger-factory"
@@ -79,6 +79,9 @@
 			"path": "./packages/extension-driven-server-channel-provider"
 		},
 		{
+			"path": "./packages/extension-driving-agent-rpc"
+		},
+		{
 			"path": "./packages/extension-driving-lifecycle"
 		},
 		{
@@ -89,6 +92,9 @@
 		},
 		{
 			"path": "./packages/helper-extension-keep-alive"
+		},
+		{
+			"path": "./packages/helper-extension-tab-lifecycle"
 		},
 		{
 			"path": "./packages/helper-page-save"

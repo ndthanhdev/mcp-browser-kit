@@ -3,8 +3,18 @@ fileGroups:
   wxt-config:
   - wxt.config.ts
   wxt-sources:
+  - '*.ts'
   - src/**/*
   - entrypoints/**/*
+  - components/**/*
+  - hooks/**/*
+  - pages/**/*
+  - routes/**/*
+  - theme/**/*
+  - types/**/*
+  - utils/**/*
+  # wxt.config.ts aliases workspace packages to their TypeScript sources.
+  - /packages/*/src/**/*
   wxt-assets:
   - assets/**/*
   - public/**/*
