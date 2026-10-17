@@ -10,7 +10,7 @@
 	},
 	"devDependencies": {
 		"@modelcontextprotocol/inspector": "^0.20.0",
-		"@modelcontextprotocol/sdk": "^1.27.0",
+		"@modelcontextprotocol/sdk": "^1.31.0",
 		"@types/data-urls": "^3.0.4",
 		"@types/ws": "^8.18.1",
 		"tsx": "^4.21.0",
