@@ -21,6 +21,12 @@ const testScreens = [
 			"Test form tools: fillTextToCoordinates, fillTextToElement, hitEnterOnCoordinates, hitEnterOnElement",
 	},
 	{
+		path: "/rich-input-test",
+		title: "Rich Input Test",
+		description:
+			"Test fill tools on a Quill editor, native date/time/number/color/range inputs, masked inputs and label targets",
+	},
+	{
 		path: "/text-test",
 		title: "Text Test",
 		description:

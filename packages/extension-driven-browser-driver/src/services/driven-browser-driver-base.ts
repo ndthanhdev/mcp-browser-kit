@@ -517,20 +517,23 @@ export abstract class DrivenBrowserDriverBase
 		});
 	};
 
-	focusOnCoordinates = async (
+	// Input Methods
+	fillTextToCoordinates = async (
 		tabId: string,
 		x: number,
 		y: number,
+		value: string,
 	): Promise<void> => {
 		this.logger.verbose(
-			`Focusing on coordinates (${x}, ${y}) in tab: ${tabId}`,
+			`Filling text at coordinates (${x}, ${y}) in tab: ${tabId}`,
 		);
 		const resolved = await this.resolveDeepFrame(tabId, TOP_FRAME_ID, x, y);
 		return this.tabRpcService.tabRpcClient.call({
-			method: "dom.focusOnCoordinates",
+			method: "dom.fillTextToCoordinates",
 			args: [
 				resolved.x,
 				resolved.y,
+				value,
 			],
 			extraArgs: {
 				tabId,
@@ -539,7 +542,6 @@ export abstract class DrivenBrowserDriverBase
 		});
 	};
 
-	// Input Methods
 	fillTextToElementByReadablePath = async (
 		tabId: string,
 		readableTreePath: string,
@@ -559,19 +561,6 @@ export abstract class DrivenBrowserDriverBase
 				value,
 			],
 			extraArgs: target,
-		});
-	};
-
-	fillTextToFocusedElement = (tabId: string, value: string): Promise<void> => {
-		this.logger.verbose(`Filling text to focused element in tab: ${tabId}`);
-		return this.tabRpcService.tabRpcClient.call({
-			method: "dom.fillTextToFocusedElement",
-			args: [
-				value,
-			],
-			extraArgs: {
-				tabId,
-			},
 		});
 	};
 
@@ -595,13 +584,24 @@ export abstract class DrivenBrowserDriverBase
 		});
 	};
 
-	hitEnterOnFocusedElement = (tabId: string): Promise<void> => {
-		this.logger.verbose(`Hitting enter on focused element in tab: ${tabId}`);
+	hitEnterOnCoordinates = async (
+		tabId: string,
+		x: number,
+		y: number,
+	): Promise<void> => {
+		this.logger.verbose(
+			`Hitting enter at coordinates (${x}, ${y}) in tab: ${tabId}`,
+		);
+		const resolved = await this.resolveDeepFrame(tabId, TOP_FRAME_ID, x, y);
 		return this.tabRpcService.tabRpcClient.call({
-			method: "dom.hitEnterOnFocusedElement",
-			args: [],
+			method: "dom.hitEnterOnCoordinates",
+			args: [
+				resolved.x,
+				resolved.y,
+			],
 			extraArgs: {
 				tabId,
+				frameId: resolved.frameId,
 			},
 		});
 	};

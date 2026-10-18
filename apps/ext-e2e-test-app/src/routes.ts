@@ -4,6 +4,7 @@ const routes = [
 	index("pages/home.tsx"),
 	route("click-test", "pages/click-test.tsx"),
 	route("form-test", "pages/form-test.tsx"),
+	route("rich-input-test", "pages/rich-input-test.tsx"),
 	route("text-test", "pages/text-test.tsx"),
 	route("javascript-test", "pages/javascript-test.tsx"),
 	route("fallback-test", "pages/fallback-test.tsx"),
