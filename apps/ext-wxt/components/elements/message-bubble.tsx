@@ -1,15 +1,25 @@
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
+import { MarkdownContent } from "@/components/elements/markdown-content";
 
 export interface MessageBubbleProps {
 	content: string;
-	/** Right-aligned and filled when true; left-aligned and outlined when not. */
+	/**
+	 * Right-aligned, filled, and shown verbatim when true; left-aligned,
+	 * outlined, and rendered as Markdown when not.
+	 */
 	fromUser: boolean;
+	/** Marks assistant text that is still arriving. */
+	streaming?: boolean;
 }
 
 /** A single chat bubble. */
-export const MessageBubble = ({ content, fromUser }: MessageBubbleProps) => (
+export const MessageBubble = ({
+	content,
+	fromUser,
+	streaming,
+}: MessageBubbleProps) => (
 	<Box
 		sx={{
 			display: "flex",
@@ -21,6 +31,7 @@ export const MessageBubble = ({ content, fromUser }: MessageBubbleProps) => (
 			elevation={fromUser ? 0 : undefined}
 			sx={{
 				maxWidth: "85%",
+				minWidth: 0,
 				px: 1.5,
 				py: 1,
 				borderRadius: 2,
@@ -28,15 +39,19 @@ export const MessageBubble = ({ content, fromUser }: MessageBubbleProps) => (
 				color: fromUser ? "primary.contrastText" : "text.primary",
 			}}
 		>
-			<Typography
-				variant="body2"
-				sx={{
-					whiteSpace: "pre-wrap",
-					wordBreak: "break-word",
-				}}
-			>
-				{content}
-			</Typography>
+			{fromUser ? (
+				<Typography
+					variant="body2"
+					sx={{
+						whiteSpace: "pre-wrap",
+						wordBreak: "break-word",
+					}}
+				>
+					{content}
+				</Typography>
+			) : (
+				<MarkdownContent content={content} streaming={streaming} />
+			)}
 		</Paper>
 	</Box>
 );
