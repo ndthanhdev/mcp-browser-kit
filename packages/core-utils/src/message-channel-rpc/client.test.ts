@@ -152,13 +152,6 @@ describe("MessageChannelRpcClient", () => {
 			process.off("unhandledRejection", record);
 		});
 
-		/**
-		 * Regression: the pending-map cleanup used `defer.promise.finally(...)`,
-		 * which derives a promise that re-raises the rejection. Nothing handled that
-		 * derived promise, so every rejected RPC call raised an unhandled rejection
-		 * *in addition to* the one the caller sees — noisy in a service worker, and
-		 * fatal under `--unhandled-rejections=strict`.
-		 */
 		it("does not raise a second, unhandled rejection when a call fails", async () => {
 			const { client } = connectedPair();
 

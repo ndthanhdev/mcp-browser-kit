@@ -13,11 +13,8 @@ import {
 } from "@/utils/thread-items";
 
 /**
- * One client per sidepanel document.
- *
- * Module-scoped rather than per-hook: the session list and the open thread both
- * need it, and a client per component would open a port per component — each
- * with its own agent subscription in the background.
+ * One client per sidepanel document; a client per component would open a port
+ * and an agent subscription per component.
  */
 const client = new AgentRpcClient();
 
@@ -32,9 +29,7 @@ export const useAgentSessions = () => {
 			setError(undefined);
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : String(cause));
-			// Resolve to an empty list rather than staying `undefined`. Callers
-			// treat `undefined` as "still loading" and gate on it, so leaving it
-			// unset turns a failed read into a permanent spinner.
+			// `undefined` means "still loading" to callers.
 			setSessions((current) => current ?? []);
 		}
 	}, []);
@@ -42,7 +37,6 @@ export const useAgentSessions = () => {
 	useEffect(() => {
 		void refresh();
 
-		// Session lifecycle events are the only ones that change this list.
 		const unsubscribe = client.subscribe((event) => {
 			if (
 				event.type === "session-created" ||
@@ -91,17 +85,12 @@ export const useAgentThread = (sessionId: string | undefined) => {
 
 	const hydrate = useCallback(async () => {
 		if (!sessionId) {
-			// Nothing to hydrate at `/`, but this still counts as settled. Leaving
-			// `hydrated` false here is what kept the page on "Loading chat…"
-			// indefinitely whenever the redirect had not happened yet.
+			// Nothing to hydrate at `/`, but this still counts as settled.
 			setHydrated(true);
 			return;
 		}
 		setHydrated(false);
 		try {
-			// History first, then the session: an event arriving between the two
-			// reads is applied on top of a transcript that already contains it, and
-			// re-applying is cheaper to reason about than a gap.
 			const [history, current] = await Promise.all([
 				client.getHistory(sessionId),
 				client.getSession(sessionId),

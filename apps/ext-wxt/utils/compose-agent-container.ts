@@ -12,11 +12,8 @@ import { DrivenLlmProvider } from "@mcp-browser-kit/extension-driven-llm-provide
 import { ExtensionDrivingAgentRpc } from "@mcp-browser-kit/extension-driving-agent-rpc";
 
 /**
- * Compose the extension hexagon the background serves the agent from.
- *
- * The drivers differ by manifest version (`scripting.executeScript` vs
- * `tabs.executeScript`). Callers pass WXT's inlined `MANIFEST_VERSION`, so the
- * unused driver is tree-shaken.
+ * Compose the extension hexagon the background serves the agent from. Pass
+ * WXT's inlined `MANIFEST_VERSION` so the unused driver is tree-shaken.
  */
 export const composeAgentContainer = (manifestVersion: 2 | 3) => {
 	const container = createCoreExtensionContainer();

@@ -71,14 +71,10 @@ const openSidepanelOnActionClick = () => {
 /**
  * Compose the extension hexagon and expose the agent to the sidepanel.
  *
- * The agent has to live here rather than in the sidepanel: the background is the
- * only context that owns the browser driver and survives both tab navigation and
- * the sidepanel being closed mid-turn.
+ * The agent lives here because the background is the only context that owns
+ * the browser driver and survives tab navigation and the sidepanel closing.
  */
 const startAgent = async (gate: AgentPortGate) => {
-	// Built by `composeAgentContainer` so the graph the tests resolve is the
-	// graph that ships. WXT inlines `MANIFEST_VERSION`, so the unused driver is
-	// still tree-shaken.
 	const container = composeAgentContainer(
 		import.meta.env.MANIFEST_VERSION === 3 ? 3 : 2,
 	);
@@ -89,49 +85,32 @@ const startAgent = async (gate: AgentPortGate) => {
 	await featureFlags.start();
 
 	if (!(await featureFlags.getBooleanValue("browser-agent"))) {
-		// Close any waiting sidepanel connection rather than leaving it hanging.
 		gate.refuse();
 		return;
 	}
 
-	// Binds the tab RPC client the content-script tools call through; until
-	// then every one of them fails with "MessageChannel not initialized".
+	// Content-script tool calls fail with "MessageChannel not initialized"
+	// until this runs.
 	container.get<BrowserDriverOutputPort>(BrowserDriverOutputPort).linkRpc();
 	container.get<ExtensionDrivingAgentRpc>(ExtensionDrivingAgentRpc).start(gate);
 };
 
 /**
- * `type: "module"` is not cosmetic — it is what makes `import()` available in
- * the service worker, and therefore what lets the LLM provider packages load
- * lazily instead of being parsed on every wake.
- *
- * That matters because MV3 evicts an idle worker after ~30s and re-parses it on
- * the next wake, and this worker wakes on every sidepanel open and every agent
- * turn. Bundling the provider SDKs eagerly would put ~500 KB of code on that
- * path for a user who only ever talks to one provider.
- *
- * Firefox builds MV2, where the background is a classic script that cannot
- * `import()`. WXT already handles this: it emits a single inlined
- * `background.js` with no chunk references for that target, so the same source
- * degrades to eager loading. MV2 background pages are persistent, so the parse
- * cost is paid once and the loss doesn't matter.
+ * `type: "module"` makes `import()` available in the MV3 service worker, so the
+ * LLM provider packages load lazily instead of being re-parsed on every wake.
+ * The Firefox MV2 build is a classic script; WXT inlines it there instead.
  */
 export default defineBackground({
 	type: "module",
 	main() {
 		openSidepanelOnActionClick();
 
-		// Constructed synchronously, before any `await`. MV3 only delivers
-		// `onConnect` to listeners registered during the worker's initial
-		// evaluation, and the connection that wakes the worker is dispatched while
-		// composition below is still suspended — so without this the sidepanel's
-		// very first connect is dropped and its calls never resolve.
+		// Must be constructed before any `await`: MV3 only delivers `onConnect`
+		// to listeners registered during the worker's initial evaluation.
 		const gate = new AgentPortGate();
 
 		void startAgent(gate).catch((error: unknown) => {
 			console.error("Failed to start the browser agent", error);
-			// Don't strand the sidepanel: let its calls fail with an error it can
-			// show, rather than waiting on an agent that will never arrive.
 			gate.refuse();
 		});
 	},

@@ -19,9 +19,7 @@ export const ChatPage = () => {
 		useAgentThread(sessionId);
 	const [draft, setDraft] = useState("");
 
-	// At `/` with no session in the URL, adopt the most recently updated one, or
-	// start a fresh one. Waits for `sessions` so it doesn't create a duplicate
-	// before the first read lands.
+	// Wait for `sessions` so a duplicate isn't created before the first read.
 	useEffect(() => {
 		if (sessionId || !sessions) {
 			return;

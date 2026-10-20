@@ -1,12 +1,8 @@
 import type { Runtime } from "webextension-polyfill";
 
 /**
- * A pair of in-memory `browser.runtime.Port`s wired to each other, standing in
- * for the real background↔sidepanel connection.
- *
- * Messages are delivered synchronously. Real ports are async, but nothing in the
- * transport depends on that ordering, and synchronous delivery keeps tests free
- * of arbitrary waits.
+ * A pair of in-memory `browser.runtime.Port`s wired to each other. Messages are
+ * delivered synchronously.
  */
 export interface FakePortPair {
 	background: Runtime.Port;

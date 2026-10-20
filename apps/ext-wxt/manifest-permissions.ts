@@ -1,9 +1,6 @@
 /**
- * Manifest permissions for the extension.
- *
- * `storage` holds the agent settings (connections, selected model);
- * `tabs` and `webNavigation` are required by the browser driver's tools.
- * Mirrors `apps/m3/src/manifest.json`.
+ * `storage` holds the agent settings; `tabs` and `webNavigation` are required
+ * by the browser driver's tools.
  */
 export const PERMISSIONS = [
 	"storage",
@@ -12,15 +9,9 @@ export const PERMISSIONS = [
 ] as const;
 
 /**
- * Broad on purpose, for two reasons.
- *
- * The browser driver injects into and reads from whatever tab the agent is
- * pointed at, which can be any origin.
- *
- * LLM connections are also called from the background. A service worker's
- * `fetch` is subject to CORS, provider endpoints don't send CORS headers, and
- * a host permission is what exempts the request. Connection base URLs are
- * user-defined and include plain-http local servers (Ollama, LM Studio).
+ * Broad on purpose: the browser driver acts on any origin, and host permissions
+ * exempt the background's LLM requests from CORS for user-defined (including
+ * plain-http local) endpoints.
  */
 export const HOST_PERMISSIONS = [
 	"http://*/*",
