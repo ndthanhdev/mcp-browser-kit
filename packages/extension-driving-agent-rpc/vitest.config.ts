@@ -2,14 +2,8 @@ import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 /**
- * `@mcp-browser-kit/*` packages carry no `main`/`exports` field — the monorepo
- * resolves them through TS path mapping, which Vite doesn't read. Alias to
+ * `@mcp-browser-kit/*` packages have no `main`/`exports`, so alias them to
  * source, mirroring `tsconfig.json`'s `paths`.
- *
- * Regex `find`s, not strings: Vite's string aliases only match the id exactly or
- * `<find>/…`, so a trailing-slash subpath alias would need a doubled slash to
- * fire and `…/output-ports` would fall through to the bare alias, resolving to
- * `src/index.ts/output-ports`.
  */
 const aliasToSource = (name: string, entry: string) => [
 	{

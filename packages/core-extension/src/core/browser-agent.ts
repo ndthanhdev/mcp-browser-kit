@@ -205,9 +205,7 @@ export class BrowserAgentUseCase implements BrowserAgentInputPort {
 				abortSignal: abortController.signal,
 			});
 
-			// Text accumulated per text block. A turn spans several model steps,
-			// each with its own block(s) separated by tool calls, so every block
-			// becomes its own transcript message.
+			// Each text block becomes its own transcript message.
 			const blockText = new Map<string, string>();
 			for await (const part of result.fullStream) {
 				switch (part.type) {
@@ -228,12 +226,10 @@ export class BrowserAgentUseCase implements BrowserAgentInputPort {
 					case "text-end": {
 						const content = blockText.get(part.id) ?? "";
 						blockText.delete(part.id);
-						// Models pad around tool steps with whitespace-only blocks; they
-						// carry nothing worth keeping in the transcript.
+						// Models pad around tool steps with whitespace-only blocks.
 						if (!content.trim()) {
 							break;
 						}
-						// The block's final message is durable.
 						this.emit({
 							type: "assistant-message",
 							sessionId,

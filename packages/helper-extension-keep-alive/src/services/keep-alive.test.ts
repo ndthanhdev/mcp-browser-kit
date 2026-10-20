@@ -32,7 +32,7 @@ const recordingLoggerFactory = () => {
 	};
 };
 
-/** Rejections that escaped to the process, which is the bug under test. */
+/** Rejections that escaped to the process. */
 const unhandled: unknown[] = [];
 const onUnhandled = (reason: unknown) => {
 	unhandled.push(reason);
@@ -52,10 +52,8 @@ afterEach(() => {
 const TICK_MS = 40;
 
 /**
- * Drain pending microtasks and the macrotask queue without advancing far enough
- * for an interval tick. Real timers throughout: Node only reports an unhandled
- * rejection on a real macrotask boundary, and that rejection is the whole point
- * of these tests.
+ * Drain pending tasks without reaching an interval tick. Real timers: Node only
+ * reports an unhandled rejection on a real macrotask boundary.
  */
 const flush = () => new Promise((resolve) => setTimeout(resolve, 1));
 
@@ -79,7 +77,6 @@ describe("sending with a listener present", () => {
 		stop();
 		const afterStop = sentMessages.length;
 		await settle(2);
-		// Stopping must actually stop it.
 		expect(sentMessages).toHaveLength(afterStop);
 	});
 
@@ -96,12 +93,6 @@ describe("sending with a listener present", () => {
 });
 
 describe("sending when the background never registered a listener", () => {
-	/**
-	 * Regression: `keepAlive` used to log the error and then rethrow. It is
-	 * invoked un-awaited and from `setInterval`, so the rejection had nowhere to
-	 * go — it surfaced as "Uncaught (in promise) Error: Could not establish
-	 * connection" on every tick, in every frame of every page.
-	 */
 	it("does not raise an unhandled rejection", async () => {
 		const { factory } = recordingLoggerFactory();
 
@@ -127,7 +118,6 @@ describe("sending when the background never registered a listener", () => {
 		new KeepAlive(factory).startSending(TICK_MS);
 		await settle(5);
 
-		// No listener is a permanent condition; saying so every 25s is spam.
 		const warnings = calls.filter((call) => call.level === "warn");
 		expect(warnings).toHaveLength(1);
 		expect(warnings[0].message).toMatch(/Receiving end does not exist/);

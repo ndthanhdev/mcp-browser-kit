@@ -14,10 +14,8 @@ const defaultInstance = createConsola({
 /**
  * `"Tab Tools", "Setup"` -> `"tabTools:setup"`.
  *
- * Plain array methods rather than `R.pipe`/`R.map`/`R.join`: this module is
- * bundled into every content script, and `import * as R from "ramda"` is a
- * namespace import that can't be tree-shaken — the whole library ships for
- * three combinators.
+ * Plain array methods rather than ramda: this module ships in every content
+ * script, and a ramda namespace import can't be tree-shaken.
  */
 const createLoggerId = (...components: string[]): string =>
 	components.map((component) => changeCase.camelCase(component)).join(":");

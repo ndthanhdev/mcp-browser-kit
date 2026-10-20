@@ -1,12 +1,9 @@
 import type { Runtime } from "webextension-polyfill";
 
 /**
- * In-memory stand-in for `webextension-polyfill`. The real polyfill throws on
- * import outside an extension.
- *
- * Models the one behaviour these tests care about: `sendMessage` rejects with
- * "Receiving end does not exist" when no listener is registered — which is
- * exactly what a background that never called `startListening` produces.
+ * In-memory stand-in for `webextension-polyfill`. Like the real one,
+ * `sendMessage` rejects with "Receiving end does not exist" when no listener is
+ * registered.
  */
 
 type Listener = (

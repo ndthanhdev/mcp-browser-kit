@@ -2,16 +2,12 @@ $schema: https://moonrepo.dev/schemas/tasks.json
 fileGroups:
   vitest-sources:
   - src/**/*
-  # vitest configs alias workspace packages to their TypeScript sources, so a
-  # change in a sibling package must invalidate the cached run.
+  # vitest configs alias workspace packages to their sources.
   - /packages/*/src/**/*
   vitest-config:
   - vitest.config.ts
 tasks:
-  # Unit tests for library packages. Kept separate from `playwright-test`
-  # (apps/ext-e2e), which drives a real browser + server; this is for pure logic
-  # that would otherwise be untestable — token caches, protocol polling loops,
-  # response filtering — using a mocked `fetch`.
+  # Unit tests for pure logic; browser E2E lives in `playwright-test`.
   vitest-test:
     toolchain: node
     script: |

@@ -17,10 +17,8 @@ export type RpcDispatchMode = "queue" | "parallel";
 /**
  * Walk a dotted procedure path, e.g. `"tools.click"`.
  *
- * Hand-rolled rather than `R.pathOr`: this module is bundled into every content
- * script, in every frame of every page, and `import * as R from "ramda"` pulls
- * the whole library in — a namespace import can't be tree-shaken. ~49 KB for one
- * lookup.
+ * Hand-rolled rather than ramda: this module ships in every content script, and
+ * a ramda namespace import can't be tree-shaken.
  */
 const resolveProcedure = (
 	procedures: unknown,

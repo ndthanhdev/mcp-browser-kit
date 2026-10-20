@@ -15,25 +15,13 @@ export type AgentUnsubscribe = () => void;
  * Driving contract for the Browser Agent (the `BrowserAgentUseCases` node in
  * `docs/architecture.md`).
  *
- * Realized by {@link import("../core").BrowserAgentUseCase}, which wraps the AI
- * SDK v7 `ToolLoopAgent`. Its only caller is the `AgentRpcController` driving
- * adapter (`@mcp-browser-kit/extension-driving-agent-rpc`), which translates
- * `mbk:agent` port messages into these methods and forwards every
- * {@link AgentProgressEvent} from `subscribe` to the `apps/ext-wxt` sidepanel.
+ * Realized by {@link import("../core").BrowserAgentUseCase}; driven by the
+ * `AgentRpcController` in `@mcp-browser-kit/extension-driving-agent-rpc`.
  *
- * This is a *single* agent that owns *many* sessions. The agent object itself is
- * stateless, so each {@link AgentSession} owns its own transcript in the use
- * case's registry, and a fresh `ToolLoopAgent` is built per turn so that turn's
- * tools — which close over the session's event sink and target tab — take
- * effect.
- *
- * It reasons via {@link import("../output-ports").LlmProviderOutputPort} and
- * acts via {@link ExtensionToolCallInputPort}.
- *
- * One lifetime caveat callers must handle: sessions live in memory in the MV3
- * background service worker, which is evicted when idle. A session id is not
- * durable across worker restarts, so a UI holding one must be prepared for
- * `getSession` to return `undefined`.
+ * A *single* agent owns *many* sessions, each with its own transcript.
+ * Sessions live in memory in the MV3 service worker, so a session id does not
+ * survive a worker restart: callers must handle `getSession` returning
+ * `undefined`.
  */
 export interface BrowserAgentInputPort {
 	// --- Session lifecycle ---

@@ -11,10 +11,8 @@ import { RuntimePortTransport } from "./runtime-port-transport";
 
 /**
  * The subset of {@link BrowserAgentInputPort} exposed over the wire.
- *
- * `subscribe` is deliberately absent: it takes a callback, which cannot cross a
- * port. Progress events are pushed as `agentEvent` frames instead, and the
- * client re-exposes a local `subscribe` over those.
+ * `subscribe` takes a callback, which cannot cross a port; events are pushed
+ * as `agentEvent` frames instead.
  */
 export type AgentRpcProcedures = Pick<
 	BrowserAgentInputPort,
@@ -29,18 +27,11 @@ export type AgentRpcProcedures = Pick<
 
 /**
  * Driving adapter that exposes {@link BrowserAgentInputPort} to extension UI
- * contexts — the `AgentRpcController` in `docs/architecture.md`.
+ * contexts over `browser.runtime` ports — the `AgentRpcController` in
+ * `docs/architecture.md`.
  *
- * The agent lives in the background service worker because that is the only
- * context that survives tab navigation and owns the browser driver. The
- * sidepanel is a separate document, so it reaches the agent over
- * `browser.runtime` port messaging: RPC for the imperative calls, pushed
- * `agentEvent` frames for the stream.
- *
- * Every connected UI gets its own {@link RuntimePortTransport} and its own
- * `subscribe` registration, torn down on disconnect. That matters under MV3:
- * the sidepanel is closed and reopened constantly, and a leaked listener per
- * open would fan every event out N times.
+ * Each connected UI gets its own {@link RuntimePortTransport} and `subscribe`
+ * registration, torn down on disconnect.
  */
 @injectable()
 export class ExtensionDrivingAgentRpc {
@@ -64,10 +55,8 @@ export class ExtensionDrivingAgentRpc {
 	/**
 	 * Begin serving connections from UI contexts. Idempotent.
 	 *
-	 * Takes a gate rather than registering `onConnect` itself: composing the
-	 * agent requires `await`, and by the time that finishes MV3 has already
-	 * dispatched the connection that woke the worker. The gate is constructed
-	 * synchronously during initial evaluation and hands over whatever it caught.
+	 * Takes a gate rather than registering `onConnect` itself, because the
+	 * connection that woke the worker arrives before async composition finishes.
 	 */
 	start = (gate: AgentPortGate): void => {
 		if (this.stopListening) {
@@ -104,9 +93,7 @@ export class ExtensionDrivingAgentRpc {
 			getHistory: this.agent.getHistory,
 		};
 
-		// "queue", not "parallel": the agent mutates a shared session registry, and
-		// a `sendMessage` racing an `endSession` for the same session would
-		// interleave. The UI issues few enough calls that serialising is free.
+		// Serialised so calls on the shared session registry can't interleave.
 		const rpcServer = new MessageChannelRpcServer<AgentRpcProcedures>(
 			procedures,
 			{

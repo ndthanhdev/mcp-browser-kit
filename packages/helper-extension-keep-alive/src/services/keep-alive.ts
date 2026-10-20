@@ -14,14 +14,8 @@ export interface KeepAliveResponse {
 const KEEP_ALIVE_INTERVAL_MS = 25_000;
 
 /**
- * Holds an MV3 service worker awake by pinging it from a content script.
- *
- * Only worth doing when the background owns something that must outlive its
- * idle timeout — in this repo, the tRPC channel to the local MCP server. An app
- * whose background is driven by a `runtime.connect` port (the sidepanel agent in
- * `apps/ext-wxt`) does not need it: the port already keeps the worker alive for
- * exactly as long as it matters, and pinging from every frame of every tab would
- * defeat eviction permanently for no gain.
+ * Holds an MV3 service worker awake by pinging it from a content script, for
+ * backgrounds that own something that must outlive the idle timeout.
  */
 @injectable()
 export class KeepAlive {
@@ -45,17 +39,13 @@ export class KeepAlive {
 	/**
 	 * Start pinging the background from this frame.
 	 *
-	 * @param intervalMs override the ping cadence. Exists so tests can exercise
-	 *   several ticks in real time; fake timers can't be used here because
-	 *   detecting a stray unhandled rejection needs a real macrotask boundary.
+	 * @param intervalMs override the ping cadence.
 	 * @returns a function that stops the pings.
 	 */
 	startSending(intervalMs: number = KEEP_ALIVE_INTERVAL_MS): () => void {
 		this.logger.info("Starting keep-alive sender");
 
-		// Never rejects. It is invoked un-awaited below and from setInterval, so a
-		// rejection has nowhere to go but the console as an unhandled rejection —
-		// which is what it used to do on every tick once a ping started failing.
+		// Must never reject: it runs un-awaited from setInterval.
 		const keepAlive = async (): Promise<void> => {
 			try {
 				const response = await browser.runtime.sendMessage<
@@ -73,9 +63,6 @@ export class KeepAlive {
 					this.failing = false;
 				}
 			} catch (error) {
-				// "Could not establish connection. Receiving end does not exist."
-				// means the background registered no listener at all, which is a
-				// permanent condition — so say it once rather than every 25 seconds.
 				this.reportFailure(
 					error instanceof Error ? error.message : String(error),
 				);

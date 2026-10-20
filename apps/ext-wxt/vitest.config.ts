@@ -2,10 +2,8 @@ import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 /**
- * Unit tests for the app's pure logic (currently the agent-event → view-model
- * fold). Deliberately does NOT load `wxt.config.ts`: WXT's config pulls in
- * Playwright browser resolution and the extension build pipeline, none of which
- * a pure reducer test needs.
+ * Unit tests for the app's pure logic. Does not load `wxt.config.ts`, which
+ * pulls in browser resolution and the extension build pipeline.
  */
 const aliasToSource = (name: string) => {
 	const src = path.resolve(import.meta.dirname, `../../packages/${name}/src`);

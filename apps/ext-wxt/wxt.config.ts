@@ -28,10 +28,8 @@ const resolveBinaries = (): Record<string, string> => {
 	);
 };
 
-// Persistent `wxt dev` browser profiles, one directory per browser, so logins
-// and settings survive restarts. The moon wxt-dev tasks set
-// BROWSER_PROFILES_PATH and wxt-profile-clean deletes it; without it web-ext
-// falls back to a throwaway profile per run.
+// Persistent `wxt dev` browser profiles, set by the moon wxt-dev tasks. Without
+// BROWSER_PROFILES_PATH, web-ext uses a throwaway profile per run.
 const browserProfilesPath = process.env.BROWSER_PROFILES_PATH;
 
 const browserProfiles = browserProfilesPath
@@ -71,10 +69,7 @@ const readSavedChromiumPrefs = (profile: string) => {
 	};
 };
 
-/**
- * Workspace packages the extension imports, directly or transitively. Each is
- * aliased to its TypeScript source (see the `resolve.alias` note below).
- */
+/** Workspace packages the extension imports, directly or transitively. */
 const workspacePackages = [
 	"core-extension",
 	"core-feature-flags",
@@ -89,11 +84,7 @@ const workspacePackages = [
 	"types",
 ];
 
-/**
- * Two aliases per package: the bare specifier resolves to `src/index.ts`, and
- * any subpath resolves under `src/`. Mirrors the `paths` pairs in
- * `tsconfig.json`.
- */
+/** Mirrors the `paths` pairs in `tsconfig.json`. */
 const aliasToSource = (name: string) => {
 	const src = path.resolve(__dirname, `../../packages/${name}/src`);
 	return [
@@ -148,7 +139,6 @@ export default defineConfig({
 		// entrypoints/background.ts). WXT only emits this key alongside a popup
 		// entrypoint, so declare it explicitly or `action.onClicked` never fires.
 		action: {},
-		// See `manifest-permissions.ts` for what needs each one.
 		permissions: [
 			...PERMISSIONS,
 		],
@@ -175,19 +165,10 @@ export default defineConfig({
 			},
 		},
 		resolve: {
-			// Array form with regex `find`s, not the object form. `@mcp-browser-kit/*`
-			// packages have no `main`/`exports` field — the monorepo otherwise relies
-			// on TS path-mapping + esbuild's native tsconfig-paths support (used by
-			// tsup), which Vite/Rollup doesn't have.
-			//
-			// Vite's *string* aliases match the id exactly, so every subpath import
-			// (`…/output-ports`, `…/m3`, `…/web`) needed its own entry and a missing
-			// one failed at build time. One regex per package covers the bare import
-			// and every subpath, so adding a package here is a single line.
+			// `@mcp-browser-kit/*` packages have no `main`/`exports` field and Vite
+			// doesn't read tsconfig `paths`.
 			alias: [
 				...workspacePackages.flatMap(aliasToSource),
-				// Brand design tokens and logos. Lives outside `packages/`, so it
-				// needs an alias for both Vite and tsconfig `paths` to resolve it.
 				{
 					find: /^@mcp-browser-kit\/branding$/,
 					replacement: path.resolve(__dirname, "../../etc/branding"),

@@ -3,11 +3,8 @@ import type { LanguageModel } from "ai";
 /**
  * One model the driven adapter can build a {@link LanguageModel} from.
  *
- * The `id` is opaque to the core. The adapter that realizes this port is a
- * registry over several vendors, so in practice it is a composite
- * `"<providerId>:<modelId>"` — model ids are only unique within a vendor (both
- * OpenRouter and GitHub Copilot expose a `gpt-4o`). The core never parses it;
- * it only passes an id back to {@link LlmProviderOutputPort.getModel}.
+ * The `id` is opaque to the core; it only passes it back to
+ * {@link LlmProviderOutputPort.getModel}.
  */
 export interface LlmProviderDescriptor {
 	/** Stable id passed back as {@link LlmProviderOutputPort.getModel}'s argument. */
@@ -24,15 +21,13 @@ export interface LlmProviderDescriptor {
  * keeps provider selection and credential handling — both adapter concerns —
  * out of the core.
  *
- * Realized by `@mcp-browser-kit/extension-driven-llm-provider`, a registry over
- * per-vendor strategies (OpenRouter and GitHub Copilot, both reached through
- * `@ai-sdk/openai-compatible`). That adapter is pure-JS, so it runs inside the
- * MV3 background service worker — see `docs/architecture.md`.
+ * Realized by `@mcp-browser-kit/extension-driven-llm-provider` over
+ * user-defined OpenAI-compatible connections.
  */
 export interface LlmProviderOutputPort {
 	/**
-	 * The models this adapter can build, for UI selection. Only models from
-	 * *configured* providers are listed, so this is empty until the user signs in.
+	 * The models this adapter can build, for UI selection. Empty until the user
+	 * adds a connection.
 	 */
 	listProviders(): LlmProviderDescriptor[] | Promise<LlmProviderDescriptor[]>;
 	/**
@@ -40,8 +35,7 @@ export interface LlmProviderOutputPort {
 	 * credentials + chosen model from extension storage.
 	 *
 	 * @param providerId one of {@link listProviders}' ids; omitted → the user's
-	 *   persisted selection, falling back to the first configured provider's
-	 *   default.
+	 *   persisted selection, falling back to the first listed model.
 	 */
 	getModel(providerId?: string): Promise<LanguageModel>;
 }
