@@ -28,6 +28,49 @@ const resolveBinaries = (): Record<string, string> => {
 	);
 };
 
+// Persistent `wxt dev` browser profiles, one directory per browser, so logins
+// and settings survive restarts. The moon wxt-dev tasks set
+// BROWSER_PROFILES_PATH and wxt-profile-clean deletes it; without it web-ext
+// falls back to a throwaway profile per run.
+const browserProfilesPath = process.env.BROWSER_PROFILES_PATH;
+
+const browserProfiles = browserProfilesPath
+	? {
+			chromiumProfile: path.join(browserProfilesPath, "chrome"),
+			firefoxProfile: path.join(browserProfilesPath, "firefox"),
+		}
+	: undefined;
+
+/**
+ * chrome-launcher merges launch prefs into `Default/Preferences` only one level
+ * deep, so the `extensions` and `devtools` objects web-ext and WXT inject would
+ * replace the saved ones (pinned toolbar icons, DevTools settings). Passing the
+ * saved objects back in makes them survive the merge.
+ */
+const readSavedChromiumPrefs = (profile: string) => {
+	const preferencesFile = path.join(profile, "Default", "Preferences");
+	if (!fs.existsSync(preferencesFile)) {
+		return {};
+	}
+	const saved = JSON.parse(fs.readFileSync(preferencesFile, "utf8")) as {
+		extensions?: {
+			ui?: Record<string, unknown>;
+		};
+		devtools?: Record<string, unknown>;
+	};
+	return {
+		extensions: {
+			...saved.extensions,
+			ui: {
+				...saved.extensions?.ui,
+				// biome-ignore lint/style/useNamingConvention: Chromium pref key
+				developer_mode: true,
+			},
+		},
+		devtools: saved.devtools ?? {},
+	};
+};
+
 /**
  * Workspace packages the extension imports, directly or transitively. Each is
  * aliased to its TypeScript source (see the `resolve.alias` note below).
@@ -69,6 +112,21 @@ const aliasToSource = (name: string) => {
 export default defineConfig({
 	webExt: {
 		binaries: resolveBinaries(),
+		...(browserProfiles && {
+			...browserProfiles,
+			chromiumPref: readSavedChromiumPrefs(browserProfiles.chromiumProfile),
+			keepProfileChanges: true,
+		}),
+	},
+	hooks: {
+		// web-ext requires both profile directories to exist before launch.
+		"server:started": () => {
+			for (const dir of Object.values(browserProfiles ?? {})) {
+				fs.mkdirSync(dir, {
+					recursive: true,
+				});
+			}
+		},
 	},
 	modules: [
 		"@wxt-dev/module-react",

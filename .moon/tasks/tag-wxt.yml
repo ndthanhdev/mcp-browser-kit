@@ -40,6 +40,7 @@ tasks:
     - scripts:browser-install
     env:
       PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/browsers
+      BROWSER_PROFILES_PATH: $workspaceRoot/.tmp/browser-profiles
     script: wxt
     inputs:
     - '@group(wxt-config)'
@@ -79,6 +80,7 @@ tasks:
     - scripts:browser-install
     env:
       PLAYWRIGHT_BROWSERS_PATH: $workspaceRoot/.tmp/browsers
+      BROWSER_PROFILES_PATH: $workspaceRoot/.tmp/browser-profiles
       # Playwright's Firefox build has no Wayland support — on a Wayland
       # session it aborts inside wl_display_read_events before binding the
       # debugger port, which surfaces as web-ext failing with ECONNREFUSED.
@@ -89,6 +91,11 @@ tasks:
     - '@group(wxt-config)'
     - '@group(wxt-sources)'
     - '@group(wxt-assets)'
+  # Deletes the persistent wxt-dev browser profiles so the next run starts
+  # empty. Close the dev browser first.
+  wxt-profile-clean:
+    preset: utility
+    script: rm -rf $workspaceRoot/.tmp/browser-profiles
   wxt-build-firefox:
     toolchain: node
     options:
