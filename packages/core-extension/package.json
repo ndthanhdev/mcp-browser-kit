@@ -1,7 +1,7 @@
 {
 	"name": "@mcp-browser-kit/core-extension",
 	"dependencies": {
-		"ai": "^7.0.70",
-		"zod": "^4.3.6"
+		"ai": "^7.0.146",
+		"zod": "^4.6.7"
 	}
 }

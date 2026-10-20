@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.5.5/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
 	"vcs": {
 		"enabled": false,
 		"clientKind": "git",
@@ -44,7 +44,7 @@
 			"a11y": "off",
 			"nursery": "off",
 			"complexity": {
-				"recommended": true,
+				"preset": "recommended",
 				"useMaxParams": {
 					"level": "on",
 					"options": {
@@ -56,16 +56,16 @@
 				"noUnusedImports": "error"
 			},
 			"performance": {
-				"recommended": true,
+				"preset": "recommended",
 				"noBarrelFile": "off",
 				"noReExportAll": "off"
 			},
 			"security": {
-				"recommended": true,
+				"preset": "recommended",
 				"noSecrets": "off"
 			},
 			"suspicious": {
-				"recommended": true,
+				"preset": "recommended",
 				"noReactSpecificProps": "off"
 			},
 			"style": {
