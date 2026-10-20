@@ -1,5 +1,6 @@
 import type { TreeNode } from "@mcp-browser-kit/core-utils/tree";
 import type { ReadableElementRecord } from "../types";
+import { getEditingHostText, isEditingHost } from "./editing-host";
 import { getVisibleText } from "./get-visible-text";
 
 /**
@@ -20,6 +21,10 @@ function getElementValue(element: globalThis.Element): string {
 		element instanceof globalThis.HTMLSelectElement
 	) {
 		return element.value;
+	}
+
+	if (element instanceof globalThis.HTMLElement && isEditingHost(element)) {
+		return getEditingHostText(element);
 	}
 
 	return "";
@@ -48,17 +53,24 @@ export function toElementRecords(
 	return elements.map((element): ReadableElementRecord => {
 		const path = idOf(element);
 
+		const editingHost = isEditingHost(element);
+
 		// Extract accessible role from element
 		const accessibleRole =
-			element.getAttribute("role") ?? element.tagName.toLowerCase();
+			element.getAttribute("role") ??
+			(editingHost ? "textbox" : element.tagName.toLowerCase());
 
-		// Extract accessible text from element (priority order)
+		// Extract accessible text from element (priority order). Editors render
+		// their placeholder from data-placeholder, and their content is
+		// reported as the value instead.
 		const accessibleText =
 			element.getAttribute("aria-label") ??
 			element.getAttribute("aria-labelledby") ??
 			element.getAttribute("placeholder") ??
 			element.getAttribute("title") ??
-			getVisibleText(element);
+			(editingHost
+				? (element.getAttribute("data-placeholder") ?? "")
+				: getVisibleText(element));
 
 		const record: ReadableElementRecord = [
 			path,

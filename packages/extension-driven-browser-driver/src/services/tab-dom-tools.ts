@@ -66,8 +66,9 @@ export type HitTargetResolution =
 
 /**
  * Iterates `strategies` in order. Runs dom.performAndVerify for each strategy.
- * Returns on the first strategy whose effect is verified.
- * Throws if all strategies are exhausted without a verified effect.
+ * Returns on the first strategy whose effect is verified. A strategy that
+ * throws counts as failed, so the next one still runs.
+ * Throws with every strategy's failure reason once all are exhausted.
  */
 const withActVerify = async (
 	operationLabel: string,
@@ -78,19 +79,68 @@ const withActVerify = async (
 		acceptAnyMutation?: boolean;
 	} = {},
 ): Promise<void> => {
+	const failures: string[] = [];
 	for (const strategy of strategies) {
-		const success = await dom.performAndVerify(strategy.act, checkState, {
-			timeoutMs: config.watchMutationTimeoutMs,
-			acceptAnyMutation: options.acceptAnyMutation,
-		});
-		if (success) return;
-		logger.warn(
-			`${operationLabel}: strategy "${strategy.label}" had no verifiable effect — trying next`,
-		);
+		try {
+			const success = await dom.performAndVerify(strategy.act, checkState, {
+				timeoutMs: config.watchMutationTimeoutMs,
+				acceptAnyMutation: options.acceptAnyMutation,
+			});
+			if (success) return;
+			failures.push(`${strategy.label}: no verifiable effect`);
+			logger.warn(
+				`${operationLabel}: strategy "${strategy.label}" had no verifiable effect — trying next`,
+			);
+		} catch (error) {
+			const reason = error instanceof Error ? error.message : String(error);
+			failures.push(`${strategy.label}: ${reason}`);
+			logger.warn(
+				`${operationLabel}: strategy "${strategy.label}" threw — trying next:`,
+				error,
+			);
+		}
 	}
 	throw new Error(
-		`${operationLabel}: all ${strategies.length} strategies failed to produce a verifiable effect`,
+		`${operationLabel}: all ${strategies.length} strategies failed (${failures.join("; ")})`,
 	);
+};
+
+const fillStrategies = (target: dom.FillTarget, value: string): Strategy[] => {
+	switch (target.kind) {
+		case "text":
+			return [
+				{
+					label: "human-like-typing",
+					act: () => dom.typeTextHumanLike(target.element, value),
+				},
+				{
+					label: "exec-command",
+					act: () => dom.fillTextExecCommand(target.element, value),
+				},
+				{
+					label: "native-setter",
+					act: async () => dom.fillTextNativeSetter(target.element, value),
+				},
+			];
+		case "value":
+			return [
+				{
+					label: "native-setter",
+					act: async () => dom.fillTextNativeSetter(target.element, value),
+				},
+			];
+		case "rich":
+			return [
+				{
+					label: "rich-exec-command",
+					act: async () => dom.fillRichTextExecCommand(target.element, value),
+				},
+				{
+					label: "rich-input-events",
+					act: async () => dom.fillRichTextInputEvents(target.element, value),
+				},
+			];
+	}
 };
 
 @injectable()
@@ -296,74 +346,50 @@ export class TabDomTools {
 			return;
 		}
 
-		await waitUntilActionable(element, FILL_CHECKS);
+		const target = dom.resolveFillTarget(element);
+		const fillValue = dom.prepareFillValue(target, value);
+		await waitUntilActionable(target.element, FILL_CHECKS);
 		await this.animation.playClickAnimationOnElementByReadablePath(
 			readablePath,
 		);
-
-		await withActVerify(
+		await this.fill(
 			`fillTextToElementByReadablePath(${readablePath})`,
-			this.logger,
-			[
-				{
-					label: "human-like-typing",
-					act: async () => dom.fillTextToElementByReadablePath(element, value),
-				},
-				{
-					label: "exec-command",
-					act: async () => dom.fillTextExecCommand(element, value),
-				},
-				{
-					label: "native-setter",
-					act: async () => dom.fillTextNativeSetter(element, value),
-				},
-			],
-			() => dom.verifyFillEffect(element, value),
+			target,
+			fillValue,
 		);
-		await waitUntilSettled();
 		this.logger.verbose("Fill text completed");
 	};
 
-	fillTextToFocusedElement = async (value: string) => {
+	fillTextToCoordinates = async (x: number, y: number, value: string) => {
 		this.logger.info(
-			`Filling text to focused element, value length: ${value.length}`,
+			`Filling text at coordinates (${x}, ${y}), value length: ${value.length}`,
 		);
-		const focusedElement = document.activeElement;
-		if (focusedElement instanceof HTMLElement) {
-			await waitUntilActionable(focusedElement, FILL_CHECKS);
-		}
-		if (focusedElement) {
-			await this.animation.playClickAnimationOnElement(focusedElement);
+		const element = document.elementFromPoint(x, y);
+		if (!element) {
+			throw new Error(`No element at coordinates (${x}, ${y})`);
 		}
 
-		const element =
-			focusedElement instanceof HTMLElement ? focusedElement : null;
+		const target = dom.resolveFillTarget(element);
+		const fillValue = dom.prepareFillValue(target, value);
+		await waitUntilActionable(target.element, FILL_CHECKS);
+		await this.animation.playClickAnimation(x, y);
+		await this.fill(`fillTextToCoordinates(${x},${y})`, target, fillValue);
+		this.logger.verbose("Fill text at coordinates completed");
+	};
 
+	private fill = async (
+		operationLabel: string,
+		target: dom.FillTarget,
+		value: string,
+	) => {
+		const before = dom.readFillValue(target);
 		await withActVerify(
-			"fillTextToFocusedElement",
+			operationLabel,
 			this.logger,
-			[
-				{
-					label: "human-like-typing",
-					act: async () => dom.fillTextToFocusedElement(value),
-				},
-				{
-					label: "exec-command",
-					act: async () => {
-						if (element) await dom.fillTextExecCommand(element, value);
-					},
-				},
-				{
-					label: "native-setter",
-					act: async () => {
-						if (element) dom.fillTextNativeSetter(element, value);
-					},
-				},
-			],
-			() => (element ? dom.verifyFillEffect(element, value) : true),
+			fillStrategies(target, value),
+			() => dom.verifyFillEffect(target, value, before),
 		);
 		await waitUntilSettled();
-		this.logger.verbose("Fill text to focused element completed");
 	};
 
 	focusOnElement = async (readablePath: string) => {
@@ -378,14 +404,6 @@ export class TabDomTools {
 		}
 		const result = dom.focusOnElement(element);
 		this.logger.verbose("Focus on element completed");
-		return result;
-	};
-
-	focusOnCoordinates = async (x: number, y: number) => {
-		this.logger.info(`Focusing on coordinates (${x}, ${y})`);
-		await this.animation.playClickAnimation(x, y);
-		const result = dom.focusOnCoordinates(x, y);
-		this.logger.verbose("Focus on coordinates completed");
 		return result;
 	};
 
@@ -438,39 +456,33 @@ export class TabDomTools {
 		this.logger.verbose("Hit enter on element completed");
 	};
 
-	hitEnterOnFocusedElement = async () => {
-		this.logger.info("Hitting enter on focused element");
-		const focusedElement = document.activeElement;
-		if (focusedElement instanceof HTMLElement) {
-			await waitUntilActionable(focusedElement, ENTER_CHECKS);
-		}
-		if (focusedElement) {
-			await this.animation.playClickAnimationOnElement(focusedElement);
+	hitEnterOnCoordinates = async (x: number, y: number) => {
+		this.logger.info(`Hitting enter at coordinates (${x}, ${y})`);
+		const element = document.elementFromPoint(x, y);
+		if (!(element instanceof HTMLElement)) {
+			throw new Error(`No element at coordinates (${x}, ${y})`);
 		}
 
-		const element =
-			focusedElement instanceof HTMLElement ? focusedElement : null;
+		await waitUntilActionable(element, ENTER_CHECKS);
+		await this.animation.playClickAnimation(x, y);
+
 		const prevHref = location.href;
 
 		await withActVerify(
-			"hitEnterOnFocusedElement",
+			`hitEnterOnCoordinates(${x},${y})`,
 			this.logger,
 			[
 				{
 					label: "dispatch-enter",
-					act: async () => dom.hitEnterOnFocusedElement(),
+					act: () => dom.hitEnterOnElement(element),
 				},
 				{
 					label: "request-submit",
-					act: async () => {
-						if (element) dom.hitEnterRequestSubmit(element);
-					},
+					act: async () => dom.hitEnterRequestSubmit(element),
 				},
 				{
 					label: "submit-button-click",
-					act: async () => {
-						if (element) dom.hitEnterSubmitButton(element);
-					},
+					act: async () => dom.hitEnterSubmitButton(element),
 				},
 			],
 			() => location.href !== prevHref,
@@ -479,7 +491,7 @@ export class TabDomTools {
 			},
 		);
 		await waitUntilSettled();
-		this.logger.verbose("Hit enter on focused element completed");
+		this.logger.verbose("Hit enter at coordinates completed");
 	};
 
 	getSelection = async (): Promise<Selection> => {

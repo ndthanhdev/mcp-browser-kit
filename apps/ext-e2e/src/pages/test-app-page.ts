@@ -7,6 +7,7 @@ export class TestAppPage extends BasePage {
 	readonly homeUrl = TEST_APP_BASE_URL;
 	readonly clickTestUrl = `${TEST_APP_BASE_URL}/click-test`;
 	readonly formTestUrl = `${TEST_APP_BASE_URL}/form-test`;
+	readonly richInputTestUrl = `${TEST_APP_BASE_URL}/rich-input-test`;
 	readonly textTestUrl = `${TEST_APP_BASE_URL}/text-test`;
 	readonly javascriptTestUrl = `${TEST_APP_BASE_URL}/javascript-test`;
 	readonly fallbackTestUrl = `${TEST_APP_BASE_URL}/fallback-test`;
@@ -40,6 +41,11 @@ export class TestAppPage extends BasePage {
 	async navigateToFormTest() {
 		await this.goto(this.formTestUrl);
 		await super.waitForPageLoad(this.getByTestId("search-input"));
+	}
+
+	async navigateToRichInputTest() {
+		await this.goto(this.richInputTestUrl);
+		await super.waitForPageLoad(this.page.locator(".ql-editor"));
 	}
 
 	async navigateToTextTest() {
@@ -115,6 +121,21 @@ export class TestAppPage extends BasePage {
 		};
 	}
 
+	getRichInputTestLocators() {
+		return {
+			quillEditor: this.page.locator(".ql-editor"),
+			quillText: this.getByTestId("quill-text"),
+			dateInput: this.getByTestId("date-input"),
+			timeInput: this.getByTestId("time-input"),
+			numberInput: this.getByTestId("number-input"),
+			colorInput: this.getByTestId("color-input"),
+			rangeInput: this.getByTestId("range-input"),
+			nicknameInput: this.getByTestId("nickname-input"),
+			phoneInput: this.getByTestId("phone-input"),
+			nativeState: this.getByTestId("native-state"),
+		};
+	}
+
 	getTextTestLocators() {
 		return {
 			heading1: this.getByTestId("heading-1"),
@@ -160,6 +181,9 @@ export class TestAppPage extends BasePage {
 			outerButton: this.getByTestId("outer-button"),
 			outerClickCount: this.getByTestId("outer-click-count"),
 			iframeClickCountMirror: this.getByTestId("iframe-click-count-mirror"),
+			iframeInnerInput: this.page
+				.frameLocator('[data-testid="test-iframe"]')
+				.getByTestId("iframe-inner-input"),
 		};
 	}
 

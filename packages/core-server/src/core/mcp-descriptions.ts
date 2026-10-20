@@ -45,6 +45,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"- Custom dropdown/combobox/listbox (ARIA, React/MUI): clickOnElement the trigger -> the returned diff lists the new options with their paths (re-read readable-elements if the diff was too large) -> clickOnElement the option with matching text.",
 			"- Custom datepicker popup: clickOnElement the field to open the calendar -> re-read elements -> click prev/next month then the day cell.",
 			"- Native <input> date/time/color pickers: fillTextToElement with the exact value format (see fillTextToElement).",
+			'- Rich-text editors (contenteditable: Quill, ProseMirror, Lexical, ...): listed with role "textbox" and their placeholder as text; fillTextToElement replaces their whole content (line breaks become paragraphs). Formatting (bold, lists, links) cannot be set this way.',
 			"- Native <select>, by shape, verifying via re-read after each step. Listbox (multiple or size>1) shows options inline: clickOnElement the option, else MV2 invokeJsFn (set option.selected or .value/.selectedIndex, dispatch a bubbling change). Single-line dropdown (size=1) has a native popup that ignores synthetic clicks: MV2 invokeJsFn (set .value/.selectedIndex, dispatch change); MV3 best-effort clickOnElement select then option, then showHumanHint if unchanged.",
 			"- Range slider: try fillTextToElement with the numeric value (subject to min/max/step); if it clamps or fails, MV2 -> invokeJsFn (set .value, dispatch input + change), MV3 -> showHumanHint.",
 			'- Checkbox/radio: clickOnElement toggles it. Checked state appears as the optional 4th tuple value "checked" (absent when unchecked), so check the tuple and avoid re-clicking a box already in the desired state.',
@@ -102,7 +103,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 
 	fillTextToViewableElementInstruction = (): string => {
 		return [
-			"Click at (x, y) then type text into the focused input.",
+			"Replace the text of the input, textarea or rich-text editor at (x, y), including inside iframes.",
 			"When: MV2 fallback for inputs without a readablePath.",
 			"How: coordinates from recent captureTab; submit via clickOnCoordinates on submit button or hitEnterOnCoordinates.",
 			"Requires: browserId, windowId, tabId, x, y, value.",
@@ -114,7 +115,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 
 	hitEnterOnViewableElementInstruction = (): string => {
 		return [
-			"Click at (x, y) then press Enter to submit a form.",
+			"Focus the element at (x, y), including inside iframes, then press Enter to submit a form.",
 			"When: MV2 fallback to submit when no submit button readablePath exists.",
 			"How: coordinates from recent captureTab.",
 			"Requires: browserId, windowId, tabId, x, y.",
@@ -139,13 +140,14 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 
 	fillTextToReadableElementInstruction = (): string => {
 		return [
-			"Type text into an <input> or <textarea> by readablePath.",
-			"When: primary fill method on MV2 and MV3. Also handles native <input> date/time/datetime-local/month/color when value is in the exact format (date YYYY-MM-DD, time HH:MM, datetime-local YYYY-MM-DDTHH:MM, month YYYY-MM, color #rrggbb).",
-			"How: readablePath from first element of [path, role, text, value?] tuple in readable-elements; submit via clickOnElement on submit button or hitEnterOnElement.",
+			"Replace the text of an <input>, <textarea> or contenteditable rich-text editor by readablePath.",
+			"When: primary fill method on MV2 and MV3. Also handles native <input> date/time/datetime-local/month/week/color/range when value is in the exact format (date YYYY-MM-DD, time HH:MM, datetime-local YYYY-MM-DDTHH:MM, month YYYY-MM, week YYYY-Www, color #rrggbb, range a number on its min/max/step grid).",
+			"How: readablePath from first element of [path, role, text, value?] tuple in readable-elements. A <label> path fills its associated control; any element inside a rich-text editor fills the whole editor. Submit via clickOnElement on submit button or hitEnterOnElement.",
 			"Requires: browserId, windowId, tabId, readablePath, value.",
 			PAGE_CHANGE_RETURNS,
-			"On ok=false: the reason says why (not visible, disabled, covered by <el>, detached); re-read readable-elements and pick a fresh id.",
-			"Avoid: CSS selectors as readablePath; ids of elements that were removed or re-rendered. Does not work on contenteditable rich-text editors (MV2 invokeJsFn instead), native <select>, or custom popup dropdowns/datepickers — use the strategy ladder under Complex inputs in server instructions.",
+			"Note: fields that reformat input (masks, auto-casing, maxlength) succeed with the reformatted value; re-read the tuple's value to confirm what was stored.",
+			"On ok=false: the reason says why (not visible, disabled, covered by <el>, detached, malformed value for the input type, element not fillable); fix the value or re-read readable-elements and pick a fresh id.",
+			"Avoid: CSS selectors as readablePath; ids of elements that were removed or re-rendered. Does not work on checkboxes/radios (clickOnElement), native <select>, file inputs, or custom popup dropdowns/datepickers — use the strategy ladder under Complex inputs in server instructions.",
 		].join("\n");
 	};
 

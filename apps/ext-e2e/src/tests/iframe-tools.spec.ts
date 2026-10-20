@@ -227,6 +227,46 @@ test.describe("Iframe Tools", () => {
 		});
 	});
 
+	test.describe("fillTextToCoordinates", () => {
+		for (const { name, navigate } of [
+			{
+				name: "same-origin",
+				navigate: "navigateToIframeTest",
+			},
+			{
+				name: "cross-origin",
+				navigate: "navigateToIframeTestCrossOrigin",
+			},
+		] as const) {
+			test(`fills an input inside a ${name} iframe`, async ({
+				testAppPage,
+				mcpClientPage,
+			}) => {
+				await testAppPage[navigate]();
+
+				const tab = await mcpClientPage.waitForTabByUrl(
+					testAppPage.page,
+					"iframe-test",
+				);
+				const locators = testAppPage.getIframeTestLocators();
+				const inputBox = await locators.iframeInnerInput.boundingBox();
+				expectToBeDefined(inputBox);
+
+				const result = await mcpClientPage.callTool("fillTextToCoordinates", {
+					...tab,
+					x: inputBox.x + inputBox.width / 2,
+					y: inputBox.y + inputBox.height / 2,
+					value: "typed inside the frame",
+				});
+
+				expect(result.structuredContent?.ok).toBe(true);
+				await expect(locators.iframeInnerInput).toHaveValue(
+					"typed inside the frame",
+				);
+			});
+		}
+	});
+
 	test.describe("mutation inside the iframe", () => {
 		test("invalidates the tab's snapshot cache", async ({
 			testAppPage,

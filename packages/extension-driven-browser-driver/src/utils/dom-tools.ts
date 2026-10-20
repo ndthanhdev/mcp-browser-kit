@@ -1,6 +1,11 @@
 import type { ScrollDirection } from "@mcp-browser-kit/core-extension/types";
 import delay from "delay";
 import { playClickAnimationOnElement } from "./animation-tools";
+import {
+	editingHostOf,
+	getEditingHostText,
+	normalizeEditorText,
+} from "./editing-host";
 
 /**
  * Starts observing mutations, then runs `act()`.
@@ -208,7 +213,7 @@ const humanDelay = () => delay(50 + Math.random() * 150);
 
 const typingDelay = () => delay(30 + Math.random() * 70);
 
-const typeTextHumanLike = async (
+export const typeTextHumanLike = async (
 	element: HTMLInputElement | HTMLTextAreaElement,
 	value: string,
 ) => {
@@ -284,49 +289,256 @@ export const dispatchEnter = async (element: HTMLElement) => {
 	}
 };
 
-export const fillTextToElementByReadablePath = async (
-	element: HTMLElement,
-	value: string,
-) => {
-	if (element) {
-		await playClickAnimationOnElement(element);
-		await typeTextHumanLike(
-			element as HTMLInputElement | HTMLTextAreaElement,
-			value,
-		);
-	}
-};
+/**
+ * What a fill writes into:
+ * - `text`: a text-like <input> or <textarea>, filled by typing.
+ * - `value`: a date/time/color/range-like <input> whose value must be set in
+ *   one step, because typing passes through invalid partial values that the
+ *   browser sanitizes to "".
+ * - `rich`: the editing host of a contenteditable region (Quill, ProseMirror,
+ *   Lexical, ...), which has no `.value`.
+ */
+export type FillTarget =
+	| {
+			kind: "text";
+			element: HTMLInputElement | HTMLTextAreaElement;
+	  }
+	| {
+			kind: "value";
+			element: HTMLInputElement;
+	  }
+	| {
+			kind: "rich";
+			element: HTMLElement;
+	  };
 
-export const fillTextToFocusedElement = async (value: string) => {
-	const element = document.activeElement;
-	if (element && element instanceof HTMLElement) {
-		await typeTextHumanLike(
-			element as HTMLInputElement | HTMLTextAreaElement,
-			value,
+const TYPEABLE_INPUT_TYPES = new Set([
+	"text",
+	"email",
+	"number",
+	"password",
+	"search",
+	"tel",
+	"url",
+]);
+
+const VALUE_INPUT_TYPES = new Set([
+	"color",
+	"date",
+	"datetime-local",
+	"month",
+	"range",
+	"time",
+	"week",
+]);
+
+const describeTag = (element: Element): string =>
+	`<${element.tagName.toLowerCase()}>`;
+
+/**
+ * Maps the element an agent pointed at to the element that actually takes
+ * text: itself for inputs and textareas, the editing host for anything inside
+ * a contenteditable region, and the associated control for a <label> or
+ * anything inside one. Throws a descriptive error for elements that cannot be
+ * filled, so the caller does not attempt strategies that cannot work.
+ */
+export const resolveFillTarget = (element: Element): FillTarget => {
+	if (element instanceof HTMLTextAreaElement) {
+		return {
+			kind: "text",
+			element,
+		};
+	}
+	if (element instanceof HTMLInputElement) {
+		const type = element.type.toLowerCase();
+		if (TYPEABLE_INPUT_TYPES.has(type)) {
+			return {
+				kind: "text",
+				element,
+			};
+		}
+		if (VALUE_INPUT_TYPES.has(type)) {
+			return {
+				kind: "value",
+				element,
+			};
+		}
+		const hint =
+			type === "checkbox" || type === "radio"
+				? "; use clickOnElement to toggle it"
+				: "";
+		throw new Error(`Input of type "${type}" cannot be filled${hint}`);
+	}
+	if (element instanceof HTMLSelectElement) {
+		throw new Error(
+			"Element is a <select>, which cannot be filled with text; choose an option instead",
 		);
 	}
+	if (element instanceof HTMLElement && element.isContentEditable) {
+		return {
+			kind: "rich",
+			element: editingHostOf(element),
+		};
+	}
+	const control = element.closest("label")?.control;
+	if (control && control !== element) {
+		return resolveFillTarget(control);
+	}
+	throw new Error(
+		`Element ${describeTag(element)} is not an <input>, <textarea> or [contenteditable] element`,
+	);
 };
 
 /**
- * Returns true when the input/textarea element holds exactly `value`.
+ * Returns the value to write for `target`, normalized the way the browser
+ * stores it. Throws when the browser would reject or alter the value, e.g. a
+ * date not in YYYY-MM-DD or a range value off its min/max/step grid.
+ */
+export const prepareFillValue = (target: FillTarget, value: string): string => {
+	if (target.kind === "rich") return value;
+
+	const input = target.element;
+	if (input instanceof HTMLInputElement && input.type === "number") {
+		const trimmed = value.trim();
+		if (trimmed !== "" && Number.isNaN(Number(trimmed))) {
+			throw new Error(`Cannot fill "${value}" into input[type=number]`);
+		}
+		return trimmed;
+	}
+	if (target.kind !== "value") return value;
+
+	const type = target.element.type;
+	const normalized =
+		type === "color" ? value.trim().toLowerCase() : value.trim();
+	const probe = document.createElement("input");
+	probe.type = type;
+	for (const attribute of [
+		"min",
+		"max",
+		"step",
+	]) {
+		const attributeValue = target.element.getAttribute(attribute);
+		if (attributeValue !== null) probe.setAttribute(attribute, attributeValue);
+	}
+	probe.value = normalized;
+	if (probe.value !== normalized) {
+		const becomes = probe.value
+			? `the browser would store "${probe.value}"`
+			: "the browser rejects it";
+		throw new Error(
+			`Malformed value "${value}" for input[type=${type}]: ${becomes}`,
+		);
+	}
+	return normalized;
+};
+
+/** The target's current content, as compared by `verifyFillEffect`. */
+export const readFillValue = (target: FillTarget): string =>
+	target.kind === "rich"
+		? getEditingHostText(target.element)
+		: target.element.value;
+
+/**
+ * True when the fill took effect: the target holds exactly `value`, or its
+ * content changed from `before` to something non-empty. The second case
+ * accepts fields that reformat what was typed (input masks, auto-casing,
+ * maxlength, editor autoformat); a framework that rejected the input leaves the
+ * content at `before` and still fails.
  */
 export const verifyFillEffect = (
-	element: HTMLElement,
+	target: FillTarget,
 	value: string,
-): boolean => (element as HTMLInputElement).value === value;
+	before: string,
+): boolean => {
+	const actual = readFillValue(target);
+	const expected = target.kind === "rich" ? normalizeEditorText(value) : value;
+	return actual === expected || (actual !== before && actual !== "");
+};
 
 /**
  * Fill strategy: clears the field and uses execCommand('insertText') so that
  * framework-level input handlers (e.g. React synthetic events) fire.
  */
 export const fillTextExecCommand = async (
-	element: HTMLElement,
+	element: HTMLInputElement | HTMLTextAreaElement,
 	value: string,
 ): Promise<void> => {
-	const el = element as HTMLInputElement | HTMLTextAreaElement;
-	el.focus();
-	el.select();
+	element.focus();
+	element.select();
 	document.execCommand("insertText", false, value);
+};
+
+const selectEditorContents = (host: HTMLElement): Selection => {
+	host.focus();
+	const selection = globalThis.getSelection();
+	if (!selection) {
+		throw new Error("No selection available in this document");
+	}
+	const range = document.createRange();
+	range.selectNodeContents(host);
+	selection.removeAllRanges();
+	selection.addRange(range);
+	return selection;
+};
+
+/**
+ * Rich-text fill strategy: selects the editor's contents and replaces them via
+ * execCommand, which runs the browser's own editing pipeline so editors that
+ * observe DOM mutations (Quill, ProseMirror) sync their models. Each line break
+ * becomes a paragraph, because "\n" inside insertText is handled
+ * inconsistently across editors.
+ */
+export const fillRichTextExecCommand = (
+	host: HTMLElement,
+	value: string,
+): void => {
+	selectEditorContents(host);
+	if (value === "") {
+		document.execCommand("delete");
+		return;
+	}
+	value.split(/\r?\n/).forEach((line, index) => {
+		if (index > 0) document.execCommand("insertParagraph");
+		if (line) document.execCommand("insertText", false, line);
+	});
+};
+
+/**
+ * Rich-text fill strategy for when execCommand is unavailable: offers the text
+ * as a cancelable `beforeinput` so editors that own their model can apply it,
+ * and otherwise replaces the selected contents directly and reports an `input`.
+ */
+export const fillRichTextInputEvents = (
+	host: HTMLElement,
+	value: string,
+): void => {
+	const selection = selectEditorContents(host);
+	const eventInit: InputEventInit = {
+		inputType: "insertText",
+		data: value,
+		bubbles: true,
+		composed: true,
+	};
+	const notCancelled = host.dispatchEvent(
+		new InputEvent("beforeinput", {
+			...eventInit,
+			cancelable: true,
+		}),
+	);
+	if (!notCancelled) return;
+
+	const range = selection.getRangeAt(0);
+	range.deleteContents();
+	const fragment = document.createDocumentFragment();
+	value.split(/\r?\n/).forEach((line, index) => {
+		if (index > 0) fragment.append(document.createElement("br"));
+		fragment.append(document.createTextNode(line));
+	});
+	range.insertNode(fragment);
+	range.collapse(false);
+	selection.removeAllRanges();
+	selection.addRange(range);
+	host.dispatchEvent(new InputEvent("input", eventInit));
 };
 
 /**
@@ -334,10 +546,9 @@ export const fillTextExecCommand = async (
  * dispatches input + change events. Works even when execCommand is disabled.
  */
 export const fillTextNativeSetter = (
-	element: HTMLElement,
+	el: HTMLInputElement | HTMLTextAreaElement,
 	value: string,
 ): void => {
-	const el = element as HTMLInputElement | HTMLTextAreaElement;
 	el.focus();
 
 	const prototype =
@@ -369,13 +580,6 @@ export const focusOnElement = (element: HTMLElement) => {
 	}
 };
 
-export const focusOnCoordinates = (x: number, y: number) => {
-	const element = document.elementFromPoint(x, y);
-	if (element && element instanceof HTMLElement) {
-		element.focus();
-	}
-};
-
 export const getInnerText = () => {
 	return document.body.innerText;
 };
@@ -388,11 +592,9 @@ export const hitEnterOnElementByReadablePath = async (element: HTMLElement) => {
 	}
 };
 
-export const hitEnterOnFocusedElement = async () => {
-	const element = document.activeElement;
-	if (element && element instanceof HTMLElement) {
-		await dispatchEnter(element);
-	}
+export const hitEnterOnElement = async (element: HTMLElement) => {
+	focusOnElement(element);
+	await dispatchEnter(element);
 };
 
 /**
