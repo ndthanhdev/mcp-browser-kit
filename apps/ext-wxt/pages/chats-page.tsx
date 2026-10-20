@@ -1,4 +1,4 @@
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { SessionListScreen } from "@/components/screens/session-list-screen";
 import { useAgentSessions } from "@/hooks/use-agent";
 import { hrefs } from "@/routes/paths";
@@ -6,7 +6,8 @@ import { hrefs } from "@/routes/paths";
 /** The list of chats. */
 export const ChatsPage = () => {
 	const { sessionId = "" } = useParams();
-	const { sessions } = useAgentSessions();
+	const navigate = useNavigate();
+	const { sessions, createSession } = useAgentSessions();
 
 	return (
 		<SessionListScreen
@@ -14,6 +15,11 @@ export const ChatsPage = () => {
 			activeSessionId={sessionId}
 			backHref={sessionId ? hrefs.chat(sessionId) : hrefs.home}
 			hrefForSession={hrefs.chat}
+			onNewChat={() => {
+				void createSession().then((created) =>
+					navigate(hrefs.chat(created.sessionId).slice(1)),
+				);
+			}}
 		/>
 	);
 };
