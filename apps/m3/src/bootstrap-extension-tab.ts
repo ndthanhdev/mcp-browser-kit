@@ -1,16 +1,10 @@
-import { Container } from "inversify";
-import { ExtensionTabLifecycle } from "./services/extension-tab-lifecycle";
+import { ExtensionTabLifecycle } from "@mcp-browser-kit/helper-extension-tab-lifecycle";
 
-// Create and configure the dependency injection container for tab context
-const tabContainer = new Container({
-	defaultScope: "Singleton",
+// Content-script entry: wire and start the tab half of the browser driver.
+//
+// keepAlive is on because this app's background holds the tRPC channel to the
+// local MCP server, which must outlive the service worker's idle timeout.
+// `ExtensionLifecycle` answers the pings from `bootstrap-extension.ts`.
+ExtensionTabLifecycle.start({
+	keepAlive: true,
 });
-
-// Setup ExtensionTabLifecycle service (includes browser driver setup)
-ExtensionTabLifecycle.setupContainer(tabContainer);
-
-// Resolve and start ExtensionTabLifecycle service
-const extensionTabLifecycle = tabContainer.get<ExtensionTabLifecycle>(
-	ExtensionTabLifecycle,
-);
-extensionTabLifecycle.start();

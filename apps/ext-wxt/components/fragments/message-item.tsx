@@ -16,16 +16,24 @@ export interface MessageItemProps {
 export const MessageItem = ({ item, expanded }: MessageItemProps) => {
 	switch (item.kind) {
 		case "user":
-			return <MessageBubble content={item.content} fromUser />;
+			return <MessageBubble content={item.content.trim()} fromUser />;
 
-		case "assistant":
-			// The caret marks a turn that is still producing text.
+		case "assistant": {
+			// Models often emit blank lines around a tool step. A row with no
+			// visible text renders nothing; the typing indicator already covers a
+			// turn that is working.
+			const content = item.content.trim();
+			if (!content) {
+				return null;
+			}
 			return (
 				<MessageBubble
-					content={item.streaming ? `${item.content}▌` : item.content}
+					content={content}
 					fromUser={false}
+					streaming={item.streaming}
 				/>
 			);
+		}
 
 		case "tool":
 			return <ToolActivity item={item} expanded={expanded} />;

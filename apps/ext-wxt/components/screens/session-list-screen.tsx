@@ -18,6 +18,7 @@ export interface SessionListScreenProps {
 	backHref: string;
 	/** Builds the anchor target for each chat row. */
 	hrefForSession: (sessionId: string) => string;
+	onNewChat: () => void;
 }
 
 /** Full-panel list of chats, reached from the thread screen's chats button. */
@@ -26,6 +27,7 @@ export const SessionListScreen = ({
 	activeSessionId,
 	backHref,
 	hrefForSession,
+	onNewChat,
 }: SessionListScreenProps) => (
 	<>
 		<AppBar position="static" color="default" elevation={0}>
@@ -53,7 +55,12 @@ export const SessionListScreen = ({
 					Chats
 				</Typography>
 				<Tooltip title="New chat">
-					<IconButton edge="end" color="inherit">
+					<IconButton
+						edge="end"
+						color="inherit"
+						aria-label="New chat"
+						onClick={onNewChat}
+					>
 						<AddIcon />
 					</IconButton>
 				</Tooltip>

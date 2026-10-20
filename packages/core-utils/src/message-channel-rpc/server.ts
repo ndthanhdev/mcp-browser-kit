@@ -1,5 +1,4 @@
 import type { ExtractProcedures, Func } from "@mcp-browser-kit/types";
-import * as R from "ramda";
 import type {
 	DeferMessage,
 	MessageChannelForRpcServer as MessageChannelRpcServerType,
@@ -14,6 +13,28 @@ import type {
  *   guarantees between them.
  */
 export type RpcDispatchMode = "queue" | "parallel";
+
+/**
+ * Walk a dotted procedure path, e.g. `"tools.click"`.
+ *
+ * Hand-rolled rather than `R.pathOr`: this module is bundled into every content
+ * script, in every frame of every page, and `import * as R from "ramda"` pulls
+ * the whole library in — a namespace import can't be tree-shaken. ~49 KB for one
+ * lookup.
+ */
+const resolveProcedure = (
+	procedures: unknown,
+	procedure: string,
+): Func | undefined => {
+	let current: unknown = procedures;
+	for (const segment of procedure.split(".")) {
+		if (current === null || typeof current !== "object") {
+			return undefined;
+		}
+		current = (current as Record<string, unknown>)[segment];
+	}
+	return typeof current === "function" ? (current as Func) : undefined;
+};
 
 export class MessageChannelRpcServer<
 	T extends {},
@@ -67,9 +88,7 @@ export class MessageChannelRpcServer<
 
 	handleDefer = async (message: DeferMessage): Promise<ResolveMessage> => {
 		const { procedure, args, id } = message;
-		const fn = R.pathOr(undefined, procedure.split("."), this.procedures) as
-			| Func
-			| undefined;
+		const fn = resolveProcedure(this.procedures, procedure);
 
 		if (!fn) {
 			return Promise.resolve({

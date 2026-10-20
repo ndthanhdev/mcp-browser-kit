@@ -38,7 +38,7 @@ export const FromAssistant: Story = {
 	},
 };
 
-/** Long content wraps and preserves newlines rather than overflowing. */
+/** Long content wraps rather than overflowing; Markdown lists render as lists. */
 export const MultilineFromAssistant: Story = {
 	args: {
 		content: [
@@ -49,5 +49,38 @@ export const MultilineFromAssistant: Story = {
 			"3. AVeryLongUnbrokenTokenThatMustWrapSomewhereOtherwiseItOverflows",
 		].join("\n"),
 		fromUser: false,
+	},
+};
+
+/** Assistant text is GFM: emphasis, code, links, and tables render. */
+export const MarkdownFromAssistant: Story = {
+	args: {
+		content: [
+			'Searched — the tab navigated to Google results for **"hello world"** ([google.com/search?q=hello+world](https://www.google.com/search?q=hello+world)).',
+			"",
+			"| Result | Domain |",
+			"| --- | --- |",
+			"| Hello, World! program | wikipedia.org |",
+			"",
+			"Run `getReadableElements` again to read the page.",
+		].join("\n"),
+		fromUser: false,
+	},
+};
+
+/** The caret follows the last block while text is still arriving. */
+export const StreamingFromAssistant: Story = {
+	args: {
+		content: "Looking for the search box on the **current tab**",
+		fromUser: false,
+		streaming: true,
+	},
+};
+
+/** User text is shown verbatim, Markdown syntax included. */
+export const MarkdownFromUser: Story = {
+	args: {
+		content: "type **bold** into the box",
+		fromUser: true,
 	},
 };

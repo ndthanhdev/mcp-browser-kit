@@ -43,6 +43,8 @@ const DURABLE_EVENT_TYPES = new Set<AgentProgressEvent["type"]>([
 	"session-ended",
 	"user-message",
 	"turn-started",
+	// Only the final `done` messages: deltas go through `emitTransient`.
+	"assistant-message",
 	"tool-call",
 	"tool-result",
 	"turn-completed",
@@ -203,12 +205,15 @@ export class BrowserAgentUseCase implements BrowserAgentInputPort {
 				abortSignal: abortController.signal,
 			});
 
-			let assistantText = "";
+			// Text accumulated per text block. A turn spans several model steps,
+			// each with its own block(s) separated by tool calls, so every block
+			// becomes its own transcript message.
+			const blockText = new Map<string, string>();
 			for await (const part of result.fullStream) {
 				switch (part.type) {
 					case "text-delta": {
 						const delta = part.text ?? "";
-						assistantText += delta;
+						blockText.set(part.id, (blockText.get(part.id) ?? "") + delta);
 						// Transient delta — fanned out but NOT persisted to history.
 						this.emitTransient({
 							type: "assistant-message",
@@ -217,6 +222,25 @@ export class BrowserAgentUseCase implements BrowserAgentInputPort {
 							at: Date.now(),
 							content: delta,
 							done: false,
+						});
+						break;
+					}
+					case "text-end": {
+						const content = blockText.get(part.id) ?? "";
+						blockText.delete(part.id);
+						// Models pad around tool steps with whitespace-only blocks; they
+						// carry nothing worth keeping in the transcript.
+						if (!content.trim()) {
+							break;
+						}
+						// The block's final message is durable.
+						this.emit({
+							type: "assistant-message",
+							sessionId,
+							turnId,
+							at: Date.now(),
+							content,
+							done: true,
 						});
 						break;
 					}
@@ -240,15 +264,6 @@ export class BrowserAgentUseCase implements BrowserAgentInputPort {
 			const { messages: responseMessages } = await result.response;
 			entry.messages.push(...responseMessages);
 
-			// Final coalesced assistant message is durable.
-			this.emit({
-				type: "assistant-message",
-				sessionId,
-				turnId,
-				at: Date.now(),
-				content: assistantText,
-				done: true,
-			});
 			this.emit({
 				type: "turn-completed",
 				sessionId,

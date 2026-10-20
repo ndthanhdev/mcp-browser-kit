@@ -1,5 +1,7 @@
 import type { AgentSession } from "@mcp-browser-kit/core-extension";
 import ForumIcon from "@mui/icons-material/Forum";
+import SettingsIcon from "@mui/icons-material/Settings";
+import Alert from "@mui/material/Alert";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
@@ -18,6 +20,13 @@ export interface ChatThreadScreenProps {
 	draft: string;
 	/** Anchor target for the chats button. */
 	chatsHref: string;
+	/** Anchor target for the settings button. */
+	settingsHref: string;
+	onDraftChange: (draft: string) => void;
+	onSend: () => void;
+	onStop: () => void;
+	/** Shown above the composer when the agent could not be reached. */
+	error?: string;
 }
 
 /** The default sidepanel screen: one session's transcript plus its composer. */
@@ -28,6 +37,11 @@ export const ChatThreadScreen = ({
 	expandedToolIds,
 	draft,
 	chatsHref,
+	settingsHref,
+	onDraftChange,
+	onSend,
+	onStop,
+	error,
 }: ChatThreadScreenProps) => (
 	<>
 		<AppBar position="static" color="default" elevation={0}>
@@ -57,6 +71,17 @@ export const ChatThreadScreen = ({
 				>
 					{session.title ?? "New chat"}
 				</Typography>
+				<Tooltip title="Settings">
+					<IconButton
+						edge="end"
+						color="inherit"
+						component="a"
+						href={settingsHref}
+						aria-label="Settings"
+					>
+						<SettingsIcon />
+					</IconButton>
+				</Tooltip>
 			</Toolbar>
 		</AppBar>
 
@@ -75,6 +100,18 @@ export const ChatThreadScreen = ({
 			/>
 		</Box>
 
-		<Composer running={session.status === "running"} draft={draft} />
+		{error ? (
+			<Alert severity="error" square>
+				{error}
+			</Alert>
+		) : null}
+
+		<Composer
+			running={session.status === "running"}
+			draft={draft}
+			onDraftChange={onDraftChange}
+			onSend={onSend}
+			onStop={onStop}
+		/>
 	</>
 );

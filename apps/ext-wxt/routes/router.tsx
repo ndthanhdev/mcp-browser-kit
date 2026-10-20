@@ -2,6 +2,7 @@ import { createHashRouter } from "react-router";
 import { RouteErrorScreen } from "@/components/screens/route-error-screen";
 import { ChatPage } from "@/pages/chat-page";
 import { ChatsPage } from "@/pages/chats-page";
+import { SettingsPage } from "@/pages/settings-page";
 import { routePaths } from "@/routes/paths";
 import { SidepanelLayout } from "@/routes/sidepanel-layout";
 
@@ -26,6 +27,10 @@ export const router = createHashRouter([
 			{
 				path: routePaths.chat,
 				element: <ChatPage />,
+			},
+			{
+				path: routePaths.settings,
+				element: <SettingsPage />,
 			},
 			{
 				path: "*",

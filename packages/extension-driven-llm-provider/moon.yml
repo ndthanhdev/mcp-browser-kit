@@ -4,3 +4,9 @@ dependsOn:
 - types
 - core-extension
 - core-utils
+tags:
+- vitest
+tasks:
+  test:
+    deps:
+    - ~:vitest-test

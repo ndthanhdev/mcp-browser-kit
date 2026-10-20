@@ -11,10 +11,12 @@
 export const routePaths = {
 	chats: "/chats",
 	chat: "/chats/:sessionId",
+	settings: "/settings",
 } as const;
 
 export const hrefs = {
 	home: "#/",
 	chats: "#/chats",
 	chat: (sessionId: string) => `#/chats/${sessionId}`,
+	settings: "#/settings",
 };

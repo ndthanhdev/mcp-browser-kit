@@ -7,57 +7,116 @@ import {
 import type { LanguageModel } from "ai";
 import { type Container, injectable } from "inversify";
 import {
-	AGENT_MODELS,
-	DEFAULT_MODEL_ID,
+	type Connection,
+	parseCompositeModelId,
 	readAgentSettings,
+	toCompositeModelId,
 } from "./agent-settings-storage";
+import { fetchModelIds } from "./model-list";
 
-/** OpenRouter's OpenAI-compatible endpoint. */
-const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+/** How long a connection's `/models` answer is reused. */
+const MODEL_LIST_TTL_MS = 5 * 60 * 1000;
 
 /**
- * Driven adapter realizing {@link LlmProviderOutputPortType} with OpenRouter —
- * one API key fronts many models (Claude, GPT, …). OpenRouter is OpenAI-API
- * compatible, so it is reached through `@ai-sdk/openai-compatible` (version-matched
- * to `ai@7-beta`); the dedicated `@openrouter/ai-sdk-provider` still targets the
- * AI SDK v6 provider spec and is incompatible with this `ai` version.
+ * Driven adapter realizing {@link LlmProviderOutputPortType} over user-defined
+ * OpenAI-compatible connections.
  *
- * Pure JS (no sandbox/subprocess), so unlike the previous `@ai-sdk/harness`
- * adapter it runs in the MV3 background service worker and IS wired into the
- * extension container. The API key + selected model are read from extension
- * storage (`chrome.storage.local`, via `webextension-polyfill`), populated by the
- * settings page under `apps/`.
+ * Every connection goes through `@ai-sdk/openai-compatible`. Port ids are
+ * composite `"<connectionId>:<modelId>"`, because model ids are only unique
+ * within a connection.
  */
 @injectable()
 export class DrivenLlmProvider implements LlmProviderOutputPortType {
-	/** Bind this adapter to {@link LlmProviderOutputPort}. */
 	static setupContainer(container: Container): void {
 		container
 			.bind<LlmProviderOutputPortType>(LlmProviderOutputPort)
 			.to(DrivenLlmProvider);
 	}
 
-	listProviders = (): LlmProviderDescriptor[] =>
-		AGENT_MODELS.map((model) => ({
-			id: model.id,
-			label: model.label,
-		}));
+	private readonly modelCache = new Map<
+		string,
+		{
+			key: string;
+			at: number;
+			modelIds: string[];
+		}
+	>();
+
+	/** Models from every connection, discovered live with the manual list as fallback. */
+	listProviders = async (): Promise<LlmProviderDescriptor[]> => {
+		const { connections } = await readAgentSettings();
+		const lists = await Promise.all(
+			connections.map(async (connection) => ({
+				connection,
+				modelIds: await this.modelIdsFor(connection),
+			})),
+		);
+		return lists.flatMap(({ connection, modelIds }) =>
+			modelIds.map((modelId) => ({
+				id: toCompositeModelId(connection.id, modelId),
+				label: `${modelId} · ${connection.name}`,
+			})),
+		);
+	};
 
 	getModel = async (providerId?: string): Promise<LanguageModel> => {
 		const settings = await readAgentSettings();
-		const apiKey = settings.openRouterApiKey;
-		if (!apiKey) {
+		const composite =
+			providerId ??
+			settings.selectedModel ??
+			(await this.listProviders())[0]?.id;
+		if (!composite) {
 			throw new Error(
-				"OpenRouter API key is not set. Open the extension settings to add it.",
+				"No language model is configured. Open the extension settings to add a connection and choose a model.",
 			);
 		}
-		const modelId = providerId ?? settings.modelId ?? DEFAULT_MODEL_ID;
-		const openrouter = createOpenAICompatible({
-			name: "openrouter",
-			// biome-ignore lint/style/useNamingConvention: `baseURL` is the provider's required option key.
-			baseURL: OPENROUTER_BASE_URL,
-			apiKey,
-		});
-		return openrouter(modelId);
+		const parsed = parseCompositeModelId(composite);
+		if (!parsed) {
+			throw new Error(
+				`Malformed model id "${composite}" — expected "<connection>:<model>".`,
+			);
+		}
+		const connection = settings.connections.find(
+			(candidate) => candidate.id === parsed.connectionId,
+		);
+		if (!connection) {
+			throw new Error(
+				`The connection "${parsed.connectionId}" no longer exists. Open the extension settings and choose another model.`,
+			);
+		}
+		return createOpenAICompatible({
+			name: connection.id,
+			// biome-ignore lint/style/useNamingConvention: the provider's required option key.
+			baseURL: connection.baseUrl,
+			apiKey: connection.apiKey,
+			headers: connection.headers,
+		})(parsed.modelId);
+	};
+
+	private modelIdsFor = async (connection: Connection): Promise<string[]> => {
+		// Re-fetch when anything that affects the answer changes.
+		const key = JSON.stringify([
+			connection.baseUrl,
+			connection.apiKey,
+			connection.headers,
+		]);
+		const cached = this.modelCache.get(connection.id);
+		if (
+			cached &&
+			cached.key === key &&
+			Date.now() - cached.at < MODEL_LIST_TTL_MS
+		) {
+			return cached.modelIds;
+		}
+		const result = await fetchModelIds(connection);
+		if (result.status === "ok" && result.modelIds.length > 0) {
+			this.modelCache.set(connection.id, {
+				key,
+				at: Date.now(),
+				modelIds: result.modelIds,
+			});
+			return result.modelIds;
+		}
+		return connection.models ?? [];
 	};
 }

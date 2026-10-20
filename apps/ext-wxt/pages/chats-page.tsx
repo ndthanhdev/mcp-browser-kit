@@ -1,18 +1,25 @@
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { SessionListScreen } from "@/components/screens/session-list-screen";
-import { mockActiveSessionId, mockSessions } from "@/mocks/agent-fixtures";
+import { useAgentSessions } from "@/hooks/use-agent";
 import { hrefs } from "@/routes/paths";
 
 /** The list of chats. */
 export const ChatsPage = () => {
-	const { sessionId = mockActiveSessionId } = useParams();
+	const { sessionId = "" } = useParams();
+	const navigate = useNavigate();
+	const { sessions, createSession } = useAgentSessions();
 
 	return (
 		<SessionListScreen
-			sessions={mockSessions}
+			sessions={sessions ?? []}
 			activeSessionId={sessionId}
-			backHref={hrefs.chat(sessionId)}
+			backHref={sessionId ? hrefs.chat(sessionId) : hrefs.home}
 			hrefForSession={hrefs.chat}
+			onNewChat={() => {
+				void createSession().then((created) =>
+					navigate(hrefs.chat(created.sessionId).slice(1)),
+				);
+			}}
 		/>
 	);
 };
