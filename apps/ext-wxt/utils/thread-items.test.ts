@@ -140,6 +140,56 @@ describe("streaming assistant text", () => {
 		});
 	});
 
+	it("closes the interrupted row when a tool call starts", () => {
+		const { items } = buildThread([
+			delta("\n\n"),
+			toolCall("getReadableElements"),
+			delta("\n\n"),
+			toolCall("loadTabContext"),
+		]);
+
+		expect(items.map((item) => item.kind)).toEqual([
+			"assistant",
+			"tool",
+			"assistant",
+			"tool",
+		]);
+		expect(items[0]).toMatchObject({
+			streaming: false,
+		});
+		expect(items[2]).toMatchObject({
+			streaming: false,
+		});
+	});
+
+	it("closes the interrupted row on the next user turn, error, or abort", () => {
+		for (const interrupt of [
+			userMessage("again"),
+			{
+				type: "error",
+				sessionId: "s1",
+				turnId: "t1",
+				at: at(),
+				message: "boom",
+			},
+			{
+				type: "aborted",
+				sessionId: "s1",
+				turnId: "t1",
+				at: at(),
+			},
+		] as AgentProgressEvent[]) {
+			const { items } = buildThread([
+				delta("partial"),
+				interrupt,
+			]);
+
+			expect(items[0]).toMatchObject({
+				streaming: false,
+			});
+		}
+	});
+
 	it("starts a new row for the next user turn", () => {
 		const { items } = buildThread([
 			delta("one"),
@@ -354,5 +404,49 @@ describe("hydration and live application agree", () => {
 			"tool",
 			"assistant",
 		]);
+	});
+
+	it("keeps each text block of a multi-step turn in its own row", () => {
+		const live = buildThread([
+			userMessage("fill the search box"),
+			delta("Reading the page."),
+			finalMessage("Reading the page."),
+			toolCall("getReadableElements"),
+			toolResult("getReadableElements", {
+				ok: true,
+			}),
+			delta("\n\nFilled it."),
+			finalMessage("\n\nFilled it."),
+		]);
+		// History keeps only the final messages, never the deltas.
+		const hydrated = buildThread([
+			userMessage("fill the search box"),
+			finalMessage("Reading the page."),
+			toolCall("getReadableElements"),
+			toolResult("getReadableElements", {
+				ok: true,
+			}),
+			finalMessage("\n\nFilled it."),
+		]);
+
+		for (const { items } of [
+			live,
+			hydrated,
+		]) {
+			expect(items.map((item) => item.kind)).toEqual([
+				"user",
+				"assistant",
+				"tool",
+				"assistant",
+			]);
+			expect(items[1]).toMatchObject({
+				content: "Reading the page.",
+				streaming: false,
+			});
+			expect(items[3]).toMatchObject({
+				content: "\n\nFilled it.",
+				streaming: false,
+			});
+		}
 	});
 });

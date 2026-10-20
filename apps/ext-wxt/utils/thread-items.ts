@@ -9,7 +9,7 @@ import type { ThreadItem } from "@/types/thread-item";
  * reason this exists:
  *
  * - Assistant text arrives as many `assistant-message` deltas plus one final
- *   coalesced message. The UI wants a single growing row.
+ *   message per text block. The UI wants a single growing row per block.
  * - A tool invocation is two events (`tool-call`, `tool-result`). The UI wants
  *   one row that fills in.
  * - Lifecycle events (`turn-started`, `session-updated`, …) render as nothing.
@@ -33,6 +33,25 @@ const toolRowId = (turnId: string | undefined, toolName: string, at: number) =>
 	`${turnId ?? "no-turn"}:${toolName}:${at}`;
 
 /**
+ * The rows with the one being streamed into, if any, marked finished. Every
+ * event that ends a stream goes through this; a row left `streaming` keeps its
+ * caret forever, since nothing else will close it.
+ */
+const closeStream = ({ items, streamingIndex }: ThreadState): ThreadItem[] => {
+	if (streamingIndex === undefined) {
+		return items;
+	}
+	const current = items[streamingIndex];
+	if (current?.kind !== "assistant") {
+		return items;
+	}
+	return items.with(streamingIndex, {
+		...current,
+		streaming: false,
+	});
+};
+
+/**
  * Fold one event onto the thread, returning new state (or the same object when
  * the event renders as nothing, so React can skip the update).
  */
@@ -44,7 +63,7 @@ export const applyAgentEvent = (
 		case "user-message":
 			return {
 				items: [
-					...state.items,
+					...closeStream(state),
 					{
 						kind: "user",
 						id: `${event.turnId ?? event.sessionId}:user:${event.at}`,
@@ -57,8 +76,8 @@ export const applyAgentEvent = (
 			};
 
 		case "assistant-message": {
-			// The final coalesced message repeats the whole text, so it replaces
-			// rather than appends — otherwise every turn renders twice over.
+			// The block's final message repeats its whole text, so it replaces
+			// rather than appends — otherwise every block renders twice over.
 			if (event.done) {
 				if (state.streamingIndex === undefined) {
 					return {
@@ -123,9 +142,8 @@ export const applyAgentEvent = (
 
 		case "tool-call":
 			return {
-				...state,
 				items: [
-					...state.items,
+					...closeStream(state),
 					{
 						kind: "tool",
 						id: toolRowId(event.turnId, event.toolName, event.at),
@@ -173,7 +191,7 @@ export const applyAgentEvent = (
 		case "error":
 			return {
 				items: [
-					...state.items,
+					...closeStream(state),
 					{
 						kind: "error",
 						id: `${event.turnId ?? event.sessionId}:error:${event.at}`,
@@ -187,7 +205,7 @@ export const applyAgentEvent = (
 		case "aborted":
 			return {
 				items: [
-					...state.items,
+					...closeStream(state),
 					{
 						kind: "aborted",
 						id: `${event.turnId ?? event.sessionId}:aborted:${event.at}`,
@@ -203,18 +221,8 @@ export const applyAgentEvent = (
 			if (state.streamingIndex === undefined) {
 				return state;
 			}
-			const items = [
-				...state.items,
-			];
-			const current = items[state.streamingIndex];
-			if (current?.kind === "assistant") {
-				items[state.streamingIndex] = {
-					...current,
-					streaming: false,
-				};
-			}
 			return {
-				items,
+				items: closeStream(state),
 			};
 		}
 

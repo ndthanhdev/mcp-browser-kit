@@ -57,7 +57,8 @@ export type AgentProgressEvent =
 			content: string;
 			/**
 			 * `false`/absent for an incremental `text-delta`; `true` on the final
-			 * coalesced message for the turn (the durable transcript entry).
+			 * message for one text block (the durable transcript entry). A turn
+			 * yields one per block, and tool calls separate the blocks.
 			 */
 			done?: boolean;
 	  })
