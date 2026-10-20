@@ -2,6 +2,9 @@ $schema: https://moonrepo.dev/schemas/tasks.json
 fileGroups:
   vitest-sources:
   - src/**/*
+  # vitest configs alias workspace packages to their TypeScript sources, so a
+  # change in a sibling package must invalidate the cached run.
+  - /packages/*/src/**/*
   vitest-config:
   - vitest.config.ts
 tasks:
