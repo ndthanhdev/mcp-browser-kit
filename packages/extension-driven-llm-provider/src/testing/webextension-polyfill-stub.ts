@@ -1,12 +1,6 @@
 /**
  * In-memory stand-in for `webextension-polyfill`, aliased in by
- * `vitest.config.ts`. The real polyfill throws on import outside an extension
- * ("This script should only be loaded in a browser extension"), which would
- * fail any test file that transitively imports a module touching
- * `browser.storage`.
- *
- * Only the surface this package actually uses is implemented. Tests that care
- * about persisted state drive it through {@link resetBrowserStub}.
+ * `vitest.config.ts`. Implements only `storage.local`.
  */
 
 let store: Record<string, unknown> = {};

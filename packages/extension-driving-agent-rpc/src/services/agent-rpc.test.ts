@@ -141,9 +141,8 @@ describe("agent RPC over a runtime port", () => {
 
 	it("surfaces an agent error as a rejection on the UI side", async () => {
 		const { agent } = fakeAgent();
-		// A plain function, not `vi.fn().mockRejectedValue(...)`: the spy tracks
-		// settled results on a derived promise nobody handles, which surfaces as a
-		// spurious unhandled rejection even though the RPC server catches this.
+		// Not `vi.fn().mockRejectedValue(...)`: the spy's derived promise raises a
+		// spurious unhandled rejection.
 		const throwing = {
 			...agent,
 			listSessions: async () => {
@@ -332,7 +331,6 @@ describe("controller lifecycle", () => {
 		controller.start(gate);
 		controller.start(gate);
 
-		// Two registrations would accept the same port twice and double every event.
 		fireOnConnect(pair.background);
 		expect(agent.subscribe).toHaveBeenCalledOnce();
 	});
@@ -349,13 +347,6 @@ describe("controller lifecycle", () => {
 });
 
 describe("connecting before the agent is ready", () => {
-	/**
-	 * The bug this exists to prevent: MV3 only delivers `onConnect` to listeners
-	 * registered during the worker's initial synchronous evaluation, and the
-	 * connection that *wakes* the worker is dispatched while composition is still
-	 * suspended on an `await`. Registering after that window drops exactly the
-	 * connection that caused the wake — every first open of the sidepanel.
-	 */
 	it("serves a port that arrived before the controller started", async () => {
 		const harness = fakeAgent();
 		const controller = new ExtensionDrivingAgentRpc(
@@ -363,8 +354,6 @@ describe("connecting before the agent is ready", () => {
 			silentLoggerFactory,
 		);
 
-		// Gate is constructed first, as it is in the background's initial
-		// evaluation. The connection lands while the agent is still being built.
 		const gate = new AgentPortGate();
 		const pair = createFakePortPair();
 		setConnectHandler(() => pair.ui);
@@ -374,7 +363,6 @@ describe("connecting before the agent is ready", () => {
 		fireOnConnect(pair.background);
 		expect(gate.bufferedCount).toBe(1);
 
-		// Composition finishes late; the buffered port is replayed.
 		controller.start(gate);
 
 		expect(await pending).toEqual([
@@ -396,11 +384,6 @@ describe("connecting before the agent is ready", () => {
 });
 
 describe("when the agent never starts", () => {
-	/**
-	 * Buffering a port forever is worse than refusing it: the UI waits with
-	 * neither a result nor an error. That is how a disabled feature flag showed
-	 * up as a chat stuck on "Loading…".
-	 */
 	it("fails in-flight calls instead of hanging when the gate refuses", async () => {
 		const gate = new AgentPortGate();
 		const pair = createFakePortPair();

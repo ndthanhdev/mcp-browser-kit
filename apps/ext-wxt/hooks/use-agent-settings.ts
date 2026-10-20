@@ -13,11 +13,8 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
- * Settings state for the sidepanel.
- *
- * Talks to extension storage directly rather than through the agent RPC: the
- * sidepanel and background share `chrome.storage.local`, so storage is the
- * source of truth.
+ * Settings state for the sidepanel, read from the extension storage it shares
+ * with the background.
  */
 export const useAgentSettings = () => {
 	const provider = useRef(new DrivenLlmProvider()).current;

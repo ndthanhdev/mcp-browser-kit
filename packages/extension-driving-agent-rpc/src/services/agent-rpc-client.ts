@@ -18,15 +18,9 @@ export type AgentUnsubscribe = () => void;
 /**
  * UI-side handle on the background's agent.
  *
- * Mirrors {@link import("@mcp-browser-kit/core-extension").BrowserAgentInputPort}
- * so a component can't tell it is talking across a port — except for one thing
- * the caller must handle: **the connection can drop underneath it**.
- *
- * MV3 terminates an idle service worker after ~30s. When it does, the port
- * disconnects and the agent's in-memory session registry is gone. Reconnecting
- * is automatic (the next call revives the worker), but any state the UI was
- * holding is now stale, so {@link onReconnect} fires and the UI is expected to
- * re-hydrate via `listSessions`/`getHistory` rather than trusting its cache.
+ * Mirrors {@link import("@mcp-browser-kit/core-extension").BrowserAgentInputPort}.
+ * The port drops when MV3 evicts the idle worker, losing every session; the
+ * next call reconnects and {@link onReconnect} fires so the UI can re-hydrate.
  */
 export class AgentRpcClient {
 	private transport?: RuntimePortTransport;
@@ -108,10 +102,7 @@ export class AgentRpcClient {
 
 	private call<TResult>(method: string, args: unknown[]): Promise<TResult> {
 		const rpc = this.ensureConnected();
-		// `MessageChannelRpcClient.call` derives its argument type from the method
-		// name literal. This class already states the typed surface above, so it is
-		// narrowed to a plain by-name signature here rather than threaded through
-		// the generic a second time.
+		// The typed surface is declared above; call by name here.
 		return (
 			rpc as unknown as {
 				call: (request: {
@@ -146,19 +137,15 @@ export class AgentRpcClient {
 		});
 
 		transport.onDisconnect(() => {
-			// Fail in-flight calls. A dead port can never deliver their `resolve`
-			// frames, so leaving them pending means the UI waits forever with
-			// neither a result nor an error — which is how a background that never
-			// registered a listener showed up as a chat stuck on "Loading…".
+			// A dead port never delivers their `resolve` frames.
 			rpc.rejectPending(
 				new Error(
 					"The extension background disconnected before answering. It may have been restarted.",
 				),
 			);
 
-			// Don't reconnect here: the service worker may have been evicted
-			// deliberately, and an eager reconnect would revive it and defeat the
-			// point. The next call reconnects lazily.
+			// Reconnect lazily on the next call; an eager reconnect would revive
+			// an evicted worker.
 			if (this.transport === transport) {
 				this.transport = undefined;
 				this.rpc = undefined;

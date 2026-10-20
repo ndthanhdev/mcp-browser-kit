@@ -3,19 +3,11 @@ import type { ThreadItem } from "@/types/thread-item";
 
 /**
  * Fold an {@link AgentProgressEvent} stream into renderable {@link ThreadItem}
- * rows.
+ * rows: one growing row per assistant text block, one row per tool call and
+ * result, nothing for lifecycle events.
  *
- * The stream and the view model disagree in three ways, which is the whole
- * reason this exists:
- *
- * - Assistant text arrives as many `assistant-message` deltas plus one final
- *   message per text block. The UI wants a single growing row per block.
- * - A tool invocation is two events (`tool-call`, `tool-result`). The UI wants
- *   one row that fills in.
- * - Lifecycle events (`turn-started`, `session-updated`, …) render as nothing.
- *
- * Pure and total: called both to hydrate from `getHistory` and to apply live
- * events, so the same transcript must result either way.
+ * Must stay pure: hydrating from `getHistory` and applying live events must
+ * yield the same transcript.
  */
 
 /** Rows plus the bookkeeping needed to keep folding events onto them. */
@@ -32,11 +24,7 @@ export const emptyThread = (): ThreadState => ({
 const toolRowId = (turnId: string | undefined, toolName: string, at: number) =>
 	`${turnId ?? "no-turn"}:${toolName}:${at}`;
 
-/**
- * The rows with the one being streamed into, if any, marked finished. Every
- * event that ends a stream goes through this; a row left `streaming` keeps its
- * caret forever, since nothing else will close it.
- */
+/** The rows with the one being streamed into, if any, marked finished. */
 const closeStream = ({ items, streamingIndex }: ThreadState): ThreadItem[] => {
 	if (streamingIndex === undefined) {
 		return items;
@@ -71,13 +59,12 @@ export const applyAgentEvent = (
 						content: event.content,
 					},
 				],
-				// A new user turn ends any previous stream.
 				streamingIndex: undefined,
 			};
 
 		case "assistant-message": {
 			// The block's final message repeats its whole text, so it replaces
-			// rather than appends — otherwise every block renders twice over.
+			// rather than appends.
 			if (event.done) {
 				if (state.streamingIndex === undefined) {
 					return {
@@ -152,15 +139,12 @@ export const applyAgentEvent = (
 						args: event.args as unknown[],
 					},
 				],
-				// A tool call interrupts the assistant's prose; anything after it is a
-				// new message rather than a continuation of the previous row.
 				streamingIndex: undefined,
 			};
 
 		case "tool-result": {
-			// Events carry no call id, so a result is matched to the most recent
-			// unresolved call of the same tool. Steps are sequential within a turn,
-			// so the newest pending call is the right one.
+			// Events carry no call id; steps are sequential within a turn, so match
+			// the newest unresolved call of the same tool.
 			const index = state.items.findLastIndex(
 				(item) =>
 					item.kind === "tool" &&
@@ -216,8 +200,7 @@ export const applyAgentEvent = (
 			};
 
 		case "turn-completed": {
-			// Close any row still marked streaming: `turn-completed` can arrive
-			// without a final `assistant-message` when the turn ended on a tool call.
+			// The turn can end on a tool call, without a final `assistant-message`.
 			if (state.streamingIndex === undefined) {
 				return state;
 			}
@@ -227,7 +210,6 @@ export const applyAgentEvent = (
 		}
 
 		default:
-			// Session lifecycle and turn-started render as nothing.
 			return state;
 	}
 };

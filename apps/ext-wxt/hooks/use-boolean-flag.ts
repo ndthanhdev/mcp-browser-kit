@@ -6,13 +6,7 @@ import type { BooleanFlagKey } from "@mcp-browser-kit/core-feature-flags";
 import { DrivenFeatureFlagsOpenFeatureWeb } from "@mcp-browser-kit/driven-feature-flags/web";
 import { useEffect, useState } from "react";
 
-/**
- * One flag evaluator shared by the whole sidepanel document.
- *
- * Module-scoped rather than per-hook: `start()` initialises the OpenFeature
- * provider, and doing that once per component that reads a flag would re-run it
- * on every mount.
- */
+/** One flag evaluator per sidepanel document, so the provider starts once. */
 const started = (async () => {
 	const container = createCoreExtensionContainer();
 	DrivenFeatureFlagsOpenFeatureWeb.setupContainer(
@@ -24,12 +18,7 @@ const started = (async () => {
 	return flags;
 })();
 
-/**
- * Read a boolean feature flag.
- *
- * Returns `undefined` while the provider is starting, so callers can tell
- * "not known yet" from "off" and avoid flashing gated UI.
- */
+/** Read a boolean feature flag; `undefined` while the provider is starting. */
 export const useBooleanFlag = (
 	flagKey: BooleanFlagKey,
 ): boolean | undefined => {

@@ -2,12 +2,7 @@ import type { Runtime } from "webextension-polyfill";
 
 /**
  * In-memory stand-in for `webextension-polyfill`, aliased in by
- * `vitest.config.ts`. The real polyfill throws on import outside an extension.
- *
- * Only `runtime.connect` / `runtime.onConnect` are implemented — the surface
- * this package uses. Tests install a connect handler with
- * {@link setConnectHandler} to decide what port a `connect()` call yields, which
- * is how service-worker eviction is simulated.
+ * `vitest.config.ts`. Implements only `runtime.connect` / `runtime.onConnect`.
  */
 
 type ConnectHandler = (info: { name?: string }) => Runtime.Port;

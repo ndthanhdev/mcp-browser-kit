@@ -54,8 +54,6 @@ export const Composer = ({
 					disabled={running || disabled}
 					onChange={(event) => onDraftChange(event.target.value)}
 					onKeyDown={(event) => {
-						// Enter sends; Shift+Enter inserts a newline. The panel is narrow
-						// and most instructions are one line, so sending is the common case.
 						if (event.key === "Enter" && !event.shiftKey) {
 							event.preventDefault();
 							if (canSend) {

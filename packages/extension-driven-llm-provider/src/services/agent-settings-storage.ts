@@ -1,10 +1,8 @@
 import browser from "webextension-polyfill";
 
 /**
- * `chrome.storage.local` key the agent settings live under.
- *
- * Versioned in the key rather than migrated: older shapes are ignored, so
- * upgrading resets the settings.
+ * `chrome.storage.local` key the agent settings live under. Bump the version
+ * when the shape changes; older shapes are ignored.
  */
 export const AGENT_SETTINGS_STORAGE_KEY = "mbk.agent.settings.v4";
 

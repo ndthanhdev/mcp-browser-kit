@@ -21,16 +21,9 @@ interface AgentEventData {
  * Adapts a `browser.runtime.Port` to the `MessageChannel` shape the
  * `MessageChannelRpcServer`/`Client` in `core-utils` expect.
  *
- * The port carries two kinds of traffic multiplexed by message key: RPC
- * `defer`/`resolve` frames, and unsolicited `agentEvent` pushes. They share one
- * port rather than opening two, because MV3 uses port disconnection to detect a
- * dead peer — two ports means two lifecycles to keep in sync for no benefit.
- *
- * Both directions are Emittery-backed, matching `EmitteryMessageChannel`
- * elsewhere in the monorepo. Inbound port messages are re-emitted on `incoming`;
- * anything emitted on `outgoing` is forwarded to `port.postMessage`. Nothing is
- * buffered, so a frame emitted after disconnect is dropped — the right
- * behaviour for a UI that has gone away.
+ * One port carries both RPC `defer`/`resolve` frames and `agentEvent` pushes,
+ * multiplexed by message key, so there is a single lifecycle to track. Frames
+ * emitted after disconnect are dropped.
  */
 export class RuntimePortTransport {
 	/** Wire frames arriving from the peer, keyed by frame type. */
@@ -80,9 +73,7 @@ export class RuntimePortTransport {
 				[key]: payload,
 			});
 		} catch {
-			// The peer disconnected between the check and the post. Nothing useful
-			// to do: RPC callers never resolve (the UI unmounts anyway) and event
-			// pushes are fire-and-forget.
+			// The peer disconnected between the check and the post.
 			this.disconnected = true;
 		}
 	};
