@@ -1,5 +1,8 @@
 import "core-js/proposals";
-import { FeatureFlagsOutputPort } from "@mcp-browser-kit/core-extension";
+import {
+	BrowserDriverOutputPort,
+	FeatureFlagsOutputPort,
+} from "@mcp-browser-kit/core-extension";
 import {
 	AgentPortGate,
 	ExtensionDrivingAgentRpc,
@@ -91,6 +94,9 @@ const startAgent = async (gate: AgentPortGate) => {
 		return;
 	}
 
+	// Binds the tab RPC client the content-script tools call through; until
+	// then every one of them fails with "MessageChannel not initialized".
+	container.get<BrowserDriverOutputPort>(BrowserDriverOutputPort).linkRpc();
 	container.get<ExtensionDrivingAgentRpc>(ExtensionDrivingAgentRpc).start(gate);
 };
 
