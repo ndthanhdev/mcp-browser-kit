@@ -2,8 +2,8 @@
 	"name": "@mcp-browser-kit/m2",
 	"type": "module",
 	"devDependencies": {
-		"@modelcontextprotocol/sdk": "^1.31.0",
+		"@modelcontextprotocol/sdk": "^1.32.1",
 		"typescript": "^5.9.3",
-		"web-ext": "^9.3.0"
+		"web-ext": "^9.4.0"
 	}
 }
