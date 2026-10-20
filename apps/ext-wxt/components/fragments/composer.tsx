@@ -8,54 +8,75 @@ import TextField from "@mui/material/TextField";
 export interface ComposerProps {
 	/** A turn is in flight: the composer offers Stop instead of Send. */
 	running: boolean;
-	/** Text shown in the input. Presentational — nothing edits it. */
+	/** Text shown in the input. */
 	draft: string;
+	onDraftChange: (draft: string) => void;
+	onSend: () => void;
+	onStop: () => void;
+	/** No session yet, or the agent is unreachable. */
+	disabled?: boolean;
 }
 
-/** Bottom-pinned input. Visual only: it holds no state and sends nothing. */
-export const Composer = ({ running, draft }: ComposerProps) => (
-	<Box
-		sx={{
-			p: 1,
-			borderTop: 1,
-			borderColor: "divider",
-			bgcolor: "background.paper",
-		}}
-	>
-		<Stack
-			direction="row"
-			spacing={1}
+/** Bottom-pinned input for the open thread. */
+export const Composer = ({
+	running,
+	draft,
+	onDraftChange,
+	onSend,
+	onStop,
+	disabled = false,
+}: ComposerProps) => {
+	const canSend = !(running || disabled) && draft.trim().length > 0;
+
+	return (
+		<Box
 			sx={{
-				alignItems: "flex-end",
+				p: 1,
+				borderTop: 1,
+				borderColor: "divider",
+				bgcolor: "background.paper",
 			}}
 		>
-			<TextField
-				fullWidth
-				multiline
-				maxRows={6}
-				size="small"
-				value={draft}
-				placeholder={running ? "Agent is working…" : "Message the agent"}
-				disabled={running}
-				slotProps={{
-					input: {
-						readOnly: true,
-					},
+			<Stack
+				direction="row"
+				spacing={1}
+				sx={{
+					alignItems: "flex-end",
 				}}
-			/>
-			{running ? (
-				<IconButton color="error" aria-label="Stop">
-					<StopIcon />
-				</IconButton>
-			) : (
-				<IconButton
-					color="primary"
-					disabled={draft.trim().length === 0}
-					aria-label="Send"
-				>
-					<SendIcon />
-				</IconButton>
-			)}
-		</Stack>
-	</Box>
-);
+			>
+				<TextField
+					fullWidth
+					multiline
+					maxRows={6}
+					size="small"
+					value={draft}
+					placeholder={running ? "Agent is working…" : "Message the agent"}
+					disabled={running || disabled}
+					onChange={(event) => onDraftChange(event.target.value)}
+					onKeyDown={(event) => {
+						if (event.key === "Enter" && !event.shiftKey) {
+							event.preventDefault();
+							if (canSend) {
+								onSend();
+							}
+						}
+					}}
+				/>
+				{running ? (
+					<IconButton color="error" aria-label="Stop" onClick={onStop}>
+						<StopIcon />
+					</IconButton>
+				) : (
+					<IconButton
+						color="primary"
+						disabled={!canSend}
+						aria-label="Send"
+						onClick={onSend}
+					>
+						<SendIcon />
+					</IconButton>
+				)}
+			</Stack>
+		</Box>
+	);
+};

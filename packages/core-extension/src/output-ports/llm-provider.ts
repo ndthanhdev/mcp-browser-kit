@@ -1,10 +1,10 @@
 import type { LanguageModel } from "ai";
 
 /**
- * One model the driven adapter can build a {@link LanguageModel} from. With the
- * OpenRouter adapter the `id` is an OpenRouter model slug (e.g.
- * `anthropic/claude-opus-4-8`); the abstraction stays multi-provider so other
- * `@ai-sdk/*` providers can be added later.
+ * One model the driven adapter can build a {@link LanguageModel} from.
+ *
+ * The `id` is opaque to the core; it only passes it back to
+ * {@link LlmProviderOutputPort.getModel}.
  */
 export interface LlmProviderDescriptor {
 	/** Stable id passed back as {@link LlmProviderOutputPort.getModel}'s argument. */
@@ -21,20 +21,21 @@ export interface LlmProviderDescriptor {
  * keeps provider selection and credential handling — both adapter concerns —
  * out of the core.
  *
- * Realized by `@mcp-browser-kit/extension-driven-llm-provider` (OpenRouter via
- * `@openrouter/ai-sdk-provider`). Unlike the previous `@ai-sdk/harness` design,
- * that adapter is pure-JS and runs in the MV3 background service worker, so it
- * IS wired into the extension container — see `docs/architecture.md`.
+ * Realized by `@mcp-browser-kit/extension-driven-llm-provider` over
+ * user-defined OpenAI-compatible connections.
  */
 export interface LlmProviderOutputPort {
-	/** The models this adapter can build, for UI selection. */
+	/**
+	 * The models this adapter can build, for UI selection. Empty until the user
+	 * adds a connection.
+	 */
 	listProviders(): LlmProviderDescriptor[] | Promise<LlmProviderDescriptor[]>;
 	/**
 	 * Build the selected (or default) model. Async because the adapter reads the
-	 * API key + chosen model from extension storage.
+	 * credentials + chosen model from extension storage.
 	 *
-	 * @param providerId one of {@link listProviders}' ids; omitted → the adapter's
-	 *   configured/default model.
+	 * @param providerId one of {@link listProviders}' ids; omitted → the user's
+	 *   persisted selection, falling back to the first listed model.
 	 */
 	getModel(providerId?: string): Promise<LanguageModel>;
 }

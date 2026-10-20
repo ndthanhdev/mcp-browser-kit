@@ -142,9 +142,6 @@ flowchart LR
   end
 
   Driving --> Core --> Driven
-
-  classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class BrowserAgent planned;
 ```
 
 ## L2 - Extension Tool Calls
@@ -197,7 +194,7 @@ flowchart TB
 
 ```mermaid
 ---
-title: Extension Core — Browser Agent (planned)
+title: Extension Core — Browser Agent
 ---
 flowchart TB
   subgraph Driving["Driving"]
@@ -217,9 +214,6 @@ flowchart TB
   BrowserAgentUseCases --> LlmProvider
   BrowserAgentUseCases --> ExtensionToolCallUseCases
   ExtensionToolCallUseCases --> BrowserDriver
-
-  classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class BrowserAgent planned;
 ```
 
 # L1 - Extension Architecture
@@ -233,7 +227,7 @@ each cross-runtime link. `CoreExtension` internals are in
 title: Extension Architecture
 ---
 flowchart TB
-  subgraph AgentUi["apps/agent-ui (single SPA)"]
+  subgraph AgentUi["apps/ext-wxt sidepanel"]
     direction LR
     AgentApp
     UseAgentClient
@@ -266,9 +260,6 @@ flowchart TB
   AgentUi -->|"runtime.connect: mbk:agent"| Background
   Background <-->|"tab RPC"| Tab
   Background <-->|"tRPC channel"| Server
-
-  classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class AgentUi,AgentApp,UseAgentClient,AgentRpcController planned;
 ```
 
 ## L2 - Channel — Background ⇄ Tab
@@ -323,8 +314,8 @@ flowchart TB
 title: Browser Agent Architecture
 ---
 flowchart TD
-  subgraph AgentUi["apps/agent-ui (UI runtime)"]
-    AgentApp["AgentApp"]
+  subgraph AgentUi["apps/ext-wxt sidepanel"]
+    AgentApp["ChatPage / useAgentThread"]
   end
 
   subgraph BackgroundSW["Background service worker"]
@@ -350,7 +341,29 @@ flowchart TD
   BrowserAgentUseCases --> LlmProvider
   BrowserAgentUseCases --> ExtensionToolCallUseCases
   ExtensionToolCallUseCases --> BrowserDriver
+```
 
-  classDef planned stroke-dasharray:5 5,stroke:#999,color:#999;
-  class AgentApp,AgentRpcController planned;
+```mermaid
+---
+title: LLM Provider Adapter
+---
+flowchart LR
+  subgraph Adapter["extension-driven-llm-provider"]
+    Registry["DrivenLlmProvider"]
+    subgraph Axes[" "]
+      direction TB
+      Catalog["ModelCatalog<br/>(what exists)"]
+      Auth["AuthStrategy<br/>(how to authenticate)"]
+      Factory["ModelFactory<br/>(how to build it)"]
+    end
+  end
+  ModelsDev[("models.dev/api.json")]
+  Storage[("storage.local")]
+
+  Registry --> Catalog
+  Registry --> Auth
+  Registry --> Factory
+  Catalog -->|"fetch + ETag"| ModelsDev
+  Catalog -->|"pruned cache"| Storage
+  Auth -->|"credentials"| Storage
 ```

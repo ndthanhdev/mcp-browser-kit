@@ -13,27 +13,15 @@ export type AgentUnsubscribe = () => void;
 
 /**
  * Driving contract for the Browser Agent (the `BrowserAgentUseCases` node in
- * `docs/architecture.md`). The `AgentRpcController` driving adapter is the only
- * caller: it translates `mbk:agent` channel messages into these methods and
- * forwards every {@link AgentProgressEvent} from `subscribe` back to the
- * `apps/agent-ui` SPA.
+ * `docs/architecture.md`).
  *
- * This is a *single* agent that owns *many* sessions. The implementation (a
- * later, non-driving pass) wraps one AI SDK v7 `HarnessAgent` held as a DI
- * singleton — "construct the agent once; it holds configuration, not a live
- * session". Each method maps onto the harness:
+ * Realized by {@link import("../core").BrowserAgentUseCase}; driven by the
+ * `AgentRpcController` in `@mcp-browser-kit/extension-driving-agent-rpc`.
  *
- * - `createSession`  → `await agent.createSession({ resumeFrom? })`
- * - `sendMessage`    → `agent.stream({ session, prompt })`, parts → events
- * - `cancel`         → `session.stop()` (session stays usable)
- * - `endSession`     → `session.destroy()`
- * - `getHistory`     → the harness session's native conversation history
- * - persistence seam → `session.detach()` → resume state + `createSession({ resumeFrom })`
- *
- * It reasons via the planned `LlmProviderOutputPort` (realized by the harness/
- * model adapter) and acts via the existing `ExtensionToolCallInputPort` →
- * `BrowserDriverOutputPort`. Those collaborators are out of scope here — this
- * file fixes only the boundary the driving layer depends on.
+ * A *single* agent owns *many* sessions, each with its own transcript.
+ * Sessions live in memory in the MV3 service worker, so a session id does not
+ * survive a worker restart: callers must handle `getSession` returning
+ * `undefined`.
  */
 export interface BrowserAgentInputPort {
 	// --- Session lifecycle ---

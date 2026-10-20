@@ -1,4 +1,4 @@
-import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/output-ports";
+import { LoggerFactoryOutputPort } from "@mcp-browser-kit/core-extension/output-ports/logger-factory";
 import type {
 	DeferData,
 	DeferMessage,

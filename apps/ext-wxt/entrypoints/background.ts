@@ -1,9 +1,13 @@
 import "core-js/proposals";
 import {
-	createCoreExtensionContainer,
+	BrowserDriverOutputPort,
 	FeatureFlagsOutputPort,
 } from "@mcp-browser-kit/core-extension";
-import { DrivenFeatureFlagsOpenFeatureWeb } from "@mcp-browser-kit/driven-feature-flags/web";
+import {
+	AgentPortGate,
+	ExtensionDrivingAgentRpc,
+} from "@mcp-browser-kit/extension-driving-agent-rpc";
+import { composeAgentContainer } from "@/utils/compose-agent-container";
 
 /**
  * The toolbar-button APIs used below, declared locally because the
@@ -64,26 +68,50 @@ const openSidepanelOnActionClick = () => {
 	});
 };
 
-export default defineBackground(() => {
-	openSidepanelOnActionClick();
-
-	const container = createCoreExtensionContainer();
-	DrivenFeatureFlagsOpenFeatureWeb.setupContainer(
-		container,
-		FeatureFlagsOutputPort,
+/**
+ * Compose the extension hexagon and expose the agent to the sidepanel.
+ *
+ * The agent lives here because the background is the only context that owns
+ * the browser driver and survives tab navigation and the sidepanel closing.
+ */
+const startAgent = async (gate: AgentPortGate) => {
+	const container = composeAgentContainer(
+		import.meta.env.MANIFEST_VERSION === 3 ? 3 : 2,
 	);
 
 	const featureFlags = container.get<FeatureFlagsOutputPort>(
 		FeatureFlagsOutputPort,
 	);
+	await featureFlags.start();
 
-	void featureFlags
-		.start()
-		.then(() => featureFlags.getBooleanValue("browser-agent"))
-		.then((browserAgentEnabled) => {
-			console.log("Hello background!", {
-				id: browser.runtime.id,
-				browserAgentEnabled,
-			});
+	if (!(await featureFlags.getBooleanValue("browser-agent"))) {
+		gate.refuse();
+		return;
+	}
+
+	// Content-script tool calls fail with "MessageChannel not initialized"
+	// until this runs.
+	container.get<BrowserDriverOutputPort>(BrowserDriverOutputPort).linkRpc();
+	container.get<ExtensionDrivingAgentRpc>(ExtensionDrivingAgentRpc).start(gate);
+};
+
+/**
+ * `type: "module"` makes `import()` available in the MV3 service worker, so the
+ * LLM provider packages load lazily instead of being re-parsed on every wake.
+ * The Firefox MV2 build is a classic script; WXT inlines it there instead.
+ */
+export default defineBackground({
+	type: "module",
+	main() {
+		openSidepanelOnActionClick();
+
+		// Must be constructed before any `await`: MV3 only delivers `onConnect`
+		// to listeners registered during the worker's initial evaluation.
+		const gate = new AgentPortGate();
+
+		void startAgent(gate).catch((error: unknown) => {
+			console.error("Failed to start the browser agent", error);
+			gate.refuse();
 		});
+	},
 });
