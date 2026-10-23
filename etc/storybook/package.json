@@ -8,20 +8,20 @@
 	},
 	"dependencies": {
 		"@emotion/react": "^11.14.0",
-		"@emotion/styled": "^11.14.0",
-		"@mui/icons-material": "^9.2.0",
-		"@mui/material": "^9.2.0",
-		"react": "^19.2.7",
-		"react-dom": "^19.2.7"
+		"@emotion/styled": "^11.14.1",
+		"@mui/icons-material": "^9.5.0",
+		"@mui/material": "^9.5.0",
+		"react": "^19.3.1",
+		"react-dom": "^19.3.1"
 	},
 	"devDependencies": {
-		"@storybook/addon-a11y": "^10.5.8",
-		"@storybook/addon-docs": "^10.5.8",
-		"@storybook/react-vite": "^10.5.8",
-		"@types/react": "^19.2.14",
-		"@types/react-dom": "^19.2.3",
-		"storybook": "^10.5.8",
+		"@storybook/addon-a11y": "^10.6.3",
+		"@storybook/addon-docs": "^10.6.3",
+		"@storybook/react-vite": "^10.6.3",
+		"@types/react": "^19.3.0",
+		"@types/react-dom": "^19.3.0",
+		"storybook": "^10.6.3",
 		"typescript": "^5.9.3",
-		"vite": "^7.3.5"
+		"vite": "^7.3.7"
 	}
 }
