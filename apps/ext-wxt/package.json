@@ -31,7 +31,7 @@
 		"@wxt-dev/auto-icons": "^1.1.2",
 		"@wxt-dev/module-react": "1.1.5",
 		"typescript": "^5.9.3",
-		"vite": "^7.3.7",
+		"vite": "^7.3.8",
 		"vitest": "^4.1.12",
 		"web-ext": "^9.4.0",
 		"wxt": "^0.20.27"
