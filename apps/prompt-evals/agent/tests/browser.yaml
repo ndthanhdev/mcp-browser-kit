@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json#/definitions/TestCase
+- description: opens a URL in the target window
+  vars:
+    task: Open https://example.com/pricing in a new tab.
+    context: mv3
+    targetTab: "1842"
+  assert:
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: openTab
+        input:
+          windowId: "1701"
+        patterns:
+          url: ^https://example\.com/pricing/?$
+
+- description: screenshots an MV2 tab
+  vars:
+    task: Take a screenshot of this tab.
+    context: mv2
+    targetTab: "1845"
+  assert:
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: captureTab
+        input:
+          tabId: "1845"
+
+- description: does not screenshot an MV3 tab
+  vars:
+    task: Take a screenshot of this tab.
+    context: mv3
+    targetTab: "1845"
+  assert:
+    - type: javascript
+      value: file://../src/assertions.ts:neverCalls
+      config:
+        tools:
+          - captureTab
+          - invokeJsFn
+          - clickOnCoordinates
+          - fillTextToCoordinates
+          - hitEnterOnCoordinates
+
+- description: runs a JavaScript function body on MV2 when asked to
+  vars:
+    task: Using JavaScript in the page, tell me how many <img> elements this tab has.
+    context: mv2
+    targetTab: "1845"
+  assert:
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: invokeJsFn
+        input:
+          tabId: "1845"
+        patterns:
+          fnBodyCode: ^(?!\s*(async\s+)?(function\b|\())[\s\S]*\breturn\b

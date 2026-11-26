@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json#/definitions/TestCase
+- description: finds the tab through the extension context when no tab is targeted
+  vars:
+    task: Click the "Sign in" button on my GitHub tab.
+    context: mv3
+    elements: login
+  assert:
+    - type: javascript
+      value: file://../src/assertions.ts:callSequence
+      config:
+        tools: [getExtensionContext, clickOnElement]
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: clickOnElement
+        input:
+          tabId: "1842"
+          readablePath: f1:e3
+
+- description: summarizes the target tab from its readable text
+  vars:
+    task: Summarize this page in one sentence.
+    context: mv3
+    targetTab: "1845"
+  assert:
+    - type: javascript
+      value: file://../src/assertions.ts:onlyCalls
+      config:
+        tools: [getExtensionContext, getReadableText, loadTabContext]
+    - type: icontains
+      value: fetch

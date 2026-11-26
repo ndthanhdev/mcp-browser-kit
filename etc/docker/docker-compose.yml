@@ -1,0 +1,49 @@
+# Run through `moon run scripts:compose-up` / `compose-down`, which pass it the
+# variables of the root .env (see .env.example); compose itself only looks for
+# a .env next to this file.
+#
+# One project per worktree (`main`, or the linked worktree's folder name), so
+# worktrees don't share containers.
+name: mbk-${WORKTREE:-main}
+
+services:
+  # Serves the promptfoo UI; run evals from a shell inside it with
+  # `moon run prompt-evals:eval`.
+  prompt-evals:
+    build:
+      context: ../..
+      dockerfile: etc/docker/Dockerfile
+      args:
+        USER_UID: "${UID:-1000}"
+        USER_GID: "${GID:-1000}"
+    working_dir: ${WORKSPACE_DIR:-/workspace}
+    # Model under evaluation, so `promptfoo` works from a plain shell too.
+    environment:
+      - PROMPT_EVALS_LLM_BASE_URL
+      - PROMPT_EVALS_LLM_API_KEY
+      - PROMPT_EVALS_LLM_MODEL
+    command:
+      - bash
+      - -lc
+      - yarn install && moon run prompt-evals:view -- --port 15500 --no
+    # Docker picks the loopback port; `moon run scripts:compose-up` prints it.
+    ports:
+      - "127.0.0.1::15500"
+    extra_hosts:
+      # Lets PROMPT_EVALS_LLM_BASE_URL reach a model served on the host.
+      - host.docker.internal:host-gateway
+    volumes:
+      # The checkout, node_modules and moon cache included, is shared with the
+      # host at the same absolute path, so paths either side records stay
+      # valid. Linux binaries for macOS and Windows hosts come from
+      # `supportedArchitectures` in .yarnrc.yml. `moon run scripts:compose-up`
+      # sets WORKSPACE_DIR.
+      - ../..:${WORKSPACE_DIR:-/workspace}
+      # A linked worktree's `.git` file points into the main checkout's `.git`
+      # by absolute path; mount it there so git (and moon) work in the
+      # container. `moon run scripts:compose-up` sets GIT_COMMON_DIR.
+      - ${GIT_COMMON_DIR:-../../.git}:${GIT_COMMON_DIR:-/workspace/.git}
+      - yarn_cache:/home/dev/.yarn/berry
+
+volumes:
+  yarn_cache: {}

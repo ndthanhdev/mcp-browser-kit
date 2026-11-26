@@ -33,3 +33,7 @@ playwright/.cache/
 
 # mcp-publisher
 .mcpregistry_*
+
+.env
+.env.*
+!.env.example

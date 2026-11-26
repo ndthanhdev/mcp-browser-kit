@@ -48,8 +48,8 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			'- Rich-text editors (contenteditable: Quill, ProseMirror, Lexical, ...): listed with role "textbox" and their placeholder as text; fillTextToElement replaces their whole content (line breaks become paragraphs). Formatting (bold, lists, links) cannot be set this way.',
 			"- Native <select>, by shape, verifying via re-read after each step. Listbox (multiple or size>1) shows options inline: clickOnElement the option, else MV2 invokeJsFn (set option.selected or .value/.selectedIndex, dispatch a bubbling change). Single-line dropdown (size=1) has a native popup that ignores synthetic clicks: MV2 invokeJsFn (set .value/.selectedIndex, dispatch change); MV3 best-effort clickOnElement select then option, then showHumanHint if unchanged.",
 			"- Range slider: try fillTextToElement with the numeric value (subject to min/max/step); if it clamps or fails, MV2 -> invokeJsFn (set .value, dispatch input + change), MV3 -> showHumanHint.",
-			'- Checkbox/radio: clickOnElement toggles it. Checked state appears as the optional 4th tuple value "checked" (absent when unchecked), so check the tuple and avoid re-clicking a box already in the desired state.',
-			"- File input (<input type=file>): cannot be set by tools (browser security). Use showHumanHint with the fill action to ask the user to pick the file.",
+			'- Checkbox/radio: clickOnElement toggles it — except human-verification checkboxes (CAPTCHA, "I\'m not a robot", reCAPTCHA/hCaptcha/Turnstile), which must never be clicked: use showHumanHint. Checked state appears as the optional 4th tuple value "checked" (absent when unchecked), so check the tuple and avoid re-clicking a box already in the desired state.',
+			'- File input (<input type=file>, often listed as a button with text like "Choose file", "Browse" or "Upload"): cannot be set by tools (browser security), and clicking it only opens an OS file dialog that tools cannot control. Never clickOnElement or fillTextToElement it; go straight to showHumanHint with action click on its readablePath and a message naming the file to pick.',
 			"",
 			"Page-modifying tools (click*, fillText*, hitEnter*, scroll*):",
 			"- Auto-wait before acting: the target must be attached, visible, enabled (and editable for fill; stable and not covered for click), up to 5s",
@@ -134,7 +134,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"Requires: browserId, windowId, tabId, readablePath.",
 			PAGE_CHANGE_RETURNS,
 			"On ok=false: the reason says why (not visible, disabled, covered by <el>, detached); re-read readable-elements and pick a fresh id.",
-			"Avoid: inventing paths; re-read elements after navigation if click fails.",
+			'Avoid: inventing paths; re-read elements after navigation if click fails. Never click CAPTCHA/"I\'m not a robot"/2FA elements — those are human-only steps; use showHumanHint. Never click a file input ("Choose file"/"Browse"/"Upload" button) — it opens an OS dialog that tools cannot control; use showHumanHint instead.',
 		].join("\n");
 	};
 
@@ -234,7 +234,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 	showHumanHintInstruction = (): string => {
 		return [
 			"Highlight an element and instruct the human to act when automation fails or the step is human-only.",
-			"When: CAPTCHA, 2FA, irreversible confirmations, repeated tool failures, or MV3 inputs that tools cannot set (native <select>, range slider).",
+			'When: CAPTCHA, 2FA, irreversible confirmations, repeated tool failures, file inputs ("Choose file"/"Browse"/"Upload" — on MV2 and MV3, call this first instead of clicking), or MV3 inputs that tools cannot set (native <select>, range slider).',
 			"How: provide exactly one target — readablePath (preferred) OR x and y, not both; fill action requires value.",
 			"Requires: browserId, windowId, tabId, action (click | fill | hit-enter), message.",
 			"Returns: humanMessage (relay verbatim to the user) and expiresInSeconds.",

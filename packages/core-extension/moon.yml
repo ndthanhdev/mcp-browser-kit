@@ -3,4 +3,5 @@ language: typescript
 dependsOn:
 - core-utils
 - core-feature-flags
+- core-prompts
 - types

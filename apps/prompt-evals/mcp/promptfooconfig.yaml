@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: MCP Browser Kit server prompts - tool selection by MCP clients
+
+prompts:
+  - id: file://../src/mcp-prompt.ts
+    label: mcp-client
+
+# The provider offers the built server's real tools to the model and runs a
+# multi-step loop, answering tool calls from a fake browser (src/fixtures.ts)
+# so the model can read before acting. Tests grade the tool calls it makes.
+# PROMPT_EVALS_LLM_BASE_URL and PROMPT_EVALS_LLM_API_KEY point at an
+# OpenAI-compatible endpoint serving PROMPT_EVALS_LLM_MODEL.
+providers:
+  - id: file://../src/mcp-provider.ts
+    label: "{{ env.PROMPT_EVALS_LLM_MODEL }}"
+    config:
+      baseUrl: "{{ env.PROMPT_EVALS_LLM_BASE_URL }}"
+      apiKeyEnv: PROMPT_EVALS_LLM_API_KEY
+      model: "{{ env.PROMPT_EVALS_LLM_MODEL }}"
+      maxSteps: 6
+      maxOutputTokens: 32768
+
+defaultTest:
+  assert:
+    - type: javascript
+      value: file://../src/assertions.ts:maxReads
+      config:
+        max: 4
+
+tests:
+  - file://tests/*.yaml
+
+evaluateOptions:
+  maxConcurrency: 4

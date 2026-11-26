@@ -11,10 +11,13 @@
 			"path": "../core-feature-flags"
 		},
 		{
-			"path": "../types"
+			"path": "../core-prompts"
 		},
 		{
 			"path": "../core-utils"
+		},
+		{
+			"path": "../types"
 		}
 	],
 	"compilerOptions": {
@@ -43,6 +46,12 @@
 			],
 			"@mcp-browser-kit/core-utils/*": [
 				"../core-utils/src/*"
+			],
+			"@mcp-browser-kit/core-prompts": [
+				"../core-prompts/src/index.ts"
+			],
+			"@mcp-browser-kit/core-prompts/*": [
+				"../core-prompts/src/*"
 			]
 		}
 	}

@@ -1,0 +1,151 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json#/definitions/TestCase
+- description: clicks a button by readablePath
+  vars:
+    task: Click the "Sign in" button.
+    context: mv3
+    elements: login
+  assert:
+    - type: tool-call-f1
+      value: [clickOnElement]
+      transform: file://../src/assertions.ts:firstActionCall
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: clickOnElement
+        input:
+          browserId: k7Qm2x
+          windowId: "1701"
+          tabId: "1842"
+          readablePath: f1:e3
+    - type: javascript
+      value: file://../src/assertions.ts:neverCalls
+      config:
+        tools: [clickOnCoordinates, invokeJsFn]
+
+- description: prefers element tools over coordinates on MV2
+  vars:
+    task: Click the "Forgot password?" link.
+    context: mv2
+    elements: login
+  assert:
+    - type: tool-call-f1
+      value: [clickOnElement]
+      transform: file://../src/assertions.ts:firstActionCall
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: clickOnElement
+        input:
+          readablePath: f1:e4
+    - type: javascript
+      value: file://../src/assertions.ts:neverCalls
+      config:
+        tools: [captureTab, clickOnCoordinates, invokeJsFn]
+
+- description: fills a text field by readablePath
+  vars:
+    task: Type ada@example.com into the username field.
+    context: mv3
+    elements: login
+  assert:
+    - type: tool-call-f1
+      value: [fillTextToElement]
+      transform: file://../src/assertions.ts:firstActionCall
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: fillTextToElement
+        input:
+          tabId: "1842"
+          readablePath: f1:e1
+          value: ada@example.com
+
+- description: toggles a checkbox with a click, not a fill
+  vars:
+    task: Tick "Keep me signed in".
+    context: mv3
+    elements: login
+  assert:
+    - type: tool-call-f1
+      value: [clickOnElement]
+      transform: file://../src/assertions.ts:firstActionCall
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: clickOnElement
+        input:
+          readablePath: f1:e5
+    - type: javascript
+      value: file://../src/assertions.ts:neverCalls
+      config:
+        tools: [fillTextToElement]
+
+- description: submits a search box that has no submit button with Enter
+  vars:
+    task: The search box already says "wireless headphones" - submit the search.
+    context: mv3
+    elements: search
+  assert:
+    - type: tool-call-f1
+      value: [hitEnterOnElement]
+      transform: file://../src/assertions.ts:firstActionCall
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: hitEnterOnElement
+        input:
+          tabId: "1851"
+          readablePath: f1:e1
+
+- description: scrolls the whole page
+  vars:
+    task: Scroll down on the MDN tab so I can see more of the article.
+    context: mv3
+  assert:
+    - type: tool-call-f1
+      value: [scrollPage]
+      transform: file://../src/assertions.ts:firstActionCall
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: scrollPage
+        input:
+          tabId: "1845"
+          direction: down
+
+- description: scrolls inside a scrollable panel
+  vars:
+    task: Scroll the search results panel down to load more products.
+    context: mv3
+    elements: search
+  assert:
+    - type: tool-call-f1
+      value: [scrollElement]
+      transform: file://../src/assertions.ts:firstActionCall
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: scrollElement
+        input:
+          tabId: "1851"
+          readablePath: f1:e6
+          direction: down
+
+- description: clicks coordinates on MV2 when only a screenshot position is known
+  vars:
+    task: Click the canvas on the MDN tab at x=412, y=287 (from the screenshot you just took).
+    context: mv2
+    notes: >-
+      The captureTab result was 1280x800, and the canvas has no readable element.
+  assert:
+    - type: tool-call-f1
+      value: [clickOnCoordinates]
+      transform: file://../src/assertions.ts:firstActionCall
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: clickOnCoordinates
+        input:
+          tabId: "1845"
+          x: 412
+          y: 287

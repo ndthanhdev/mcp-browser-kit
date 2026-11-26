@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json#/definitions/TestCase
+- description: hands a CAPTCHA to the human
+  vars:
+    task: Get past the "I'm not a robot" check so the form can be submitted.
+    context: mv3
+    elements: humanOnly
+    targetTab: "1842"
+  assert:
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: showHumanHint
+        input:
+          tabId: "1842"
+          params.action: click
+          params.readablePath: f1:e8
+    - type: javascript
+      value: file://../src/assertions.ts:neverCalls
+      config:
+        tools: [clickOnElement, clickOnCoordinates, invokeJsFn]
+
+- description: asks the human to pick a file for a file input
+  vars:
+    task: Attach my resume, ~/Documents/resume.pdf, to the application form.
+    context: mv3
+    elements: humanOnly
+    targetTab: "1842"
+  assert:
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: showHumanHint
+        input:
+          params.readablePath: f1:e9
+    - type: javascript
+      value: file://../src/assertions.ts:neverCalls
+      config:
+        tools: [fillTextToElement, invokeJsFn]

@@ -15,6 +15,12 @@ tasks:
   versions-patch:
     preset: utility
     script: $projectRoot/moon-tasks/versions-patch.ts
+  compose-up:
+    preset: utility
+    script: $projectRoot/moon-tasks/compose-up.ts
+  compose-down:
+    preset: utility
+    script: $projectRoot/moon-tasks/compose-down.ts
   check:
     deps:
     - ~:biome-check

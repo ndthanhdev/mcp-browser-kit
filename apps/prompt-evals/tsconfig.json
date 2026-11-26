@@ -1,0 +1,71 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"compilerOptions": {
+		"emitDeclarationOnly": true,
+		"outDir": "../../.moon/cache/types/apps/prompt-evals",
+		"paths": {
+			"@mcp-browser-kit/core-extension": [
+				"../../packages/core-extension/src/index.ts"
+			],
+			"@mcp-browser-kit/core-extension/*": [
+				"../../packages/core-extension/src/*"
+			],
+			"@mcp-browser-kit/core-feature-flags": [
+				"../../packages/core-feature-flags/src/index.ts"
+			],
+			"@mcp-browser-kit/core-feature-flags/*": [
+				"../../packages/core-feature-flags/src/*"
+			],
+			"@mcp-browser-kit/core-prompts": [
+				"../../packages/core-prompts/src/index.ts"
+			],
+			"@mcp-browser-kit/core-prompts/*": [
+				"../../packages/core-prompts/src/*"
+			],
+			"@mcp-browser-kit/core-utils": [
+				"../../packages/core-utils/src/index.ts"
+			],
+			"@mcp-browser-kit/core-utils/*": [
+				"../../packages/core-utils/src/*"
+			],
+			"@mcp-browser-kit/driven-prompt-provider": [
+				"../../packages/driven-prompt-provider/src/index.ts"
+			],
+			"@mcp-browser-kit/driven-prompt-provider/*": [
+				"../../packages/driven-prompt-provider/src/*"
+			],
+			"@mcp-browser-kit/types": [
+				"../../packages/types/src/index.ts"
+			],
+			"@mcp-browser-kit/types/*": [
+				"../../packages/types/src/*"
+			]
+		}
+	},
+	"include": [
+		"src/**/*",
+		"../../packages/core-extension/src/**/*",
+		"../../packages/core-prompts/src/**/*",
+		"../../packages/driven-prompt-provider/src/**/*"
+	],
+	"references": [
+		{
+			"path": "../../packages/core-extension"
+		},
+		{
+			"path": "../../packages/core-feature-flags"
+		},
+		{
+			"path": "../../packages/core-prompts"
+		},
+		{
+			"path": "../../packages/core-utils"
+		},
+		{
+			"path": "../../packages/driven-prompt-provider"
+		},
+		{
+			"path": "../../packages/types"
+		}
+	]
+}

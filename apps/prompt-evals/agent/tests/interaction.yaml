@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json#/definitions/TestCase
+- description: clicks a button by readablePath on the target tab
+  vars:
+    task: Click the "Sign in" button.
+    context: mv3
+    elements: login
+    targetTab: "1842"
+  assert:
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: clickOnElement
+        input:
+          tabId: "1842"
+          readablePath: f1:e3
+    - type: javascript
+      value: file://../src/assertions.ts:neverCalls
+      config:
+        tools: [captureTab, clickOnCoordinates, invokeJsFn]
+
+- description: fills a text field by readablePath
+  vars:
+    task: Type ada@example.com into the username field.
+    context: mv3
+    elements: login
+    targetTab: "1842"
+  assert:
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: fillTextToElement
+        input:
+          readablePath: f1:e1
+          value: ada@example.com
+    - type: javascript
+      value: file://../src/assertions.ts:neverCalls
+      config:
+        tools: [fillTextToCoordinates, invokeJsFn]
+
+- description: toggles a checkbox with a click, not a fill
+  vars:
+    task: Tick "Keep me signed in".
+    context: mv3
+    elements: login
+    targetTab: "1842"
+  assert:
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: clickOnElement
+        input:
+          readablePath: f1:e5
+    - type: javascript
+      value: file://../src/assertions.ts:neverCalls
+      config:
+        tools: [fillTextToElement]
+
+- description: submits a search box that has no submit button with Enter
+  vars:
+    task: The search box already says "wireless headphones" - submit the search.
+    context: mv3
+    elements: search
+    targetTab: "1851"
+  assert:
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: hitEnterOnElement
+        input:
+          tabId: "1851"
+          readablePath: f1:e1

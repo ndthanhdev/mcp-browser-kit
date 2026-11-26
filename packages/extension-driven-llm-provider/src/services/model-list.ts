@@ -25,6 +25,28 @@ export const validateBaseUrl = (baseUrl: string): string | undefined => {
 	}
 };
 
+/**
+ * Check that an API key is a single printable-ASCII token, which is what
+ * providers issue and what an `Authorization` header can carry. Returns an
+ * error message.
+ */
+export const validateApiKey = (apiKey: string): string | undefined => {
+	const chars = [
+		...apiKey,
+	];
+	const index = chars.findIndex((char) => !/^[\x21-\x7e]$/.test(char));
+	if (index === -1) {
+		return undefined;
+	}
+	const char = chars[index] as string;
+	const codePoint = (char.codePointAt(0) as number)
+		.toString(16)
+		.toUpperCase()
+		.padStart(4, "0");
+	const shown = /\s/.test(char) ? "whitespace" : `"${char}"`;
+	return `The API key contains ${shown} (U+${codePoint}) at position ${index + 1}. Paste only the key itself.`;
+};
+
 /** Headers for a request to a connection. */
 export const connectionHeaders = (
 	connection: Pick<Connection, "apiKey" | "headers">,
@@ -102,6 +124,15 @@ export const fetchModelIds = async (
 		Partial<Pick<Connection, "headers">>,
 	fetchImpl: typeof fetch = fetch,
 ): Promise<ModelListResult> => {
+	const keyError = connection.apiKey
+		? validateApiKey(connection.apiKey)
+		: undefined;
+	if (keyError) {
+		return {
+			status: "failed",
+			message: keyError,
+		};
+	}
 	let response: Response;
 	try {
 		response = await fetchImpl(`${trimSlash(connection.baseUrl)}/models`, {
