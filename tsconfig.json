@@ -43,6 +43,9 @@
 			"path": "./apps/m3"
 		},
 		{
+			"path": "./apps/prompt-evals"
+		},
+		{
 			"path": "./apps/server"
 		},
 		{
@@ -58,6 +61,9 @@
 			"path": "./packages/core-feature-flags"
 		},
 		{
+			"path": "./packages/core-prompts"
+		},
+		{
 			"path": "./packages/core-server"
 		},
 		{
@@ -68,6 +74,9 @@
 		},
 		{
 			"path": "./packages/driven-logger-factory"
+		},
+		{
+			"path": "./packages/driven-prompt-provider"
 		},
 		{
 			"path": "./packages/extension-driven-browser-driver"

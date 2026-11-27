@@ -1,0 +1,65 @@
+language: typescript
+fileGroups:
+  eval-sources:
+    - src/**/*
+    - $workspaceRoot/packages/*/src/**/*
+tasks:
+  eval-mcp:
+    type: run
+    toolchain: node
+    deps:
+      - server:build
+    options:
+      cache: false
+      envFile: /.env
+      outputStyle: stream
+      runInCI: false
+    env:
+      PROMPTFOO_DISABLE_TELEMETRY: "1"
+      PROMPTFOO_DISABLE_UPDATE: "1"
+      PROMPTFOO_CONFIG_DIR: $workspaceRoot/.tmp/promptfoo
+    script: promptfoo eval --config mcp/promptfooconfig.yaml --output target/promptfoo/mcp/results.json --output target/promptfoo/mcp/report.html
+    inputs:
+      - mcp/**/*
+      - '@group(eval-sources)'
+  eval-agent:
+    type: run
+    toolchain: node
+    options:
+      cache: false
+      envFile: /.env
+      outputStyle: stream
+      runInCI: false
+    env:
+      PROMPTFOO_DISABLE_TELEMETRY: "1"
+      PROMPTFOO_DISABLE_UPDATE: "1"
+      PROMPTFOO_CONFIG_DIR: $workspaceRoot/.tmp/promptfoo
+    script: promptfoo eval --config agent/promptfooconfig.yaml --output target/promptfoo/agent/results.json --output target/promptfoo/agent/report.html
+    inputs:
+      - agent/**/*
+      - '@group(eval-sources)'
+  eval:
+    type: run
+    deps:
+      - ~:eval-mcp
+      - ~:eval-agent
+    options:
+      runDepsInParallel: false
+      runInCI: false
+  view:
+    toolchain: node
+    preset: server
+    env:
+      PROMPTFOO_DISABLE_TELEMETRY: "1"
+      PROMPTFOO_DISABLE_UPDATE: "1"
+      PROMPTFOO_CONFIG_DIR: $workspaceRoot/.tmp/promptfoo
+    command: promptfoo view
+dependsOn:
+  - core-extension
+  - core-feature-flags
+  - core-prompts
+  - core-utils
+  - driven-prompt-provider
+  - types
+toolchains:
+  default: node

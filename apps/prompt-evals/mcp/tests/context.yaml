@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json#/definitions/TestCase
+- description: discovers tabs before acting on an unknown page
+  vars:
+    task: Click the "Sign in" button on my GitHub tab.
+  assert:
+    - type: tool-call-f1
+      value: [getContext]
+      transform: file://../src/assertions.ts:firstToolCall
+
+- description: lists open tabs with getContext
+  vars:
+    task: Which tabs do I have open right now?
+  assert:
+    - type: tool-call-f1
+      value: [getContext]
+      transform: file://../src/assertions.ts:firstToolCall
+    - type: javascript
+      value: file://../src/assertions.ts:onlyCalls
+      config:
+        tools: [getContext]
+
+- description: stops and relays a version mismatch instead of calling the browser
+  vars:
+    task: Read the page on my GitHub tab and tell me what it says.
+    context: mismatch
+  assert:
+    - type: javascript
+      value: file://../src/assertions.ts:onlyCalls
+      config:
+        tools: [getContext]

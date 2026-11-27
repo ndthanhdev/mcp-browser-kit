@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json#/definitions/TestCase
+- description: reads page text for a summary
+  vars:
+    task: Summarize the article on my MDN tab.
+    context: mv3
+  assert:
+    - type: tool-call-f1
+      value: [getReadableText]
+      transform: file://../src/assertions.ts:firstCallAfterContext
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: getReadableText
+        input:
+          browserId: k7Qm2x
+          tabId: "1845"
+
+- description: reads interactive elements before interacting
+  vars:
+    task: Sign me in to GitHub with username ada and password hunter2.
+    context: mv3
+  assert:
+    - type: tool-call-f1
+      value: [getReadableElements]
+      transform: file://../src/assertions.ts:firstCallAfterContext
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: getReadableElements
+        input:
+          browserId: k7Qm2x
+          tabId: "1842"
+    - type: javascript
+      value: file://../src/assertions.ts:neverCalls
+      config:
+        tools: [captureTab, invokeJsFn, clickOnCoordinates, fillTextToCoordinates]
+
+- description: reads one element's markup by readablePath
+  vars:
+    task: Show me the exact HTML of the "Sign in" button.
+    context: mv3
+    elements: login
+  assert:
+    - type: tool-call-f1
+      value: [getReadableElementHtml]
+      transform: file://../src/assertions.ts:firstCallAfterContext
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: getReadableElementHtml
+        input:
+          browserId: k7Qm2x
+          tabId: "1842"
+          readablePath: f1:e3
+
+- description: continues a paginated snapshot
+  vars:
+    task: Keep reading the MDN article from where you left off.
+    context: mv3
+    notes: >-
+      Your previous getReadableText call for tab 1845 returned
+      {"snapshotId": "snap-7f3a", "hasNextPage": true, "nextPageNumber": 2, "totalPages": 4}
+      and you have already summarized page 1.
+  assert:
+    - type: tool-call-f1
+      value: [getSnapshotPage]
+      transform: file://../src/assertions.ts:firstCallAfterContext
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: getSnapshotPage
+        input:
+          snapshotId: snap-7f3a
+          type: readable-text
+          pageNumber: 2

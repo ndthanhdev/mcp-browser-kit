@@ -13,6 +13,13 @@ export interface BrowserAgentToolContext {
 	readonly defaultTabId?: string;
 	/** Default window for `openTab` when the model omits `windowId`. */
 	readonly defaultWindowId?: string;
+	/**
+	 * Tools the connected extension supports (e.g. MV3 has no screenshots or
+	 * coordinates); others are not offered to the model. All tools when omitted.
+	 */
+	readonly availableTools?: readonly ExtensionToolName[];
+	/** Hides {@link MV2_ONLY_AGENT_TOOLS} when 3 and `availableTools` is not set. */
+	readonly manifestVersion?: number;
 }
 
 /**
@@ -36,7 +43,7 @@ const tabIdSchema = z
 	.string()
 	.optional()
 	.describe(
-		"tabId from bk:///context; defaults to the session target tab when omitted",
+		'Tab id from getExtensionContext availableTabs[].id (e.g. "1842") — not an element id like f1:e1. Omit it to use the session target tab.',
 	);
 
 const readablePathSchema = z
@@ -52,6 +59,44 @@ const ySchema = z
 	.number()
 	.describe("Y coordinate in pixels from a recent captureTab screenshot");
 const valueSchema = z.string().describe("Text to enter into the input field");
+
+/** Tools that need MV2 APIs (screenshots, coordinates, page scripts); MV3 extensions lack them. */
+export const MV2_ONLY_AGENT_TOOLS: readonly ExtensionToolName[] = [
+	"captureTab",
+	"clickOnCoordinates",
+	"fillTextToCoordinates",
+	"hitEnterOnCoordinates",
+	"invokeJsFn",
+];
+
+const humanHintParamsSchema = z
+	.object({
+		action: z
+			.enum([
+				"click",
+				"fill",
+				"hit-enter",
+			])
+			.describe("What the human should do on the target"),
+		message: z
+			.string()
+			.describe("Why the human has to do it, e.g. the file to pick"),
+		readablePath: z
+			.string()
+			.optional()
+			.describe(
+				"Target element id from getReadableElements (preferred); omit x and y when set",
+			),
+		x: xSchema.optional(),
+		y: ySchema.optional(),
+		value: z
+			.string()
+			.optional()
+			.describe("Text the human should enter; required for fill"),
+	})
+	.describe(
+		"The manual step: one target (readablePath, or x and y), never both",
+	);
 
 /**
  * Build the AI SDK `tool()` set that bridges the model to the browser by
@@ -110,7 +155,7 @@ export function createBrowserAgentTools(
 		return resolved;
 	};
 
-	return {
+	const tools: Record<string, Tool> = {
 		captureTab: tool({
 			description: "Capture a screenshot of the given tab (MV2 only).",
 			inputSchema: z.object({
@@ -148,7 +193,8 @@ export function createBrowserAgentTools(
 			},
 		}),
 		clickOnElement: tool({
-			description: "Click an element identified by its readable element id.",
+			description:
+				'Click an element identified by its readable element id. Never click CAPTCHA/"I\'m not a robot"/2FA elements or file inputs ("Choose file"/"Browse"/"Upload") — those are human-only steps: use showHumanHint.',
 			inputSchema: z.object({
 				tabId: tabIdSchema,
 				readablePath: readablePathSchema,
@@ -333,12 +379,10 @@ export function createBrowserAgentTools(
 		}),
 		showHumanHint: tool({
 			description:
-				"Show an on-page overlay asking the human to perform a manual step, returning their outcome.",
+				"Highlight an element and ask the human to do a step tools cannot: CAPTCHA, 2FA, file inputs (picking a file), irreversible confirmations, or repeated tool failures. Call it first for those steps instead of clicking or running JavaScript, and target the element by readablePath. Afterwards, end your turn and let the human act — do not click or submit that step yourself.",
 			inputSchema: z.object({
 				tabId: tabIdSchema,
-				params: z
-					.unknown()
-					.describe("ShowHumanHintParams describing the manual step"),
+				params: humanHintParamsSchema,
 				humanMessage: z
 					.string()
 					.describe("Human-facing instruction shown in the overlay"),
@@ -352,21 +396,19 @@ export function createBrowserAgentTools(
 						params,
 						humanMessage,
 					],
-					() =>
-						// biome-ignore lint/suspicious/noExplicitAny: ShowHumanHintParams is structural; the model supplies it as JSON.
-						toolCall.showHumanHint(id, params as any, humanMessage),
+					() => toolCall.showHumanHint(id, params, humanMessage),
 				);
 			},
 		}),
 		invokeJsFn: tool({
 			description:
-				"Run a JavaScript function body in the tab and return its result (MV2 only). Body only, no function wrapper.",
+				"Run a JavaScript function body in the tab and return its result (MV2 only). Body only, no function wrapper, and it must use return.",
 			inputSchema: z.object({
 				tabId: tabIdSchema,
 				fnBodyCode: z
 					.string()
 					.describe(
-						"Function body only (no wrapper). Example: return document.title;",
+						"Function body only (no wrapper); it must return the result, or the call yields nothing. Example: return document.querySelectorAll('img').length;",
 					),
 			}),
 			execute: ({ tabId, fnBodyCode }) => {
@@ -419,4 +461,20 @@ export function createBrowserAgentTools(
 			},
 		}),
 	};
+
+	const { availableTools, manifestVersion } = ctx;
+	// An empty list means the extension did not report its tools, not that it has none.
+	const offered = (name: string): boolean => {
+		if (name === "getExtensionContext") return true;
+		if (availableTools && availableTools.length > 0) {
+			return availableTools.includes(name as ExtensionToolName);
+		}
+		return !(
+			manifestVersion === 3 &&
+			MV2_ONLY_AGENT_TOOLS.includes(name as ExtensionToolName)
+		);
+	};
+	return Object.fromEntries(
+		Object.entries(tools).filter(([name]) => offered(name)),
+	);
 }

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: MCP Browser Kit browser agent prompt - the in-extension agent loop
+
+# The task is the user's chat message; the agent's own system prompt and tool
+# descriptions come from driven-prompt-provider inside BrowserAgentUseCase.
+prompts:
+  - id: "{{task}}"
+    label: agent-task
+
+# The provider runs BrowserAgentUseCase against a fake browser that answers
+# from src/fixtures.ts, over the OpenAI-compatible transport the extension uses.
+# PROMPT_EVALS_LLM_BASE_URL and PROMPT_EVALS_LLM_API_KEY point at the endpoint
+# serving PROMPT_EVALS_LLM_MODEL.
+providers:
+  - id: file://../src/agent-provider.ts
+    label: "{{ env.PROMPT_EVALS_LLM_MODEL }}"
+    config:
+      baseUrl: "{{ env.PROMPT_EVALS_LLM_BASE_URL }}"
+      apiKeyEnv: PROMPT_EVALS_LLM_API_KEY
+      model: "{{ env.PROMPT_EVALS_LLM_MODEL }}"
+
+tests:
+  - file://tests/*.yaml
+
+evaluateOptions:
+  maxConcurrency: 4

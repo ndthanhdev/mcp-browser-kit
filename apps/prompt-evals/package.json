@@ -1,0 +1,16 @@
+{
+	"name": "@mcp-browser-kit/prompt-evals",
+	"private": true,
+	"type": "module",
+	"devDependencies": {
+		"@ai-sdk/openai-compatible": "^3.0.74",
+		"@modelcontextprotocol/sdk": "^1.32.1",
+		"ai": "^7.0.146",
+		"promptfoo": "^0.125.0"
+	},
+	"scripts": {
+		"eval:mcp": "promptfoo eval --config mcp/promptfooconfig.yaml",
+		"eval:agent": "promptfoo eval --config agent/promptfooconfig.yaml",
+		"view": "promptfoo view"
+	}
+}

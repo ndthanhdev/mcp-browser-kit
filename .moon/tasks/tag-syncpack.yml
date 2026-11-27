@@ -9,7 +9,7 @@ tasks:
   syncpack-fix:
     toolchain: node
     preset: utility
-    script: syncpack fix-mismatches
+    script: syncpack fix
     options:
       runFromWorkspaceRoot: true
   syncpack-format:

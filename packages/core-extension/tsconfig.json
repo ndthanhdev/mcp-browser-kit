@@ -5,13 +5,16 @@
 	],
 	"references": [
 		{
-			"path": "../types"
+			"path": "../core-feature-flags"
+		},
+		{
+			"path": "../core-prompts"
 		},
 		{
 			"path": "../core-utils"
 		},
 		{
-			"path": "../core-feature-flags"
+			"path": "../types"
 		}
 	],
 	"compilerOptions": {
@@ -38,6 +41,12 @@
 			],
 			"@mcp-browser-kit/types/*": [
 				"../types/src/*"
+			],
+			"@mcp-browser-kit/core-prompts": [
+				"../core-prompts/src/index.ts"
+			],
+			"@mcp-browser-kit/core-prompts/*": [
+				"../core-prompts/src/*"
 			]
 		}
 	}

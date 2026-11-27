@@ -17,6 +17,7 @@ const server = path.resolve(apps, "server");
 const extWxt = path.resolve(apps, "ext-wxt");
 const etc = path.resolve(root, "etc");
 const workflowRuntime = path.resolve(etc, "workflow-runtime");
+const docker = path.resolve(etc, "docker");
 const scripts = path.resolve(etc, "scripts");
 const release = path.resolve(target, "release");
 const tmp = path.resolve(root, ".tmp");
@@ -58,6 +59,12 @@ export const workDirs = {
 		},
 		workflowRuntime: {
 			path: workflowRuntime,
+		},
+		docker: {
+			path: docker,
+			compose: {
+				path: path.resolve(docker, "docker-compose.yml"),
+			},
 		},
 	},
 	tmp: {

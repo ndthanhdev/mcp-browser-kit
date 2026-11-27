@@ -1,0 +1,22 @@
+{
+	"extends": "../../tsconfig.options.json",
+	"include": [
+		"**/*"
+	],
+	"compilerOptions": {
+		"outDir": "../../.moon/cache/types/packages/driven-prompt-provider",
+		"paths": {
+			"@mcp-browser-kit/core-prompts": [
+				"../core-prompts/src/index.ts"
+			],
+			"@mcp-browser-kit/core-prompts/*": [
+				"../core-prompts/src/*"
+			]
+		}
+	},
+	"references": [
+		{
+			"path": "../core-prompts"
+		}
+	]
+}

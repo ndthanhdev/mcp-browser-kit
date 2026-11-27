@@ -2,6 +2,7 @@ import {
 	CONNECTION_PRESETS,
 	type Connection,
 	type ModelListResult,
+	validateApiKey,
 	validateBaseUrl,
 } from "@mcp-browser-kit/extension-driven-llm-provider";
 import Alert from "@mui/material/Alert";
@@ -64,7 +65,8 @@ export const ConnectionForm = ({
 	const [test, setTest] = useState<ModelListResult>();
 
 	const urlError = baseUrl ? validateBaseUrl(baseUrl) : undefined;
-	const canSave = Boolean(name.trim() && baseUrl && !urlError);
+	const keyError = apiKey.trim() ? validateApiKey(apiKey.trim()) : undefined;
+	const canSave = Boolean(name.trim() && baseUrl && !urlError && !keyError);
 
 	const choosePreset = (value: string) => {
 		setPreset(value);
@@ -83,7 +85,7 @@ export const ConnectionForm = ({
 			setTest(
 				await onTest({
 					baseUrl,
-					apiKey: apiKey || undefined,
+					apiKey: apiKey.trim() || undefined,
 				}),
 			);
 		} finally {
@@ -155,7 +157,8 @@ export const ConnectionForm = ({
 				type="password"
 				label="API key"
 				value={apiKey}
-				helperText="Local servers usually need none."
+				error={Boolean(keyError)}
+				helperText={keyError ?? "Local servers usually need none."}
 				onChange={(event) => {
 					setApiKey(event.target.value);
 					setTest(undefined);
@@ -183,7 +186,9 @@ export const ConnectionForm = ({
 				<Button
 					size="small"
 					variant="outlined"
-					disabled={!baseUrl || Boolean(urlError) || testing}
+					disabled={
+						!baseUrl || Boolean(urlError) || Boolean(keyError) || testing
+					}
 					onClick={() => {
 						void runTest();
 					}}

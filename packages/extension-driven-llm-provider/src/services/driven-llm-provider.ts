@@ -12,7 +12,7 @@ import {
 	readAgentSettings,
 	toCompositeModelId,
 } from "./agent-settings-storage";
-import { fetchModelIds } from "./model-list";
+import { fetchModelIds, validateApiKey } from "./model-list";
 
 /** How long a connection's `/models` answer is reused. */
 const MODEL_LIST_TTL_MS = 5 * 60 * 1000;
@@ -82,6 +82,14 @@ export class DrivenLlmProvider implements LlmProviderOutputPortType {
 		if (!connection) {
 			throw new Error(
 				`The connection "${parsed.connectionId}" no longer exists. Open the extension settings and choose another model.`,
+			);
+		}
+		const keyError = connection.apiKey
+			? validateApiKey(connection.apiKey)
+			: undefined;
+		if (keyError) {
+			throw new Error(
+				`${keyError} Open the extension settings and re-enter the key for "${connection.name}".`,
 			);
 		}
 		return createOpenAICompatible({

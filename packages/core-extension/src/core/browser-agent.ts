@@ -13,6 +13,8 @@ import type {
 	AgentProgressEvent,
 	AgentSendMessageParams,
 	AgentSession,
+	AgentTarget,
+	ExtensionToolName,
 } from "../types";
 import { createBrowserAgentTools } from "./browser-agent-tools";
 
@@ -20,7 +22,18 @@ import { createBrowserAgentTools } from "./browser-agent-tools";
 const SYSTEM_PROMPT = `You are a browser agent operating a live web browser through the provided tools.
 Use the tools to observe and act on tabs on the user's behalf. Prefer the readable
 element tools (getReadableElements / clickOnElement / fillTextToElement) over pixel
-coordinates. When a tab is not specified, the session's target tab is used. Be concise.`;
+coordinates. When a tab is not specified, the session's target tab is used. Be concise.
+Some steps are human-only: CAPTCHA / "I'm not a robot" checks, 2FA codes, and file inputs
+("Choose file" / "Browse" / "Upload" buttons — browsers block setting files from code).
+For those, call showHumanHint first with the element's readablePath; never click them,
+fill them, or work around them with JavaScript. After showHumanHint, stop and tell the
+user what to do — do not click, retry, or submit that step yourself.`;
+
+/** Names the session's target tab, so "this page" resolves to it rather than the active tab. */
+const withTarget = (prompt: string, target?: AgentTarget): string =>
+	target?.tabId
+		? `${prompt}\n\nThe session's target tab is tabId ${target.tabId}${target.windowId ? ` (windowId ${target.windowId})` : ""}; "this tab" / "this page" means it, even when another tab is active.`
+		: prompt;
 
 /** Stop the tool loop after this many steps to bound runaway turns. */
 const MAX_STEPS = 32;
@@ -155,6 +168,23 @@ export class BrowserAgentUseCase implements BrowserAgentInputPort {
 		void this.runTurn(entry, turnId);
 	};
 
+	/** What the connected extension supports, or nothing (offer all tools) when it cannot say. */
+	private async toolSupport(): Promise<{
+		availableTools?: ExtensionToolName[];
+		manifestVersion?: number;
+	}> {
+		try {
+			const context = await this.toolCall.getExtensionContext();
+			return {
+				availableTools: context.availableTools,
+				manifestVersion: context.extensionInfo.manifestVersion,
+			};
+		} catch (error) {
+			this.logger.warn("Could not read tool support; offering all", error);
+			return {};
+		}
+	}
+
 	/** Drive one agent turn and map its stream to progress events. */
 	private async runTurn(entry: SessionEntry, turnId: string): Promise<void> {
 		const { sessionId } = entry.session;
@@ -190,13 +220,14 @@ export class BrowserAgentUseCase implements BrowserAgentInputPort {
 			{
 				defaultTabId: entry.session.target?.tabId,
 				defaultWindowId: entry.session.target?.windowId,
+				...(await this.toolSupport()),
 			},
 		);
 
 		try {
 			const agent = new ToolLoopAgent({
 				model: await this.llmProvider.getModel(),
-				instructions: SYSTEM_PROMPT,
+				instructions: withTarget(SYSTEM_PROMPT, entry.session.target),
 				tools,
 				stopWhen: stepCountIs(MAX_STEPS),
 			});

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetBrowserStub } from "../testing/webextension-polyfill-stub";
 import { upsertConnection, writeSelectedModel } from "./agent-settings-storage";
 import { DrivenLlmProvider } from "./driven-llm-provider";
-import { fetchModelIds, validateBaseUrl } from "./model-list";
+import { fetchModelIds, validateApiKey, validateBaseUrl } from "./model-list";
 
 const modelsResponse = (ids: string[]) =>
 	new Response(
@@ -121,6 +121,18 @@ describe("fetchModelIds", () => {
 		},
 	);
 
+	it("rejects an unsendable API key without calling the endpoint", async () => {
+		const result = await fetchModelIds({
+			baseUrl: "https://x.test/v1",
+			apiKey: "│ sk-abc",
+		});
+		expect(result).toMatchObject({
+			status: "failed",
+			message: expect.stringContaining("U+2502"),
+		});
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
 	it("reports network errors instead of throwing", async () => {
 		fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
 		expect(
@@ -144,6 +156,21 @@ describe("validateBaseUrl", () => {
 	it("rejects other schemes and garbage", () => {
 		expect(validateBaseUrl("ftp://x")).toBeDefined();
 		expect(validateBaseUrl("not a url")).toBeDefined();
+	});
+});
+
+describe("validateApiKey", () => {
+	it("accepts printable-ASCII tokens", () => {
+		expect(validateApiKey("sk-proj-AbC_123.xyz")).toBeUndefined();
+	});
+
+	it("points at the first character a header can't carry", () => {
+		expect(validateApiKey("│ sk-abc │")).toBe(
+			'The API key contains "│" (U+2502) at position 1. Paste only the key itself.',
+		);
+		expect(validateApiKey("sk-abc def")).toBe(
+			"The API key contains whitespace (U+0020) at position 7. Paste only the key itself.",
+		);
 	});
 });
 
@@ -225,6 +252,20 @@ describe("DrivenLlmProvider", () => {
 			modelId: "llama3:8b",
 			provider: expect.stringContaining("ollama"),
 		});
+	});
+
+	it("explains when the stored API key can't be sent", async () => {
+		await upsertConnection({
+			id: "openai",
+			name: "OpenAI",
+			baseUrl: "https://api.openai.com/v1",
+			apiKey: "│ sk-abc │",
+		});
+		await writeSelectedModel("openai:gpt-4o");
+
+		await expect(new DrivenLlmProvider().getModel()).rejects.toThrow(
+			/U\+2502.*re-enter the key for "OpenAI"/,
+		);
 	});
 
 	it("explains when nothing is configured", async () => {

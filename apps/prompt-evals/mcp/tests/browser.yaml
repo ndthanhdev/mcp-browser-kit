@@ -1,0 +1,134 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json#/definitions/TestCase
+- description: opens a URL in the existing window
+  vars:
+    task: Open https://example.com/pricing in a new tab.
+    context: mv3
+  assert:
+    - type: tool-call-f1
+      value: [openTab]
+      transform: file://../src/assertions.ts:firstActionCall
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: openTab
+        input:
+          browserId: k7Qm2x
+          windowId: "1701"
+        patterns:
+          url: ^https://example\.com/pricing/?$
+
+- description: closes the matching tab
+  vars:
+    task: I'm done with the MDN page, close it.
+    context: mv3
+  assert:
+    - type: tool-call-f1
+      value: [closeTab]
+      transform: file://../src/assertions.ts:firstActionCall
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: closeTab
+        input:
+          browserId: k7Qm2x
+          windowId: "1701"
+          tabId: "1845"
+
+- description: reads the user's highlighted text
+  vars:
+    task: What text did I highlight on the MDN tab?
+    context: mv3
+  assert:
+    - type: tool-call-f1
+      value: [getSelection]
+      transform: file://../src/assertions.ts:firstCallAfterContext
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: getSelection
+        input:
+          browserId: k7Qm2x
+          windowId: "1701"
+          tabId: "1845"
+
+- description: saves a page as a single HTML file
+  vars:
+    task: Save the MDN Fetch API page as one HTML file I can open by double-clicking.
+    context: mv3
+  assert:
+    - type: tool-call-f1
+      value: [savePage]
+      transform: file://../src/assertions.ts:firstActionCall
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: savePage
+        input:
+          tabId: "1845"
+          format: html
+
+- description: archives a page with the default zip format
+  vars:
+    task: Archive the MDN Fetch API page so I can grep through its files later.
+    context: mv3
+  assert:
+    - type: tool-call-f1
+      value: [savePage]
+      transform: file://../src/assertions.ts:firstActionCall
+    - type: javascript
+      value: file://../src/assertions.ts:neverCalls
+      config:
+        tools: [captureTab, invokeJsFn]
+    - type: javascript
+      value: |
+        const [first] = context.metadata?.toolCalls ?? [];
+        return first?.input?.format === undefined || first?.input?.format === "zip";
+
+- description: screenshots an MV2 tab
+  vars:
+    task: Take a screenshot of the MDN tab.
+    context: mv2
+  assert:
+    - type: tool-call-f1
+      value: [captureTab]
+      transform: file://../src/assertions.ts:firstCallAfterContext
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: captureTab
+        input:
+          browserId: k7Qm2x
+          windowId: "1701"
+          tabId: "1845"
+
+- description: does not screenshot an MV3 tab
+  vars:
+    task: Take a screenshot of the MDN tab.
+    context: mv3
+  assert:
+    - type: javascript
+      value: file://../src/assertions.ts:neverCalls
+      config:
+        tools:
+          - captureTab
+          - invokeJsFn
+          - clickOnCoordinates
+          - fillTextToCoordinates
+          - hitEnterOnCoordinates
+
+- description: runs a JavaScript function body on MV2 when no other tool can
+  vars:
+    task: Using JavaScript in the page, tell me how many <img> elements the MDN tab has.
+    context: mv2
+  assert:
+    - type: tool-call-f1
+      value: [invokeJsFn]
+      transform: file://../src/assertions.ts:firstActionCall
+    - type: javascript
+      value: file://../src/assertions.ts:firstCallInput
+      config:
+        tool: invokeJsFn
+        input:
+          tabId: "1845"
+        patterns:
+          fnBodyCode: ^(?!\s*(async\s+)?(function\b|\())[\s\S]*\breturn\b
