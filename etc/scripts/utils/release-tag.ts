@@ -1,5 +1,5 @@
 import { workDirs } from "@mcp-browser-kit/scripts/utils/work-dirs";
-import simpleGit from "simple-git";
+import { simpleGit } from "simple-git";
 import { getReleaseTag } from "./get-envs";
 
 // V0 tags use the format v0.yyMMd.dhhmm-ss (e.g., v0.26032.00830-05).
