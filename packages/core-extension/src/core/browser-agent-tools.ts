@@ -18,6 +18,8 @@ export interface BrowserAgentToolContext {
 	 * coordinates); others are not offered to the model. All tools when omitted.
 	 */
 	readonly availableTools?: readonly ExtensionToolName[];
+	/** Hides {@link MV2_ONLY_AGENT_TOOLS} when 3 and `availableTools` is not set. */
+	readonly manifestVersion?: number;
 }
 
 /**
@@ -41,7 +43,7 @@ const tabIdSchema = z
 	.string()
 	.optional()
 	.describe(
-		"tabId from bk:///context; defaults to the session target tab when omitted",
+		'Tab id from getExtensionContext availableTabs[].id (e.g. "1842") — not an element id like f1:e1. Omit it to use the session target tab.',
 	);
 
 const readablePathSchema = z
@@ -57,6 +59,15 @@ const ySchema = z
 	.number()
 	.describe("Y coordinate in pixels from a recent captureTab screenshot");
 const valueSchema = z.string().describe("Text to enter into the input field");
+
+/** Tools that need MV2 APIs (screenshots, coordinates, page scripts); MV3 extensions lack them. */
+export const MV2_ONLY_AGENT_TOOLS: readonly ExtensionToolName[] = [
+	"captureTab",
+	"clickOnCoordinates",
+	"fillTextToCoordinates",
+	"hitEnterOnCoordinates",
+	"invokeJsFn",
+];
 
 const humanHintParamsSchema = z
 	.object({
@@ -391,13 +402,13 @@ export function createBrowserAgentTools(
 		}),
 		invokeJsFn: tool({
 			description:
-				"Run a JavaScript function body in the tab and return its result (MV2 only). Body only, no function wrapper.",
+				"Run a JavaScript function body in the tab and return its result (MV2 only). Body only, no function wrapper, and it must use return.",
 			inputSchema: z.object({
 				tabId: tabIdSchema,
 				fnBodyCode: z
 					.string()
 					.describe(
-						"Function body only (no wrapper). Example: return document.title;",
+						"Function body only (no wrapper); it must return the result, or the call yields nothing. Example: return document.querySelectorAll('img').length;",
 					),
 			}),
 			execute: ({ tabId, fnBodyCode }) => {
@@ -451,13 +462,19 @@ export function createBrowserAgentTools(
 		}),
 	};
 
-	const { availableTools } = ctx;
-	if (!availableTools) return tools;
+	const { availableTools, manifestVersion } = ctx;
+	// An empty list means the extension did not report its tools, not that it has none.
+	const offered = (name: string): boolean => {
+		if (name === "getExtensionContext") return true;
+		if (availableTools && availableTools.length > 0) {
+			return availableTools.includes(name as ExtensionToolName);
+		}
+		return !(
+			manifestVersion === 3 &&
+			MV2_ONLY_AGENT_TOOLS.includes(name as ExtensionToolName)
+		);
+	};
 	return Object.fromEntries(
-		Object.entries(tools).filter(
-			([name]) =>
-				name === "getExtensionContext" ||
-				availableTools.includes(name as ExtensionToolName),
-		),
+		Object.entries(tools).filter(([name]) => offered(name)),
 	);
 }

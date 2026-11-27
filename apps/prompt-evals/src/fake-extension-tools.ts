@@ -50,7 +50,12 @@ export class FakeExtensionTools implements ExtensionToolCallInputPort {
 	}
 
 	getExtensionContext = (): Promise<ExtensionContext> =>
-		this.call("getExtensionContext", {}, () => this.context);
+		this.call("getExtensionContext", {}, () => ({
+			...this.context,
+			// The real extension reports an empty list; the fixture's list only
+			// drives this fake's own manifest-version errors.
+			availableTools: [],
+		}));
 
 	openTab = (
 		url: string,

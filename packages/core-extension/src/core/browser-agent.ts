@@ -168,13 +168,20 @@ export class BrowserAgentUseCase implements BrowserAgentInputPort {
 		void this.runTurn(entry, turnId);
 	};
 
-	/** Tools the connected extension supports, or undefined (offer all) when it cannot say. */
-	private async availableTools(): Promise<ExtensionToolName[] | undefined> {
+	/** What the connected extension supports, or nothing (offer all tools) when it cannot say. */
+	private async toolSupport(): Promise<{
+		availableTools?: ExtensionToolName[];
+		manifestVersion?: number;
+	}> {
 		try {
-			return (await this.toolCall.getExtensionContext()).availableTools;
+			const context = await this.toolCall.getExtensionContext();
+			return {
+				availableTools: context.availableTools,
+				manifestVersion: context.extensionInfo.manifestVersion,
+			};
 		} catch (error) {
-			this.logger.warn("Could not read available tools; offering all", error);
-			return undefined;
+			this.logger.warn("Could not read tool support; offering all", error);
+			return {};
 		}
 	}
 
@@ -213,7 +220,7 @@ export class BrowserAgentUseCase implements BrowserAgentInputPort {
 			{
 				defaultTabId: entry.session.target?.tabId,
 				defaultWindowId: entry.session.target?.windowId,
-				availableTools: await this.availableTools(),
+				...(await this.toolSupport()),
 			},
 		);
 

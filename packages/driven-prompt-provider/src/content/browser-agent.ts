@@ -33,7 +33,7 @@ user what to do — do not click, retry, or submit that step yourself.`,
 		showHumanHint:
 			"Highlight an element and ask the human to do a step tools cannot: CAPTCHA, 2FA, file inputs (picking a file), irreversible confirmations, or repeated tool failures. Call it first for those steps instead of clicking or running JavaScript, and target the element by readablePath. Afterwards, end your turn and let the human act — do not click or submit that step yourself.",
 		invokeJsFn:
-			"Run a JavaScript function body in the tab and return its result (MV2 only). Body only, no function wrapper.",
+			"Run a JavaScript function body in the tab and return its result (MV2 only). Body only, no function wrapper, and it must use return.",
 		getExtensionContext:
 			"Get the extension context: available tabs, windows, tools, and browser info.",
 		openTab: "Open a new tab at the given URL in a window.",
