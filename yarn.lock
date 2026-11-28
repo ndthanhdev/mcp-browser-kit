@@ -2067,6 +2067,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fission-ai/openspec@npm:2.2.0":
+  version: 2.2.0
+  resolution: "@fission-ai/openspec@npm:2.2.0"
+  dependencies:
+    "@inquirer/core": "npm:^12.0.0"
+    "@inquirer/prompts": "npm:^8.5.2"
+    brace-expansion: "npm:^5.0.12"
+    chalk: "npm:^6.0.1"
+    commander: "npm:^14.0.0"
+    cross-spawn: "npm:7.0.6"
+    diff: "npm:^9.0.0"
+    ora: "npm:^9.4.1"
+    picomatch: "npm:^4.0.4"
+    skills: "npm:1.8.1"
+    tinyglobby: "npm:^0.2.17"
+    yaml: "npm:^2.8.3"
+    zod: "npm:^4.4.3"
+  bin:
+    openspec: bin/openspec.js
+  checksum: 10c0/ffdccceeda6af54209f344f8b659bfd8212dbeb6c0c2fff47bcb3772c8c780250b5aa0c704a780d7dcbbf081931b7581accddd750e93f15bceff7d68d9b93a32
+  languageName: node
+  linkType: hard
+
 "@floating-ui/core@npm:^1.7.4":
   version: 1.7.4
   resolution: "@floating-ui/core@npm:1.7.4"
@@ -2439,7 +2462,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@inquirer/checkbox@npm:^5.1.0":
+"@inquirer/checkbox@npm:^5.1.0, @inquirer/checkbox@npm:^5.3.1":
   version: 5.3.1
   resolution: "@inquirer/checkbox@npm:5.3.1"
   dependencies:
@@ -2456,7 +2479,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@inquirer/confirm@npm:^6.0.8":
+"@inquirer/confirm@npm:^6.0.8, @inquirer/confirm@npm:^6.4.1":
   version: 6.4.1
   resolution: "@inquirer/confirm@npm:6.4.1"
   dependencies:
@@ -2492,7 +2515,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@inquirer/editor@npm:^5.0.8":
+"@inquirer/editor@npm:^5.0.8, @inquirer/editor@npm:^5.5.0":
   version: 5.5.0
   resolution: "@inquirer/editor@npm:5.5.0"
   dependencies:
@@ -2505,6 +2528,21 @@ __metadata:
     "@types/node":
       optional: true
   checksum: 10c0/70ac57e4bae6fcad6f728d2907c518ce69e2c559a84aa2681fb705a1668d5a870d9093e3f38d4cdce4eb69339b05323bcabb07546a6b40a24ff0d367e03491cc
+  languageName: node
+  linkType: hard
+
+"@inquirer/expand@npm:^5.2.1":
+  version: 5.2.1
+  resolution: "@inquirer/expand@npm:5.2.1"
+  dependencies:
+    "@inquirer/core": "npm:^12.1.1"
+    "@inquirer/type": "npm:4.3.1"
+  peerDependencies:
+    "@types/node": ">=18"
+  peerDependenciesMeta:
+    "@types/node":
+      optional: true
+  checksum: 10c0/23fdd2493d13972d20c1d966f071ec2ed57d9bc8c3753f79150b05a180f69c5c54f9a83e55bb6536abe548f00dc6f2be73c80b60948db4bf4a2a28fc354f30d6
   languageName: node
   linkType: hard
 
@@ -2530,7 +2568,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@inquirer/input@npm:^5.0.8":
+"@inquirer/input@npm:^5.0.8, @inquirer/input@npm:^5.2.1":
   version: 5.2.1
   resolution: "@inquirer/input@npm:5.2.1"
   dependencies:
@@ -2545,7 +2583,76 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@inquirer/search@npm:^4.1.8":
+"@inquirer/number@npm:^4.3.1":
+  version: 4.3.1
+  resolution: "@inquirer/number@npm:4.3.1"
+  dependencies:
+    "@inquirer/core": "npm:^12.1.1"
+    "@inquirer/type": "npm:4.3.1"
+  peerDependencies:
+    "@types/node": ">=18"
+  peerDependenciesMeta:
+    "@types/node":
+      optional: true
+  checksum: 10c0/99f2f6abf68438584352a78990971704c3904a82545df847150f9fd84e8cdff509c50916175f18a8283882139d09dd6dca9aeeb4afdd5443e29dd3024e8a00a0
+  languageName: node
+  linkType: hard
+
+"@inquirer/password@npm:^5.3.1":
+  version: 5.3.1
+  resolution: "@inquirer/password@npm:5.3.1"
+  dependencies:
+    "@inquirer/ansi": "npm:^2.1.1"
+    "@inquirer/core": "npm:^12.1.1"
+    "@inquirer/type": "npm:4.3.1"
+  peerDependencies:
+    "@types/node": ">=18"
+  peerDependenciesMeta:
+    "@types/node":
+      optional: true
+  checksum: 10c0/9bb69af71261ac5d778c14781713a1bc4d84bd5f0fee8e91e3d37f36ac2b490b10e9049e12b7dd1366d441e54eae20e1937670d654d93cd15a645ed87c9a8365
+  languageName: node
+  linkType: hard
+
+"@inquirer/prompts@npm:^8.5.2":
+  version: 8.8.1
+  resolution: "@inquirer/prompts@npm:8.8.1"
+  dependencies:
+    "@inquirer/checkbox": "npm:^5.3.1"
+    "@inquirer/confirm": "npm:^6.4.1"
+    "@inquirer/editor": "npm:^5.5.0"
+    "@inquirer/expand": "npm:^5.2.1"
+    "@inquirer/input": "npm:^5.2.1"
+    "@inquirer/number": "npm:^4.3.1"
+    "@inquirer/password": "npm:^5.3.1"
+    "@inquirer/rawlist": "npm:^5.4.1"
+    "@inquirer/search": "npm:^4.4.1"
+    "@inquirer/select": "npm:^5.3.1"
+  peerDependencies:
+    "@types/node": ">=18"
+  peerDependenciesMeta:
+    "@types/node":
+      optional: true
+  checksum: 10c0/fa1c499aab053027c9626c0ee2dad2262475d489657138cf2b4ae9fb24259133ee13921611e3784878725745445e933d1ddbdb29e27561e3679303680b09b48c
+  languageName: node
+  linkType: hard
+
+"@inquirer/rawlist@npm:^5.4.1":
+  version: 5.4.1
+  resolution: "@inquirer/rawlist@npm:5.4.1"
+  dependencies:
+    "@inquirer/core": "npm:^12.1.1"
+    "@inquirer/type": "npm:4.3.1"
+  peerDependencies:
+    "@types/node": ">=18"
+  peerDependenciesMeta:
+    "@types/node":
+      optional: true
+  checksum: 10c0/3bd5f2fa3daeb4ee113699bebbf72f5f6cb878d2af871db919fd26fbfc3d2623b8a8ce51539179fd40639d51c842d2b955e398a09e58d36a338ec3484df3a8c8
+  languageName: node
+  linkType: hard
+
+"@inquirer/search@npm:^4.1.8, @inquirer/search@npm:^4.4.1":
   version: 4.4.1
   resolution: "@inquirer/search@npm:4.4.1"
   dependencies:
@@ -2561,7 +2668,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@inquirer/select@npm:^5.1.0":
+"@inquirer/select@npm:^5.1.0, @inquirer/select@npm:^5.3.1":
   version: 5.3.1
   resolution: "@inquirer/select@npm:5.3.1"
   dependencies:
@@ -8268,12 +8375,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"brace-expansion@npm:^5.0.8":
-  version: 5.0.9
-  resolution: "brace-expansion@npm:5.0.9"
+"brace-expansion@npm:^5.0.12, brace-expansion@npm:^5.0.8":
+  version: 5.1.0
+  resolution: "brace-expansion@npm:5.1.0"
   dependencies:
     balanced-match: "npm:^4.0.2"
-  checksum: 10c0/3dea38884a1c3c8b1c9c44a7402a0c76fca460f70cffb3127242b0b4cbf4472019e022ade021eec44838ff19f1dac2625dfd11dd459d7e1e055b0698a8d52fec
+  checksum: 10c0/e45471e38321aa12dd38c4e76ffd065efe1056b053ce6035922742351aa836666a71deca248d0bb875d3d135ca0f77588101370a629b56803e8b6495acc4f251
   languageName: node
   linkType: hard
 
@@ -8531,7 +8638,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^6.0.0":
+"chalk@npm:^6.0.0, chalk@npm:^6.0.1":
   version: 6.0.1
   resolution: "chalk@npm:6.0.1"
   checksum: 10c0/4c58238fa874f531b5201bf99ebd374742be31f8e306c7783d930856aec305f2dea3e07531a8805b2a7ba92807296e39ced52e9f673703e0264d96e83998a429
@@ -8900,7 +9007,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^14.0.3":
+"commander@npm:^14.0.0, commander@npm:^14.0.3":
   version: 14.0.3
   resolution: "commander@npm:14.0.3"
   checksum: 10c0/755652564bbf56ff2ff083313912b326450d3f8d8c85f4b71416539c9a05c3c67dbd206821ca72635bf6b160e2afdefcb458e86b317827d5cb333b69ce7f1a24
@@ -9559,6 +9666,13 @@ __metadata:
   version: 8.0.4
   resolution: "diff@npm:8.0.4"
   checksum: 10c0/7ee5d03926db4039be7252ac3b0abaae1bd122a2ca971e5ca7270e444e36ff83dd906fad1a719740ca347e97ed5dc8f458a76a8391dbcd7aff363bdafb348a00
+  languageName: node
+  linkType: hard
+
+"diff@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "diff@npm:9.0.0"
+  checksum: 10c0/a971cc88f66071a33bd3942db2f51b57d484e9856265ae45cf44fb28ab2fde91f132d9c26d8be0fb6082d2be94d29e1295c1adb251b7461935d6a2dd304cd161
   languageName: node
   linkType: hard
 
@@ -14362,6 +14476,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nostics@npm:^1.3.0":
+  version: 1.4.0
+  resolution: "nostics@npm:1.4.0"
+  checksum: 10c0/a1498d6e15d61c6d212f501eddbbdf2e72ebfe44a6b6d3823fefb13f365e8319b9756ecfb7a022da978766d65646e3a70fc8c05f60b312ef5981e482b4d73cc4
+  languageName: node
+  linkType: hard
+
 "npm-run-path@npm:^4.0.1":
   version: 4.0.1
   resolution: "npm-run-path@npm:4.0.1"
@@ -14606,7 +14727,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ora@npm:^9.3.0":
+"ora@npm:^9.3.0, ora@npm:^9.4.1":
   version: 9.4.1
   resolution: "ora@npm:9.4.1"
   dependencies:
@@ -16743,6 +16864,7 @@ __metadata:
   resolution: "root@workspace:."
   dependencies:
     "@biomejs/biome": "npm:^2.5.15"
+    "@fission-ai/openspec": "npm:2.2.0"
     "@medv/finder": "npm:^4.0.2"
     "@mozilla/readability": "npm:^0.6.0"
     "@openfeature/core": "npm:^1.12.0"
@@ -17298,6 +17420,20 @@ __metadata:
   version: 1.0.5
   resolution: "sisteransi@npm:1.0.5"
   checksum: 10c0/230ac975cca485b7f6fe2b96a711aa62a6a26ead3e6fb8ba17c5a00d61b8bed0d7adc21f5626b70d7c33c62ff4e63933017a6462942c719d1980bb0b1207ad46
+  languageName: node
+  linkType: hard
+
+"skills@npm:1.8.1":
+  version: 1.8.1
+  resolution: "skills@npm:1.8.1"
+  dependencies:
+    nostics: "npm:^1.3.0"
+    tar: "npm:^7.5.22"
+    yaml: "npm:^2.9.1"
+  bin:
+    add-skill: bin/cli.mjs
+    skills: bin/cli.mjs
+  checksum: 10c0/abd7aa78277ce13137775113b435e26b4e1be1ed5bcd35b7f3d3948a68fc68430d5cdaa28119ad7252dbd2215384be7c8b70f1a0235685f8aa54e64b8772d14f
   languageName: node
   linkType: hard
 
@@ -18028,16 +18164,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar@npm:^7.4.3":
-  version: 7.5.22
-  resolution: "tar@npm:7.5.22"
+"tar@npm:^7.4.3, tar@npm:^7.5.22":
+  version: 7.5.24
+  resolution: "tar@npm:7.5.24"
   dependencies:
     "@isaacs/fs-minipass": "npm:^4.0.0"
     chownr: "npm:^3.0.0"
     minipass: "npm:^7.1.2"
     minizlib: "npm:^3.1.0"
     yallist: "npm:^5.0.0"
-  checksum: 10c0/1311f6be85a8157ac4c9147bae43e13923d2a1aae15e4aa1bd5239e4e03d2cf53cfe103dde7f35832fbb4c938b042856bc8e9a0afd29abd05e2d1608788c4fea
+  checksum: 10c0/6e9b955e6af05fdabf0400cd166f45795c7595657906a9afb1a86fe94a491936e1a7c1d068ec9ab8145db0fea66f0294db0a23f2e0183124d110df450f154275
   languageName: node
   linkType: hard
 
@@ -19731,7 +19867,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.8.2":
+"yaml@npm:^2.8.2, yaml@npm:^2.8.3, yaml@npm:^2.9.1":
   version: 2.9.1
   resolution: "yaml@npm:2.9.1"
   bin:
@@ -19837,7 +19973,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:3.25.76 || ^4.3.6, zod@npm:^3.25 || ^4.0, zod@npm:^4.6.7":
+"zod@npm:3.25.76 || ^4.3.6, zod@npm:^3.25 || ^4.0, zod@npm:^4.4.3, zod@npm:^4.6.7":
   version: 4.6.7
   resolution: "zod@npm:4.6.7"
   checksum: 10c0/4ce2eb14034317b7254e347ca37b5ad591cf8333147030cf05b9b5d31692d45073f7f2747aa50cf8c6b29012194d2b22978cecc89969cf34a0d18e89d0ee7d7b

@@ -21,6 +21,17 @@ tasks:
   compose-down:
     preset: utility
     script: $projectRoot/moon-tasks/compose-down.ts
+  # No utility preset: moon v2 utility sets runInCI to skip.
+  openspec-validate:
+    script: $projectRoot/moon-tasks/openspec-validate.ts
+    inputs:
+    - /openspec/**/*
+    - /package.json
+    - moon-tasks/openspec-validate.ts
+    env:
+      OPENSPEC_TELEMETRY: '0'
+    options:
+      runInCI: true
   check:
     deps:
     - ~:biome-check

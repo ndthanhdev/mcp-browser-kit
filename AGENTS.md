@@ -33,6 +33,9 @@ moon run scripts:biome-check        # check only
 moon run scripts:syncpack-lint
 moon run scripts:syncpack-fix
 
+# OpenSpec: validate specs/changes; fails if any change is not archived
+moon run scripts:openspec-validate
+
 # Build a project (e.g. server or an extension)
 moon run server:build
 moon run m3:build
