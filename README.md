@@ -5,13 +5,13 @@
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/njoacgiflhkmfekmmpkeedgiipbaeagk?logo=googlechrome&logoColor=white&label=Chrome%20Web%20Store)](https://chromewebstore.google.com/detail/mcp-browser-kit-m3/njoacgiflhkmfekmmpkeedgiipbaeagk)
 [![Workspace Updated](https://github.com/ndthanhdev/mcp-browser-kit/actions/workflows/workspace-updated.yml/badge.svg)](https://github.com/ndthanhdev/mcp-browser-kit/actions/workflows/workspace-updated.yml)
 [![Checked with Biome](https://img.shields.io/badge/Checked_with-Biome-60a5fa?style=flat&logo=biome)](https://biomejs.dev)
+[![Built with moon](https://img.shields.io/badge/Built_with-moon-6f53f3?style=flat&logo=moonrepo&logoColor=white)](https://moonrepo.dev)
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/ndthanhdev/mcp-browser-kit)](https://archestra.ai/mcp-catalog/ndthanhdev__mcp-browser-kit)
-
-[![mcp-browser-kit MCP server](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit/badges/card.svg)](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit)
-
-> 🚀 **On the `main` branch?** You're viewing the bleeding-edge dev docs! For other versions, check out the `release/*` branches.
+[![mcp-browser-kit MCP server](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit/badges/score.svg)](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit)
 
 An MCP Server that enables AI assistants to interact with your local browsers. It's an alternative to "Claude in Chrome" that works with any AI assistant or coding agent.
+
+[![mcp-browser-kit MCP server](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit/badges/card.svg)](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit)
 
 https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
 
@@ -116,7 +116,8 @@ https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
 
 > **Security**: BrowserKit currently lacks authentication for incoming requests. Keep ports 21082 and 2769-2799 on your device network only.
 
-## Hosted deployment
+# Engineer Notes
 
-A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/ndthanhdev-mcp-browser-kit).
+> 🚀 **On the `main` branch?** You're viewing the bleeding-edge dev docs! For other versions, check out the `release/*` branches.
+
 
