@@ -1,8 +1,6 @@
 import type { Func } from "@mcp-browser-kit/types";
-import { parse as parseDataUrl } from "@readme/data-urls";
-import { imageDimensionsFromData } from "image-dimensions";
-import { Base64 } from "js-base64";
 import browser from "webextension-polyfill";
+import { screenshotFromDataUrl } from "./screenshot";
 
 export const toIife = (fn: Func | string) => {
 	if (typeof fn === "function") {
@@ -28,25 +26,21 @@ export const invokeJsFn = async (tabId: string, fnCode: string) => {
 	return getExecuteScriptResult(results);
 };
 
-export const captureTab = async (_tabId: string) => {
-	const dataUrl = await browser.tabs.captureVisibleTab();
-	const parsed = parseDataUrl(dataUrl);
-
-	if (!parsed) {
-		throw new Error("Failed to parse data URL.");
+/**
+ * `captureVisibleTab` can only see the active tab of a window, so the target
+ * tab is activated first; otherwise the screenshot would show a different page.
+ */
+export const captureTab = async (tabId: string) => {
+	const tab = await browser.tabs.get(Number(tabId));
+	if (!tab.active) {
+		await browser.tabs.update(tab.id, {
+			active: true,
+		});
 	}
 
-	const buffer = parsed.toBuffer();
-	const dimensions = await imageDimensionsFromData(buffer);
+	const dataUrl = await browser.tabs.captureVisibleTab(tab.windowId, {
+		format: "png",
+	});
 
-	if (!dimensions) {
-		throw new Error("Failed to retrieve image dimensions.");
-	}
-
-	return {
-		data: Base64.fromUint8Array(new Uint8Array(buffer)),
-		mimeType: parsed.contentType || parsed.mediaType || "image/png",
-		width: dimensions.width,
-		height: dimensions.height,
-	};
+	return screenshotFromDataUrl(dataUrl);
 };

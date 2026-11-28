@@ -2956,6 +2956,8 @@ __metadata:
 "@mcp-browser-kit/extension-driven-browser-driver@workspace:packages/extension-driven-browser-driver":
   version: 0.0.0-use.local
   resolution: "@mcp-browser-kit/extension-driven-browser-driver@workspace:packages/extension-driven-browser-driver"
+  dependencies:
+    vitest: "npm:^4.1.12"
   languageName: unknown
   linkType: soft
 
@@ -5714,13 +5716,6 @@ __metadata:
   bin:
     react-router-serve: bin.cjs
   checksum: 10c0/bb03aeeebf364de78d69eb9ef298e6cd5983d963d0d880ba2c06165dffc91808a890877f39874581632abaa92cd7e9d29699438edf278ac5138186c908484b75
-  languageName: node
-  linkType: hard
-
-"@readme/data-urls@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "@readme/data-urls@npm:3.0.1"
-  checksum: 10c0/0b007dd721c898a74f5cc4b85d133301287074ff8a6d62f6ea76eb2f08348191d2d61a28490ee8c2509d41446dc37033bb8255826c880bddf71d75032c5befbf
   languageName: node
   linkType: hard
 
@@ -16753,7 +16748,6 @@ __metadata:
     "@openfeature/core": "npm:^1.12.0"
     "@openfeature/web-sdk": "npm:^1.10.0"
     "@playwright/test": "npm:^1.64.1"
-    "@readme/data-urls": "npm:^3.0.1"
     "@swc-node/register": "npm:^1.12.1"
     "@swc/core": "npm:^1.16.18"
     "@trpc/client": "npm:^11.19.0"
