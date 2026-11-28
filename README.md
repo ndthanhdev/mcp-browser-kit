@@ -1,5 +1,9 @@
 # MCP Browser Kit
 
+An MCP Server that enables AI assistants to interact with your local browsers. It's an alternative to "Claude in Chrome" that works with any AI assistant or coding agent.
+
+> 🚀 **On the `main` branch?** You're viewing the bleeding-edge dev docs! For other versions, check out the `release/*` branches.
+
 [![NPM Version](https://img.shields.io/npm/v/%40mcp-browser-kit%2Fserver?logo=npm&logoColor=white&label=npm)](https://www.npmjs.com/package/@mcp-browser-kit/server)
 [![Firefox Add-on](https://img.shields.io/amo/v/mcp-browserkit-m2?logo=firefoxbrowser&logoColor=white&label=Firefox%20Add-on)](https://addons.mozilla.org/en-US/firefox/addon/mcp-browserkit-m2/)
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/njoacgiflhkmfekmmpkeedgiipbaeagk?logo=googlechrome&logoColor=white&label=Chrome%20Web%20Store)](https://chromewebstore.google.com/detail/mcp-browser-kit-m3/njoacgiflhkmfekmmpkeedgiipbaeagk)
@@ -11,9 +15,6 @@
 
 [![mcp-browser-kit MCP server](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit/badges/card.svg)](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit)
 
-> 🚀 **On the `main` branch?** You're viewing the bleeding-edge dev docs! For other versions, check out the `release/*` branches.
-
-An MCP Server that enables AI assistants to interact with your local browsers. It's an alternative to "Claude in Chrome" that works with any AI assistant or coding agent.
 
 https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
 
