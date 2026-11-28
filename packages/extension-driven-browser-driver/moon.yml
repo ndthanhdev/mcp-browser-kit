@@ -5,3 +5,9 @@ dependsOn:
 - core-extension
 - core-utils
 - helper-page-save
+tags:
+- vitest
+tasks:
+  test:
+    deps:
+    - ~:vitest-test

@@ -1,3 +1,7 @@
 {
-	"name": "@mcp-browser-kit/extension-driven-browser-driver"
+	"name": "@mcp-browser-kit/extension-driven-browser-driver",
+	"type": "module",
+	"devDependencies": {
+		"vitest": "^4.1.12"
+	}
 }

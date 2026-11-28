@@ -173,7 +173,8 @@ export function createBrowserAgentTools(
 			},
 		}),
 		clickOnCoordinates: tool({
-			description: "Click at pixel coordinates in a tab (MV2 only).",
+			description:
+				"Click at pixel coordinates in a tab. Take x/y from captureTab (MV2 only); otherwise prefer clickOnElement.",
 			inputSchema: z.object({
 				tabId: tabIdSchema,
 				x: xSchema,
@@ -229,7 +230,7 @@ export function createBrowserAgentTools(
 		}),
 		fillTextToCoordinates: tool({
 			description:
-				"Fill text into the element at pixel coordinates (MV2 only).",
+				"Fill text into the element at pixel coordinates. Take x/y from captureTab (MV2 only); otherwise prefer fillTextToElement.",
 			inputSchema: z.object({
 				tabId: tabIdSchema,
 				x: xSchema,
@@ -339,7 +340,7 @@ export function createBrowserAgentTools(
 		}),
 		hitEnterOnCoordinates: tool({
 			description:
-				"Press Enter on the element at pixel coordinates (MV2 only).",
+				"Press Enter on the element at pixel coordinates. Take x/y from captureTab (MV2 only); otherwise prefer hitEnterOnElement.",
 			inputSchema: z.object({
 				tabId: tabIdSchema,
 				x: xSchema,
