@@ -36,12 +36,12 @@ export const coordinateSchema = {
 	x: z
 		.number()
 		.describe(
-			"X coordinate in pixels from a recent captureTab screenshot (MV2 only)",
+			"X coordinate in pixels, e.g. from a recent captureTab screenshot (MV2)",
 		),
 	y: z
 		.number()
 		.describe(
-			"Y coordinate in pixels from a recent captureTab screenshot (MV2 only)",
+			"Y coordinate in pixels, e.g. from a recent captureTab screenshot (MV2)",
 		),
 };
 
@@ -167,13 +167,13 @@ export const showHumanHintInputSchema = {
 		.number()
 		.optional()
 		.describe(
-			"X coordinate from captureTab (MV2); provide this with y OR readablePath, not both",
+			"X coordinate in pixels, e.g. from captureTab (MV2); provide this with y OR readablePath, not both",
 		),
 	y: z
 		.number()
 		.optional()
 		.describe(
-			"Y coordinate from captureTab (MV2); provide this with x OR readablePath, not both",
+			"Y coordinate in pixels, e.g. from captureTab (MV2); provide this with x OR readablePath, not both",
 		),
 };
 

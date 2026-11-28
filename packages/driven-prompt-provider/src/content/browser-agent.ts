@@ -12,12 +12,13 @@ fill them, or work around them with JavaScript. After showHumanHint, stop and te
 user what to do — do not click, retry, or submit that step yourself.`,
 	tools: {
 		captureTab: "Capture a screenshot of the given tab (MV2 only).",
-		clickOnCoordinates: "Click at pixel coordinates in a tab (MV2 only).",
+		clickOnCoordinates:
+			"Click at pixel coordinates in a tab. Take x/y from captureTab (MV2 only); otherwise prefer clickOnElement.",
 		clickOnElement:
 			'Click an element identified by its readable element id. Never click CAPTCHA/"I\'m not a robot"/2FA elements or file inputs ("Choose file"/"Browse"/"Upload") — those are human-only steps: use showHumanHint.',
 		closeTab: "Close the given tab.",
 		fillTextToCoordinates:
-			"Fill text into the element at pixel coordinates (MV2 only).",
+			"Fill text into the element at pixel coordinates. Take x/y from captureTab (MV2 only); otherwise prefer fillTextToElement.",
 		fillTextToElement:
 			"Fill text into the element identified by its readable element id.",
 		loadTabContext:
@@ -27,7 +28,7 @@ user what to do — do not click, retry, or submit that step yourself.`,
 		getReadableText: "Get the readable text content of a tab.",
 		getSelection: "Get the currently selected text in a tab.",
 		hitEnterOnCoordinates:
-			"Press Enter on the element at pixel coordinates (MV2 only).",
+			"Press Enter on the element at pixel coordinates. Take x/y from captureTab (MV2 only); otherwise prefer hitEnterOnElement.",
 		hitEnterOnElement:
 			"Press Enter on the element identified by its readable element id.",
 		showHumanHint:

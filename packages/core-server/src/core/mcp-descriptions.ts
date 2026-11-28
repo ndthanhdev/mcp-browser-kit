@@ -32,7 +32,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"Tool selection by manifestVersion:",
 			"- MV2: all tools; prefer element tools; invokeJsFn only as last resort",
 			"- MV3: clickOnElement, fillTextToElement, hitEnterOnElement, scrollPage, scrollElement, openTab, closeTab, getSelection, showHumanHint",
-			"- MV3 blocked: captureTab, invokeJsFn; avoid coordinate tools (no screenshot source for x/y)",
+			"- MV3 blocked: captureTab, invokeJsFn. Coordinate tools run on MV3, but without captureTab there is no reliable source for x/y — use element tools",
 			"",
 			"Error recovery:",
 			"- Tab not found -> re-read bk:///context or call getContext",
@@ -73,6 +73,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			"How: browserId, windowId, tabId from bk:///context; use returned dimensions to compute x/y.",
 			"Requires: browserId, windowId, tabId.",
 			"Returns: value { data (base64 image), width, height, mimeType } — use width/height to scale coordinates.",
+			"Note: only the visible tab of a window can be captured, so the tab is activated first — this switches the user's view to it.",
 			"Avoid: calling on manifestVersion 3 — use readable-elements instead.",
 		].join("\n");
 	};
@@ -84,7 +85,7 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 			'How: format "zip" (default) writes index.html plus an assets/ folder — smaller, and the extracted folder is browsable and greppable. format "html" writes one file with resources inlined as data: URIs — larger, but opens by double-click.',
 			"Requires: browserId, windowId, tabId. Optional: format.",
 			"Returns: value { filename, bytes, format, resourceCount, skipped } — skipped lists resources that could not be embedded, with a reason each.",
-			"Note: the filename is derived from the page title; the agent cannot choose it. Scripts are never saved. Fonts, srcset and iframes are not embedded, and cross-origin resources without CORS headers appear in skipped.",
+			"Note: each call downloads one file in that tab's browser — call it once per page you want saved, not once per connected browser. The filename is derived from the page title; the agent cannot choose it. Scripts are never saved. Fonts, srcset and iframes are not embedded, and cross-origin resources without CORS headers appear in skipped.",
 			"Avoid: assuming an empty skipped list — check it when fidelity matters.",
 		].join("\n");
 	};
@@ -92,36 +93,36 @@ export class McpDescriptionsUseCases implements McpDescriptionsInputPort {
 	clickOnViewableElementInstruction = (): string => {
 		return [
 			"Click at pixel coordinates inside a tab.",
-			"When: MV2 fallback when no readablePath is available.",
+			"When: fallback when no readablePath is available.",
 			"How: x/y from a recent captureTab screenshot (same width/height); browserId, windowId, tabId from context.",
 			"Requires: browserId, windowId, tabId, x, y.",
 			PAGE_CHANGE_RETURNS,
 			"On ok=false: re-capture the tab and recompute x/y.",
-			"Avoid: on MV3 (no screenshot source); prefer clickOnElement when readablePath exists.",
+			"Avoid: guessing x/y — on MV3 there is no captureTab, so use clickOnElement; prefer clickOnElement whenever readablePath exists.",
 		].join("\n");
 	};
 
 	fillTextToViewableElementInstruction = (): string => {
 		return [
 			"Replace the text of the input, textarea or rich-text editor at (x, y), including inside iframes.",
-			"When: MV2 fallback for inputs without a readablePath.",
+			"When: fallback for inputs without a readablePath.",
 			"How: coordinates from recent captureTab; submit via clickOnCoordinates on submit button or hitEnterOnCoordinates.",
 			"Requires: browserId, windowId, tabId, x, y, value.",
 			PAGE_CHANGE_RETURNS,
 			"On ok=false: re-capture the tab and recompute x/y.",
-			"Avoid: on MV3; prefer fillTextToElement when readablePath is available.",
+			"Avoid: guessing x/y — on MV3 there is no captureTab, so use fillTextToElement; prefer fillTextToElement whenever readablePath is available.",
 		].join("\n");
 	};
 
 	hitEnterOnViewableElementInstruction = (): string => {
 		return [
 			"Focus the element at (x, y), including inside iframes, then press Enter to submit a form.",
-			"When: MV2 fallback to submit when no submit button readablePath exists.",
+			"When: fallback to submit when no submit button readablePath exists.",
 			"How: coordinates from recent captureTab.",
 			"Requires: browserId, windowId, tabId, x, y.",
 			PAGE_CHANGE_RETURNS,
 			"On ok=false: re-capture the tab and recompute x/y.",
-			"Avoid: on MV3; prefer hitEnterOnElement when readablePath is available.",
+			"Avoid: guessing x/y — on MV3 there is no captureTab, so use hitEnterOnElement; prefer hitEnterOnElement whenever readablePath is available.",
 		].join("\n");
 	};
 
