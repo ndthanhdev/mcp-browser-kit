@@ -13,10 +13,9 @@ An MCP Server that enables AI assistants to interact with your local browsers. I
 [![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/ndthanhdev/mcp-browser-kit)](https://archestra.ai/mcp-catalog/ndthanhdev__mcp-browser-kit)
 [![mcp-browser-kit MCP server](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit/badges/score.svg)](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit)
 
-[![mcp-browser-kit MCP server](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit/badges/card.svg)](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit)
-
-
 https://github.com/user-attachments/assets/1fbf87fd-06d1-42bf-a06f-cc2bbdf375a8
+
+[![mcp-browser-kit MCP server](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit/badges/card.svg)](https://glama.ai/mcp/servers/ndthanhdev/mcp-browser-kit)
 
 ## Usage
 
